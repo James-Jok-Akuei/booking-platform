@@ -4,6 +4,7 @@ import {
   getMe,
   getPayoutDestination,
   getProfile,
+  getToday,
   listLocationReviews,
   listNotifications,
   listLocations,
@@ -115,6 +116,8 @@ export function useAdData() {
     queryFn: () => discoverServices({ sort: 'popular', limit: 16 }),
     staleTime: 10 * 60_000,
   });
+  // Rwanda today (§310): MoMo's health is worth knowing within minutes; the rest changes slowly.
+  const rwandaToday = useQuery({ queryKey: ['today'], queryFn: getToday, staleTime: 5 * 60_000, refetchInterval: 5 * 60_000 });
 
   return useMemo(() => {
     const p = profile.data;
@@ -278,8 +281,10 @@ export function useAdData() {
       branchCount: branches.length,
       justIn,
       feePercent,
+      today: rwandaToday.data ?? null,
     };
   }, [
+    rwandaToday.data,
     profile.data,
     locations.data,
     services.data,

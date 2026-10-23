@@ -11,6 +11,7 @@ import { Icon } from '../ui/Icon';
 import { MomoLogo, MOMO_NAME } from '../ui/Momo';
 import { Pulse } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
+import { useRwandaToday } from '../today';
 import { balanceMinor, dayOf, howMany, minutesOf, timeRange, type Bought } from './format';
 import { BookedChoices } from './BookedChoices';
 import { Trans } from '@lingui/react/macro';
@@ -57,6 +58,7 @@ export function Checkout({
 }) {
   const many = howMany(a);
   const balance = balanceMinor(a);
+  const momo = useRwandaToday(undefined, { watchMomo: true })?.momo;
 
   return (
     <>
@@ -216,6 +218,19 @@ export function Checkout({
             <View style={styles.radioDot} />
           </View>
         </View>
+
+        {/* Said before they try, not after it fails (§310): the server sees
+            many deposits at once and knows when MoMo is having a bad hour. */}
+        {(momo === 'slow' || momo === 'down') && (
+          <View style={styles.momoNote} accessibilityRole="alert">
+            <Icon name="time-outline" size={17} color={theme.warn} />
+            <Text style={styles.momoNoteText}>
+              {momo === 'down'
+                ? t`MTN MoMo is not answering right now. Try again in a few minutes — your time stays held, and nothing is charged twice.`
+                : t`MTN MoMo is slow right now. If the request does not reach your phone, try again in a moment — your time stays held.`}
+            </Text>
+          </View>
+        )}
 
         {/* Saved numbers first, so the usual one is a tap rather than ten
             digits typed at the least patient moment there is (§124.2). */}
@@ -532,6 +547,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   radioDot: { width: 11, height: 11, borderRadius: 6, backgroundColor: theme.accent },
+  momoNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 9,
+    backgroundColor: theme.warnSoft,
+    borderRadius: radius.md,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+  },
+  momoNoteText: { flex: 1, fontFamily: font.semibold, fontSize: 13, lineHeight: 18, color: theme.ink2 },
   saved: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   field: {
     flexDirection: 'row',

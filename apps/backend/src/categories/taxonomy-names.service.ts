@@ -142,7 +142,8 @@ export class TaxonomyNamesService {
 }
 
 /** Lower case, accents off: "Beauté" and "beaute" are the same search. */
-const fold = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+/** Lower case, without accents or marks: how typed words are compared (and counted, §310). */
+export const fold = (text: string) => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
 
 const isPlain = (body: unknown) =>
   Array.isArray(body) || (!!body && typeof body === 'object' && Object.getPrototypeOf(body) === Object.prototype);

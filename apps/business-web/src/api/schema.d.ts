@@ -362,13 +362,13 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** A version's Kinyarwanda and French — a draft's or one in force (§308.5). */
-        put: operations["AdminLegalController_setTranslations"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** A version's Kinyarwanda and French — a draft's or one in force (§308.5). */
+        patch: operations["AdminLegalController_setTranslations"];
         trace?: never;
     };
     "/admin/legal/drafts/{id}/publish": {
@@ -2389,6 +2389,38 @@ export interface paths {
         patch: operations["AdminLedgerController_execute"];
         trace?: never;
     };
+    "/business/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BusinessTodayController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicTodayController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/notifications/settings": {
         parameters: {
             query?: never;
@@ -3852,6 +3884,12 @@ export interface components {
              *     once the server has asked for it with TWO_STEP_REQUIRED.
              */
             twoStepCode?: string;
+            /**
+             * @description The app asking (§308.6): an account it is not for is told where it
+             *     belongs, before anything else and without being signed in.
+             * @enum {string}
+             */
+            app?: "business" | "customer";
         };
         AuthenticatedUserDto: {
             id: string;
@@ -6252,7 +6290,7 @@ export interface components {
         SupportMessageDto: {
             id: string;
             /** @enum {string} */
-            from: "customer" | "shop";
+            from: "shop" | "customer";
             senderEmail: string;
             body: string | null;
             photoUrl: string | null;
@@ -6548,6 +6586,71 @@ export interface components {
         ExecutedAdjustmentDto: {
             adjustment: components["schemas"]["SettledAdjustmentDto"];
             entry: components["schemas"]["LedgerEntryDto"];
+        };
+        TodayBranchDto: {
+            id: string;
+            name: string;
+            /** @description Already closed, or with a break, at that time. */
+            covered: boolean;
+        };
+        TodayRateDto: {
+            /** @description USD, EUR, KES or UGX. */
+            code: string;
+            /** @description Francs for one. */
+            rwf: number;
+            /** @description Since the previous day's figure, in francs; null on the first day. */
+            change: number | null;
+        };
+        TodayItemDto: {
+            /** @description momo · kwibuka · umuganda · holiday · searches · rain · tax · rates · news */
+            kind: string;
+            /** @description momo: how mobile money is doing — "slow" or "down". */
+            momo?: string;
+            /** @description kwibuka: the commemoration's number (32 in 2026), and its last day. */
+            number?: number;
+            until?: string;
+            /** @description umuganda, holiday: the day ("YYYY-MM-DD"); rates: the day they are for; tax: the deadline. */
+            date?: string;
+            /** @description holiday: which (new-year, heroes, memorial, …, christmas, eid-al-fitr). */
+            holiday?: string;
+            /** @description umuganda, holiday: the branches open then, and whether each is already set for it. */
+            branches?: components["schemas"]["TodayBranchDto"][];
+            /** @description searches: the words customers typed, how often this week, where, and whether this shop offers it. */
+            term?: string;
+            count?: number;
+            district?: string;
+            offered?: boolean;
+            /** @description rain: the hour heavy rain is expected from ("14:00"), and where. */
+            from?: string;
+            /** @description tax: vat-paye (the 15th) · licence (31 January) · annual (31 March). */
+            tax?: string;
+            /** @description rates: francs for one dollar, euro, Kenyan and Ugandan shilling, and where they come from. */
+            rates?: components["schemas"]["TodayRateDto"][];
+            source?: string;
+            sourceUrl?: string;
+            /** @description news: written by our team in the console, in the reader's language. */
+            newsId?: string;
+            title?: string;
+            body?: string;
+            linkPath?: string | null;
+            linkLabel?: string | null;
+        };
+        TodayDto: {
+            /** @description Kwibuka: the apps keep quiet — no festive effects, no discount pushes. */
+            calm: boolean;
+            /** @description Most urgent first. */
+            items: components["schemas"]["TodayItemDto"][];
+        };
+        PublicTodayDto: {
+            calm: boolean;
+            /** @description ok · slow · down */
+            momo: string;
+            /** @description The day asked about ("YYYY-MM-DD", Kigali). */
+            date: string;
+            /** @description That day is Umuganda: shops open from 11:00. */
+            umuganda: boolean;
+            /** @description That day's public holiday, if any. */
+            holiday: string | null;
         };
         ChannelChoiceDto: {
             on: boolean;
@@ -7202,6 +7305,8 @@ export interface components {
             sendEmail: boolean;
             banner: boolean;
             bannerUntil: string | null;
+            /** @description A card in the business app's For you until then (§310). */
+            forYouUntil: string | null;
             /** @enum {string} */
             status: "CANCELLED" | "SENDING" | "SENT" | "DRAFT" | "SCHEDULED";
             scheduledFor: string | null;
@@ -7238,6 +7343,8 @@ export interface components {
             /** @description Also a strip across the top of the app — service notices only. */
             banner: boolean;
             bannerUntil?: string | null;
+            /** @description Also a card in the business app's For you until then — for sellers, everyone or one shop (§310). */
+            forYouUntil?: string | null;
             /** @enum {string} */
             kind: "NEWS" | "SERVICE";
             /** @enum {string} */
@@ -16858,6 +16965,74 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessTodayController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodayDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    PublicTodayController_get: {
+        parameters: {
+            query?: {
+                /** @description YYYY-MM-DD, Kigali; today when not given. */
+                date?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicTodayDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
                 };
             };
         };

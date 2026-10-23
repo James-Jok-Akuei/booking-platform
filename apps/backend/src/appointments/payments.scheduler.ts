@@ -1,3 +1,4 @@
+import { MomoHealthService } from '../payments/momo-health.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import {
@@ -42,6 +43,7 @@ export class PaymentsScheduler {
     private readonly prisma: PrismaService,
     private readonly appointments: AppointmentsService,
     private readonly payments: PaymentProviderRegistry,
+    private readonly momo: MomoHealthService,
   ) {}
 
   /**
@@ -205,6 +207,8 @@ export class PaymentsScheduler {
 
       if (count > 0) {
         cancelled++;
+        // A prompt sent and never answered counts against MoMo's health (§310); a hold never paid for does not.
+        if (appointment.paymentProviderReferenceId) this.momo.record('expired');
         // Both sides are told. An expiry is still a cancellation from the
         // customer's point of view, and the business needs to know the slot
         // came back rather than discovering it in a list later.

@@ -16,6 +16,7 @@ import { PaymentProviderRegistry } from '../../src/payments/payment-provider.reg
 import { DisbursementProviderRegistry } from '../../src/payments/disbursement-provider.registry';
 import { MobileMoneyProvider } from '@prisma/client';
 import { TaxonomyNamesService } from '../../src/categories/taxonomy-names.service';
+import { MomoHealthService } from '../../src/payments/momo-health.service';
 import {
   InitiatePaymentParams,
   InitiatePaymentResult,
@@ -65,6 +66,8 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
       HealthChoices,
       // Category names in each language, which search reads too (§308.7); the database only.
       TaxonomyNamesService,
+      // MoMo's health (§310): a count in memory, nothing reached.
+      MomoHealthService,
       { provide: DisbursementProviderRegistry, useValue: new DisbursementProviderRegistry([]) },
       ...providers,
     ],

@@ -28,6 +28,7 @@ import {
   HEALTH_CHOICES_SELECT,
 } from './appointment-select';
 import { HealthChoices } from './health-choices';
+import { MomoHealthService } from '../payments/momo-health.service';
 import { CHOICE_GROUPS_SELECT } from '../business/dto/service-choices.dto';
 import {
   CHOICES_EDITABLE_UNTIL_MINUTES,
@@ -253,6 +254,7 @@ export class AppointmentsService {
     private readonly ledger: LedgerService,
     private readonly support: SupportLogService,
     private readonly health: HealthChoices,
+    private readonly momo: MomoHealthService,
   ) {}
 
   /**
@@ -897,6 +899,8 @@ export class AppointmentsService {
       this.logger.error(
         `Deposit initiation failed for appointment ${appointmentId}: ${result.failureReason ?? 'unknown reason'}`,
       );
+      // The operator not answering, or payments down — what shops and customers are told about (§310).
+      if (result.failureKind === 'TRANSIENT' || result.failureKind === 'CONFIGURATION') this.momo.record('unreachable');
 
       // A CONFIGURATION failure is the platform's fault and will not fix itself
       // (§52.2). The customer gets a plain, honest message; the admins get told,
@@ -946,6 +950,7 @@ export class AppointmentsService {
       },
     });
 
+    this.momo.record('started');
     this.logger.log(
       `Deposit payment initiated for appointment ${appointmentId}: provider=${provider.key} ` +
         `reference=${result.providerReferenceId} charged=${providerAmountMinor} ${providerCurrency} minor ` +
@@ -1103,6 +1108,7 @@ export class AppointmentsService {
       });
 
       if (count > 0) {
+        this.momo.record('paid');
         this.logger.log(
           `Deposit confirmed for appointment ${appointmentId} (reference ${providerReferenceId}) -> BOOKED.`,
         );
@@ -1125,6 +1131,7 @@ export class AppointmentsService {
       data: { paymentProviderReferenceId: null, paymentInitiatedAt: null },
     });
     if (count > 0) {
+      this.momo.record('failed');
       this.logger.warn(
         `Deposit failed for appointment ${appointmentId} (reference ${providerReferenceId}): ` +
           `${failureReason ?? 'no reason given'}. Reference cleared; the customer may retry.`,

@@ -12,6 +12,7 @@ import { askForPush, pushState, type PushState } from '../push';
 import { followWords, useFollow } from '../useFollow';
 import { PressableScale } from '../ui/PressableScale';
 import { AppSwitch } from '../ui/AppSwitch';
+import { useRwandaToday } from '../today';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 
@@ -47,6 +48,8 @@ export function PaidCelebration({
   const tick = useRef(new Animated.Value(0)).current;
   const rings = useRef(new Animated.Value(0)).current;
   const burst = useRef(new Animated.Value(0)).current;
+  // The week of Kwibuka (§310): the tick and the rings, no confetti.
+  const calm = useRwandaToday()?.calm ?? false;
 
   useEffect(() => {
     Animated.spring(tick, {
@@ -124,7 +127,7 @@ export function PaidCelebration({
           );
         })}
 
-        {pieces.map((piece, i) => (
+        {!calm && pieces.map((piece, i) => (
           <Animated.View
             key={i}
             style={[

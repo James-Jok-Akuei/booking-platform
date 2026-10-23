@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import {
@@ -67,7 +68,15 @@ const usuallyClosed = (weekday: number) =>
 export function ClosuresPage() {
   const locations = useQuery({ queryKey: ['locations'], queryFn: listLocations });
   const [selected, setSelected] = useState<string | null>(null);
-  const [date, setDate] = useState(today());
+  // Sent here for a day (§310): `?date=2026-10-31&from=08:00&to=11:00&why=Umuganda` opens it with the break filled in.
+  const [params] = useSearchParams();
+  const [preset] = useState(() => {
+    const asked = params.get('date');
+    return asked && /^\d{4}-\d{2}-\d{2}$/.test(asked)
+      ? { date: asked, from: params.get('from'), to: params.get('to'), why: params.get('why') }
+      : null;
+  });
+  const [date, setDate] = useState(preset?.date ?? today());
 
   // Staff see the days off at their branches; the owner or a manager changes
   // them (§277).
@@ -126,6 +135,7 @@ export function ClosuresPage() {
               key={locationId}
               branch={branch}
               date={date}
+              preset={preset && preset.date === date ? preset : null}
               closures={exceptions.data ?? []}
               breaks={blocks.data ?? []}
               canChange={canChange}
@@ -325,23 +335,26 @@ function DayPanel({
   closures,
   breaks,
   canChange,
+  preset,
 }: {
   branch: Location;
   date: string;
   closures: ScheduleException[];
   breaks: TimeBlock[];
   canChange: boolean;
+  /** Opened from a link with a day's break or closure already filled in (§310). */
+  preset?: { from: string | null; to: string | null; why: string | null } | null;
 }) {
   const queryClient = useQueryClient();
   const locationId = branch.id;
   const remove = useRemove(locationId);
-  const [tab, setTab] = useState<'whole' | 'part'>('whole');
+  const [tab, setTab] = useState<'whole' | 'part'>(preset?.from && preset.to ? 'part' : 'whole');
   const [mode, setMode] = useState<'closed' | 'hours'>('closed');
   const [open, setOpen] = useState('10:00');
   const [close, setClose] = useState('14:00');
-  const [start, setStart] = useState('13:00');
-  const [end, setEnd] = useState('14:00');
-  const [why, setWhy] = useState('');
+  const [start, setStart] = useState(preset?.from ?? '13:00');
+  const [end, setEnd] = useState(preset?.to ?? '14:00');
+  const [why, setWhy] = useState(preset?.why ?? '');
 
   const closure = closures.find((c) => c.date.slice(0, 10) === date) ?? null;
   const dayBreaks = breaks

@@ -28,6 +28,7 @@ import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
 import { shareService } from '../../src/share';
 import { font, radius, shadow, theme, type } from '../../src/theme';
+import { holidayName, useRwandaToday } from '../../src/today';
 import { useNearMe } from '../../src/useNearMe';
 import { useSavedService } from '../../src/useSavedService';
 import { Avatar } from '../../src/ui/Avatar';
@@ -199,6 +200,11 @@ export default function Book() {
     placeholderData: (previous, previousQuery) =>
       previousQuery?.queryKey[2] === date ? previous : undefined,
   });
+
+  // Umuganda or a public holiday on the chosen day (§310).
+  const onDay = useRwandaToday(date);
+  const holiday = onDay?.date === date ? holidayName(onDay.holiday) : null;
+  const umuganda = onDay?.date === date && onDay.umuganda;
 
   useEffect(() => {
     const today = availability.data;
@@ -771,6 +777,18 @@ export default function Book() {
 
               <Text style={type.label}><Trans>Time</Trans></Text>
 
+              {/* What the day itself changes, said above its times (§310). */}
+              {(umuganda || holiday) && (
+                <View style={styles.dayNote}>
+                  <Icon name={umuganda ? 'people-outline' : 'calendar-outline'} size={17} color={theme.warn} />
+                  <Text style={styles.dayNoteText}>
+                    {umuganda
+                      ? t`That morning is Umuganda: community work until 11:00, when shops close and some roads too. A time from 11:00 is the safe choice.`
+                      : t`${holiday ?? ''} is a public holiday. Shops may keep shorter hours — the times below are this shop’s.`}
+                  </Text>
+                </View>
+              )}
+
               {availability.isLoading && (
                 <View style={styles.slots}>
                   {Array.from({ length: perRow * 2 }, (_, i) => (
@@ -1139,6 +1157,16 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: 14,
   },
+  dayNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 9,
+    backgroundColor: theme.warnSoft,
+    borderRadius: radius.md,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+  },
+  dayNoteText: { flex: 1, fontFamily: font.semibold, fontSize: 13, lineHeight: 18, color: theme.ink2 },
   closedIcon: {
     width: 36,
     height: 36,

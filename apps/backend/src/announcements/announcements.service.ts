@@ -30,6 +30,8 @@ const WORDS = ['title', 'body', 'linkLabel'] as const;
 export const CONFIRM_ABOVE = 100;
 /** A banner with no end date shows for a week. */
 const BANNER_DAYS = 7;
+/** The audiences shops are in, so the ones a For you card (§310) can reach. */
+const SHOPS_SEE = new Set<AnnouncementAudience>([AnnouncementAudience.SELLERS, AnnouncementAudience.EVERYONE, AnnouncementAudience.ONE_SHOP]);
 const CHUNK = 100;
 
 const SELECT = {
@@ -49,6 +51,7 @@ const SELECT = {
   sendEmail: true,
   banner: true,
   bannerUntil: true,
+  forYouUntil: true,
   status: true,
   scheduledFor: true,
   sentAt: true,
@@ -259,6 +262,8 @@ export class AnnouncementsService {
       sendEmail: dto.sendEmail,
       banner: dto.banner,
       bannerUntil: dto.banner && dto.bannerUntil ? new Date(dto.bannerUntil) : null,
+      // Only shops have a For you (§310).
+      forYouUntil: SHOPS_SEE.has(dto.audience) && dto.forYouUntil ? new Date(dto.forYouUntil) : null,
     };
   }
 
@@ -524,6 +529,7 @@ export class AnnouncementsService {
       sendEmail: r.sendEmail,
       banner: r.banner,
       bannerUntil: r.bannerUntil?.toISOString() ?? null,
+      forYouUntil: r.forYouUntil?.toISOString() ?? null,
       status: r.status,
       scheduledFor: r.scheduledFor?.toISOString() ?? null,
       sentAt: r.sentAt?.toISOString() ?? null,

@@ -115,6 +115,11 @@ export class SaveAnnouncementDto extends AnnouncementAudienceDto {
   @IsOptional()
   @IsDateString()
   bannerUntil?: string | null;
+
+  /** Also a card in the business app's For you until then — for sellers, everyone or one shop (§310). */
+  @IsOptional()
+  @IsDateString()
+  forYouUntil?: string | null;
 }
 
 export class SendAnnouncementDto {

@@ -1854,6 +1854,9 @@ model Announcement {
   /// Also a strip across the top of the app, until `bannerUntil`.
   banner      Boolean   @default(false)
   bannerUntil DateTime?
+  /// Also a card in the business app's For you, until then (§310) — for
+  /// news shops need beside their day: a new rule, a fuel price, an event.
+  forYouUntil DateTime?
 
   status       AnnouncementStatus @default(DRAFT)
   scheduledFor DateTime?
@@ -2983,4 +2986,20 @@ model SupportAction {
   @@index([ticketId])
   @@index([actorId, createdAt])
   @@map("support_actions")
+}
+
+/// What customers search for (§310) — the words only, folded ("braids"),
+/// with the district searched in or nearest, and how many places came back.
+/// Never who searched: no user, no address, no device. Read only as counts
+/// (a shop sees what is asked for near it); removed after 90 days.
+model SearchQuery {
+  id         String   @id @default(uuid())
+  term       String
+  districtId String?
+  results    Int
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([districtId, createdAt])
+  @@map("search_queries")
 }

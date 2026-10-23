@@ -8,24 +8,24 @@ msgstr ""
 "Language: en\n"
 
 #. placeholder {0}: sale.percent
-#: app/book/[id].tsx:934
+#: app/book/[id].tsx:952
 msgid " · {0}% off"
 msgstr " · {0}% off"
 
 #. placeholder {0}: saleUntil(sale)
-#: app/book/[id].tsx:598
+#: app/book/[id].tsx:604
 msgid " · discount {0}"
 msgstr " · discount {0}"
 
-#: app/book/[id].tsx:598
+#: app/book/[id].tsx:604
 msgid " · discount on now"
 msgstr " · discount on now"
 
-#: app/book/[id].tsx:579
+#: app/book/[id].tsx:585
 msgid " · once, not per person"
 msgstr " · once, not per person"
 
-#: app/book/[id].tsx:935
+#: app/book/[id].tsx:953
 msgid " · with choices"
 msgstr " · with choices"
 
@@ -34,7 +34,7 @@ msgid " Allergies and health go in the questions above, never here."
 msgstr " Allergies and health go in the questions above, never here."
 
 #. placeholder {0}: countWord(quantity)
-#: app/book/[id].tsx:601
+#: app/book/[id].tsx:607
 msgid " on {0}"
 msgstr " on {0}"
 
@@ -61,7 +61,7 @@ msgid "{0, plural, one {{unreadTotal} unread in # conversation} other {{unreadTo
 msgstr "{0, plural, one {{unreadTotal} unread in # conversation} other {{unreadTotal} unread in # conversations}}"
 
 #. placeholder {0}: b.bookingCount
-#: src/components/Spotlights.tsx:217
+#: src/components/Spotlights.tsx:221
 msgid "{0, plural, one {# booked} other {# booked}}"
 msgstr "{0, plural, one {# booked} other {# booked}}"
 
@@ -77,8 +77,8 @@ msgstr "{0, plural, one {# photo} other {# photos}}"
 
 #. placeholder {0}: r.location.ratingCount
 #. placeholder {0}: top.ratingCount
-#: src/components/Spotlights.tsx:241
-#: src/components/Spotlights.tsx:286
+#: src/components/Spotlights.tsx:245
+#: src/components/Spotlights.tsx:290
 msgid "{0, plural, one {# review} other {# reviews}}"
 msgstr "{0, plural, one {# review} other {# reviews}}"
 
@@ -102,7 +102,7 @@ msgstr "{0, plural, one {# story today, seen} other {# stories today, seen}}"
 #. placeholder {0}: missing.length - 1
 #. placeholder {1}: askedAs(missing[0])
 #. placeholder {2}: askedAs(missing[0])
-#: app/book/[id].tsx:721
+#: app/book/[id].tsx:727
 msgid "{0, plural, one {Answer “{1}” first and # more — the times depend on your answers.} other {Answer “{2}” first and # more — the times depend on your answers.}}"
 msgstr "{0, plural, one {Answer “{1}” first and # more — the times depend on your answers.} other {Answer “{2}” first and # more — the times depend on your answers.}}"
 
@@ -112,7 +112,7 @@ msgid "{0, plural, one {For # person} other {For # people}}"
 msgstr "{0, plural, one {For # person} other {For # people}}"
 
 #. placeholder {0}: top.ratingCount
-#: src/components/Spotlights.tsx:291
+#: src/components/Spotlights.tsx:295
 msgid "{0, plural, one {Top business: {name}, rated {avg} from # review.} other {Top business: {name}, rated {avg} from # reviews.}}"
 msgstr "{0, plural, one {Top business: {name}, rated {avg} from # review.} other {Top business: {name}, rated {avg} from # reviews.}}"
 
@@ -140,7 +140,7 @@ msgid "{0} by {1}"
 msgstr "{0} by {1}"
 
 #. placeholder {0}: format(a.unitPriceMinor, a.currency)
-#: src/booking/Checkout.tsx:142
+#: src/booking/Checkout.tsx:144
 msgid "{0} each"
 msgstr "{0} each"
 
@@ -149,18 +149,23 @@ msgstr "{0} each"
 msgid "{0} has changed"
 msgstr "{0} has changed"
 
+#. placeholder {0}: holiday ?? ''
+#: app/book/[id].tsx:787
+msgid "{0} is a public holiday. Shops may keep shorter hours — the times below are this shop’s."
+msgstr "{0} is a public holiday. Shops may keep shorter hours — the times below are this shop’s."
+
 #. placeholder {0}: route.data.minutes
-#: app/book/[id].tsx:176
+#: app/book/[id].tsx:177
 msgid "{0} min by car"
 msgstr "{0} min by car"
 
 #. placeholder {0}: format(depositMinor)
-#: app/book/[id].tsx:944
+#: app/book/[id].tsx:962
 msgid "{0} now"
 msgstr "{0} now"
 
 #. placeholder {0}: format(a.depositAmountMinor, a.currency)
-#: src/booking/PaidCelebration.tsx:162
+#: src/booking/PaidCelebration.tsx:165
 msgid "{0} paid with MTN Mobile Money. Your slot is confirmed."
 msgstr "{0} paid with MTN Mobile Money. Your slot is confirmed."
 
@@ -199,13 +204,13 @@ msgid "{0}, 1 of {1}"
 msgstr "{0}, 1 of {1}"
 
 #. placeholder {0}: Number(a.depositPercentage)
-#: src/booking/Checkout.tsx:185
+#: src/booking/Checkout.tsx:187
 msgid "{0}% deposit · confirms your time"
 msgstr "{0}% deposit · confirms your time"
 
 #. placeholder {0}: sale.percent
 #. placeholder {1}: format(savedMinor)
-#: app/book/[id].tsx:910
+#: app/book/[id].tsx:928
 msgid "{0}% off · you save {1}"
 msgstr "{0}% off · you save {1}"
 
@@ -213,7 +218,7 @@ msgstr "{0}% off · you save {1}"
 msgid "{away} away in a straight line"
 msgstr "{away} away in a straight line"
 
-#: app/book/[id].tsx:459
+#: app/book/[id].tsx:465
 msgid "{businessName}. View the shop"
 msgstr "{businessName}. View the shop"
 
@@ -221,7 +226,7 @@ msgstr "{businessName}. View the shop"
 msgid "{clean}. Change email"
 msgstr "{clean}. Change email"
 
-#: app/book/[id].tsx:124
+#: app/book/[id].tsx:125
 msgid "{count, plural, one {# free} other {# free}}"
 msgstr "{count, plural, one {# free} other {# free}}"
 
@@ -322,7 +327,7 @@ msgstr "{m} min"
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
-#: app/book/[id].tsx:286
+#: app/book/[id].tsx:292
 msgid "{n, plural, one {# person} other {# people}}"
 msgstr "{n, plural, one {# person} other {# people}}"
 
@@ -342,15 +347,15 @@ msgstr "{on} of the {all} shops you follow send you offers. Choose under Saved �
 msgid "{percent} percent off"
 msgstr "{percent} percent off"
 
-#: app/book/[id].tsx:828
+#: app/book/[id].tsx:846
 msgid "{placesLeft, plural, one {{time}, # place left} other {{time}, # places left}}"
 msgstr "{placesLeft, plural, one {{time}, # place left} other {{time}, # places left}}"
 
-#: app/book/[id].tsx:815
+#: app/book/[id].tsx:833
 msgid "{placesLeft} left"
 msgstr "{placesLeft} left"
 
-#: app/book/[id].tsx:326
+#: app/book/[id].tsx:332
 msgid "{quantity, plural, one {No time has room for # person on this day. Try fewer people, or another day.} other {No time has room for # people on this day. Try fewer people, or another day.}}"
 msgstr "{quantity, plural, one {No time has room for # person on this day. Try fewer people, or another day.} other {No time has room for # people on this day. Try fewer people, or another day.}}"
 
@@ -374,7 +379,7 @@ msgstr "{shopCount, plural, one {# place} other {# places}}"
 msgid "{since} ago"
 msgstr "{since} ago"
 
-#: app/book/[id].tsx:826
+#: app/book/[id].tsx:844
 msgid "{time}, booked"
 msgstr "{time}, booked"
 
@@ -398,23 +403,23 @@ msgid "+{0} min"
 msgstr "+{0} min"
 
 #: app/(tabs)/account.tsx:612
-#: src/booking/Checkout.tsx:245
+#: src/booking/Checkout.tsx:260
 msgid "07xx xxx xxx"
 msgstr "07xx xxx xxx"
 
-#: src/booking/Checkout.tsx:274
+#: src/booking/Checkout.tsx:289
 msgid "1. A payment request appears on your phone."
 msgstr "1. A payment request appears on your phone."
 
-#: src/booking/Checkout.tsx:275
+#: src/booking/Checkout.tsx:290
 msgid "2. Enter your MoMo PIN to approve it."
 msgstr "2. Enter your MoMo PIN to approve it."
 
-#: src/booking/Checkout.tsx:276
+#: src/booking/Checkout.tsx:291
 msgid "3. This screen updates on its own."
 msgstr "3. This screen updates on its own."
 
-#: app/book/[id].tsx:633
+#: app/book/[id].tsx:639
 msgid "A {depositPct}% deposit holds the time for you. The rest is paid at the shop."
 msgstr "A {depositPct}% deposit holds the time for you. The rest is paid at the shop."
 
@@ -484,7 +489,7 @@ msgstr "About"
 msgid "About a booking"
 msgstr "About a booking"
 
-#: app/book/[id].tsx:519
+#: app/book/[id].tsx:525
 msgid "About this service"
 msgstr "About this service"
 
@@ -543,7 +548,7 @@ msgstr "Address search is not working just now. Use where you are, or choose a d
 msgid "Address to search for"
 msgstr "Address to search for"
 
-#: src/booking/Checkout.tsx:172
+#: src/booking/Checkout.tsx:174
 msgid "After your visit"
 msgstr "After your visit"
 
@@ -617,7 +622,7 @@ msgstr "All of the {all} shops you follow send you offers. Choose under Saved �
 msgid "alteration"
 msgstr "alteration"
 
-#: src/booking/PaidCelebration.tsx:305
+#: src/booking/PaidCelebration.tsx:308
 msgid "An alert on this phone the day before."
 msgstr "An alert on this phone the day before."
 
@@ -636,11 +641,11 @@ msgid "Anonymous"
 msgstr "Anonymous"
 
 #. placeholder {0}: askedAs(missing[0])
-#: app/book/[id].tsx:725
+#: app/book/[id].tsx:731
 msgid "Answer “{0}” first — the times depend on your answers."
 msgstr "Answer “{0}” first — the times depend on your answers."
 
-#: app/book/[id].tsx:968
+#: app/book/[id].tsx:986
 msgid "Answer first"
 msgstr "Answer first"
 
@@ -665,7 +670,7 @@ msgstr "App language"
 msgid "Approve the deposit on your own phone."
 msgstr "Approve the deposit on your own phone."
 
-#: app/book/[id].tsx:502
+#: app/book/[id].tsx:508
 msgid "Ask"
 msgstr "Ask"
 
@@ -686,11 +691,15 @@ msgstr "Asking before booking"
 msgid "Asking your phone…"
 msgstr "Asking your phone…"
 
+#: src/today.ts:36
+msgid "Assumption Day"
+msgstr "Assumption Day"
+
 #: src/components/OffersCard.tsx:415
 msgid "At the address right now?"
 msgstr "At the address right now?"
 
-#: app/book/[id].tsx:626
+#: app/book/[id].tsx:632
 msgid "At the shop"
 msgstr "At the shop"
 
@@ -731,13 +740,13 @@ msgctxt "help request status"
 msgid "Being looked at"
 msgstr "Being looked at"
 
-#: src/components/Spotlights.tsx:261
+#: src/components/Spotlights.tsx:265
 msgid "Best price"
 msgstr "Best price"
 
 #. placeholder {0}: p.name
 #. placeholder {1}: shopOf(p)
-#: src/components/Spotlights.tsx:264
+#: src/components/Spotlights.tsx:268
 msgid "Best price: {0} at {1}, {price}."
 msgstr "Best price: {0} at {1}, {price}."
 
@@ -746,8 +755,8 @@ msgstr "Best price: {0} at {1}, {price}."
 msgid "Best rated"
 msgstr "Best rated"
 
-#: app/book/[id].tsx:256
-#: app/book/[id].tsx:268
+#: app/book/[id].tsx:262
+#: app/book/[id].tsx:274
 #: app/thread/[id].tsx:263
 #: src/components/SavedServiceCard.tsx:138
 msgid "Book"
@@ -758,7 +767,7 @@ msgstr "Book"
 msgid "Book {0}"
 msgstr "Book {0}"
 
-#: app/book/[id].tsx:974
+#: app/book/[id].tsx:992
 msgid "Book {slot}"
 msgstr "Book {slot}"
 
@@ -776,7 +785,7 @@ msgstr "Book at {0}"
 msgid "Book in seconds"
 msgstr "Book in seconds"
 
-#: src/components/Spotlights.tsx:191
+#: src/components/Spotlights.tsx:195
 msgid "Book now"
 msgstr "Book now"
 
@@ -797,7 +806,7 @@ msgstr "Book your next appointment, easily."
 msgid "Booked"
 msgstr "Booked"
 
-#: app/book/[id].tsx:815
+#: app/book/[id].tsx:833
 msgctxt "a time with no places left"
 msgid "Booked"
 msgstr "Booked"
@@ -832,6 +841,10 @@ msgstr "Bookings you make will show up here."
 #: app/notification-settings.tsx:331
 msgid "Bookings, reminders and messages reach you even when the app is closed."
 msgstr "Bookings, reminders and messages reach you even when the app is closed."
+
+#: src/today.ts:38
+msgid "Boxing Day"
+msgstr "Boxing Day"
 
 #: src/auth/bookWords.ts:14
 msgid "braids"
@@ -937,7 +950,7 @@ msgstr "Cheapest"
 msgid "Check your <0>inbox.</0>"
 msgstr "Check your <0>inbox.</0>"
 
-#: src/booking/Checkout.tsx:272
+#: src/booking/Checkout.tsx:287
 msgid "Check your phone"
 msgstr "Check your phone"
 
@@ -957,8 +970,8 @@ msgstr "Checked you in"
 msgid "Checkout"
 msgstr "Checkout"
 
-#: app/book/[id].tsx:680
-#: app/book/[id].tsx:972
+#: app/book/[id].tsx:686
+#: app/book/[id].tsx:990
 msgid "Choose a time"
 msgstr "Choose a time"
 
@@ -973,6 +986,10 @@ msgstr "Choose up to {most}"
 #: app/notification-settings.tsx:159
 msgid "Choose which shops send you offers, under Saved, Following"
 msgstr "Choose which shops send you offers, under Saved, Following"
+
+#: src/today.ts:37
+msgid "Christmas Day"
+msgstr "Christmas Day"
 
 #: src/auth/bookWords.ts:26
 msgid "class"
@@ -1033,11 +1050,11 @@ msgctxt "help request status"
 msgid "Closed"
 msgstr "Closed"
 
-#: app/book/[id].tsx:335
+#: app/book/[id].tsx:341
 msgid "Closed for today — the shop shuts at {shuts}. Pick another day."
 msgstr "Closed for today — the shop shuts at {shuts}. Pick another day."
 
-#: app/book/[id].tsx:322
+#: app/book/[id].tsx:328
 msgid "Closed on this day."
 msgstr "Closed on this day."
 
@@ -1106,7 +1123,7 @@ msgstr "cooking class"
 msgid "Could not add that"
 msgstr "Could not add that"
 
-#: app/book/[id].tsx:241
+#: app/book/[id].tsx:247
 msgid "Could not book that"
 msgstr "Could not book that"
 
@@ -1126,7 +1143,7 @@ msgstr "Could not find you just now"
 msgid "Could not open maps"
 msgstr "Could not open maps"
 
-#: app/book/[id].tsx:250
+#: app/book/[id].tsx:256
 #: app/shop/[id].tsx:121
 msgid "Could not open that"
 msgstr "Could not open that"
@@ -1179,7 +1196,7 @@ msgstr "Date"
 msgid "day"
 msgstr "day"
 
-#: app/book/[id].tsx:732
+#: app/book/[id].tsx:738
 msgid "Day"
 msgstr "Day"
 
@@ -1195,7 +1212,7 @@ msgstr "dental visit"
 msgid "Deposit"
 msgstr "Deposit"
 
-#: src/booking/Checkout.tsx:186
+#: src/booking/Checkout.tsx:188
 msgid "Deposit · confirms your time"
 msgstr "Deposit · confirms your time"
 
@@ -1229,12 +1246,12 @@ msgid "Directions"
 msgstr "Directions"
 
 #: src/components/NotificationCard.tsx:117
-#: src/components/Spotlights.tsx:228
+#: src/components/Spotlights.tsx:232
 msgid "Discount"
 msgstr "Discount"
 
 #. placeholder {0}: a.discountPercent
-#: src/booking/Checkout.tsx:160
+#: src/booking/Checkout.tsx:162
 #: src/booking/Reservation.tsx:255
 msgid "Discount · {0}% off"
 msgstr "Discount · {0}% off"
@@ -1255,7 +1272,7 @@ msgstr "Discount ends in {h} hours and {m} minutes"
 #. placeholder {0}: d.name
 #. placeholder {1}: shopOf(d)
 #. placeholder {2}: d.discount.percent
-#: src/components/Spotlights.tsx:231
+#: src/components/Spotlights.tsx:235
 msgid "Discount: {0} at {1}, {2}% off, now {now}."
 msgstr "Discount: {0} at {1}, {2}% off, now {now}."
 
@@ -1297,6 +1314,10 @@ msgstr "e.g. Aline U."
 msgid "Earlier"
 msgstr "Earlier"
 
+#: src/today.ts:31
+msgid "Easter Monday"
+msgstr "Easter Monday"
+
 #: app/(tabs)/account.tsx:841
 msgid "Easy to read and print. This is what most people want."
 msgstr "Easy to read and print. This is what most people want."
@@ -1305,6 +1326,14 @@ msgstr "Easy to read and print. This is what most people want."
 #: src/exportDocument.ts:105
 msgid "edited {0}"
 msgstr "edited {0}"
+
+#: src/today.ts:40
+msgid "Eid al-Adha"
+msgstr "Eid al-Adha"
+
+#: src/today.ts:39
+msgid "Eid al-Fitr"
+msgstr "Eid al-Fitr"
 
 #: app/notification-settings.tsx:284
 #: src/exportDocument.ts:49
@@ -1355,7 +1384,7 @@ msgstr "Every phone and browser where your account is open. Sign out any you do 
 msgid "Every phone and browser with your account open — sign out any you do not know."
 msgstr "Every phone and browser with your account open — sign out any you do not know."
 
-#: app/book/[id].tsx:325
+#: app/book/[id].tsx:331
 msgid "Every time is booked on this day. Pick another day."
 msgstr "Every time is booked on this day. Pick another day."
 
@@ -1367,7 +1396,7 @@ msgstr "Everything we hold about you, as of {asOf}."
 msgid "Everything we keep about you, in one place:"
 msgstr "Everything we keep about you, in one place:"
 
-#: src/booking/PaidCelebration.tsx:204
+#: src/booking/PaidCelebration.tsx:207
 #: src/booking/Reservation.tsx:378
 msgid "Explore more services"
 msgstr "Explore more services"
@@ -1417,11 +1446,11 @@ msgstr "Follow"
 msgid "Follow {displayName}"
 msgstr "Follow {displayName}"
 
-#: src/booking/PaidCelebration.tsx:336
+#: src/booking/PaidCelebration.tsx:339
 msgid "Follow {shop} and get its offers"
 msgstr "Follow {shop} and get its offers"
 
-#: src/booking/PaidCelebration.tsx:330
+#: src/booking/PaidCelebration.tsx:333
 msgid "Follow {shop} for its offers"
 msgstr "Follow {shop} for its offers"
 
@@ -1472,7 +1501,7 @@ msgstr "Four steps, from finding a place to showing your code."
 msgid "Fri 23 Oct, 10:00"
 msgstr "Fri 23 Oct, 10:00"
 
-#: app/book/[id].tsx:565
+#: app/book/[id].tsx:571
 msgid "from"
 msgstr "from"
 
@@ -1515,9 +1544,13 @@ msgstr "From the shop"
 msgid "From where you are now"
 msgstr "From where you are now"
 
-#: app/book/[id].tsx:338
+#: app/book/[id].tsx:344
 msgid "Fully booked on this day."
 msgstr "Fully booked on this day."
+
+#: src/today.ts:29
+msgid "Genocide against the Tutsi Memorial Day"
+msgstr "Genocide against the Tutsi Memorial Day"
 
 #: app/(tabs)/account.tsx:706
 msgid "Get a copy of my data"
@@ -1554,6 +1587,10 @@ msgstr "Go back"
 #: app/review/[id].tsx:40
 msgid "Good"
 msgstr "Good"
+
+#: src/today.ts:30
+msgid "Good Friday"
+msgstr "Good Friday"
 
 #: app/sign-in.tsx:593
 msgid "Good to see you again."
@@ -1596,7 +1633,11 @@ msgstr "Help requests are kept with your account, so only you can open them."
 msgid "Helped with this booking"
 msgstr "Helped with this booking"
 
-#: src/components/Spotlights.tsx:544
+#: src/today.ts:28
+msgid "Heroes’ Day"
+msgstr "Heroes’ Day"
+
+#: src/components/Spotlights.tsx:548
 msgid "Hide spotlights"
 msgstr "Hide spotlights"
 
@@ -1633,7 +1674,7 @@ msgstr "How booking works"
 msgid "How many {label}, type a number up to {max}"
 msgstr "How many {label}, type a number up to {max}"
 
-#: app/book/[id].tsx:690
+#: app/book/[id].tsx:696
 msgid "How many people?"
 msgstr "How many people?"
 
@@ -1687,6 +1728,10 @@ msgstr "If you have signed out, sign in again and open it from My bookings."
 msgid "in {0}"
 msgstr "in {0}"
 
+#: src/today.ts:33
+msgid "Independence Day"
+msgstr "Independence Day"
+
 #: app/(tabs)/account.tsx:829
 msgid "It is made on this phone and goes only where you send it. We do not email it to anyone."
 msgstr "It is made on this phone and goes only where you send it. We do not email it to anyone."
@@ -1715,13 +1760,13 @@ msgstr "Its discounts as they start"
 msgid "Its stories first"
 msgstr "Its stories first"
 
-#: src/components/Spotlights.tsx:271
+#: src/components/Spotlights.tsx:275
 msgid "Just added"
 msgstr "Just added"
 
 #. placeholder {0}: f.name
 #. placeholder {1}: shopOf(f)
-#: src/components/Spotlights.tsx:274
+#: src/components/Spotlights.tsx:278
 msgid "Just added: {0} at {1}."
 msgstr "Just added: {0} at {1}."
 
@@ -1762,6 +1807,10 @@ msgstr "Keep what you love"
 msgid "Kept only for these emails and never shown to shops. Forget it any time."
 msgstr "Kept only for these emails and never shown to shops. Forget it any time."
 
+#: src/today.ts:32
+msgid "Labour Day"
+msgstr "Labour Day"
+
 #: app/(tabs)/account.tsx:641
 #: src/components/LanguageSheet.tsx:18
 msgid "Language"
@@ -1793,6 +1842,10 @@ msgstr "Legal"
 #: src/booking/Reservation.tsx:224
 msgid "Length"
 msgstr "Length"
+
+#: src/today.ts:34
+msgid "Liberation Day"
+msgstr "Liberation Day"
 
 #: src/components/NearMeCard.tsx:22
 #: src/useNearMe.ts:224
@@ -1861,7 +1914,7 @@ msgstr "Message"
 msgid "Message the shop"
 msgstr "Message the shop"
 
-#: app/book/[id].tsx:498
+#: app/book/[id].tsx:504
 msgid "Message the shop with a question"
 msgstr "Message the shop with a question"
 
@@ -1893,7 +1946,7 @@ msgstr "Missed"
 msgid "Mobile money is not available right now. Nothing was taken. You can try again."
 msgstr "Mobile money is not available right now. Nothing was taken. You can try again."
 
-#: src/booking/Checkout.tsx:237
+#: src/booking/Checkout.tsx:252
 msgid "MoMo number"
 msgstr "MoMo number"
 
@@ -1905,14 +1958,14 @@ msgstr "More {label}"
 msgid "Morning"
 msgstr "Morning"
 
-#: src/components/Spotlights.tsx:216
+#: src/components/Spotlights.tsx:220
 msgid "Most booked"
 msgstr "Most booked"
 
 #. placeholder {0}: b.name
 #. placeholder {1}: shopOf(b)
 #. placeholder {2}: b.bookingCount
-#: src/components/Spotlights.tsx:219
+#: src/components/Spotlights.tsx:223
 msgid "Most booked: {0} at {1}, {2} bookings."
 msgstr "Most booked: {0} at {1}, {2} bookings."
 
@@ -1923,6 +1976,14 @@ msgstr "Most popular"
 #: src/auth/bookWords.ts:27
 msgid "movie night"
 msgstr "movie night"
+
+#: src/booking/Checkout.tsx:229
+msgid "MTN MoMo is not answering right now. Try again in a few minutes — your time stays held, and nothing is charged twice."
+msgstr "MTN MoMo is not answering right now. Try again in a few minutes — your time stays held, and nothing is charged twice."
+
+#: src/booking/Checkout.tsx:230
+msgid "MTN MoMo is slow right now. If the request does not reach your phone, try again in a moment — your time stays held."
+msgstr "MTN MoMo is slow right now. If the request does not reach your phone, try again in a moment — your time stays held."
 
 #: app/(tabs)/bookings.tsx:75
 #: app/(tabs)/bookings.tsx:91
@@ -1938,14 +1999,14 @@ msgid "Name on your reviews"
 msgstr "Name on your reviews"
 
 #: app/(tabs)/index.tsx:922
-#: src/components/Spotlights.tsx:250
+#: src/components/Spotlights.tsx:254
 #: src/tour/WelcomeTour.tsx:82
 msgid "Near you"
 msgstr "Near you"
 
 #. placeholder {0}: n.name
 #. placeholder {1}: shopOf(n)
-#: src/components/Spotlights.tsx:253
+#: src/components/Spotlights.tsx:257
 msgid "Near you: {0} at {1}, {away} away."
 msgstr "Near you: {0} at {1}, {away} away."
 
@@ -1962,14 +2023,14 @@ msgstr "Needs your attention"
 msgid "New"
 msgstr "New"
 
-#: src/components/Spotlights.tsx:272
+#: src/components/Spotlights.tsx:276
 msgctxt "a service just added"
 msgid "New"
 msgstr "New"
 
 #. placeholder {0}: shopOf(f)
 #. placeholder {1}: areaOf(f)
-#: src/components/Spotlights.tsx:273
+#: src/components/Spotlights.tsx:277
 msgid "New at {0} · {1}"
 msgstr "New at {0} · {1}"
 
@@ -1980,6 +2041,10 @@ msgstr "New here"
 #: src/useFollow.ts:65
 msgid "New services as they are added"
 msgstr "New services as they are added"
+
+#: src/today.ts:26
+msgid "New Year’s Day"
+msgstr "New Year’s Day"
 
 #: app/(tabs)/index.tsx:78
 #: app/(tabs)/index.tsx:91
@@ -2028,7 +2093,7 @@ msgstr "No photos yet."
 msgid "No services saved yet"
 msgstr "No services saved yet"
 
-#: app/book/[id].tsx:336
+#: app/book/[id].tsx:342
 msgid "No times left today. Pick another day."
 msgstr "No times left today. Pick another day."
 
@@ -2040,7 +2105,7 @@ msgstr "Nobody has reviewed this place yet."
 msgid "None"
 msgstr "None"
 
-#: app/book/[id].tsx:124
+#: app/book/[id].tsx:125
 msgid "None free"
 msgstr "None free"
 
@@ -2235,7 +2300,7 @@ msgstr "now"
 msgid "Now"
 msgstr "Now"
 
-#: src/components/Spotlights.tsx:230
+#: src/components/Spotlights.tsx:234
 msgid "now {now}, was {was}"
 msgstr "now {now}, was {was}"
 
@@ -2281,7 +2346,7 @@ msgstr "Offers: on"
 msgid "Older versions are kept. What you agreed to stays as you read it, even after it is replaced."
 msgstr "Older versions are kept. What you agreed to stays as you read it, even after it is replaced."
 
-#: src/booking/PaidCelebration.tsx:310
+#: src/booking/PaidCelebration.tsx:313
 msgid "On"
 msgstr "On"
 
@@ -2358,7 +2423,7 @@ msgid "open now"
 msgstr "open now"
 
 #: app/(tabs)/index.tsx:697
-#: app/book/[id].tsx:540
+#: app/book/[id].tsx:546
 #: app/shop/[id].tsx:218
 msgid "Open now"
 msgstr "Open now"
@@ -2422,7 +2487,7 @@ msgstr "Our support team helped"
 msgid "paid {paidOn}"
 msgstr "paid {paidOn}"
 
-#: app/book/[id].tsx:640
+#: app/book/[id].tsx:646
 msgid "Paid in full now, and the time is yours."
 msgstr "Paid in full now, and the time is yours."
 
@@ -2435,14 +2500,14 @@ msgstr "Past"
 msgid "pay {0} now"
 msgstr "pay {0} now"
 
-#: src/booking/Checkout.tsx:171
+#: src/booking/Checkout.tsx:173
 msgid "Pay at the shop"
 msgstr "Pay at the shop"
 
-#: app/book/[id].tsx:621
-#: app/book/[id].tsx:915
+#: app/book/[id].tsx:627
+#: app/book/[id].tsx:933
 #: app/booking/[id].tsx:385
-#: src/booking/Checkout.tsx:182
+#: src/booking/Checkout.tsx:184
 msgid "Pay now"
 msgstr "Pay now"
 
@@ -2455,7 +2520,7 @@ msgstr "Pay now"
 msgid "Pay the deposit to confirm this slot"
 msgstr "Pay the deposit to confirm this slot"
 
-#: src/booking/Checkout.tsx:207
+#: src/booking/Checkout.tsx:209
 msgid "Pay with"
 msgstr "Pay with"
 
@@ -2465,21 +2530,21 @@ msgid "Pay with MTN MoMo"
 msgstr "Pay with MTN MoMo"
 
 #: app/(tabs)/account.tsx:562
-#: src/booking/Checkout.tsx:302
+#: src/booking/Checkout.tsx:317
 #: src/booking/Reservation.tsx:235
 #: src/components/NotificationCard.tsx:56
 msgid "Payment"
 msgstr "Payment"
 
-#: src/booking/PaidCelebration.tsx:160
+#: src/booking/PaidCelebration.tsx:163
 msgid "Payment successful"
 msgstr "Payment successful"
 
-#: src/booking/Checkout.tsx:137
+#: src/booking/Checkout.tsx:139
 msgid "Payment summary"
 msgstr "Payment summary"
 
-#: app/book/[id].tsx:696
+#: app/book/[id].tsx:702
 msgid "people"
 msgstr "people"
 
@@ -2487,7 +2552,7 @@ msgstr "people"
 msgid "People"
 msgstr "People"
 
-#: app/book/[id].tsx:285
+#: app/book/[id].tsx:291
 msgid "per person"
 msgstr "per person"
 
@@ -2542,7 +2607,7 @@ msgid "Photos are not allowed"
 msgstr "Photos are not allowed"
 
 #. placeholder {0}: a.service.name
-#: src/booking/Checkout.tsx:74
+#: src/booking/Checkout.tsx:76
 #: src/booking/Reservation.tsx:112
 msgid "Photos of {0}"
 msgstr "Photos of {0}"
@@ -2555,7 +2620,7 @@ msgstr "Pick 1"
 msgid "Pick a rating"
 msgstr "Pick a rating"
 
-#: app/book/[id].tsx:971
+#: app/book/[id].tsx:989
 msgid "Pick a time"
 msgstr "Pick a time"
 
@@ -2615,7 +2680,7 @@ msgstr "Preparing…"
 msgid "Price"
 msgstr "Price"
 
-#: app/book/[id].tsx:899
+#: app/book/[id].tsx:917
 msgid "private answers for the shop"
 msgstr "private answers for the shop"
 
@@ -2696,7 +2761,7 @@ msgstr "Real shops near you, booked in a few taps."
 msgid "Refunded if the shop cancels"
 msgstr "Refunded if the shop cancels"
 
-#: src/booking/PaidCelebration.tsx:304
+#: src/booking/PaidCelebration.tsx:307
 msgid "Remind me before it"
 msgstr "Remind me before it"
 
@@ -2758,7 +2823,7 @@ msgstr "Reservation {0}"
 msgid "Reservation details"
 msgstr "Reservation details"
 
-#: src/booking/PaidCelebration.tsx:193
+#: src/booking/PaidCelebration.tsx:196
 #: src/booking/Reservation.tsx:221
 msgid "Reservation no."
 msgstr "Reservation no."
@@ -2968,7 +3033,7 @@ msgstr "Sent for {where}. Change the address"
 msgid "Sent you a new arrival code"
 msgstr "Sent you a new arrival code"
 
-#: src/booking/Checkout.tsx:302
+#: src/booking/Checkout.tsx:317
 msgid "Service"
 msgstr "Service"
 
@@ -2985,7 +3050,7 @@ msgstr "Services{0}"
 msgid "Share this place"
 msgstr "Share this place"
 
-#: app/book/[id].tsx:411
+#: app/book/[id].tsx:417
 msgid "Share this service"
 msgstr "Share this service"
 
@@ -3029,7 +3094,7 @@ msgstr "Sign in"
 msgid "Sign in or create an account"
 msgstr "Sign in or create an account"
 
-#: app/book/[id].tsx:975
+#: app/book/[id].tsx:993
 msgid "Sign in to book"
 msgstr "Sign in to book"
 
@@ -3275,6 +3340,10 @@ msgstr "That is a lot of codes for one hour. Please try again a little later."
 msgid "That isn’t a photo — use a JPG, PNG or WebP."
 msgstr "That isn’t a photo — use a JPG, PNG or WebP."
 
+#: app/book/[id].tsx:786
+msgid "That morning is Umuganda: community work until 11:00, when shops close and some roads too. A time from 11:00 is the safe choice."
+msgstr "That morning is Umuganda: community work until 11:00, when shops close and some roads too. A time from 11:00 is the safe choice."
+
 #: src/ui/webDrop.tsx:71
 msgid "That photo is over 15 MB — try a smaller copy."
 msgstr "That photo is over 15 MB — try a smaller copy."
@@ -3283,11 +3352,15 @@ msgstr "That photo is over 15 MB — try a smaller copy."
 msgid "That request could not be found."
 msgstr "That request could not be found."
 
-#: app/book/[id].tsx:269
+#: app/book/[id].tsx:275
 msgid "That service is no longer offered here."
 msgstr "That service is no longer offered here."
 
-#: src/booking/Checkout.tsx:196
+#: src/today.ts:27
+msgid "The day after New Year"
+msgstr "The day after New Year"
+
+#: src/booking/Checkout.tsx:198
 msgid "The deposit is not refunded if you cancel. If the shop cancels, you get all of it back."
 msgstr "The deposit is not refunded if you cancel. If the shop cancels, you get all of it back."
 
@@ -3299,7 +3372,7 @@ msgstr "The deposit is not refunded when you cancel."
 msgid "The deposit only holds your time. You pay what is left after your visit, the way the shop takes it."
 msgstr "The deposit only holds your time. You pay what is left after your visit, the way the shop takes it."
 
-#: src/booking/Checkout.tsx:350
+#: src/booking/Checkout.tsx:365
 msgid "The hold has ended. Pay now if the slot is still free."
 msgstr "The hold has ended. Pay now if the slot is still free."
 
@@ -3353,7 +3426,7 @@ msgstr "The shop before"
 msgid "The shop cancelled this"
 msgstr "The shop cancelled this"
 
-#: app/book/[id].tsx:587
+#: app/book/[id].tsx:593
 msgid "The shop confirms the final price after seeing the job. The deposit is on this price."
 msgstr "The shop confirms the final price after seeing the job. The deposit is on this price."
 
@@ -3491,14 +3564,14 @@ msgstr "this shop"
 msgid "This week"
 msgstr "This week"
 
-#: app/book/[id].tsx:772
-#: src/booking/Checkout.tsx:302
+#: app/book/[id].tsx:778
+#: src/booking/Checkout.tsx:317
 #: src/booking/Reservation.tsx:223
 msgid "Time"
 msgstr "Time"
 
 #. placeholder {0}: availability.data.timeZone
-#: app/book/[id].tsx:869
+#: app/book/[id].tsx:887
 msgid "Times are local to the shop ({0})."
 msgstr "Times are local to the shop ({0})."
 
@@ -3514,7 +3587,7 @@ msgstr "To pay at the shop"
 msgid "today"
 msgstr "today"
 
-#: app/book/[id].tsx:761
+#: app/book/[id].tsx:767
 #: app/notifications.tsx:52
 #: app/thread/[id].tsx:49
 msgid "Today"
@@ -3523,7 +3596,7 @@ msgstr "Today"
 #. placeholder {0}: label.weekday
 #. placeholder {1}: label.day
 #. placeholder {2}: label.month
-#: app/book/[id].tsx:751
+#: app/book/[id].tsx:757
 msgid "Today, {0} {1} {2}"
 msgstr "Today, {0} {1} {2}"
 
@@ -3531,29 +3604,29 @@ msgstr "Today, {0} {1} {2}"
 msgid "Too many wrong tries. Ask for a new code below."
 msgstr "Too many wrong tries. Ask for a new code below."
 
-#: src/components/Spotlights.tsx:283
+#: src/components/Spotlights.tsx:287
 msgid "Top business"
 msgstr "Top business"
 
-#: src/components/Spotlights.tsx:239
+#: src/components/Spotlights.tsx:243
 msgid "Top rated"
 msgstr "Top rated"
 
 #. placeholder {0}: r.name
 #. placeholder {1}: shopOf(r)
-#: src/components/Spotlights.tsx:242
+#: src/components/Spotlights.tsx:246
 msgid "Top rated: {0} at {1}, rated {avg}."
 msgstr "Top rated: {0} at {1}, rated {avg}."
 
-#: app/book/[id].tsx:906
-#: app/book/[id].tsx:933
-#: src/booking/Checkout.tsx:167
+#: app/book/[id].tsx:924
+#: app/book/[id].tsx:951
+#: src/booking/Checkout.tsx:169
 #: src/booking/Reservation.tsx:260
 msgid "Total"
 msgstr "Total"
 
 #. placeholder {0}: countWord(quantity)
-#: app/book/[id].tsx:933
+#: app/book/[id].tsx:951
 msgid "Total for {0}"
 msgstr "Total for {0}"
 
@@ -3583,7 +3656,7 @@ msgstr "Try again"
 msgid "Turn it on in your phone's Settings to see what is near you. Everything else still works."
 msgstr "Turn it on in your phone's Settings to see what is near you. Everything else still works."
 
-#: src/booking/PaidCelebration.tsx:319
+#: src/booking/PaidCelebration.tsx:322
 #: src/tour/WelcomeTour.tsx:577
 msgid "Turn on"
 msgstr "Turn on"
@@ -3616,6 +3689,10 @@ msgstr "Type the address"
 #: app/sign-in.tsx:355
 msgid "Type your email and we will send you a 6-digit code. New here? The same code creates your account."
 msgstr "Type your email and we will send you a 6-digit code. New here? The same code creates your account."
+
+#: src/today.ts:35
+msgid "Umuganura"
+msgstr "Umuganura"
 
 #: src/ui/Undo.tsx:77
 #: src/ui/Undo.tsx:80
@@ -3657,11 +3734,11 @@ msgstr "until {day}"
 msgid "Until 2 hours before, as often as you like. The shop is told something changed."
 msgstr "Until 2 hours before, as often as you like. The shop is told something changed."
 
-#: app/book/[id].tsx:542
+#: app/book/[id].tsx:548
 msgid "Up to {places} people"
 msgstr "Up to {places} people"
 
-#: app/book/[id].tsx:691
+#: app/book/[id].tsx:697
 msgid "Up to {places}, all at once"
 msgstr "Up to {places}, all at once"
 
@@ -3732,15 +3809,15 @@ msgstr "vet visit"
 msgid "View"
 msgstr "View"
 
-#: src/booking/PaidCelebration.tsx:203
+#: src/booking/PaidCelebration.tsx:206
 msgid "View my reservation"
 msgstr "View my reservation"
 
-#: app/book/[id].tsx:483
+#: app/book/[id].tsx:489
 msgid "View their shop"
 msgstr "View their shop"
 
-#: src/components/Spotlights.tsx:290
+#: src/components/Spotlights.tsx:294
 msgid "Visit"
 msgstr "Visit"
 
@@ -3749,12 +3826,12 @@ msgid "Waiting for approval…"
 msgstr "Waiting for approval…"
 
 #. placeholder {0}: format(a.listPriceMinor, a.currency)
-#: src/booking/Checkout.tsx:161
+#: src/booking/Checkout.tsx:163
 msgid "Was {0}"
 msgstr "Was {0}"
 
 #. placeholder {0}: format(sale.listPriceMinor)
-#: app/book/[id].tsx:597
+#: app/book/[id].tsx:603
 msgid "Was <0>{0}</0>"
 msgstr "Was <0>{0}</0>"
 
@@ -3851,7 +3928,7 @@ msgstr "What we send you"
 msgid "What we send you is set on your account."
 msgstr "What we send you is set on your account."
 
-#: src/booking/PaidCelebration.tsx:191
+#: src/booking/PaidCelebration.tsx:194
 #: src/exportDocument.ts:79
 msgid "When"
 msgstr "When"
@@ -3860,7 +3937,7 @@ msgstr "When"
 msgid "When something happens with a booking, it shows up here."
 msgstr "When something happens with a booking, it shows up here."
 
-#: src/booking/PaidCelebration.tsx:192
+#: src/booking/PaidCelebration.tsx:195
 msgid "Where"
 msgstr "Where"
 
@@ -3957,7 +4034,7 @@ msgstr "You agreed to version {0}. This is version {1}."
 msgid "You agreed to version {0}. This one is newer."
 msgstr "You agreed to version {0}. This one is newer."
 
-#: src/booking/Checkout.tsx:213
+#: src/booking/Checkout.tsx:215
 msgid "You approve it on your own phone"
 msgstr "You approve it on your own phone"
 
@@ -4019,7 +4096,7 @@ msgid "you rated this"
 msgstr "you rated this"
 
 #. placeholder {0}: format(savedMinor)
-#: app/book/[id].tsx:600
+#: app/book/[id].tsx:606
 msgid "You save {0}"
 msgstr "You save {0}"
 
@@ -4048,7 +4125,7 @@ msgstr "Your account is ready. Let us find you something good."
 msgid "Your account, bookings, reviews, messages and questions to us — to read, print or keep."
 msgstr "Your account, bookings, reviews, messages and questions to us — to read, print or keep."
 
-#: app/book/[id].tsx:884
+#: app/book/[id].tsx:902
 #: app/booking/[id].tsx:234
 #: app/booking/[id].tsx:246
 msgid "Your booking"
@@ -4062,12 +4139,12 @@ msgstr "Your bookings"
 msgid "Your bookings and messages stay with your account. You will need a new code to get back in."
 msgstr "Your bookings and messages stay with your account. You will need a new code to get back in."
 
-#: app/book/[id].tsx:653
+#: app/book/[id].tsx:659
 #: src/booking/BookedChoices.tsx:40
 msgid "Your choices"
 msgstr "Your choices"
 
-#: app/book/[id].tsx:578
+#: app/book/[id].tsx:584
 msgid "Your choices <0>{addsWords}</0>"
 msgstr "Your choices <0>{addsWords}</0>"
 
@@ -4115,7 +4192,7 @@ msgstr "Your phone could not get a position. Try again, outside or near a window
 msgid "Your phone has location turned off for this app. Turn it on in Settings to see the nearest places first. Everything else works without it."
 msgstr "Your phone has location turned off for this app. Turn it on in Settings to see the nearest places first. Everything else works without it."
 
-#: src/booking/Checkout.tsx:261
+#: src/booking/Checkout.tsx:276
 msgid "Your PIN goes only into your phone. This app never asks for it."
 msgstr "Your PIN goes only into your phone. This app never asks for it."
 
@@ -4146,7 +4223,7 @@ msgstr "Your reviews"
 msgid "Your saved address"
 msgstr "Your saved address"
 
-#: src/booking/Checkout.tsx:350
+#: src/booking/Checkout.tsx:365
 msgid "Your slot is held for"
 msgstr "Your slot is held for"
 

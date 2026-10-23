@@ -1,3 +1,4 @@
+import { TodayModule } from './today/today.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -78,6 +79,7 @@ import { RoutingModule } from './routing/routing.module';
     SettingsModule,
     PaymentsModule,
     AppointmentsModule,
+    TodayModule,
     NotificationsModule,
     ChatModule,
     TicketsModule,

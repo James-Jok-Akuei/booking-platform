@@ -144,6 +144,8 @@
 .adc-slide.look-blue { --c1: #5b9bff; --c2: #2a55e0; --c3: #0f1b66; --b1: #67e8f9; --b2: #a78bfa; --b3: #7dd3fc; }
 .adc-slide.look-violet { --c1: #b28cff; --c2: #6d3bea; --c3: #260a5a; --b1: #f472b6; --b2: #67e8f9; --b3: #c4b5fd; }
 .adc-slide.look-amber { --c1: #ffc25a; --c2: #ea7a0c; --c3: #86260d; --b1: #fde68a; --b2: #fb7185; --b3: #fbbf24; }
+/* Quiet (§310): remembrance — slate and a soft purple, nothing bright. */
+.adc-slide.look-calm { --c1: #5b5f74; --c2: #33364a; --c3: #1b1c27; --b1: #a59ccf; --b2: #6b6489; --b3: #8a86a6; }
 
 .adc-bg { position: absolute; inset: 0; z-index: -6; overflow: hidden; background: linear-gradient(155deg, var(--c1) 0%, var(--c2) 48%, var(--c3) 100%); }
 .adc-bg::after {

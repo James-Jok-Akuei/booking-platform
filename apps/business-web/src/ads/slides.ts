@@ -7,6 +7,7 @@ import { searchHow } from './tips';
 import type { AdData, JustIn } from './useAdData';
 import { plural, t } from '@lingui/core/macro';
 import { CUSTOMER_APP_URL } from '../lib/customerApp';
+import { todaySlides } from './todaySlides';
 
 /**
  * The adverts in the "For you" banner (§204), most useful first.
@@ -18,7 +19,7 @@ import { CUSTOMER_APP_URL } from '../lib/customerApp';
  * figure is made up.
  */
 
-export type SlideLook = 'coral' | 'night' | 'green' | 'gold' | 'blue' | 'violet' | 'amber';
+export type SlideLook = 'coral' | 'night' | 'green' | 'gold' | 'blue' | 'violet' | 'amber' | 'calm';
 
 export type Slide = {
   key: string;
@@ -49,6 +50,9 @@ const LEARN_GIST: Record<string, string> = {
 
 export function buildSlides(d: AdData): Slide[] {
   const slides: Slide[] = [];
+  // Rwanda today (§310): mobile money in trouble, or Kwibuka, before anything else.
+  const today = todaySlides(d);
+  slides.push(...today.urgent);
 
   // Just in (§206): the one newest thing — first, while it is still news.
   const news = d.justIn ? justInSlide(d.justIn) : null;
@@ -77,6 +81,9 @@ export function buildSlides(d: AdData): Slide[] {
       cta: { label: d.payoutStatus === 'UNVERIFIED' ? t`See your money` : t`Add it now`, to: '/getting-paid' },
     });
   }
+
+  // The day ahead (§310): Umuganda, a holiday, our team's news, rain, what is searched for near you, a tax date.
+  slides.push(...today.day);
 
   if (d.best) {
     slides.push({
@@ -226,6 +233,9 @@ export function buildSlides(d: AdData): Slide[] {
     });
   }
 
+  // Today's rates (§310): useful, never urgent.
+  slides.push(...today.later);
+
   slides.push({
     key: 'tip-search',
     effect: 'meteors',
@@ -237,8 +247,18 @@ export function buildSlides(d: AdData): Slide[] {
     text: t`${searchHow()} and type any word — “prices”, “holiday”, “momo” — to go straight to the page you need.`,
   });
 
-  return slides.slice(0, 11);
+  // Kwibuka (§310): still cards, and none that cheer or sell — no discount
+  // pushes, no "trending", no invitation to come and book.
+  if (d.today?.calm) {
+    return slides
+      .filter((slide) => !CALM_HIDES.has(slide.key))
+      .map((slide) => ({ ...slide, effect: 'none' as const }))
+      .slice(0, 13);
+  }
+  return slides.slice(0, 13);
 }
+
+const CALM_HIDES = new Set(['best', 'trending', 'sale', 'buyer']);
 
 /** Where each kind of notice leads, said as a button. */
 const ACTION: Record<string, string> = {

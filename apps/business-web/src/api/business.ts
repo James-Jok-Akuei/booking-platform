@@ -149,6 +149,11 @@ export type Category = components['schemas']['CategoryDto'];
 
 export const getProfile = () => api<BusinessProfile>('/business/profile');
 
+/** "Rwanda today" for the shop's For you (§310): facts the app says in its language. */
+export type Today = components['schemas']['TodayDto'];
+export type TodayItem = components['schemas']['TodayItemDto'];
+export const getToday = () => api<Today>('/business/today');
+
 /**
  * Every kind of place the shop is (§265), in order — the first is its main
  * kind. Replaces the whole list; up to four categories.

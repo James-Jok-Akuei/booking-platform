@@ -6,6 +6,7 @@ import { MomoPaymentProvider } from './momo-payment.provider';
 import { DisbursementProviderRegistry } from './disbursement-provider.registry';
 import { PaymentProviderRegistry } from './payment-provider.registry';
 import { PaymentsController } from './payments.controller';
+import { MomoHealthService } from './momo-health.service';
 
 /**
  * Wires every payment provider the platform can talk to (§57.1).
@@ -34,6 +35,8 @@ import { PaymentsController } from './payments.controller';
   controllers: [PaymentsController],
   providers: [
     CurrencyGuard,
+    // How MoMo is doing right now, from our own deposits (§310).
+    MomoHealthService,
     MomoPaymentProvider,
     MomoDisbursementProvider,
     MomoBalanceProvider,
@@ -49,6 +52,6 @@ import { PaymentsController } from './payments.controller';
         new DisbursementProviderRegistry([momo]),
     },
   ],
-  exports: [PaymentProviderRegistry, DisbursementProviderRegistry, MomoBalanceProvider],
+  exports: [PaymentProviderRegistry, DisbursementProviderRegistry, MomoBalanceProvider, MomoHealthService],
 })
 export class PaymentsModule {}

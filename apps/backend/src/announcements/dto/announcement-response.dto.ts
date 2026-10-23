@@ -62,6 +62,8 @@ export class AnnouncementDto {
   sendEmail!: boolean;
   banner!: boolean;
   bannerUntil!: string | null;
+  /** A card in the business app's For you until then (§310). */
+  forYouUntil!: string | null;
   status!: AnnouncementStatus;
   scheduledFor!: string | null;
   sentAt!: string | null;

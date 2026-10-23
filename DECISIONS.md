@@ -20195,3 +20195,79 @@ terminal's QR does; it is switched to the stores later.
   printed cards have to keep working whatever changes behind it. Until a link
   is set in production the page keeps the card's place and says the code
   appears once the app is in the stores.
+
+## 310. Rwanda today: what changes a shop's day, in For you — and the customer's notes (2026-10-23)
+
+The user asked to use the For you card in the seller app for news that matters
+to Rwandan businesses every day ("exchange rates etc."), and then whether the
+customer app should follow its context too. Chosen for what this platform does
+— bookings, deposits by mobile money, opening hours — not general news.
+
+- **What, most important first** (`TodayService.forShop`, `GET
+  /business/today`): MTN MoMo slow or down · the week of Kwibuka · our team's
+  news · Umuganda ahead · a public holiday ahead · heavy rain (car washes,
+  outdoor and event kinds only — category icons car, mountain, calendar-star) ·
+  what customers near the shop searched for · a tax date · the exchange rates.
+  The server sends facts; each app says them in its reader's language
+  (`todaySlides.ts`), as notices do (§308.1).
+- **A few, among the shop's own**: MoMo and Kwibuka always lead; besides them
+  at most TWO today cards at a time, so the shop's own cards stay most of the
+  banner. Rates sit near the end. The carousel now holds up to 13.
+- **Each card does something**: "Block the morning" opens Closures with the
+  day, 08:00–11:00 and "Umuganda" filled in (`/closures?date=&from=&to=&why=`);
+  "Set the day" for a holiday; "Add a service" / "Give it a discount" for a
+  search; "See today's bookings" for rain; "Open RRA" for tax; "Rates by
+  ExchangeRate-API" for rates. Umuganda and holiday cards show only while a
+  branch would be open and has not been set for it — blocked, closed, or with
+  that day's hours changed — and disappear once it is. Shown 5 days before
+  Umuganda (until 11:00 that morning) and 7 before a holiday. The buttons that
+  change things appear only for those allowed to (§277).
+- **Mobile money's health** (`MomoHealthService`): kept in memory over the last
+  20 minutes from what deposits actually do — "down" when MoMo did not answer
+  3 times and for half the attempts, "slow" when, of 5 or more outcomes, under
+  40% were paid. One server's view; enough while there is one server.
+- **The calendar** (`rwanda-calendar.ts`) is worked out, not fetched: fixed
+  holidays, Good Friday and Easter Monday from Easter, Umuganura on the first
+  Friday of August, Umuganda on the last Saturday of the month, Kwibuka from 7
+  to 13 April (Kwibuka 32 in 2026). Eid dates follow the moon and are
+  announced by the government each year: a table for 2026–2030 holds the
+  expected days — **correct it when the dates are announced**.
+- **Calm during Kwibuka**: the seller app drops its festive cards (best,
+  trending, sale, buyer) and every moving effect, and shows "We remember"
+  first; the customer app shows no Discount or Best price spotlights and no
+  confetti after paying. Bookings work as usual.
+- **What customers search for** — and its privacy: each search's FIRST page
+  writes one row (`search_queries`): the folded words (3+ letters, at most 60),
+  the district (asked for, or the nearest branch's), the number of results,
+  the time — never who searched. Deleted after 90 days (3am, Kigali). A shop
+  sees a term only when 5 or more searches in its districts asked for it this
+  week, letters typed on the way ("bra", "brai") merged into the finished word,
+  and never a search for its own name. Worth one line in the privacy policy
+  when the lawyer next reviews it ("we count what is searched, by area, without
+  who").
+- **Weather** (Open-Meteo, free, no key): only a map point rounded to about a
+  kilometre is sent; asked at most hourly per point. Heavy means 2.5 mm or more
+  in an hour at 60% or more, before 21:00.
+- **Rates** (ExchangeRate-API's free daily feed, read every 6 hours): MARKET
+  rates, said so on the card ("Not the official BNR rates") and the source
+  named on its button, as the free feed asks. The National Bank gives its own
+  feed only to a registered company that applies; when the company is
+  registered, `RatesService.fetch` is the one thing to change.
+- **Tax dates** — reminders with RRA's link, never advice, and only for those
+  who see the money (§277): VAT and PAYE by the 15th (shown from the 8th), the
+  trading licence by 31 January, the annual return by 31 March (from the
+  16th).
+- **Our news** — the console's announcement form has "A card in the business
+  app's For you", until a date (`forYouUntil`), for sellers, everyone or one
+  shop; the newest two show, in the reader's language (§308.4).
+- **Feeds off** in tests and with `TODAY_FEEDS=off`; any failure is no card,
+  never an error.
+- **The customer app** (`GET /today?date=`, no sign-in): the payment screen
+  says when MoMo is slow or not answering, before the customer tries ("your
+  time stays held"); the time picker says when the chosen day is Umuganda ("a
+  time from 11:00 is the safe choice") or a public holiday. Rates and tax are
+  for shops, not customers.
+- **Short on phones**: a card shows 3 lines on a phone, so each sentence is
+  written to fit them in all three languages — the part that matters ("not
+  official", "times stay held") must not be the part cut off. Measured at 390
+  and 320 wide in Kinyarwanda and French.

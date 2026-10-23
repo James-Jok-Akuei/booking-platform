@@ -50,7 +50,11 @@ const EMPTY: AnnouncementDraft = {
   sendEmail: false,
   banner: false,
   bannerUntil: null,
+  forYouUntil: null,
 };
+
+/** The audiences shops are in: a For you card (§310) reaches only those. */
+const SHOPS_SEE = new Set<AnnouncementDraft['audience']>(['SELLERS', 'EVERYONE', 'ONE_SHOP']);
 
 const STATUS: Record<Announcement['status'], { label: string; tone: string }> = {
   DRAFT: { label: 'Draft', tone: 'quiet' },
@@ -96,6 +100,10 @@ export function AnnouncementsPage() {
   useEffect(() => {
     if (draft.kind === 'NEWS' && draft.banner) set({ banner: false, bannerUntil: null });
   }, [draft.kind, draft.banner]);
+  // Customers and one person have no For you.
+  useEffect(() => {
+    if (!SHOPS_SEE.has(draft.audience) && draft.forYouUntil) set({ forYouUntil: null });
+  }, [draft.audience, draft.forYouUntil]);
 
   // Who it reaches, asked again a moment after anything about it changes.
   const audienceKey = JSON.stringify([
@@ -123,6 +131,7 @@ export function AnnouncementsPage() {
     linkPath: draft.linkPath?.trim() || null,
     linkLabel: draft.linkLabel?.trim() || null,
     bannerUntil: draft.banner && draft.bannerUntil ? new Date(draft.bannerUntil).toISOString() : null,
+    forYouUntil: SHOPS_SEE.has(draft.audience) && draft.forYouUntil ? new Date(draft.forYouUntil).toISOString() : null,
   });
   const reach = useQuery({
     queryKey: ['announcement-reach', reachKey],
@@ -228,6 +237,7 @@ export function AnnouncementsPage() {
       sendEmail: a.sendEmail,
       banner: a.banner,
       bannerUntil: a.bannerUntil ? localInput(a.bannerUntil) : null,
+      forYouUntil: a.forYouUntil ? localInput(a.forYouUntil) : null,
     });
     setNarrow(Boolean(a.district || a.category));
     setLater(a.scheduledFor ? localInput(a.scheduledFor) : '');
@@ -442,6 +452,31 @@ export function AnnouncementsPage() {
                 <input type="datetime-local" value={draft.bannerUntil ?? ''} onChange={(e) => set({ bannerUntil: e.target.value || null })} />
               </label>
             )}
+            <div className={`an-way${SHOPS_SEE.has(draft.audience) ? '' : ' is-off'}`}>
+              <Icon name="sparkles" size={16} />
+              <span>
+                <strong>A card in the business app’s For you</strong>
+                <em>{SHOPS_SEE.has(draft.audience) ? 'Among the shop’s own cards, until a date' : 'For sellers, everyone or one shop'}</em>
+              </span>
+              <Switch
+                checked={Boolean(draft.forYouUntil)}
+                disabled={!SHOPS_SEE.has(draft.audience)}
+                label="Also a card in For you"
+                onChange={(on) =>
+                  set({ forYouUntil: on ? localInput(new Date(Date.now() + 7 * 86_400_000).toISOString()) : null })
+                }
+              />
+            </div>
+            {draft.forYouUntil && (
+              <label className="an-field an-until">
+                <span>Card until</span>
+                <input
+                  type="datetime-local"
+                  value={draft.forYouUntil}
+                  onChange={(e) => set({ forYouUntil: e.target.value || null })}
+                />
+              </label>
+            )}
           </div>
 
           <div className="an-when">
@@ -649,6 +684,7 @@ function HistoryRow({
           <span className="an-row-by">
             {a.sentBy ? `Sent by ${a.sentBy}` : a.createdBy ? `Written by ${a.createdBy}` : ''}
             {a.banner && ' · also a banner'}
+            {a.forYouUntil && ' · also a card in For you'}
           </span>
           {a.status === 'SCHEDULED' && (
             <button type="button" className="danger an-row-cancel" onClick={onCancel}>

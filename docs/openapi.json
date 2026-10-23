@@ -1096,7 +1096,7 @@
       }
     },
     "/admin/legal/{id}/translations": {
-      "put": {
+      "patch": {
         "operationId": "AdminLegalController_setTranslations",
         "parameters": [
           {
@@ -10904,6 +10904,88 @@
         ]
       }
     },
+    "/business/today": {
+      "get": {
+        "operationId": "BusinessTodayController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodayDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "BusinessToday"
+        ]
+      }
+    },
+    "/today": {
+      "get": {
+        "operationId": "PublicTodayController_get",
+        "parameters": [
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "YYYY-MM-DD, Kigali; today when not given.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicTodayDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "PublicToday"
+        ]
+      }
+    },
     "/notifications/settings": {
       "get": {
         "operationId": "NotificationsController_settings",
@@ -18636,6 +18718,14 @@
             "description": "An administrator's second step (§298): the 6 digits from their\nauthenticator app, or one of their recovery codes (\"xxxx-xxxx\"). Sent\nonce the server has asked for it with TWO_STEP_REQUIRED.",
             "minLength": 6,
             "maxLength": 12
+          },
+          "app": {
+            "type": "string",
+            "description": "The app asking (§308.6): an account it is not for is told where it\nbelongs, before anything else and without being signed in.",
+            "enum": [
+              "business",
+              "customer"
+            ]
           }
         },
         "required": [
@@ -26137,8 +26227,8 @@
           "from": {
             "type": "string",
             "enum": [
-              "customer",
-              "shop"
+              "shop",
+              "customer"
             ]
           },
           "senderEmail": {
@@ -27203,6 +27293,191 @@
         "required": [
           "adjustment",
           "entry"
+        ]
+      },
+      "TodayBranchDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "covered": {
+            "type": "boolean",
+            "description": "Already closed, or with a break, at that time."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "covered"
+        ]
+      },
+      "TodayRateDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "USD, EUR, KES or UGX."
+          },
+          "rwf": {
+            "type": "number",
+            "description": "Francs for one."
+          },
+          "change": {
+            "type": "number",
+            "nullable": true,
+            "description": "Since the previous day's figure, in francs; null on the first day."
+          }
+        },
+        "required": [
+          "code",
+          "rwf",
+          "change"
+        ]
+      },
+      "TodayItemDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "description": "momo · kwibuka · umuganda · holiday · searches · rain · tax · rates · news"
+          },
+          "momo": {
+            "type": "string",
+            "description": "momo: how mobile money is doing — \"slow\" or \"down\"."
+          },
+          "number": {
+            "type": "number",
+            "description": "kwibuka: the commemoration's number (32 in 2026), and its last day."
+          },
+          "until": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "description": "umuganda, holiday: the day (\"YYYY-MM-DD\"); rates: the day they are for; tax: the deadline."
+          },
+          "holiday": {
+            "type": "string",
+            "description": "holiday: which (new-year, heroes, memorial, …, christmas, eid-al-fitr)."
+          },
+          "branches": {
+            "description": "umuganda, holiday: the branches open then, and whether each is already set for it.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodayBranchDto"
+            }
+          },
+          "term": {
+            "type": "string",
+            "description": "searches: the words customers typed, how often this week, where, and whether this shop offers it."
+          },
+          "count": {
+            "type": "number"
+          },
+          "district": {
+            "type": "string"
+          },
+          "offered": {
+            "type": "boolean"
+          },
+          "from": {
+            "type": "string",
+            "description": "rain: the hour heavy rain is expected from (\"14:00\"), and where."
+          },
+          "tax": {
+            "type": "string",
+            "description": "tax: vat-paye (the 15th) · licence (31 January) · annual (31 March)."
+          },
+          "rates": {
+            "description": "rates: francs for one dollar, euro, Kenyan and Ugandan shilling, and where they come from.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodayRateDto"
+            }
+          },
+          "source": {
+            "type": "string"
+          },
+          "sourceUrl": {
+            "type": "string"
+          },
+          "newsId": {
+            "type": "string",
+            "description": "news: written by our team in the console, in the reader's language."
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "linkPath": {
+            "type": "string",
+            "nullable": true
+          },
+          "linkLabel": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "TodayDto": {
+        "type": "object",
+        "properties": {
+          "calm": {
+            "type": "boolean",
+            "description": "Kwibuka: the apps keep quiet — no festive effects, no discount pushes."
+          },
+          "items": {
+            "description": "Most urgent first.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TodayItemDto"
+            }
+          }
+        },
+        "required": [
+          "calm",
+          "items"
+        ]
+      },
+      "PublicTodayDto": {
+        "type": "object",
+        "properties": {
+          "calm": {
+            "type": "boolean"
+          },
+          "momo": {
+            "type": "string",
+            "description": "ok · slow · down"
+          },
+          "date": {
+            "type": "string",
+            "description": "The day asked about (\"YYYY-MM-DD\", Kigali)."
+          },
+          "umuganda": {
+            "type": "boolean",
+            "description": "That day is Umuganda: shops open from 11:00."
+          },
+          "holiday": {
+            "type": "string",
+            "nullable": true,
+            "description": "That day's public holiday, if any."
+          }
+        },
+        "required": [
+          "calm",
+          "momo",
+          "date",
+          "umuganda",
+          "holiday"
         ]
       },
       "ChannelChoiceDto": {
@@ -29682,6 +29957,11 @@
             "type": "string",
             "nullable": true
           },
+          "forYouUntil": {
+            "type": "string",
+            "nullable": true,
+            "description": "A card in the business app's For you until then (§310)."
+          },
           "status": {
             "enum": [
               "CANCELLED",
@@ -29742,6 +30022,7 @@
           "sendEmail",
           "banner",
           "bannerUntil",
+          "forYouUntil",
           "status",
           "scheduledFor",
           "sentAt",
@@ -29840,6 +30121,11 @@
           "bannerUntil": {
             "type": "string",
             "nullable": true
+          },
+          "forYouUntil": {
+            "type": "string",
+            "nullable": true,
+            "description": "Also a card in the business app's For you until then — for sellers, everyone or one shop (§310)."
           },
           "kind": {
             "enum": [

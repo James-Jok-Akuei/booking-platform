@@ -22,6 +22,7 @@ import {
 import { distanceLabel } from '../distance';
 import { duration } from '../duration';
 import { useMoney } from '../money';
+import { useRwandaToday } from '../today';
 import { font, radius, theme } from '../theme';
 import { Icon, lookFor, type IconName } from '../ui/Icon';
 import { tick } from '../ui/haptic';
@@ -152,6 +153,9 @@ export function Spotlights({
     ...fresh,
   });
 
+  // The week of Kwibuka (§310): no discounts or bargains pushed.
+  const calm = useRwandaToday()?.calm ?? false;
+
   const spots = useMemo(() => {
     const used = new Set<string>();
     const usedBusiness = new Set<string>();
@@ -197,8 +201,8 @@ export function Spotlights({
     );
     if (top) usedBusiness.add(top.business.id);
     const b = exact(booked.data?.services, (s) => s.bookingCount > 0);
-    const d = exact(sales.data?.services, (s) => s.discount !== null);
-    const p = exact(cheap.data?.services, () => true);
+    const d = calm ? undefined : exact(sales.data?.services, (s) => s.discount !== null);
+    const p = calm ? undefined : exact(cheap.data?.services, () => true);
     const n = exact(nearest.data?.services, (s) => typeof s.location.distanceKm === 'number');
     // "Top rated" is true of anything rated 4.5 or more, so it may choose.
     const r = varied(
@@ -296,7 +300,7 @@ export function Spotlights({
       });
     }
     return out;
-  }, [booked.data, sales.data, rated.data, nearest.data, cheap.data, newest.data, business.data, money, router]);
+  }, [booked.data, sales.data, rated.data, nearest.data, cheap.data, newest.data, business.data, money, router, calm]);
 
   /**
    * The set on show is fixed for a whole round (§176). The six searches land

@@ -20,11 +20,14 @@ export type SlideEffect =
   | 'ripples'
   | 'rays'
   | 'aurora'
-  | 'waves';
+  | 'waves'
+  /** Still (§310): Kwibuka, and anything that should not move. */
+  | 'none';
 
 const CSS_EFFECTS: SlideEffect[] = ['ripples', 'rays', 'aurora', 'waves'];
 
 export function Effect({ kind, running }: { kind: SlideEffect; running: boolean }) {
+  if (kind === 'none') return null;
   if (kind === 'ripples')
     return (
       <div className="fx-ripples" aria-hidden="true">

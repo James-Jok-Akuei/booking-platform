@@ -20,7 +20,7 @@ import { CHOICE_GROUPS_SELECT, STARTING_PRICE_GROUPS_SELECT } from '../business/
 import { startingPriceMinor } from '../business/service-choices';
 import { notePromptIn } from '../business/choice-suggestions';
 import { COUNTED_BOOKING_STATUSES, byPopularity } from './popularity';
-import { TaxonomyNamesService } from '../categories/taxonomy-names.service';
+import { TaxonomyNamesService, fold } from '../categories/taxonomy-names.service';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 
 /** Rows the bounding-box + haversine query returns. */
@@ -246,6 +246,7 @@ export class DiscoveryService {
       bookingsByCandidate ?? this.bookingsByLocation(rows.map((l) => l.id)),
     ]);
     const openNow = pageOpenNow;
+    this.noteSearch(query.q, offset, query.districtId, sortedInMemory ? locations.length : total, nearby);
 
     return {
       total: sortedInMemory ? locations.length : total,
@@ -515,6 +516,8 @@ export class DiscoveryService {
       viewerId,
       page.map((o) => ({ serviceId: o.serviceId, locationId: o.locationId })),
     );
+
+    this.noteSearch(q, offset, query.districtId, sorted.length, nearby);
 
     return {
       total: sorted.length,
@@ -824,6 +827,31 @@ export class DiscoveryService {
    * is correct: a distance to an unknown point cannot be computed, and
    * inventing one would place them somewhere they are not.
    */
+  /**
+   * What was searched for (§310): the words, folded, with the district it was
+   * asked in — or the one nearest the customer — and how many places came
+   * back. Never who searched. The first page only, so paging is not counted
+   * twice; written aside, so the answer never waits for it.
+   */
+  private noteSearch(
+    q: string | undefined,
+    offset: number,
+    districtId: string | undefined,
+    results: number,
+    nearby: DistanceRow[] | null,
+  ) {
+    const term = q ? fold(q).replace(/\s+/g, ' ').slice(0, 60) : '';
+    if (offset > 0 || term.length < 3) return;
+    void (async () => {
+      let district = districtId ?? null;
+      if (!district && nearby?.length) {
+        const nearest = nearby.reduce((a, b) => (b.distance_km < a.distance_km ? b : a));
+        district = (await this.prisma.location.findUnique({ where: { id: nearest.id }, select: { districtId: true } }))?.districtId ?? null;
+      }
+      await this.prisma.searchQuery.create({ data: { term, districtId: district, results } });
+    })().catch(() => undefined);
+  }
+
   private async locationIdsWithin(center: {
     lat: number;
     lng: number;
