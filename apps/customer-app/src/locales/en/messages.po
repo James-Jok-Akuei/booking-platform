@@ -640,7 +640,7 @@ msgstr "Anonymous"
 msgid "Answer “{0}” first — the times depend on your answers."
 msgstr "Answer “{0}” first — the times depend on your answers."
 
-#: app/book/[id].tsx:965
+#: app/book/[id].tsx:968
 msgid "Answer first"
 msgstr "Answer first"
 
@@ -758,7 +758,7 @@ msgstr "Book"
 msgid "Book {0}"
 msgstr "Book {0}"
 
-#: app/book/[id].tsx:971
+#: app/book/[id].tsx:974
 msgid "Book {slot}"
 msgstr "Book {slot}"
 
@@ -844,10 +844,6 @@ msgstr "Browse all categories →"
 #: app/(tabs)/saved.tsx:189
 msgid "Browse services"
 msgstr "Browse services"
-
-#: src/ui/Intro.tsx:409
-msgid "Bwangu<0>Reservations</0>"
-msgstr "Bwangu<0>Reservations</0>"
 
 #. placeholder {0}: current.version
 #. placeholder {1}: current.title
@@ -962,7 +958,7 @@ msgid "Checkout"
 msgstr "Checkout"
 
 #: app/book/[id].tsx:680
-#: app/book/[id].tsx:969
+#: app/book/[id].tsx:972
 msgid "Choose a time"
 msgstr "Choose a time"
 
@@ -2559,7 +2555,7 @@ msgstr "Pick 1"
 msgid "Pick a rating"
 msgstr "Pick a rating"
 
-#: app/book/[id].tsx:968
+#: app/book/[id].tsx:971
 msgid "Pick a time"
 msgstr "Pick a time"
 
@@ -3033,7 +3029,7 @@ msgstr "Sign in"
 msgid "Sign in or create an account"
 msgstr "Sign in or create an account"
 
-#: app/book/[id].tsx:972
+#: app/book/[id].tsx:975
 msgid "Sign in to book"
 msgstr "Sign in to book"
 

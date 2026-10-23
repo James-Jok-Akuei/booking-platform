@@ -640,7 +640,7 @@ msgstr "Utazwi"
 msgid "Answer “{0}” first — the times depend on your answers."
 msgstr "Banza usubize “{0}” — imyanya iboneka ishingira ku bisubizo byawe."
 
-#: app/book/[id].tsx:965
+#: app/book/[id].tsx:968
 msgid "Answer first"
 msgstr "Banza usubize"
 
@@ -758,7 +758,7 @@ msgstr "Fata gahunda"
 msgid "Book {0}"
 msgstr "Fata gahunda ya {0}"
 
-#: app/book/[id].tsx:971
+#: app/book/[id].tsx:974
 msgid "Book {slot}"
 msgstr "Fata {slot}"
 
@@ -844,10 +844,6 @@ msgstr "Reba ibyiciro byose →"
 #: app/(tabs)/saved.tsx:189
 msgid "Browse services"
 msgstr "Reba serivisi"
-
-#: src/ui/Intro.tsx:409
-msgid "Bwangu<0>Reservations</0>"
-msgstr "Bwangu<0>Reservations</0>"
 
 #. placeholder {0}: current.version
 #. placeholder {1}: current.title
@@ -962,7 +958,7 @@ msgid "Checkout"
 msgstr "Kwishyura"
 
 #: app/book/[id].tsx:680
-#: app/book/[id].tsx:969
+#: app/book/[id].tsx:972
 msgid "Choose a time"
 msgstr "Hitamo umwanya"
 
@@ -2559,7 +2555,7 @@ msgstr "Hitamo 1"
 msgid "Pick a rating"
 msgstr "Hitamo amanota"
 
-#: app/book/[id].tsx:968
+#: app/book/[id].tsx:971
 msgid "Pick a time"
 msgstr "Hitamo isaha"
 
@@ -3033,7 +3029,7 @@ msgstr "Injira"
 msgid "Sign in or create an account"
 msgstr "Injira cyangwa ufungure konti"
 
-#: app/book/[id].tsx:972
+#: app/book/[id].tsx:975
 msgid "Sign in to book"
 msgstr "Injira ubanze"
 

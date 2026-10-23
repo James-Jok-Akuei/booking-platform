@@ -406,7 +406,7 @@ function PhoneIntro({ fontsReady, appReady, onBegin, onGone }: IntroProps) {
                   transform: [{ translateY: from(v.name, 14) }],
                 },
               ]}
-            ><Trans>Bwangu<Text style={styles.orange}>Reservations</Text></Trans>
+            >{/* The name, never translated. */}Bwangu<Text style={styles.orange}>Reservations</Text>
             </Animated.Text>
             <Animated.Text
               style={[

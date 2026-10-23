@@ -155,8 +155,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       {/* Light on the intro's night, dark on the app's paper. */}
       <StatusBar style={introGone ? 'dark' : 'light'} />
-      {appIn && (
-        <I18nProvider i18n={i18n}>
+      {/* Around the opening picture too: its line is in the phone's language, and
+          words drawn outside the provider stop the app on a phone (§308.7). */}
+      <I18nProvider i18n={i18n}>
+        {appIn && (
           <QueryClientProvider client={queryClient}>
             {/* Drawn afresh in a new language (§308). */}
             <Fragment key={locale}>
@@ -194,9 +196,9 @@ export default function RootLayout() {
               <DialogHost />
             </Fragment>
           </QueryClientProvider>
-        </I18nProvider>
-      )}
-      {!introGone && <Intro fontsReady={fontsReady} appReady={appIn} onBegin={begin} onGone={gone} />}
+        )}
+        {!introGone && <Intro fontsReady={fontsReady} appReady={appIn} onBegin={begin} onGone={gone} />}
+      </I18nProvider>
     </SafeAreaProvider>
   );
 }

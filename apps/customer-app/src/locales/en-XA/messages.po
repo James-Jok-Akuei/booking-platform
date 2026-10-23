@@ -638,7 +638,7 @@ msgstr "Anonymousmwandi"
 msgid "Answer “{0}” first — the times depend on your answers."
 msgstr "Answershya “{0}” firstkondi — theugumbi timesiki dependnyanyaiki on yourmbihoiki answersabaiki."
 
-#: app/book/[id].tsx:965
+#: app/book/[id].tsx:968
 msgid "Answer first"
 msgstr "Answershya firstkondi"
 
@@ -756,7 +756,7 @@ msgstr "Bookugu"
 msgid "Book {0}"
 msgstr "Bookugu {0}"
 
-#: app/book/[id].tsx:971
+#: app/book/[id].tsx:974
 msgid "Book {slot}"
 msgstr "Bookugu {slot}"
 
@@ -842,10 +842,6 @@ msgstr "Browsehomwa allaba categoriesikimbi →"
 #: app/(tabs)/saved.tsx:189
 msgid "Browse services"
 msgstr "Browsehomwa servicesrwaho"
-
-#: src/ui/Intro.tsx:409
-msgid "Bwangu<0>Reservations</0>"
-msgstr "Bwangukoaba<0>Reservationsmbiugunya</0>"
 
 #. placeholder {0}: current.version
 #. placeholder {1}: current.title
@@ -960,7 +956,7 @@ msgid "Checkout"
 msgstr "Checkoutikihohondishya"
 
 #: app/book/[id].tsx:680
-#: app/book/[id].tsx:969
+#: app/book/[id].tsx:972
 msgid "Choose a time"
 msgstr "Choosendiugu a timendi"
 
@@ -2556,7 +2552,7 @@ msgstr "Pickaba 1"
 msgid "Pick a rating"
 msgstr "Pickaba a ratingugukokomwa"
 
-#: app/book/[id].tsx:968
+#: app/book/[id].tsx:971
 msgid "Pick a time"
 msgstr "Pickaba a timendi"
 
@@ -3030,7 +3026,7 @@ msgstr "Signugu in"
 msgid "Sign in or create an account"
 msgstr "Signugu in or createkomwa an accountabaiki"
 
-#: app/book/[id].tsx:972
+#: app/book/[id].tsx:975
 msgid "Sign in to book"
 msgstr "Signugu in to bookugundi"
 

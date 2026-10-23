@@ -20144,6 +20144,13 @@ the time picker's "15 free" (the number and word ran together, in English
 too), the home banner's "now … was …" and "New at …", the pay button
 (its own words, apart from the "Pay now" label beside the amount).
 
+**Found on a phone (2026-10-23):** the customer app's opening picture was
+drawn outside the language provider, so on a phone its words stopped the app
+("Trans component was rendered without I18nProvider"). The web never shows
+that picture (the page draws its own), so the web checks could not see it. The
+provider now wraps the opening picture too, and the name "BwanguReservations"
+is plain text, never translated.
+
 **Still to do** (not code): the native speakers' reading of both languages
 in the apps; the lawyer's reading of the legal translations (and the
 official Kinyarwanda and French names of RDB, RICA, NCSA and the laws they
