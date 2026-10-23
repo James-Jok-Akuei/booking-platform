@@ -16,9 +16,11 @@ import { ChoiceKind } from '@prisma/client';
  * `paid` marks an answer shops usually charge for, so the form can ask for
  * a price; `extraMinutes` is a typical time, to be checked.
  *
- * Health and other private answers (`healthRelated`) — allergies, diet,
- * religion, a body area, a legal matter — are never priced or timed, which
- * is what keeps them off receipts (§300.6).
+ * Health and other private answers (`healthRelated`) — allergies, diet, a
+ * pregnancy, an injury or a body area, access needs — are never priced or
+ * timed, which is what keeps them off receipts (§300.6). Only what the shop
+ * needs to serve someone SAFELY (§312): no medical conditions, tests,
+ * vaccines or referrals, no legal matters — sellers are warned not to ask.
  *
  * Keyed by the category and type NAMES the seed uses (§266). A rename is a
  * migration there, and the test beside this file fails until the names
@@ -157,7 +159,6 @@ const BEFORE_EXERCISE = several(
   plain(
     'Recent injury or pain',
     'Pregnant or recently gave birth',
-    'Heart, breathing or blood-pressure condition',
     'None of these',
   ),
   PRIVATE,
@@ -728,7 +729,6 @@ const CATALOG: Record<string, CategoryCatalog> = {
             plain(
               'Pregnant',
               'A recent injury',
-              'High blood pressure',
               'Oil or nut allergy',
               'I’d rather say in person',
             ),
@@ -973,7 +973,6 @@ const CATALOG: Record<string, CategoryCatalog> = {
         ],
         { ...REQUIRED, hint: 'Remove the insurers you do not accept.' },
       ),
-      one('health.referral', 'Referral', 'Do you have a referral?', plain('I have a referral', 'No referral')),
     ],
     types: {
       Dental: {
@@ -1009,36 +1008,9 @@ const CATALOG: Record<string, CategoryCatalog> = {
       },
       'Lab Tests': {
         add: [
-          several(
-            'health.tests',
-            'Tests',
-            'Which tests?',
-            plain(
-              'Blood count',
-              'Blood sugar',
-              'Cholesterol',
-              'Malaria',
-              'Urine test',
-              'Pregnancy test',
-              'Other tests',
-            ),
-            { ...REQUIRED, ...PRIVATE, hint: 'Private: the name of a test can say a lot about someone’s health.' },
-          ),
           one('health.home-sample', 'Home collection', 'Shall we take the sample at your home?', [
             paid('Yes, at my home'),
           ]),
-        ],
-      },
-      Vaccinations: {
-        add: [
-          one(
-            'health.vaccine',
-            'Vaccine',
-            'Which vaccine?',
-            plain('Yellow fever', 'Hepatitis B', 'Typhoid', 'Rabies', 'HPV', 'Flu', 'Another vaccine'),
-            { ...REQUIRED, ...PRIVATE },
-          ),
-          one('health.dose', 'Dose', 'Which dose?', plain('First dose', 'Second dose', 'A booster'), PRIVATE),
         ],
       },
       'Specialist Consultation': {
@@ -1896,7 +1868,7 @@ const CATALOG: Record<string, CategoryCatalog> = {
         'tours.health',
         'Mobility and health',
         'Anything the guide should know?',
-        plain('A walking aid', 'Knee or back trouble', 'Pregnant', 'A heart or breathing condition'),
+        plain('A walking aid', 'Knee or back trouble', 'Pregnant'),
         PRIVATE,
       ),
       DIET,
@@ -1986,24 +1958,6 @@ const CATALOG: Record<string, CategoryCatalog> = {
         notePrompt: 'What would the student like help with?',
       },
       'Legal Consultation': {
-        add: [
-          one(
-            'services.law',
-            'Area of law',
-            'What is it about?',
-            plain(
-              'Family',
-              'Land and property',
-              'Employment',
-              'Contracts',
-              'Debt',
-              'Immigration',
-              'Criminal',
-              'Something else',
-            ),
-            { ...REQUIRED, ...PRIVATE, hint: 'Private, and never more than this: the details are for the meeting.' },
-          ),
-        ],
         notePrompt: 'In one line, what is it about? Keep private details for the meeting.',
       },
       'Accounting & Tax': {

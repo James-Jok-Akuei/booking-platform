@@ -17,6 +17,7 @@ import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { plural } from '@lingui/core/macro';
 import { listOf } from '../../i18n/format';
+import { NEVER, sensitiveIn, type SensitiveKind } from '../../lib/sensitive';
 
 /**
  * Questions for customers (§300, §304): what a customer answers while
@@ -75,6 +76,14 @@ export type GroupDraft = {
 
 /** What the customer is asked — or, before the words are written, its short name. */
 export const titleOf = (g: Pick<GroupDraft, 'name' | 'question'>) => g.question.trim() || g.name.trim();
+
+/** What private thing a question asks about, from its words and its answers (§312). */
+export const groupSensitive = (g: GroupDraft): SensitiveKind | null =>
+  // A ready-made question for a vet or groomer is about the animal.
+  g.suggestionKey?.startsWith('pets.') ? null : sensitiveIn(g.question, g.name, ...g.options.flatMap((o) => [o.label, o.description]));
+
+/** The questions that ask for something a seller must never ask (§312). */
+export const neverAsked = (groups: GroupDraft[]) => groups.filter((g) => NEVER.has(groupSensitive(g) ?? 'safety'));
 
 /** A short name for the shop's bookings, from the question when none was written: "Which cut?" → "Which cut". */
 const shortName = (g: Pick<GroupDraft, 'name' | 'question'>) =>
@@ -426,8 +435,12 @@ export function ChoicesEditor({
   const ready = groups.some((g) => titleOf(g) && g.options.some((o) => o.label.trim()));
   const kindName = section ? (section.subcategory === 'Other' ? section.category : section.subcategory) : null;
 
+  const noteKind = noteEnabled ? sensitiveIn(notePrompt) : null;
+
   return (
     <div className="ch">
+      <AskOnlyWhatYouNeed />
+
       {groups.length === 0 && <HowItWorks money={money} example={section?.suggestions[0]} />}
 
       {groups.length > 0 && (
@@ -578,7 +591,8 @@ export function ChoicesEditor({
             <span>
               <Trans>
                 A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the
-                booking. Allergies and health go in a private question, never in the note.
+                booking. Don’t invite private details here — no illness, medicines or ID numbers. Allergies go in a
+                private question.
               </Trans>
             </span>
           </div>
@@ -596,6 +610,8 @@ export function ChoicesEditor({
               placeholder={suggestions.data?.notePrompt ?? t`Anything the shop should know?`}
             />
             <span className="sv-help"><Trans>Leave it empty to use the words shown here.</Trans></span>
+            {/* The note is not sealed: health belongs in a private question (§300.6, §312). */}
+            {noteKind && <SensitiveNote kind={noteKind} inNote />}
           </div>
         )}
         <div className="ch-setting">
@@ -745,6 +761,10 @@ function GroupCard({
   // More options starts open when something in it changes how the question is
   // asked, so nothing that matters is ever folded away unseen.
   const moreSet = [group.showIf, group.healthRelated].filter(Boolean).length;
+  // Something private in its words (§312): a warning — and, for a safety
+  // question, a press to make it private.
+  const sensitive = groupSensitive(group);
+  const warn = sensitive && (NEVER.has(sensitive) || !group.healthRelated) ? sensitive : null;
   const [more, setMore] = useState(moreSet > 0);
   const title = titleOf(group);
 
@@ -766,6 +786,12 @@ function GroupCard({
             <span className="ch-badge is-private">
               <Icon name="lock" size={12} stroke={2.4} />{' '}
               <Trans>Private</Trans>
+            </span>
+          )}
+          {warn && NEVER.has(warn) && (
+            <span className="ch-badge is-danger">
+              <Icon name="alert" size={12} stroke={2.4} />{' '}
+              <Trans>Do not ask this</Trans>
             </span>
           )}
           {parentOption && (
@@ -798,6 +824,7 @@ function GroupCard({
               placeholder={t`e.g. Which cut would you like?`}
               aria-label={t`The question customers see`}
             />
+            {warn && <SensitiveNote kind={warn} onMakePrivate={() => { makePrivate(true); setMore(true); }} />}
           </Step>
 
           <Step n={2} title={t`How many answers can they pick?`}>
@@ -961,6 +988,73 @@ function GroupCard({
         </div>
       </div>
     </li>
+  );
+}
+
+/**
+ * What a seller may ask, said where they write the questions (§312): only what
+ * serves the booking — and never an illness, an ID number, beliefs or a PIN.
+ */
+function AskOnlyWhatYouNeed() {
+  return (
+    <aside className="ch-rule">
+      <span className="ch-rule-icon">
+        <Icon name="shield" size={18} />
+      </span>
+      <div>
+        <strong><Trans>Ask only what you need to serve them</Trans></strong>
+        <p>
+          <Trans>
+            Never ask about an illness, tests or medicines; for an ID, passport or insurance number; about religion,
+            ethnicity or politics; or for a PIN or password.
+          </Trans>
+        </p>
+        <p>
+          <Trans>
+            An allergy, a pregnancy or an injury can matter for safety. Ask it only when it changes how you work, and as a
+            private question: only you see the answers, and they are deleted 30 days after the visit.
+          </Trans>
+        </p>
+      </div>
+    </aside>
+  );
+}
+
+/** A question's or a text's words ask for something private (§312): why it is wrong, and what to do instead. */
+export function SensitiveNote({
+  kind,
+  inNote = false,
+  onMakePrivate,
+}: {
+  kind: SensitiveKind;
+  /** The words above the customer's note box, which are not private. */
+  inNote?: boolean;
+  /** For a safety question: one press makes it private. */
+  onMakePrivate?: () => void;
+}) {
+  const words: Record<SensitiveKind, string> = {
+    medical: t`This asks about an illness, a test or medicines. Please don’t ask it: it is private medical information, and the seller rules forbid it.`,
+    id: t`This asks for an ID, passport or insurance number. Please don’t ask it: the seller rules forbid it. If you must see an ID, look at it at the counter.`,
+    beliefs: t`This asks about religion, ethnicity or politics. Never ask it: it has nothing to do with a booking.`,
+    secrets: t`This asks for a PIN or a password. Never ask it: customers must never share these with anyone, not even you.`,
+    safety: inNote
+      ? t`Health details don’t belong in the note box — it is not private. Ask about an allergy, a pregnancy or an injury in a private question instead.`
+      : t`This asks about health — an allergy, a pregnancy or an injury. Ask it only if it changes how you do the service, and make it a private question.`,
+  };
+  const never = NEVER.has(kind);
+  return (
+    <p className={`ch-sensitive ${never ? 'is-never' : 'is-safety'}`} role="alert">
+      <Icon name={never ? 'alert' : 'lock'} size={16} />
+      <span>
+        {words[kind]}
+        {!never && onMakePrivate && (
+          <button type="button" className="ch-sensitive-fix" onClick={onMakePrivate}>
+            <Icon name="lock" size={14} />
+            <Trans>Make it private</Trans>
+          </button>
+        )}
+      </span>
+    </p>
   );
 }
 

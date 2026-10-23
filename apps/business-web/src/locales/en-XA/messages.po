@@ -30,7 +30,7 @@ msgstr " · discountzekomwahoiki on nownya"
 msgid " · edited"
 msgstr " · editeduguaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:514
+#: src/pages/choices/ChoicesEditor.tsx:527
 msgid " · must answer"
 msgstr " · mustndishya answershya"
 
@@ -43,7 +43,7 @@ msgstr " · notmwa paidnya"
 msgid " · paid {0}"
 msgstr " · paidnya {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1175
+#: src/pages/choices/ChoicesEditor.tsx:1269
 msgid " · Required"
 msgstr " · Requiredndishya"
 
@@ -52,11 +52,11 @@ msgid " · try a discount"
 msgstr " · trymbi a discountzekomwahoiki"
 
 #. placeholder {0}: niceDay(service.discountEndsOn.slice(0, 10))
-#: src/pages/ServicesPage.tsx:1062
+#: src/pages/ServicesPage.tsx:1066
 msgid " · until {0}"
 msgstr " · untilhoho {0}"
 
-#: src/pages/ServicesPage.tsx:1062
+#: src/pages/ServicesPage.tsx:1066
 msgid " · until you end it"
 msgstr " · untilhoho youugu endmbishya it"
 
@@ -109,15 +109,15 @@ msgstr "“{0}” — a quickaba replynya is theugumbi chancerwaze to winikiugu 
 msgid "“{name}” is over {limit} MB — try a smaller copy."
 msgstr "“{name}” is overho {limit} MB — trymbi a smallershyambiugu copyndi."
 
-#: src/pages/choices/ChoicesEditor.tsx:218
+#: src/pages/choices/ChoicesEditor.tsx:227
 msgid "“{title}”: add at least one answer."
 msgstr "“{title}”: addugunya at leastmbi onenya answershya."
 
-#: src/pages/choices/ChoicesEditor.tsx:221
+#: src/pages/choices/ChoicesEditor.tsx:230
 msgid "“{title}”: answer {answer} is empty — write it, or remove it."
 msgstr "“{title}”: answershya {answer} is emptymbi — writendi it, or removerwaho it."
 
-#: src/pages/choices/ChoicesEditor.tsx:223
+#: src/pages/choices/ChoicesEditor.tsx:232
 msgid "“{title}”: customers must answer it, so at least one answer has to be offered."
 msgstr "“{title}”: customersmwako mustndishya answershya it, so at leastmbi onenya answershya hasshya to be offeredabaugu."
 
@@ -138,8 +138,13 @@ msgstr "“Quickaba, friendlymbirwa, exactlyshya whatnya I askedshya forabaze.�
 msgid "{0, plural, one {“What you do” is # character too long.} other {“What you do” is # characters too long.}}"
 msgstr "{0, plural, one {“Whatshya youugu do” is # characterndiuguabandiugu tooiki longshya.} other {“Whatshya youugu do” is # charactersikimbi tooiki longshya.}}"
 
+#. placeholder {0}: forbidden.length
+#: src/pages/ServicesPage.tsx:1441
+msgid "{0, plural, one {{named} asks for something customers should never have to give a shop — an illness, an ID number, their beliefs or a PIN. Please change or remove it.} other {{named} ask for something customers should never have to give a shop — an illness, an ID number, their beliefs or a PIN. Please change or remove them.}}"
+msgstr "{0, plural, one {{named} asksho forabaze somethingnyanya customersmwako shouldmbishya neverkoshya havenyanya to givendi a shopko — an illnessnyambi, an ID numberabarwa, theirshya beliefsrwaabanyanya or a PINugu. Pleasenyanya changekonya or removerwaho it.} other {{named} askzeshya forabaze somethingnyanya customersmwako shouldmbishya neverkoshya havenyanya to givendi a shopko — an illnessnyambi, an ID numberabarwa, theirshya beliefsrwaabanyanya or a PINugu. Pleasenyanya changekonya or removerwaho themnyaiki.}}"
+
 #. placeholder {0}: titles.length
-#: src/pages/choices/ChoicesEditor.tsx:169
+#: src/pages/choices/ChoicesEditor.tsx:178
 msgid "{0, plural, one {{names} is asked only after an answer here.} other {{names} are asked only after an answer here.}}"
 msgstr "{0, plural, one {{names} is askedshya onlynya afteriki an answershya herenya.} other {{names} areiki askedshya onlynya afteriki an answershya herenya.}}"
 
@@ -149,12 +154,12 @@ msgid "{0, plural, one {{onTheWay} of it is on its way to you, in # payment.} ot
 msgstr "{0, plural, one {{onTheWay} of it is on itsrwa wayndi to youugu, in # paymentikiugu.} other {{onTheWay} of it is on itsrwa wayndi to youugu, in # paymentszemwa.}}"
 
 #. placeholder {0}: picked.length - room
-#: src/pages/ServicesPage.tsx:1295
+#: src/pages/ServicesPage.tsx:1299
 msgid "{0, plural, one {{PHOTO_LIMIT} photos is the most for a service, so # was left out.} other {{PHOTO_LIMIT} photos is the most for a service, so # were left out.}}"
 msgstr "{0, plural, one {{PHOTO_LIMIT} photosndimwa is theugumbi mostze forabaze a serviceuguaba, so # wasmwa leftndishya outshya.} other {{PHOTO_LIMIT} photosndimwa is theugumbi mostze forabaze a serviceuguaba, so # wereugu leftndishya outshya.}}"
 
 #. placeholder {0}: group.options.length
-#: src/pages/choices/ChoicesEditor.tsx:731
+#: src/pages/choices/ChoicesEditor.tsx:747
 msgid "{0, plural, one {# answer} other {# answers}}"
 msgstr "{0, plural, one {# answershya} other {# answersabaiki}}"
 
@@ -194,12 +199,12 @@ msgid "{0, plural, one {# person} other {# people}}"
 msgstr "{0, plural, one {# personndirwa} other {# peoplezeshya}}"
 
 #. placeholder {0}: service.images.length
-#: src/pages/ServicesPage.tsx:1024
+#: src/pages/ServicesPage.tsx:1028
 msgid "{0, plural, one {# photo} other {# photos}}"
 msgstr "{0, plural, one {# photonya} other {# photosndimwa}}"
 
 #. placeholder {0}: groups.length
-#: src/pages/ServicesPage.tsx:1605
+#: src/pages/ServicesPage.tsx:1646
 msgid "{0, plural, one {# question customers answer when they book} other {# questions customers answer when they book}}"
 msgstr "{0, plural, one {# questionrwamwa customersmwako answershya whenko theynya bookugundi} other {# questionsmwaze customersmwako answershya whenko theynya bookugundi}}"
 
@@ -254,7 +259,7 @@ msgid "{0, plural, one {from # customer} other {from # customers}}"
 msgstr "{0, plural, one {fromko # customerkoshya} other {fromko # customersmwako}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1800
+#: src/pages/ServicesPage.tsx:1841
 msgid "{0, plural, one {Goes live at # branch.} other {Goes live at # branches.}}"
 msgstr "{0, plural, one {Goesnya liveshyako at # branchkomwa.} other {Goesnya liveshyako at # brancheskombihohondi.}}"
 
@@ -264,22 +269,22 @@ msgid "{0, plural, one {Photos on # service} other {Photos on # services}}"
 msgstr "{0, plural, one {Photosabaze on # serviceuguaba} other {Photosabaze on # servicesrwaho}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1794
+#: src/pages/ServicesPage.tsx:1835
 msgid "{0, plural, one {Ready at # branch — customers see it once you open your shop again.} other {Ready at # branches — customers see it once you open your shop again.}}"
 msgstr "{0, plural, one {Readyaba at # branchkomwa — customersmwako seeaba it oncendi youugu openrwa yourmbihoiki shopko againshyakoshya.} other {Readyaba at # brancheskombihohondi — customersmwako seeaba it oncendi youugu openrwa yourmbihoiki shopko againshyakoshya.}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1790
+#: src/pages/ServicesPage.tsx:1831
 msgid "{0, plural, one {Ready at # branch — customers see it once you post your shop.} other {Ready at # branches — customers see it once you post your shop.}}"
 msgstr "{0, plural, one {Readyaba at # branchkomwa — customersmwako seeaba it oncendi youugu postho yourmbihoiki shopko.} other {Readyaba at # brancheskombihohondi — customersmwako seeaba it oncendi youugu postho yourmbihoiki shopko.}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1785
+#: src/pages/ServicesPage.tsx:1826
 msgid "{0, plural, one {Ready at # branch — customers see it once your shop is live.} other {Ready at # branches — customers see it once your shop is live.}}"
 msgstr "{0, plural, one {Readyaba at # branchkomwa — customersmwako seeaba it oncendi yourmbihoiki shopko is liveshyako.} other {Readyaba at # brancheskombihohondi — customersmwako seeaba it oncendi yourmbihoiki shopko is liveshyako.}}"
 
 #. placeholder {0}: failed.length
-#: src/pages/ServicesPage.tsx:478
+#: src/pages/ServicesPage.tsx:482
 msgid "{0, plural, one {Saved, but # photo change did not go through: {why}. Open Edit on the service to try again.} other {Saved, but # photo changes did not go through: {why}. Open Edit on the service to try again.}}"
 msgstr "{0, plural, one {Savedugu, butndiho # photonya changekonya didmwa notmwa go throughmbimwa: {why}. Openrwa Editrwa on theugumbi serviceuguaba to trymbi againshyakoshya.} other {Savedugu, butndiho # photonya changesmwaiki didmwa notmwa go throughmbimwa: {why}. Openrwa Editrwa on theugumbi serviceuguaba to trymbi againshyakoshya.}}"
 
@@ -449,7 +454,7 @@ msgstr "{0} laterwa"
 #. placeholder {0}: service.durationMinutes
 #: src/pages/AppointmentsPage.tsx:746
 #: src/pages/OverviewPage.tsx:560
-#: src/pages/ServicesPage.tsx:1035
+#: src/pages/ServicesPage.tsx:1039
 msgid "{0} min"
 msgstr "{0} minhoho"
 
@@ -470,7 +475,7 @@ msgid "{0} of {count}: {1}"
 msgstr "{0} of {count}: {1}"
 
 #. placeholder {0}: photos.length
-#: src/pages/ServicesPage.tsx:1702
+#: src/pages/ServicesPage.tsx:1743
 msgid "{0} of {PHOTO_LIMIT} · choose the cover with “Make cover”"
 msgstr "{0} of {PHOTO_LIMIT} · choosendiuguiki theugumbi coverugu withikimbi “Makeho coverugu”"
 
@@ -519,7 +524,7 @@ msgid "{0} unread messages"
 msgstr "{0} unreadmwaiki messageskoshya"
 
 #. placeholder {0}: money.format(depositShare(minor))
-#: src/pages/ServicesPage.tsx:1577
+#: src/pages/ServicesPage.tsx:1618
 msgid "{0} up front"
 msgstr "{0} up frontugu"
 
@@ -558,7 +563,7 @@ msgid "{0}% complete"
 msgstr "{0}% completezenya"
 
 #. placeholder {0}: service.depositPercentage
-#: src/pages/ServicesPage.tsx:1039
+#: src/pages/ServicesPage.tsx:1043
 msgid "{0}% deposit"
 msgstr "{0}% depositikinyambiiki"
 
@@ -682,11 +687,11 @@ msgstr "{followers, plural, one {Sendho to # followerhondi?} other {Sendho to # 
 msgid "{followers, plural, one {Send to # follower} other {Send to # followers}}"
 msgstr "{followers, plural, one {Sendho to # followerhondi} other {Sendho to # followersabarwa}}"
 
-#: src/pages/choices/ChoicesEditor.tsx:385
+#: src/pages/choices/ChoicesEditor.tsx:394
 msgid "{followUps} was asked only after an answer here, so it will be asked every time."
 msgstr "{followUps} wasmwa askedshya onlynya afteriki an answershya herenya, so it willrwa be askedshya everyndi timendi."
 
-#: src/pages/choices/ChoicesEditor.tsx:386
+#: src/pages/choices/ChoicesEditor.tsx:395
 msgid "{followUps} were asked only after an answer here, so they will be asked every time."
 msgstr "{followUps} wereugu askedshya onlynya afteriki an answershya herenya, so theynya willrwa be askedshya everyndi timendi."
 
@@ -789,11 +794,11 @@ msgstr "{minutes} minhoho agombi"
 msgid "{minutes}m ago"
 msgstr "{minutes}m agombi"
 
-#: src/pages/choices/ChoicesEditor.tsx:1233
+#: src/pages/choices/ChoicesEditor.tsx:1327
 msgid "{missing} to answer"
 msgstr "{missing} to answershya"
 
-#: src/pages/choices/ChoicesEditor.tsx:892
+#: src/pages/choices/ChoicesEditor.tsx:919
 msgid "{moreSet} set"
 msgstr "{moreSet} setshya"
 
@@ -819,7 +824,7 @@ msgstr "{name} hasshya roomzemwaho forabaze {room} moreaba ({limit} at mostze), 
 msgid "{name} has room for {room} more ({limit} at most), so 1 was left out."
 msgstr "{name} hasshya roomzemwaho forabaze {room} moreaba ({limit} at mostze), so 1 wasmwa leftndishya outshya."
 
-#: src/pages/ServicesPage.tsx:626
+#: src/pages/ServicesPage.tsx:630
 msgid "{noPhotos} without photos"
 msgstr "{noPhotos} withoutnyako photosndimwa"
 
@@ -835,11 +840,11 @@ msgstr "{openDays, plural, one {Openrwa # dayko a weekrwa} other {Openrwa # days
 msgid "{outstanding, plural, one {# document has changed since you agreed.} other {# documents have changed since you agreed.}}"
 msgstr "{outstanding, plural, one {# documentugunya hasshya changednyanya sincerwa youugu agreedrwarwa.} other {# documentsrwaze havenyanya changednyanya sincerwa youugu agreedrwarwa.}}"
 
-#: src/pages/ServicesPage.tsx:1385
+#: src/pages/ServicesPage.tsx:1389
 msgid "{overDescription, plural, one {Shorten the description by # character — the count is at the top right of each box.} other {Shorten the description by # characters — the count is at the top right of each box.}}"
 msgstr "{overDescription, plural, one {Shortenzeaba theugumbi descriptionrwaabaiki by # characterndiuguabandiugu — theugumbi countaba is at theugumbi topugu rightrwa of eachugu boxze.} other {Shortenzeaba theugumbi descriptionrwaabaiki by # charactersikimbi — theugumbi countaba is at theugumbi topugu rightrwa of eachugu boxze.}}"
 
-#: src/pages/ServicesPage.tsx:1389
+#: src/pages/ServicesPage.tsx:1393
 msgid "{overInstructions, plural, one {Shorten the special instructions by # character — the count is at the top right of each box.} other {Shorten the special instructions by # characters — the count is at the top right of each box.}}"
 msgstr "{overInstructions, plural, one {Shortenzeaba theugumbi specialndiko instructionsndirwaho by # characterndiuguabandiugu — theugumbi countaba is at theugumbi topugu rightrwa of eachugu boxze.} other {Shortenzeaba theugumbi specialndiko instructionsndirwaho by # charactersikimbi — theugumbi countaba is at theugumbi topugu rightrwa of eachugu boxze.}}"
 
@@ -848,11 +853,11 @@ msgid "{pct}% complete"
 msgstr "{pct}% completezenya"
 
 #. placeholder {0}: niceDay(saleEndsOn)
-#: src/pages/ServicesPage.tsx:1677
+#: src/pages/ServicesPage.tsx:1718
 msgid "{percentOff}% off until the end of {0}. Bookings made before then keep the discounted price."
 msgstr "{percentOff}% offmwa untilhoho theugumbi endmbishya of {0}. Bookingskokoaba madendi beforembiho thenmwa keepndi theugumbi discountednyakoaba pricembiugumbi."
 
-#: src/pages/ServicesPage.tsx:1678
+#: src/pages/ServicesPage.tsx:1719
 msgid "{percentOff}% off until you end it. Bookings already made keep the price they were made at."
 msgstr "{percentOff}% offmwa untilhoho youugu endmbishya it. Bookingskokoaba alreadynyambi madendi keepndi theugumbi pricembiugumbi theynya wereugu madendi at."
 
@@ -884,7 +889,7 @@ msgstr "{ratingCount} in allaba"
 msgid "{rest} and {last}"
 msgstr "{rest} andmwa {last}"
 
-#: src/pages/ServicesPage.tsx:1061
+#: src/pages/ServicesPage.tsx:1065
 msgid "{sale}% off"
 msgstr "{sale}% offmwa"
 
@@ -921,7 +926,7 @@ msgstr "{withOffers, plural, one {# getsndi yourmbihoiki offerszembi as alertsze
 msgid "{withOffers} of them said yes to your offers, so they also get it as an alert or email."
 msgstr "{withOffers} of themnyaiki saidndi yesndi to yourmbihoiki offerszembi, so theynya alsomwahoiki gethoze it as an alertikihougu or emailnyakomwa."
 
-#: src/pages/ServicesPage.tsx:620
+#: src/pages/ServicesPage.tsx:624
 msgid "{withSale} with a discount"
 msgstr "{withSale} withikimbi a discountzekomwahoiki"
 
@@ -929,36 +934,36 @@ msgstr "{withSale} withikimbi a discountzekomwahoiki"
 msgid "{withYou} with you now, and nobody else expected today."
 msgstr "{withYou} withikimbi youugu nownya, andmwa nobodymbihoiki elseaba expectedkokoko todaymbi."
 
-#: src/pages/choices/ChoicesEditor.tsx:1024
+#: src/pages/choices/ChoicesEditor.tsx:1118
 msgid "+ Add a short description"
 msgstr "+ Addndi a shortrwaabanya descriptionrwaabaiki"
 
 #. placeholder {0}: o.extraMinutes
 #. placeholder {0}: pick.extraMinutes
 #: src/lib/BookingChoices.tsx:16
-#: src/pages/choices/ChoicesEditor.tsx:630
+#: src/pages/choices/ChoicesEditor.tsx:646
 msgid "+{0} min"
 msgstr "+{0} minhoho"
 
-#: src/pages/choices/ChoicesEditor.tsx:1208
+#: src/pages/choices/ChoicesEditor.tsx:1302
 msgid "+{mins} min"
 msgstr "+{mins} minhoho"
 
-#: src/pages/choices/ChoicesEditor.tsx:634
+#: src/pages/choices/ChoicesEditor.tsx:650
 msgid "+15 min"
 msgstr "+15 minhoho"
 
-#: src/pages/choices/ChoicesEditor.tsx:635
+#: src/pages/choices/ChoicesEditor.tsx:651
 msgid "+30 min"
 msgstr "+30 minhoho"
 
 #. placeholder {0}: notOnSale.length
-#: src/pages/ServicesPage.tsx:631
+#: src/pages/ServicesPage.tsx:635
 msgid "<0/> {0} not on sale"
 msgstr "<0/> {0} notmwa on salemwa"
 
 #. placeholder {0}: onSale.length
-#: src/pages/ServicesPage.tsx:615
+#: src/pages/ServicesPage.tsx:619
 msgid "<0/> {0} on sale"
 msgstr "<0/> {0} on salemwa"
 
@@ -1116,7 +1121,7 @@ msgstr "<0>Youaba gethoze an emailnyakomwa</0>At {address}, theugumbi momentrwau
 msgid "<0>You post your shop</0>When you are ready — one button on your dashboard. Customers see it from then, not before."
 msgstr "<0>Youaba postho yourmbihoiki shopko</0>Whenrwa youugu areiki readyaba — onenya buttonrwaaba on yourmbihoiki dashboardnyambi. Customersmbiiki seeaba it fromko thenmwa, notmwa beforembiho."
 
-#: src/pages/ServicesPage.tsx:1884
+#: src/pages/ServicesPage.tsx:1935
 msgid "★ Cover"
 msgstr "★ Coveraba"
 
@@ -1274,7 +1279,7 @@ msgstr "A depositikinyambiiki percentagerwamwazenyakoko cannotmwako be lowermbii
 msgid "A description on every service"
 msgstr "A descriptionrwaabaiki on everyndi serviceuguaba"
 
-#: src/pages/ServicesPage.tsx:1423
+#: src/pages/ServicesPage.tsx:1427
 msgid "A discount is a whole number from 1 to 90 percent off — or leave it empty for no discount."
 msgstr "A discountzekomwahoiki is a wholendi numberabarwa fromko 1 to 90 percentmbirwa offmwa — or leaveugu it emptymbi forabaze no discountzekomwahoiki."
 
@@ -1287,7 +1292,7 @@ msgstr "A discountednyakoaba serviceuguaba showsiki itsrwa −% badgeugu andmwa 
 msgid "A few words <0>{0}/{CAPTION_MAX}</0>"
 msgstr "A fewko wordsmbi <0>{0}/{CAPTION_MAX}</0>"
 
-#: src/pages/ServicesPage.tsx:1379
+#: src/pages/ServicesPage.tsx:1383
 msgid "A little too long"
 msgstr "A littlekondi tooiki longshya"
 
@@ -1295,7 +1300,7 @@ msgstr "A littlekondi tooiki longshya"
 msgid "A manager runs the branches you choose — their bookings, hours, closures and photos. With every branch, they also run the shopfront, the services and prices, and see the money."
 msgstr "A manageruguko runsnya theugumbi brancheskombihohondi youugu choosendiuguiki — theirshya bookingskomwa, hoursugu, closuresshyaugu andmwa photosndimwa. Withrwa everyndi branchkomwa, theynya alsomwahoiki runmwa theugumbi shopfrontndimwahoikiugu, theugumbi servicesrwaho andmwa priceshondi, andmwa seeaba theugumbi moneynyakoko."
 
-#: src/pages/ServicesPage.tsx:719
+#: src/pages/ServicesPage.tsx:723
 msgid "A name, how long it takes, a price at each branch — and a photo or two. Customers can book it the moment it is posted."
 msgstr "A namemwa, howko longshya it takeshoho, a pricembiugumbi at eachugu branchkomwa — andmwa a photonya or twoiki. Customersmbiiki caniki bookugundi it theugumbi momentrwauguko it is postedmwanya."
 
@@ -1352,7 +1357,7 @@ msgstr "A photonya andmwa a fewko wordsmbi forabaze todaymbi. Customersmbiiki se
 msgid "A photo for today, at the top of the app"
 msgstr "A photonya forabaze todaymbi, at theugumbi topugu of theugumbi appaba"
 
-#: src/pages/ServicesPage.tsx:443
+#: src/pages/ServicesPage.tsx:447
 msgid "a photo was not removed"
 msgstr "a photonya wasmwa notmwa removedshya"
 
@@ -1360,15 +1365,15 @@ msgstr "a photonya wasmwa notmwa removedshya"
 msgid "a photo, PDF, Word, Excel, CSV or text file"
 msgstr "a photonya, PDFikindi, Wordiki, Excelugu, CSVnya or textmbi filenya"
 
-#: src/pages/choices/ChoicesEditor.tsx:943
+#: src/pages/choices/ChoicesEditor.tsx:970
 msgid "A private question"
 msgstr "A privatendiugu questionrwamwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:939
+#: src/pages/choices/ChoicesEditor.tsx:966
 msgid "A private question: health or personal"
 msgstr "A privatendiugu questionrwamwa: healthnyandi or personalkokombi"
 
-#: src/pages/choices/ChoicesEditor.tsx:1093
+#: src/pages/choices/ChoicesEditor.tsx:1187
 msgid "A question needs at least one answer"
 msgstr "A questionrwamwa needsmbi at leastmbi onenya answershya"
 
@@ -1388,7 +1393,7 @@ msgstr "A ratingugukokomwa, no wordsmbi."
 msgid "A reply is public"
 msgstr "A replynya is publicndishya"
 
-#: src/pages/ServicesPage.tsx:725
+#: src/pages/ServicesPage.tsx:729
 msgid "A sale, whenever you want one"
 msgstr "A salemwa, wheneverrwarwa youugu wantshya onenya"
 
@@ -1424,18 +1429,18 @@ msgstr "A shopko withikimbi a storyzemwa getsndi a coralmwa ringhorwarwa in theu
 msgid "A shop’s page in the customer app: its photos, rating and services."
 msgstr "A shopko’s pagemwazeko in theugumbi customerkoshya appaba: itsrwa photosndimwa, ratingugukokomwa andmwa servicesrwaho."
 
-#: src/pages/choices/ChoicesEditor.tsx:1019
+#: src/pages/choices/ChoicesEditor.tsx:1113
 msgid "A short description — e.g. Below the shoulders"
 msgstr "A shortrwaabanya descriptionrwaabaiki — e.g. Belowmwa theugumbi shoulderszemwakombizeko"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1015
+#: src/pages/choices/ChoicesEditor.tsx:1109
 msgid "A short description of answer {0}"
 msgstr "A shortrwaabanya descriptionrwaabaiki of answershya {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:579
-msgid "A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the booking. Allergies and health go in a private question, never in the note."
-msgstr "A shortrwaabanya messageugumbi to youugu whenko theynya bookugundi (up to 250 letterszerwa), likemwa “I’m leftndishya-handedrwamwa”. Youaba seeaba it on theugumbi bookinguguiki. Allergiesnyaze andmwa healthnyandi go in a privatendiugu questionrwamwa, neverkoshya in theugumbi noterwa."
+#: src/pages/choices/ChoicesEditor.tsx:592
+msgid "A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the booking. Don’t invite private details here — no illness, medicines or ID numbers. Allergies go in a private question."
+msgstr "A shortrwaabanya messageugumbi to youugu whenko theynya bookugundi (up to 250 letterszerwa), likemwa “I’m leftndishya-handedrwamwa”. Youaba seeaba it on theugumbi bookinguguiki. Donmbiiki’t invitendikondi privatendiugu detailsrwamwambiiki herenya — no illnessnyambi, medicinesmbiiki or ID numberskombi. Allergiesnyaze go in a privatendiugu questionrwamwa."
 
 #: src/tour/steps.ts:53
 msgid "A small part of the price, from their phone by mobile money. The rest they pay you at the shop."
@@ -1484,7 +1489,7 @@ msgid "Actions"
 msgstr "Actionsabanyambize"
 
 #: src/onboarding/GoLiveCard.tsx:446
-#: src/pages/choices/ChoicesEditor.tsx:546
+#: src/pages/choices/ChoicesEditor.tsx:559
 #: src/pages/ProfilePage.tsx:516
 msgid "Add"
 msgstr "Addndi"
@@ -1521,24 +1526,24 @@ msgstr "Addndi a coverugu photonya"
 msgid "Add a logo"
 msgstr "Addndi a logombi"
 
-#: src/pages/ServicesPage.tsx:1015
+#: src/pages/ServicesPage.tsx:1019
 msgid "Add a photo"
 msgstr "Addndi a photonya"
 
-#: src/pages/choices/ChoicesEditor.tsx:643
+#: src/pages/choices/ChoicesEditor.tsx:659
 msgid "Add a question — a ready-made one below, or your own"
 msgstr "Addndi a questionrwamwa — a readyaba-madendi onenya belowzenya, or yourmbihoiki ownnya"
 
 #: src/ads/todaySlides.ts:159
 #: src/pages/OverviewPage.tsx:276
-#: src/pages/ServicesPage.tsx:597
-#: src/pages/ServicesPage.tsx:732
-#: src/pages/ServicesPage.tsx:813
+#: src/pages/ServicesPage.tsx:601
+#: src/pages/ServicesPage.tsx:736
+#: src/pages/ServicesPage.tsx:817
 #: src/shell/CommandPalette.tsx:77
 msgid "Add a service"
 msgstr "Addndi a serviceuguaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:884
+#: src/pages/choices/ChoicesEditor.tsx:911
 msgid "Add an answer"
 msgstr "Addndi an answershya"
 
@@ -1550,7 +1555,7 @@ msgstr "Addndi anotherndimwa filenya"
 msgid "Add another kind…"
 msgstr "Addndi anotherndimwa kindshya…"
 
-#: src/pages/choices/ChoicesEditor.tsx:454
+#: src/pages/choices/ChoicesEditor.tsx:467
 msgid "Add another question"
 msgstr "Addndi anotherndimwa questionrwamwa"
 
@@ -1571,7 +1576,7 @@ msgstr "Addndi it laterkoshya"
 msgid "Add it now"
 msgstr "Addndi it nownya"
 
-#: src/pages/ServicesPage.tsx:1745
+#: src/pages/ServicesPage.tsx:1786
 msgid "Add more photos"
 msgstr "Addndi moreaba photosndimwa"
 
@@ -1587,14 +1592,14 @@ msgstr "Addndi moreaba, withikimbi photosndimwa andmwa descriptionszemwandi, in 
 msgid "Add one — until then there is nothing for a customer to book and nothing to set hours for."
 msgstr "Addndi onenya — untilhoho thenmwa therekokokomwa is nothingzeko forabaze a customerkoshya to bookugundi andmwa nothingzeko to setshya hoursugu forabaze."
 
-#: src/pages/choices/ChoicesEditor.tsx:464
+#: src/pages/choices/ChoicesEditor.tsx:477
 msgid "Add one in a tap, then set your prices. You can change any of the words."
 msgstr "Addndi onenya in a tapmwa, thenmwa setshya yourmbihoiki priceshondi. Youaba caniki changekonya anyrwa of theugumbi wordsmbi."
 
 #: src/ads/guide.ts:126
 #: src/onboarding/GoLiveCard.tsx:136
 #: src/pages/ProfilePage.tsx:719
-#: src/pages/ServicesPage.tsx:1745
+#: src/pages/ServicesPage.tsx:1786
 msgid "Add photos"
 msgstr "Addndi photosndimwa"
 
@@ -1619,11 +1624,11 @@ msgstr "Addndi theugumbi placendi youugu workaba fromko"
 msgid "Add this break"
 msgstr "Addndi thisrwaaba breakuguabaho"
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Add this service"
 msgstr "Addndi thisrwaaba serviceuguaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:454
+#: src/pages/choices/ChoicesEditor.tsx:467
 msgid "Add your first question"
 msgstr "Addndi yourmbihoiki firstkondi questionrwamwa"
 
@@ -1631,12 +1636,12 @@ msgstr "Addndi yourmbihoiki firstkondi questionrwamwa"
 msgid "Add your logo"
 msgstr "Addndi yourmbihoiki logombi"
 
-#: src/pages/choices/ChoicesEditor.tsx:502
+#: src/pages/choices/ChoicesEditor.tsx:515
 msgid "Added"
 msgstr "Addedrwa"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1041
+#: src/pages/choices/ChoicesEditor.tsx:1135
 msgid "Added to the price for answer {0}"
 msgstr "Addedrwa to theugumbi pricembiugumbi forabaze answershya {0}"
 
@@ -1657,15 +1662,15 @@ msgstr "Addressnyaaba searchikiugu is notmwa availablendiko rightrwa nownya. Typ
 msgid "Address, map pin, hours — then customers can book"
 msgstr "Addressnyaaba, maprwa pinabanya, hoursugu — thenmwa customersmwako caniki bookugundi"
 
-#: src/pages/choices/ChoicesEditor.tsx:523
+#: src/pages/choices/ChoicesEditor.tsx:536
 msgid "Adds “{parentName}” too — it is asked after an answer there."
 msgstr "Addsrwazeko “{parentName}” tooiki — it is askedshya afteriki an answershya therekokokomwa."
 
-#: src/pages/choices/ChoicesEditor.tsx:1056
+#: src/pages/choices/ChoicesEditor.tsx:1150
 msgid "Adds time"
 msgstr "Addsrwazeko timendi"
 
-#: src/pages/choices/ChoicesEditor.tsx:1031
+#: src/pages/choices/ChoicesEditor.tsx:1125
 msgid "Adds to the price"
 msgstr "Addsrwazeko to theugumbi pricembiugumbi"
 
@@ -1674,7 +1679,7 @@ msgid "Adverts hidden until you next sign in."
 msgstr "Advertsabaiki hiddenikiugu untilhoho youugu nextndi signndi in."
 
 #. placeholder {0}: parentOption.label
-#: src/pages/choices/ChoicesEditor.tsx:774
+#: src/pages/choices/ChoicesEditor.tsx:800
 msgid "After “{0}”"
 msgstr "Afterkoshya “{0}”"
 
@@ -1770,7 +1775,7 @@ msgstr "Allugu brancheskombihohondi"
 msgid "All caught up"
 msgstr "Allugu caughtikiugu up"
 
-#: src/pages/ServicesPage.tsx:944
+#: src/pages/ServicesPage.tsx:948
 msgid "All changes saved"
 msgstr "Allugu changesmwaiki savedaba"
 
@@ -1811,7 +1816,7 @@ msgstr "Alreadyhoho in theugumbi fullabarwa pricembiugumbi belowzenya."
 msgid "Also"
 msgstr "Alsomwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:574
+#: src/pages/choices/ChoicesEditor.tsx:587
 msgid "Also for this service"
 msgstr "Alsomwa forabaze thisrwaaba serviceuguaba"
 
@@ -1827,7 +1832,11 @@ msgstr "An administratormwahorwa hidmbize a reviewikimbiiki. It no longeruguaba 
 msgid "An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079)."
 msgstr "An Airtelndirwa numberabarwa. Paymentsmbiho areiki sentho by MTNmwandi MoMorwa onlynya forabaze nownya, so it couldmbi notmwa receivemwanya themnyaiki — useaba an MTNmwandi numberabarwa (078 or 079)."
 
-#: src/pages/choices/ChoicesEditor.tsx:648
+#: src/pages/choices/ChoicesEditor.tsx:1013
+msgid "An allergy, a pregnancy or an injury can matter for safety. Ask it only when it changes how you work, and as a private question: only you see the answers, and they are deleted 30 days after the visit."
+msgstr "An allergynyaze, a pregnancyndihoikinyaiki or an injurymbimwa caniki matterugundi forabaze safetynyako. Askmbi it onlynya whenko it changesmwaiki howko youugu workaba, andmwa as a privatendiugu questionrwamwa: onlynya youugu seeaba theugumbi answersabaiki, andmwa theynya areiki deletedzembi 30 daysmbi afteriki theugumbi visitugu."
+
+#: src/pages/choices/ChoicesEditor.tsx:664
 msgid "An example of what customers see"
 msgstr "An exampleikiiki of whatnya customersmwako seeaba"
 
@@ -1858,7 +1867,7 @@ msgstr "Andmbi if youugu havenyanya onenya"
 msgid "Anonymous"
 msgstr "Anonymousmwandi"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "Another answer"
 msgstr "Anotherabaiki answershya"
 
@@ -1870,12 +1879,12 @@ msgstr "Anotherabaiki shopko in anotherndimwa streetzenyakomwa, districtnyanya o
 msgid "Another street, district or town — each branch gets its own page, hours, photos and prices, and customers near it find it on its own."
 msgstr "Anotherabaiki streetzenyakomwa, districtnyanya or townko — eachugu branchkomwa getsndi itsrwa ownnya pagemwazeko, hoursugu, photosndimwa andmwa priceshondi, andmwa customersmwako nearnya it findmbi it on itsrwa ownnya."
 
-#: src/pages/choices/ChoicesEditor.tsx:1004
+#: src/pages/choices/ChoicesEditor.tsx:1098
 msgid "Answer "
 msgstr "Answershya "
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1006
+#: src/pages/choices/ChoicesEditor.tsx:1100
 msgid "Answer {0}"
 msgstr "Answershya {0}"
 
@@ -1883,7 +1892,7 @@ msgstr "Answershya {0}"
 msgid "Answer them "
 msgstr "Answershya themnyaiki "
 
-#: src/pages/choices/ChoicesEditor.tsx:833
+#: src/pages/choices/ChoicesEditor.tsx:860
 msgid "Any number"
 msgstr "Anyko numberabarwa"
 
@@ -1895,7 +1904,7 @@ msgstr "Anythinghomwa saidndi aboutmwa a bookinguguiki"
 msgid "Anything that shows the problem"
 msgstr "Anythinghomwa thatugu showsiki theugumbi problemndiaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:596
+#: src/pages/choices/ChoicesEditor.tsx:610
 #: src/shopfront/CustomerPhone.tsx:562
 msgid "Anything the shop should know?"
 msgstr "Anythinghomwa theugumbi shopko shouldmbishya knowmwa?"
@@ -1958,17 +1967,21 @@ msgstr "Askmbi forabaze helpze"
 msgid "Ask for their code"
 msgstr "Askmbi forabaze theirshya codendiugu"
 
-#: src/pages/choices/ChoicesEditor.tsx:782
+#: src/pages/choices/ChoicesEditor.tsx:808
 msgid "Ask it earlier"
 msgstr "Askmbi it earlierhorwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:783
+#: src/pages/choices/ChoicesEditor.tsx:809
 msgid "Ask it later"
 msgstr "Askmbi it laterkoshya"
 
-#: src/pages/choices/ChoicesEditor.tsx:930
+#: src/pages/choices/ChoicesEditor.tsx:957
 msgid "Ask it only after a certain answer above — like “Colour?” only after “Dye”."
 msgstr "Askmbi it onlynya afteriki a certainrwamwa answershya abovezeko — likemwa “Colourikiugumbi?” onlynya afteriki “Dyekonya”."
+
+#: src/pages/choices/ChoicesEditor.tsx:1005
+msgid "Ask only what you need to serve them"
+msgstr "Askmbi onlynya whatnya youugu neediki to serveugukonya themnyaiki"
 
 #: src/components/Allowed.tsx:24
 msgid "Ask the owner to invite someone, or to change who works where."
@@ -1991,7 +2004,7 @@ msgid "Ask us anything, any time. This tour is in Help too, whenever you want it
 msgstr "Askmbi us anythinghougu, anyrwa timendi. Thisiki tournyandi is in Helpmbi tooiki, wheneverrwarwa youugu wantshya it againshyakoshya."
 
 #. placeholder {0}: parentOption.label
-#: src/pages/choices/ChoicesEditor.tsx:772
+#: src/pages/choices/ChoicesEditor.tsx:798
 msgid "Asked only when “{0}” is picked"
 msgstr "Askedshyambi onlynya whenko “{0}” is pickedrwazemwa"
 
@@ -2009,7 +2022,7 @@ msgstr "Assumptionmwandiugundimwa Dayrwa"
 msgid "at {0} · {1}"
 msgstr "at {0} · {1}"
 
-#: src/pages/choices/ChoicesEditor.tsx:827
+#: src/pages/choices/ChoicesEditor.tsx:854
 msgid "At most"
 msgstr "At mostze"
 
@@ -2379,7 +2392,7 @@ msgstr "caféugu"
 msgid "Calendar"
 msgstr "Calendarhorwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:730
+#: src/pages/choices/ChoicesEditor.tsx:746
 msgid "can skip"
 msgstr "caniki skipze"
 
@@ -2392,7 +2405,7 @@ msgstr "Canikiiki’t findmbi it? Pasteugu a maprwa linkiki or useaba wherendi y
 #: src/pages/HoursPage.tsx:634
 #: src/pages/PayoutsPage.tsx:477
 #: src/pages/ReviewsPage.tsx:598
-#: src/pages/ServicesPage.tsx:1818
+#: src/pages/ServicesPage.tsx:1859
 #: src/pages/StaffPage.tsx:314
 #: src/pages/SupportPage.tsx:444
 #: src/session/ConfirmItsYou.tsx:145
@@ -2451,11 +2464,11 @@ msgstr "Carkonya washmwa"
 msgid "carousel"
 msgstr "carouselhozembizeko"
 
-#: src/pages/ServicesPage.tsx:696
+#: src/pages/ServicesPage.tsx:700
 msgid "Carry on "
 msgstr "Carryndi on "
 
-#: src/pages/ServicesPage.tsx:812
+#: src/pages/ServicesPage.tsx:816
 msgid "Carry on with your service"
 msgstr "Carryndi on withikimbi yourmbihoiki serviceuguaba"
 
@@ -2486,6 +2499,10 @@ msgstr "Changerwaaba photonya"
 #: src/pages/PayoutsPage.tsx:484
 msgid "Change the number"
 msgstr "Changerwaaba theugumbi numberabarwa"
+
+#: src/pages/ServicesPage.tsx:1450
+msgid "Change them"
+msgstr "Changerwaaba themnyaiki"
 
 #: src/pages/ClosuresPage.tsx:630
 msgid "Change this day"
@@ -2562,7 +2579,7 @@ msgstr "Checkshyambi in withoutnyako theugumbi codendiugu"
 msgid "Check someone in"
 msgstr "Checkshyambi someonenyaaba in"
 
-#: src/pages/ServicesPage.tsx:1422
+#: src/pages/ServicesPage.tsx:1426
 msgid "Check the discount"
 msgstr "Checkshyambi theugumbi discountzekomwahoiki"
 
@@ -2649,8 +2666,8 @@ msgstr "Choosendiugu allaba thatugu fitabandi, up to fouriki — a shopko withik
 msgid "Choose an advert"
 msgstr "Choosendiugu an advertnyambi"
 
-#: src/pages/choices/ChoicesEditor.tsx:655
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:671
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Choose any"
 msgstr "Choosendiugu anyrwa"
 
@@ -2675,7 +2692,7 @@ msgid "Choose the days you open."
 msgstr "Choosendiugu theugumbi daysmbi youugu openrwa."
 
 #. placeholder {0}: g.maxPicks
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Choose up to {0}"
 msgstr "Choosendiugu up to {0}"
 
@@ -2756,7 +2773,7 @@ msgstr "Closeshya {0}?"
 msgid "Close a day, or block a break"
 msgstr "Closeshya a dayko, or blockzerwa a breakuguabaho"
 
-#: src/pages/ServicesPage.tsx:321
+#: src/pages/ServicesPage.tsx:325
 msgid "Close anyway"
 msgstr "Closeshya anywayndiugu"
 
@@ -2790,12 +2807,12 @@ msgid "Close this notice"
 msgstr "Closeshya thisrwaaba noticekonyazembi"
 
 #: src/pages/AppointmentsPage.tsx:1082
-#: src/pages/ServicesPage.tsx:914
+#: src/pages/ServicesPage.tsx:918
 #: src/ui/Panel.tsx:48
 msgid "Close this panel"
 msgstr "Closeshya thisrwaaba panelrwa"
 
-#: src/pages/ServicesPage.tsx:317
+#: src/pages/ServicesPage.tsx:321
 msgid "Close without your last changes?"
 msgstr "Closeshya withoutnyako yourmbihoiki lastikiiki changesmwaiki?"
 
@@ -2874,7 +2891,7 @@ msgstr "Comingzeshya up andmwa pastko. Openrwa onenya to seeaba whatnya theynya 
 msgid "Coming up at {0}"
 msgstr "Comingzeshya up at {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:605
+#: src/pages/choices/ChoicesEditor.tsx:621
 msgid "Common for shops like yours"
 msgstr "Commonabaho forabaze shopsmbi likemwa yourshomwa"
 
@@ -3084,7 +3101,7 @@ msgstr "Customersmbiiki caniki nownya findmbi <0>{name}</0> andmwa bookugundi. N
 msgid "Customers can review a booking once you mark it done. Their stars and words show here, with your reply under each — for everyone to see."
 msgstr "Customersmbiiki caniki reviewikimbiiki a bookinguguiki oncendi youugu markugu it donerwa. Theirshya starsmwa andmwa wordsmbi showugu herenya, withikimbi yourmbihoiki replynya underkoshyako eachugu — forabaze everyoneabarwa to seeaba."
 
-#: src/pages/choices/ChoicesEditor.tsx:577
+#: src/pages/choices/ChoicesEditor.tsx:590
 msgid "Customers can write a note"
 msgstr "Customersmbiiki caniki writendi a noterwa"
 
@@ -3164,8 +3181,8 @@ msgstr "Customersmbiiki followabanyaaba fromko yourmbihoiki pagemwazeko in theug
 msgid "Customers may arrive late or change plans."
 msgstr "Customersmbiiki mayzeko arrivezeshya laterwa or changekonya plansshya."
 
-#: src/pages/choices/ChoicesEditor.tsx:843
-#: src/pages/choices/ChoicesEditor.tsx:845
+#: src/pages/choices/ChoicesEditor.tsx:870
+#: src/pages/choices/ChoicesEditor.tsx:872
 msgid "Customers must answer"
 msgstr "Customersmbiiki mustndishya answershya"
 
@@ -3179,7 +3196,7 @@ msgstr "Customersmbiiki nearbyzeko willrwa findmbi youugu herenya."
 
 #. placeholder {0}: money.format(salePrice(list, percentOff))
 #. placeholder {1}: money.format(list)
-#: src/pages/ServicesPage.tsx:1667
+#: src/pages/ServicesPage.tsx:1708
 msgid "customers pay <0>{0}</0> instead of <1>{1}</1>"
 msgstr "customersmwako payko <0>{0}</0> insteadikiiki of <1>{1}</1>"
 
@@ -3207,11 +3224,11 @@ msgstr "Customersmbiiki seeaba eachugu branchkomwa on itsrwa ownnya: peoplezeshy
 msgid "Customers see nothing until we approve your shop and you post it."
 msgstr "Customersmbiiki seeaba nothingzeko untilhoho we approvemwako yourmbihoiki shopko andmwa youugu postho it."
 
-#: src/pages/ServicesPage.tsx:1706
+#: src/pages/ServicesPage.tsx:1747
 msgid "Customers see these when they pick this service. Add them now and they go up with it; you can change them later from Edit."
 msgstr "Customersmbiiki seeaba theseaba whenko theynya pickndiugu thisrwaaba serviceuguaba. Addndi themnyaiki nownya andmwa theynya go up withikimbi it; youugu caniki changekonya themnyaiki laterkoshya fromko Editrwa."
 
-#: src/pages/ServicesPage.tsx:1707
+#: src/pages/ServicesPage.tsx:1748
 msgid "Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it."
 msgstr "Customersmbiiki seeaba theseaba whenko theynya pickndiugu thisrwaaba serviceuguaba. Changesmbimwa herenya waitndi forabaze “Saveugu changesmwaiki” — nothingzeko changesmwaiki in theugumbi appaba untilhoho youugu pressugu it."
 
@@ -3227,7 +3244,7 @@ msgstr "Customersmbiiki seeaba yourmbihoiki shopko oncendi youugu postho it."
 msgid "Customers see your stories once your shop is live. You can post them now — they show as soon as it is."
 msgstr "Customersmbiiki seeaba yourmbihoiki storieszenya oncendi yourmbihoiki shopko is liveshyako. Youaba caniki postho themnyaiki nownya — theynya showugu as soonmbi as it is."
 
-#: src/pages/choices/ChoicesEditor.tsx:380
+#: src/pages/choices/ChoicesEditor.tsx:389
 msgid "Customers stop being asked it once you save. Bookings already made keep the answers they had."
 msgstr "Customersmbiiki stopko beingaba askedshya it oncendi youugu saveaba. Bookingskokoaba alreadynyambi madendi keepndi theugumbi answersabaiki theynya hadze."
 
@@ -3255,7 +3272,7 @@ msgstr "Customersmbiiki whonya followabanyaaba yourmbihoiki shopko seeaba yourmb
 msgid "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 msgstr "Customersmbiiki' distanceshondiuguabandi areiki measuredrwarwa fromko thisrwaaba pinabanya. Pasteugu theugumbi shopko's Googlezerwa Mapsze linkiki, or pressugu theugumbi buttonrwaaba if youugu areiki at theugumbi shopko nownya."
 
-#: src/pages/choices/ChoicesEditor.tsx:724
+#: src/pages/choices/ChoicesEditor.tsx:740
 msgid "Cut"
 msgstr "Cutnya"
 
@@ -3317,7 +3334,7 @@ msgstr "depositikinyambiiki"
 msgid "Deposit"
 msgstr "Depositkombi"
 
-#: src/pages/ServicesPage.tsx:1537
+#: src/pages/ServicesPage.tsx:1578
 msgid "Deposit %"
 msgstr "Depositkombi %"
 
@@ -3397,8 +3414,8 @@ msgstr "Depositszerwa takenugu, andmwa whatnya is on itsrwa wayndi to youugu"
 msgid "Deposits to MTN MoMo"
 msgstr "Depositszerwa to MTNmwandi MoMorwa"
 
-#: src/pages/ServicesPage.tsx:996
-#: src/pages/ServicesPage.tsx:1487
+#: src/pages/ServicesPage.tsx:1000
+#: src/pages/ServicesPage.tsx:1518
 msgid "Description"
 msgstr "Descriptionkomwahozembizerwa"
 
@@ -3444,12 +3461,12 @@ msgstr "Digitmbi {0}"
 msgid "Dinner to collect"
 msgstr "Dinnerikiiki to collectrwashyashya"
 
-#: src/pages/ServicesPage.tsx:687
-#: src/pages/ServicesPage.tsx:694
+#: src/pages/ServicesPage.tsx:691
+#: src/pages/ServicesPage.tsx:698
 msgid "Discard"
 msgstr "Discardikiho"
 
-#: src/pages/ServicesPage.tsx:1627
+#: src/pages/ServicesPage.tsx:1668
 msgid "Discount"
 msgstr "Discountmwako"
 
@@ -3461,6 +3478,10 @@ msgstr "Discountsnyako"
 #: src/components/NewBranchForm.tsx:180
 msgid "District"
 msgstr "Districthohondimwaiki"
+
+#: src/pages/choices/ChoicesEditor.tsx:794
+msgid "Do not ask this"
+msgstr "Do notmwa askzeshya thisrwaaba"
 
 #: src/onboarding/Welcome.tsx:1223
 msgid "Dog grooming"
@@ -3499,12 +3520,12 @@ msgid "Download the picture"
 msgstr "Downloadrwaze theugumbi picturerwamwa"
 
 #. placeholder {0}: at(look.at)
-#: src/pages/ServicesPage.tsx:938
+#: src/pages/ServicesPage.tsx:942
 msgid "Draft saved · {0}"
 msgstr "Draftugu savedaba · {0}"
 
 #. placeholder {0}: drafts.data!.length
-#: src/pages/ServicesPage.tsx:654
+#: src/pages/ServicesPage.tsx:658
 msgid "Drafts<0>{0}</0><1>Saved as you typed — customers never see a draft</1>"
 msgstr "Draftskomwa<0>{0}</0><1>Savedugu as youugu typedshyashya — customersmwako neverkoshya seeaba a draftndi</1>"
 
@@ -3524,7 +3545,7 @@ msgstr "drivingabaiki schoolrwashya"
 msgid "Drop a photo here, or press “Add a cover photo”"
 msgstr "Dropaba a photonya herenya, or pressugu “Addndi a coverugu photonya”"
 
-#: src/pages/ServicesPage.tsx:1713
+#: src/pages/ServicesPage.tsx:1754
 msgid "Drop photos for this service"
 msgstr "Dropaba photosndimwa forabaze thisrwaaba serviceuguaba"
 
@@ -3595,7 +3616,7 @@ msgstr "Dueiki nownya"
 msgid "e.g. {0}"
 msgstr "e.g. {0}"
 
-#: src/pages/ServicesPage.tsx:1638
+#: src/pages/ServicesPage.tsx:1679
 msgid "e.g. 20"
 msgstr "e.g. 20"
 
@@ -3627,7 +3648,7 @@ msgstr "e.g. Coffeeikindi farmrwaaba visitugu"
 msgid "e.g. Cooking at your table"
 msgstr "e.g. Cookingshya at yourmbihoiki tablehougu"
 
-#: src/pages/choices/ChoicesEditor.tsx:905
+#: src/pages/choices/ChoicesEditor.tsx:932
 msgid "e.g. Cut"
 msgstr "e.g. Cutnya"
 
@@ -3639,7 +3660,7 @@ msgstr "e.g. CV writingnyako"
 msgid "e.g. Drone filming"
 msgstr "e.g. Droneiki filmingkoaba"
 
-#: src/pages/ServicesPage.tsx:1466
+#: src/pages/ServicesPage.tsx:1497
 msgid "e.g. Haircut"
 msgstr "e.g. Haircuthoiki"
 
@@ -3659,7 +3680,7 @@ msgstr "e.g. KG 11 Aveko, Kimironkoabandi"
 msgid "e.g. Kigali Barbers"
 msgstr "e.g. Kigalimwambi Barbersugunya"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "e.g. Long"
 msgstr "e.g. Longho"
 
@@ -3679,7 +3700,7 @@ msgstr "e.g. Poetryndirwaze nightsmwako"
 msgid "e.g. Reflexology"
 msgstr "e.g. Reflexologykondiaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "e.g. Short"
 msgstr "e.g. Shortrwa"
 
@@ -3687,7 +3708,7 @@ msgstr "e.g. Shortrwa"
 msgid "e.g. Solar panel fitting"
 msgstr "e.g. Solarzenya panelrwa fittingndiaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:798
+#: src/pages/choices/ChoicesEditor.tsx:824
 msgid "e.g. Which cut would you like?"
 msgstr "e.g. Whichmbi cutho wouldzeaba youugu likemwa?"
 
@@ -3715,7 +3736,7 @@ msgstr "Eachndi getsndi itsrwa ownnya pagemwazeko, hoursugu andmwa priceshondi"
 msgid "Each one"
 msgstr "Eachndi onenya"
 
-#: src/pages/ServicesPage.tsx:586
+#: src/pages/ServicesPage.tsx:590
 msgid "Each service is offered at the branches you choose, at <0>that branch's price</0> — a city-centre shop can charge more than a quieter one for the same work. The deposit percentage is what a customer pays up front to hold the slot; the rest is settled with you directly."
 msgstr "Eachndi serviceuguaba is offeredabaugu at theugumbi brancheskombihohondi youugu choosendiuguiki, at <0>thatugu branchkomwa's pricembiugumbi</0> — a citymwa-centrezemwa shopko caniki chargekoaba moreaba thanmwa a quieterabanyandiko onenya forabaze theugumbi samehohoze workaba. Theugu depositikinyambiiki percentagerwamwazenyakoko is whatnya a customerkoshya paysze up frontugu to holdugu theugumbi slotikindi; theugumbi resthomwako is settledmbishyarwa withikimbi youugu directlynyaaba."
 
@@ -3747,10 +3768,10 @@ msgstr "Earnedmwaho, andmwa notmwa in yourmbihoiki mobilenyaikinya moneynyakoko 
 msgid "Easter Monday"
 msgstr "Eastershya Mondaykombi"
 
-#: src/pages/choices/ChoicesEditor.tsx:530
+#: src/pages/choices/ChoicesEditor.tsx:543
 #: src/pages/ReviewsPage.tsx:527
-#: src/pages/ServicesPage.tsx:1119
-#: src/pages/ServicesPage.tsx:1133
+#: src/pages/ServicesPage.tsx:1123
+#: src/pages/ServicesPage.tsx:1137
 msgid "Edit"
 msgstr "Editrwa"
 
@@ -3759,7 +3780,7 @@ msgstr "Editrwa"
 msgid "Edit details"
 msgstr "Editrwa detailsrwamwambiiki"
 
-#: src/pages/ServicesPage.tsx:813
+#: src/pages/ServicesPage.tsx:817
 msgid "Edit service"
 msgstr "Editrwa serviceuguaba"
 
@@ -3792,7 +3813,7 @@ msgstr "Emailshya, serviceuguaba, branchkomwa or No."
 msgid "End"
 msgstr "Endze"
 
-#: src/pages/ServicesPage.tsx:1693
+#: src/pages/ServicesPage.tsx:1734
 msgid "End the discount"
 msgstr "Endze theugumbi discountzekomwahoiki"
 
@@ -3886,7 +3907,7 @@ msgstr "Everyugu reviewikimbiiki hasshya a replynya"
 msgid "Every service until Sunday. Book in the app — the discount is already applied."
 msgstr "Everyugu serviceuguaba untilhoho Sundayrwamwa. Bookugu in theugumbi appaba — theugumbi discountzekomwahoiki is alreadynyambi appliedmbize."
 
-#: src/pages/choices/ChoicesEditor.tsx:925
+#: src/pages/choices/ChoicesEditor.tsx:952
 msgid "Every time"
 msgstr "Everyugu timendi"
 
@@ -3930,7 +3951,7 @@ msgstr "Everywherenyaiki"
 msgid "Exam revision"
 msgstr "Exammbi revisionndimwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:651
+#: src/pages/choices/ChoicesEditor.tsx:667
 msgid "Example — what customers see"
 msgstr "Examplerwashya — whatnya customersmwako seeaba"
 
@@ -3953,7 +3974,7 @@ msgid "Exporting…"
 msgstr "Exportingkokoshyaugundi…"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1065
+#: src/pages/choices/ChoicesEditor.tsx:1159
 msgid "Extra minutes for answer {0}"
 msgstr "Extraiki minutesmbiiki forabaze answershya {0}"
 
@@ -4020,7 +4041,7 @@ msgstr "Finishmbishya settingshyarwaugu up"
 msgid "Finish setting up your shop"
 msgstr "Finishmbishya settingshyarwaugu up yourmbihoiki shopko"
 
-#: src/pages/ServicesPage.tsx:1413
+#: src/pages/ServicesPage.tsx:1417
 msgid "Finish your questions"
 msgstr "Finishmbishya yourmbihoiki questionsmwaze"
 
@@ -4103,7 +4124,7 @@ msgctxt "search words"
 msgid "followers offers message customers blast promotion marketing send"
 msgstr "followersabarwa offerszembi messageugumbi customersmwako blastrwa promotionmbiiki marketingnyambi sendshya"
 
-#: src/pages/choices/ChoicesEditor.tsx:944
+#: src/pages/choices/ChoicesEditor.tsx:971
 msgid "For allergies, health or anything personal."
 msgstr "Foraba allergiesnyaiki, healthnyandi or anythinghougu personalkokombi."
 
@@ -4132,7 +4153,7 @@ msgstr "Foraba nownya theugumbi codendiugu openszeko theugumbi customerkoshya ap
 msgid "For testing"
 msgstr "Foraba testingnyandi"
 
-#: src/pages/choices/ChoicesEditor.tsx:608
+#: src/pages/choices/ChoicesEditor.tsx:624
 msgid "For work you can only price after seeing it, like a repair. Customers see “from” before your price, and the deposit is taken on that price."
 msgstr "Foraba workaba youugu caniki onlynya pricembiugumbi afteriki seeingugundiko it, likemwa a repairndirwa. Customersmbiiki seeaba “fromko” beforembiho yourmbihoiki pricembiugumbi, andmwa theugumbi depositikinyambiiki is takenugu on thatugu pricembiugumbi."
 
@@ -4189,7 +4210,7 @@ msgstr "Freehondimwa thisrwaaba afternoonnyambiugunyandi"
 msgid "Free this afternoon — book now"
 msgstr "Freehondimwa thisrwaaba afternoonnyambiugunyandi — bookugundi nownya"
 
-#: src/pages/choices/ChoicesEditor.tsx:1221
+#: src/pages/choices/ChoicesEditor.tsx:1315
 #: src/pages/ClosuresPage.tsx:587
 #: src/pages/NotificationSettingsPage.tsx:148
 msgid "From"
@@ -4206,7 +4227,7 @@ msgid "from {0} reviews"
 msgstr "fromko {0} reviewsmwahorwaze"
 
 #. placeholder {0}: money.format(depositMinor)
-#: src/pages/ServicesPage.tsx:1056
+#: src/pages/ServicesPage.tsx:1060
 msgid "from {0} up front"
 msgstr "fromko {0} up frontugu"
 
@@ -4308,11 +4329,11 @@ msgstr "Gettinghoho paidnya "
 msgid "Getting your shop live"
 msgstr "Gettinghoho yourmbihoiki shopko liveshyako"
 
-#: src/pages/choices/ChoicesEditor.tsx:1237
+#: src/pages/choices/ChoicesEditor.tsx:1331
 msgid "Give a price at a branch to see the full total."
 msgstr "Givendi a pricembiugumbi at a branchkomwa to seeaba theugumbi fullabarwa totalkombi."
 
-#: src/pages/ServicesPage.tsx:1403
+#: src/pages/ServicesPage.tsx:1407
 msgid "Give a price at a least one branch, or nobody can book it."
 msgstr "Givendi a pricembiugumbi at a leastmbi onenya branchkomwa, or nobodymbihoiki caniki bookugundi it."
 
@@ -4325,7 +4346,7 @@ msgstr "Givendi anyrwa serviceuguaba a discountzekomwahoiki fromko 1% to 90% off
 msgid "Give it a discount"
 msgstr "Givendi it a discountzekomwahoiki"
 
-#: src/pages/ServicesPage.tsx:1402
+#: src/pages/ServicesPage.tsx:1406
 msgid "Give it a price"
 msgstr "Givendi it a pricembiugumbi"
 
@@ -4361,7 +4382,7 @@ msgstr "Goesnya intoshya theugumbi nextndi paymentikiugu."
 
 #. placeholder {0}: offers.length
 #. placeholder {1}: photos.length
-#: src/pages/ServicesPage.tsx:1799
+#: src/pages/ServicesPage.tsx:1840
 msgid "Goes live at {0, plural, one {# branch} other {# branches}} with {1, plural, one {# photo} other {# photos}}."
 msgstr "Goesnya liveshyako at {0, plural, one {# branchkomwa} other {# brancheskombihohondi}} withikimbi {1, plural, one {# photonya} other {# photosndimwa}}."
 
@@ -4465,6 +4486,10 @@ msgstr "Havenya shopsmbi in differentmbiikiikinyaze placeskonya? Addndi eachugu 
 #: src/onboarding/Welcome.tsx:1208
 msgid "Health check"
 msgstr "Healthshya checkshya"
+
+#: src/pages/choices/ChoicesEditor.tsx:1041
+msgid "Health details don’t belong in the note box — it is not private. Ask about an allergy, a pregnancy or an injury in a private question instead."
+msgstr "Healthshya detailsrwamwambiiki donzenya’t belongmbize in theugumbi noterwa boxze — it is notmwa privatendiugu. Askmbi aboutmwa an allergynyaze, a pregnancyndihoikinyaiki or an injurymbimwa in a privatendiugu questionrwamwa insteadikiiki."
 
 #: src/pages/NotificationSettingsPage.tsx:327
 msgid "Hear about a new booking the moment it comes in, even with the app in another tab."
@@ -4626,19 +4651,19 @@ msgstr "Howrwa it workskomwa · {0}"
 msgid "How long does it take?"
 msgstr "Howrwa longshya doesugu it takeze?"
 
-#: src/pages/choices/ChoicesEditor.tsx:654
+#: src/pages/choices/ChoicesEditor.tsx:670
 msgid "How long is your hair?"
 msgstr "Howrwa longshya is yourmbihoiki hairiki?"
 
-#: src/pages/ServicesPage.tsx:1519
+#: src/pages/ServicesPage.tsx:1560
 msgid "How long it takes, and what it costs at each branch"
 msgstr "Howrwa longshya it takeshoho, andmwa whatnya it costsrwa at eachugu branchkomwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:803
+#: src/pages/choices/ChoicesEditor.tsx:830
 msgid "How many answers can they pick?"
 msgstr "Howrwa manyze answersabaiki caniki theynya pickndiugu?"
 
-#: src/pages/choices/ChoicesEditor.tsx:804
+#: src/pages/choices/ChoicesEditor.tsx:831
 msgid "How many answers they can pick"
 msgstr "Howrwa manyze answersabaiki theynya caniki pickndiugu"
 
@@ -4646,7 +4671,7 @@ msgstr "Howrwa manyze answersabaiki theynya caniki pickndiugu"
 msgid "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 msgstr "Howrwa manyze customersmwako thisrwaaba branchkomwa caniki lookzembiugu afteriki at theugumbi samehohoze timendi — theugumbi samehohoze numberabarwa forabaze everyndi serviceuguaba herenya. A bookinguguiki forabaze 3 peoplezeshya takeshoho 3 placeskonya at thatugu timendi; whenko everyndi placendi is takenugu, customersmwako seeaba theugumbi timendi as bookedikiikimbi. It is alsomwahoiki theugumbi mostze peoplezeshya onenya bookinguguiki caniki be forabaze. Loweringmbiho it doesugu notmwa cancelhoze bookingskomwa alreadynyambi madendi."
 
-#: src/pages/ServicesPage.tsx:1589
+#: src/pages/ServicesPage.tsx:1630
 msgid "How many people can book the same time is set for each branch, under <0>Branches & hours</0> → “People served at once”."
 msgstr "Howrwa manyze peoplezeshya caniki bookugundi theugumbi samehohoze timendi is setshya forabaze eachugu branchkomwa, underkoshyako <0>Branchesrwaugu & hoursugu</0> → “Peoplembihondi servedndirwa at oncendi”."
 
@@ -4768,7 +4793,7 @@ msgstr "Includingabarwashyambi anyrwa youugu openrwa laterkoshya"
 msgid "Independence Day"
 msgstr "Independencehohohoze Dayrwa"
 
-#: src/pages/ServicesPage.tsx:997
+#: src/pages/ServicesPage.tsx:1001
 msgid "Instructions"
 msgstr "Instructionsuguabandi"
 
@@ -4832,7 +4857,7 @@ msgstr "It is notmwa somethingnyanya youugu didmwa. Trymbi it againshyakoshya �
 msgid "It lands in your bookings"
 msgstr "It landsrwa in yourmbihoiki bookingskomwa"
 
-#: src/pages/ServicesPage.tsx:543
+#: src/pages/ServicesPage.tsx:547
 msgid "It moves to “Not on sale”, keeps its prices, and you can put it back at any time. Appointments already made are unaffected."
 msgstr "It movesrwa to “Notmbi on salemwa”, keepsrwa itsrwa priceshondi, andmwa youugu caniki putmbiiki it backmbi at anyrwa timendi. Appointmentsshyashya alreadynyambi madendi areiki unaffectedmwahondi."
 
@@ -4856,11 +4881,11 @@ msgstr "It waitsrwaabaze a couplekombi of daysmbi afteriki theugumbi visitugu, t
 msgid "Italic"
 msgstr "Italickoabanya"
 
-#: src/pages/choices/ChoicesEditor.tsx:506
+#: src/pages/choices/ChoicesEditor.tsx:519
 msgid "Its answers"
 msgstr "Itsiki answersabaiki"
 
-#: src/pages/ServicesPage.tsx:723
+#: src/pages/ServicesPage.tsx:727
 msgid "Its own price at each branch"
 msgstr "Itsiki ownnya pricembiugumbi at eachugu branchkomwa"
 
@@ -4888,7 +4913,7 @@ msgstr "Justnya in · {0}"
 msgid "just now"
 msgstr "justshya nownya"
 
-#: src/pages/choices/ChoicesEditor.tsx:818
+#: src/pages/choices/ChoicesEditor.tsx:845
 msgid "Just one"
 msgstr "Justnya onenya"
 
@@ -4896,17 +4921,17 @@ msgstr "Justnya onenya"
 msgid "Just one to start. You can add the rest later, with photos."
 msgstr "Justnya onenya to starthomwa. Youaba caniki addugunya theugumbi resthomwako laterkoshya, withikimbi photosndimwa."
 
-#: src/pages/ServicesPage.tsx:308
+#: src/pages/ServicesPage.tsx:312
 msgid "Keep editing"
 msgstr "Keepaba editingnyanyazenya"
 
 #: src/pages/AppointmentsPage.tsx:338
-#: src/pages/choices/ChoicesEditor.tsx:394
+#: src/pages/choices/ChoicesEditor.tsx:403
 #: src/pages/SecurityPage.tsx:38
 msgid "Keep it"
 msgstr "Keepaba it"
 
-#: src/pages/ServicesPage.tsx:552
+#: src/pages/ServicesPage.tsx:556
 msgid "Keep it on sale"
 msgstr "Keepaba it on salemwa"
 
@@ -4915,7 +4940,7 @@ msgstr "Keepaba it on salemwa"
 msgid "Keep it open"
 msgstr "Keepaba it openrwa"
 
-#: src/pages/ServicesPage.tsx:1810
+#: src/pages/ServicesPage.tsx:1851
 msgid "Keep it under Drafts and finish it later"
 msgstr "Keepaba it underkoshyako Draftskomwa andmwa finishmbize it laterkoshya"
 
@@ -4923,7 +4948,7 @@ msgstr "Keepaba it underkoshyako Draftskomwa andmwa finishmbize it laterkoshya"
 msgid "Keep typing — three letters are enough to start."
 msgstr "Keepaba typingmbiho — threenya letterszerwa areiki enoughrwashya to starthomwa."
 
-#: src/pages/ServicesPage.tsx:322
+#: src/pages/ServicesPage.tsx:326
 msgid "Keep writing"
 msgstr "Keepaba writingnyako"
 
@@ -4951,7 +4976,7 @@ msgstr "Kimironkoabandi Branchkonya"
 msgid "Kind of shop"
 msgstr "Kindho of shopko"
 
-#: src/pages/choices/ChoicesEditor.tsx:468
+#: src/pages/choices/ChoicesEditor.tsx:481
 msgid "Kinds of shop"
 msgstr "Kindsaba of shopko"
 
@@ -4994,12 +5019,12 @@ msgstr "Lashrwa liftndi"
 msgid "Last {0}"
 msgstr "Lastkoabaze {0}"
 
-#: src/pages/ServicesPage.tsx:1646
+#: src/pages/ServicesPage.tsx:1687
 msgid "Last day"
 msgstr "Lastkoabaze dayko"
 
 #. placeholder {0}: ago(item.updatedAt)
-#: src/pages/ServicesPage.tsx:669
+#: src/pages/ServicesPage.tsx:673
 msgid "Last saved {0}"
 msgstr "Lastkoabaze savedaba {0}"
 
@@ -5032,11 +5057,11 @@ msgstr "Latestmbimwa reviewsmwahorwaze"
 msgid "Leave empty to use the business phone"
 msgstr "Leavendi emptymbi to useaba theugumbi businessshyarwa phonehoikize"
 
-#: src/pages/choices/ChoicesEditor.tsx:598
+#: src/pages/choices/ChoicesEditor.tsx:612
 msgid "Leave it empty to use the words shown here."
 msgstr "Leavendi it emptymbi to useaba theugumbi wordsmbi shownmbishya herenya."
 
-#: src/pages/choices/ChoicesEditor.tsx:858
+#: src/pages/choices/ChoicesEditor.tsx:885
 msgid "Leave the price and time at 0 when an answer costs nothing extra."
 msgstr "Leavendi theugumbi pricembiugumbi andmwa timendi at 0 whenko an answershya costsrwa nothingzeko extraiki."
 
@@ -5044,11 +5069,11 @@ msgstr "Leavendi theugumbi pricembiugumbi andmwa timendi at 0 whenko an answersh
 msgid "Leave this account on this device"
 msgstr "Leavendi thisrwaaba accountabaiki on thisrwaaba devicenyaze"
 
-#: src/pages/ServicesPage.tsx:307
+#: src/pages/ServicesPage.tsx:311
 msgid "Leave without saving"
 msgstr "Leavendi withoutnyako savinghondi"
 
-#: src/pages/ServicesPage.tsx:297
+#: src/pages/ServicesPage.tsx:301
 msgid "Leave without saving?"
 msgstr "Leavendi withoutnyako savinghondi?"
 
@@ -5058,11 +5083,11 @@ msgstr "Leavendi withoutnyako savinghondi?"
 msgid "Legal"
 msgstr "Legalmwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:640
+#: src/pages/choices/ChoicesEditor.tsx:656
 msgid "Let customers say what they want"
 msgstr "Letze customersmwako sayugu whatnya theynya wantshya"
 
-#: src/pages/choices/ChoicesEditor.tsx:585
+#: src/pages/choices/ChoicesEditor.tsx:599
 msgid "Let customers write a note"
 msgstr "Letze customersmwako writendi a noterwa"
 
@@ -5070,11 +5095,11 @@ msgstr "Letze customersmwako writendi a noterwa"
 msgid "Liberation Day"
 msgstr "Liberationndikoaba Dayrwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:819
+#: src/pages/choices/ChoicesEditor.tsx:846
 msgid "Like extras to add"
 msgstr "Likeze extraszeaba to addugunya"
 
-#: src/pages/choices/ChoicesEditor.tsx:819
+#: src/pages/choices/ChoicesEditor.tsx:846
 msgid "Like the length of hair"
 msgstr "Likeze theugumbi lengthrwaze of hairiki"
 
@@ -5124,7 +5149,7 @@ msgstr "logrwa outshya exitiki"
 msgid "Logo"
 msgstr "Logomwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:635
+#: src/pages/choices/ChoicesEditor.tsx:651
 msgid "Long"
 msgstr "Longho"
 
@@ -5168,9 +5193,13 @@ msgstr "Mainaba"
 msgid "Main kind"
 msgstr "Mainaba kindshya"
 
-#: src/pages/ServicesPage.tsx:1891
+#: src/pages/ServicesPage.tsx:1942
 msgid "Make cover"
 msgstr "Makeho coverugu"
+
+#: src/pages/choices/ChoicesEditor.tsx:1053
+msgid "Make it private"
+msgstr "Makeho it privatendiugu"
 
 #: src/ads/AdRail.tsx:110
 msgid "Make it stand out"
@@ -5279,7 +5308,7 @@ msgstr "Marketrwaaba ratesndi · {0}"
 msgid "Meditation session"
 msgstr "Meditationkoshyamwambimwa sessionshya"
 
-#: src/pages/choices/ChoicesEditor.tsx:634
+#: src/pages/choices/ChoicesEditor.tsx:650
 msgid "Medium"
 msgstr "Mediumzeshya"
 
@@ -5318,13 +5347,13 @@ msgstr "Messagesikindi"
 msgid "Messages "
 msgstr "Messagesikindi "
 
-#: src/pages/choices/ChoicesEditor.tsx:1070
-#: src/pages/choices/ChoicesEditor.tsx:1230
-#: src/pages/ServicesPage.tsx:1533
+#: src/pages/choices/ChoicesEditor.tsx:1164
+#: src/pages/choices/ChoicesEditor.tsx:1324
+#: src/pages/ServicesPage.tsx:1574
 msgid "min"
 msgstr "minhoho"
 
-#: src/pages/ServicesPage.tsx:1522
+#: src/pages/ServicesPage.tsx:1563
 msgid "Minutes"
 msgstr "Minutesmwaze"
 
@@ -5370,7 +5399,7 @@ msgid "Month"
 msgstr "Monthiki"
 
 #: src/pages/calendar/AppointmentCalendar.tsx:1251
-#: src/pages/choices/ChoicesEditor.tsx:510
+#: src/pages/choices/ChoicesEditor.tsx:523
 msgid "more"
 msgstr "moreaba"
 
@@ -5382,7 +5411,7 @@ msgstr "Moreaba"
 msgid "More branches and photos are in <0>Branches & hours</0>, whenever you want them."
 msgstr "Moreaba brancheskombihohondi andmwa photosndimwa areiki in <0>Branchesrwaugu & hoursugu</0>, wheneverrwarwa youugu wantshya themnyaiki."
 
-#: src/pages/choices/ChoicesEditor.tsx:780
+#: src/pages/choices/ChoicesEditor.tsx:806
 msgid "More for “{title}”"
 msgstr "Moreaba forabaze “{title}”"
 
@@ -5390,11 +5419,11 @@ msgstr "Moreaba forabaze “{title}”"
 msgid "More for this booking"
 msgstr "Moreaba forabaze thisrwaaba bookinguguiki"
 
-#: src/pages/choices/ChoicesEditor.tsx:780
+#: src/pages/choices/ChoicesEditor.tsx:806
 msgid "More for this question"
 msgstr "Moreaba forabaze thisrwaaba questionrwamwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:891
+#: src/pages/choices/ChoicesEditor.tsx:918
 msgid "More options"
 msgstr "Moreaba optionsrwaaba"
 
@@ -5431,7 +5460,7 @@ msgstr "MTNmwandi MoMorwa is slowugu rightrwa nownya"
 msgid "MTN MoMo reference <0>{0}</0>"
 msgstr "MTNmwandi MoMorwa referencembirwa <0>{0}</0>"
 
-#: src/pages/choices/ChoicesEditor.tsx:730
+#: src/pages/choices/ChoicesEditor.tsx:746
 msgid "must answer"
 msgstr "mustndishya answershya"
 
@@ -5455,11 +5484,11 @@ msgstr "Nailiki clippingnyanya"
 msgid "nail studio"
 msgstr "nailrwa studiohondi"
 
-#: src/pages/ServicesPage.tsx:1461
+#: src/pages/ServicesPage.tsx:1492
 msgid "Name"
 msgstr "Namezembishya"
 
-#: src/pages/ServicesPage.tsx:1459
+#: src/pages/ServicesPage.tsx:1490
 msgid "Name and words"
 msgstr "Namezembishya andmwa wordsmbi"
 
@@ -5501,6 +5530,10 @@ msgstr "Needko wordsmbi? Tapze onenya"
 msgid "Needs a change"
 msgstr "Needsmwa a changekonya"
 
+#: src/pages/choices/ChoicesEditor.tsx:1007
+msgid "Never ask about an illness, tests or medicines; for an ID, passport or insurance number; about religion, ethnicity or politics; or for a PIN or password."
+msgstr "Neveriki askzeshya aboutmwa an illnessnyambi, testszenya or medicinesmbiiki; forabaze an ID, passportshyamwa or insuranceshyashyambiho numberabarwa; aboutmwa religionzerwa, ethnicitymbishya or politicszeaba; or forabaze a PINugu or passwordndiko."
+
 #: src/pages/OverviewPage.tsx:342
 msgid "New"
 msgstr "Newiki"
@@ -5527,7 +5560,7 @@ msgstr "Newiki codendiugu in {0}"
 msgid "New here"
 msgstr "Newiki herenya"
 
-#: src/pages/choices/ChoicesEditor.tsx:757
+#: src/pages/choices/ChoicesEditor.tsx:777
 msgid "New question"
 msgstr "Newiki questionrwamwa"
 
@@ -5535,7 +5568,7 @@ msgstr "Newiki questionrwamwa"
 msgid "New review ★★★★★"
 msgstr "Newiki reviewikimbiiki ★★★★★"
 
-#: src/pages/ServicesPage.tsx:812
+#: src/pages/ServicesPage.tsx:816
 msgid "New service"
 msgstr "Newiki serviceuguaba"
 
@@ -5676,15 +5709,15 @@ msgstr "No numberabarwa yetiki — <0>youugu cannotmwako be paidnya</0> untilhoh
 msgid "No password to remember. A fresh code every time."
 msgstr "No passwordndiko to rememberzembi. A freshshya codendiugu everyndi timendi."
 
-#: src/pages/ServicesPage.tsx:1015
+#: src/pages/ServicesPage.tsx:1019
 msgid "No photo yet"
 msgstr "No photonya yetiki"
 
-#: src/pages/ServicesPage.tsx:1023
+#: src/pages/ServicesPage.tsx:1027
 msgid "No photos"
 msgstr "No photosndimwa"
 
-#: src/pages/ServicesPage.tsx:1759
+#: src/pages/ServicesPage.tsx:1800
 msgid "No photos. A service with a photo is easier to choose than one without."
 msgstr "No photosndimwa. A serviceuguaba withikimbi a photonya is easierndiaba to choosendiuguiki thanmwa onenya withoutnyako."
 
@@ -5713,7 +5746,7 @@ msgstr "No reviewsmwahorwaze yetiki"
 msgid "No story up right now"
 msgstr "No storyzemwa up rightrwa nownya"
 
-#: src/pages/ServicesPage.tsx:1030
+#: src/pages/ServicesPage.tsx:1034
 msgid "No title yet"
 msgstr "No titlekoaba yetiki"
 
@@ -5727,7 +5760,7 @@ msgstr "No-showugu"
 msgid "No. {number}"
 msgstr "No. {number}"
 
-#: src/pages/ServicesPage.tsx:516
+#: src/pages/ServicesPage.tsx:520
 msgid "Nobody can book it now"
 msgstr "Nobodymwaikiiki caniki bookugundi it nownya"
 
@@ -5793,11 +5826,11 @@ msgstr "Noneshyashya yetiki"
 msgid "Not agreed yet"
 msgstr "Notmbi agreedrwarwa yetiki"
 
-#: src/pages/choices/ChoicesEditor.tsx:1202
+#: src/pages/choices/ChoicesEditor.tsx:1296
 msgid "Not available"
 msgstr "Notmbi availablendiko"
 
-#: src/pages/choices/ChoicesEditor.tsx:1083
+#: src/pages/choices/ChoicesEditor.tsx:1177
 msgid "Not available now — switch on to offer it"
 msgstr "Notmbi availablendiko nownya — switchrwarwa on to offeriki it"
 
@@ -5815,17 +5848,17 @@ msgid "Not live yet"
 msgstr "Notmbi liveshyako yetiki"
 
 #: src/components/LegalGate.tsx:105
-#: src/pages/choices/ChoicesEditor.tsx:1085
+#: src/pages/choices/ChoicesEditor.tsx:1179
 #: src/pages/LegalPage.tsx:185
 msgid "Not now"
 msgstr "Notmbi nownya"
 
-#: src/pages/ServicesPage.tsx:1571
+#: src/pages/ServicesPage.tsx:1612
 msgid "not offered"
 msgstr "notmwa offeredabaugu"
 
 #. placeholder {0}: notOnSale.length
-#: src/pages/ServicesPage.tsx:769
+#: src/pages/ServicesPage.tsx:773
 msgid "Not on sale<0>{0}</0>"
 msgstr "Notmbi on salemwa<0>{0}</0>"
 
@@ -5850,11 +5883,11 @@ msgstr "Notmbi postedmwanya"
 msgid "Not replied yet"
 msgstr "Notmbi repliedmwaze yetiki"
 
-#: src/pages/ServicesPage.tsx:1885
+#: src/pages/ServicesPage.tsx:1936
 msgid "Not saved"
 msgstr "Notmbi savedaba"
 
-#: src/pages/ServicesPage.tsx:940
+#: src/pages/ServicesPage.tsx:944
 msgid "Not saved — trying again"
 msgstr "Notmbi savedaba — tryingmwanya againshyakoshya"
 
@@ -5940,7 +5973,7 @@ msgstr "Nothingzenya matcheszenya"
 msgid "Nothing matches “{query}”"
 msgstr "Nothingzenya matcheszenya “{query}”"
 
-#: src/pages/ServicesPage.tsx:739
+#: src/pages/ServicesPage.tsx:743
 msgid "Nothing on sale at your branches yet"
 msgstr "Nothingzenya on salemwa at yourmbihoiki brancheskombihohondi yetiki"
 
@@ -6026,11 +6059,11 @@ msgstr "Numberedkokoaba listrwahougu"
 msgid "of {count}"
 msgstr "of {count}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1085
+#: src/pages/choices/ChoicesEditor.tsx:1179
 msgid "Offered"
 msgstr "Offeredugunyazeaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:1083
+#: src/pages/choices/ChoicesEditor.tsx:1177
 msgid "Offered — switch off for “not available now”"
 msgstr "Offeredugunyazeaba — switchrwarwa offmwa forabaze “notmwa availablendiko nownya”"
 
@@ -6059,11 +6092,11 @@ msgstr "On a calendarshyarwa"
 msgid "On its way"
 msgstr "On itsrwa wayndi"
 
-#: src/pages/ServicesPage.tsx:1084
+#: src/pages/ServicesPage.tsx:1088
 msgid "On sale"
 msgstr "On salemwa"
 
-#: src/pages/ServicesPage.tsx:1888
+#: src/pages/ServicesPage.tsx:1939
 msgid "On the card"
 msgstr "On theugumbi cardho"
 
@@ -6107,7 +6140,7 @@ msgstr "Onenyako fewerzemwa"
 msgid "One line summary"
 msgstr "Onenyako linenya summarynyanyambize"
 
-#: src/pages/ServicesPage.tsx:1479
+#: src/pages/ServicesPage.tsx:1510
 msgid "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 msgstr "Onenyako linenya thatugu makesndi someonenyaaba wantshya it — e.g. “Sharpnya fadesabazembi andmwa cleanmwa linenya-upsiki”"
 
@@ -6127,7 +6160,7 @@ msgstr "Onenyako nightrwa, singlerwarwaze roomzemwaho"
 msgid "One of them said yes to your offers, so that person also gets it as an alert or email."
 msgstr "Onenyako of themnyaiki saidndi yesndi to yourmbihoiki offerszembi, so thatugu personndirwa alsomwahoiki getsndi it as an alertikihougu or emailnyakomwa."
 
-#: src/pages/choices/ChoicesEditor.tsx:818
+#: src/pages/choices/ChoicesEditor.tsx:845
 msgid "One or more"
 msgstr "Onenyako or moreaba"
 
@@ -6192,16 +6225,16 @@ msgstr "Onlyshya theugumbi owneraba caniki setshya up theugumbi shopko"
 msgid "Only the owner pauses the shop."
 msgstr "Onlyshya theugumbi owneraba pausesmwaho theugumbi shopko."
 
-#: src/pages/choices/ChoicesEditor.tsx:1181
+#: src/pages/choices/ChoicesEditor.tsx:1275
 msgid "Only the shop sees this."
 msgstr "Onlyshya theugumbi shopko seesko thisrwaaba."
 
 #. placeholder {0}: o.label.trim()
-#: src/pages/choices/ChoicesEditor.tsx:715
+#: src/pages/choices/ChoicesEditor.tsx:731
 msgid "Only when they pick “{0}”"
 msgstr "Onlyshya whenko theynya pickndiugu “{0}”"
 
-#: src/pages/choices/ChoicesEditor.tsx:951
+#: src/pages/choices/ChoicesEditor.tsx:978
 msgid "Only you and the customer see these answers — never in an email or a phone alert — and they are removed 30 days after the visit. They are always free and take no extra time."
 msgstr "Onlyshya youugu andmwa theugumbi customerkoshya seeaba theseaba answersabaiki — neverkoshya in an emailnyakomwa or a phonehoikize alertikihougu — andmwa theynya areiki removedshya 30 daysmbi afteriki theugumbi visitugu. Theynya areiki alwaysndiabaze freenya andmwa takeze no extraiki timendi."
 
@@ -6379,11 +6412,11 @@ msgstr "Optionalrwaho"
 msgid "Optional — add it later"
 msgstr "Optionalrwaho — addugunya it laterkoshya"
 
-#: src/pages/ServicesPage.tsx:1606
+#: src/pages/ServicesPage.tsx:1647
 msgid "Optional — ask what they want, like the cut or extras"
 msgstr "Optionalrwaho — askzeshya whatnya theynya wantshya, likemwa theugumbi cutho or extraszeaba"
 
-#: src/pages/ServicesPage.tsx:1627
+#: src/pages/ServicesPage.tsx:1668
 msgid "Optional — customers see the old price crossed out"
 msgstr "Optionalrwaho — customersmwako seeaba theugumbi oldmbi pricembiugumbi crossedmwambi outshya"
 
@@ -6399,7 +6432,7 @@ msgstr "Optionalrwaho. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} filesaba, {M
 msgid "Or a manager who looks after every branch. Ask them to finish setting it up — you can still look around."
 msgstr "Or a manageruguko whonya looksshya afteriki everyndi branchkomwa. Askmbi themnyaiki to finishmbize settingshyarwaugu it up — youugu caniki stillkomwa lookzembiugu aroundndiko."
 
-#: src/pages/choices/ChoicesEditor.tsx:1051
+#: src/pages/choices/ChoicesEditor.tsx:1145
 msgid "or add to the price"
 msgstr "or addugunya to theugumbi pricembiugumbi"
 
@@ -6416,7 +6449,7 @@ msgid "or drop one here"
 msgstr "or dropabarwa onenya herenya"
 
 #: src/pages/ProfilePage.tsx:720
-#: src/pages/ServicesPage.tsx:1746
+#: src/pages/ServicesPage.tsx:1787
 msgid "or drop them here"
 msgstr "or dropabarwa themnyaiki herenya"
 
@@ -6424,7 +6457,7 @@ msgstr "or dropabarwa themnyaiki herenya"
 msgid "Or go straight to"
 msgstr "Or go straightshyashya to"
 
-#: src/pages/choices/ChoicesEditor.tsx:1051
+#: src/pages/choices/ChoicesEditor.tsx:1145
 msgid "or take money off"
 msgstr "or takeze moneynyakoko offmwa"
 
@@ -6565,7 +6598,7 @@ msgid "Pause the shop?"
 msgstr "Pauseiki theugumbi shopko?"
 
 #: src/onboarding/steps.ts:151
-#: src/pages/ServicesPage.tsx:1084
+#: src/pages/ServicesPage.tsx:1088
 #: src/shell/Topbar.tsx:156
 msgid "Paused"
 msgstr "Pausednyanya"
@@ -6668,7 +6701,7 @@ msgstr "Peoplembihondi closenya to youugu seeaba youugu firstkondi"
 msgid "People served at once"
 msgstr "Peoplembihondi servedndirwa at oncendi"
 
-#: src/pages/ServicesPage.tsx:1630
+#: src/pages/ServicesPage.tsx:1671
 msgid "Percent off"
 msgstr "Percentmwaiki offmwa"
 
@@ -6694,7 +6727,7 @@ msgstr "Phonenya forabaze thisrwaaba branchkomwa <0>optionalrwashyamwaze</0>"
 msgid "Phone number"
 msgstr "Phonenya numberabarwa"
 
-#: src/pages/ServicesPage.tsx:1764
+#: src/pages/ServicesPage.tsx:1805
 msgid "Photo changes are not saved yet — customers still see the photos as they were until you press “Save changes”."
 msgstr "Photoshyashya changesmwaiki areiki notmwa savedaba yetiki — customersmwako stillkomwa seeaba theugumbi photosndimwa as theynya wereugu untilhoho youugu pressugu “Saveugu changesmwaiki”."
 
@@ -6707,9 +6740,9 @@ msgid "Photograph the place too: customers want to see where they are walking in
 msgstr "Photographkombimwa theugumbi placendi tooiki: customersmwako wantshya to seeaba wherendi theynya areiki walkinguguko intoshya."
 
 #: src/pages/ProfilePage.tsx:594
-#: src/pages/ServicesPage.tsx:1123
-#: src/pages/ServicesPage.tsx:1134
-#: src/pages/ServicesPage.tsx:1701
+#: src/pages/ServicesPage.tsx:1127
+#: src/pages/ServicesPage.tsx:1138
+#: src/pages/ServicesPage.tsx:1742
 msgid "Photos"
 msgstr "Photosabaze"
 
@@ -6722,14 +6755,14 @@ msgstr "Photosabaze <0>{0}</0>"
 msgid "Photos at every branch"
 msgstr "Photosabaze at everyndi branchkomwa"
 
-#: src/pages/ServicesPage.tsx:724
+#: src/pages/ServicesPage.tsx:728
 msgid "Photos customers swipe through"
 msgstr "Photosabaze customersmwako swipekondi throughmbimwa"
 
 #. placeholder {0}: b.name
 #. placeholder {0}: service.name
 #: src/ads/useAdData.ts:149
-#: src/pages/ServicesPage.tsx:1008
+#: src/pages/ServicesPage.tsx:1012
 msgid "Photos of {0}"
 msgstr "Photosabaze of {0}"
 
@@ -6745,8 +6778,8 @@ msgstr "Photosabaze thatugu gethoze bookedikiikimbi"
 msgid "Photos, words, hours and payouts — all set."
 msgstr "Photosabaze, wordsmbi, hoursugu andmwa payoutsabaiki — allaba setshya."
 
-#: src/pages/choices/ChoicesEditor.tsx:655
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:671
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Pick 1"
 msgstr "Pickaba 1"
 
@@ -6831,7 +6864,7 @@ msgstr "Postnya storyzemwa"
 msgid "Post the picture so regulars can get the app from home."
 msgstr "Postnya theugumbi picturerwamwa so regularsugushya caniki gethoze theugumbi appaba fromko homemwa."
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Post this service"
 msgstr "Postnya thisrwaaba serviceuguaba"
 
@@ -6843,7 +6876,7 @@ msgstr "Postedmwako"
 msgid "Posted — live for 24 hours."
 msgstr "Postedmwako — liveshyako forabaze 24 hoursugu."
 
-#: src/pages/ServicesPage.tsx:385
+#: src/pages/ServicesPage.tsx:389
 msgid "Posting the service…"
 msgstr "Postingkoaba theugumbi serviceuguaba…"
 
@@ -6895,16 +6928,16 @@ msgstr "Previousuguiki monthkombi"
 msgid "Price"
 msgstr "Pricezenya"
 
-#: src/pages/ServicesPage.tsx:1519
+#: src/pages/ServicesPage.tsx:1560
 msgid "Price and time"
 msgstr "Pricezenya andmwa timendi"
 
-#: src/pages/ServicesPage.tsx:1051
+#: src/pages/ServicesPage.tsx:1055
 msgid "price at the shop"
 msgstr "pricembiugumbi at theugumbi shopko"
 
 #. placeholder {0}: money.code
-#: src/pages/ServicesPage.tsx:1554
+#: src/pages/ServicesPage.tsx:1595
 msgid "Price per branch ({0})"
 msgstr "Pricezenya perugu branchkomwa ({0})"
 
@@ -6925,8 +6958,8 @@ msgstr "Printndishya theugumbi cardho andmwa standnya it wherendi peoplezeshya w
 msgid "Privacy Policy"
 msgstr "Privacyhoiki Policyshyauguiki"
 
-#: src/pages/choices/ChoicesEditor.tsx:518
-#: src/pages/choices/ChoicesEditor.tsx:768
+#: src/pages/choices/ChoicesEditor.tsx:531
+#: src/pages/choices/ChoicesEditor.tsx:788
 msgid "Private"
 msgstr "Privatendirwaugumbi"
 
@@ -6938,7 +6971,7 @@ msgstr "Privatendirwaugumbi — forabaze youugu onlynya. Neveriki shareaba or se
 msgid "Private answers — open the booking"
 msgstr "Privatendirwaugumbi answersabaiki — openrwa theugumbi bookinguguiki"
 
-#: src/pages/choices/ChoicesEditor.tsx:857
+#: src/pages/choices/ChoicesEditor.tsx:884
 msgid "Private answers are always free and take no extra time."
 msgstr "Privatendirwaugumbi answersabaiki areiki alwaysndiabaze freenya andmwa takeze no extraiki timendi."
 
@@ -6985,12 +7018,12 @@ msgstr "Publicuguiki, underkoshyako theugumbi reviewikimbiiki. Youaba caniki edi
 msgid "Put back"
 msgstr "Putmbi backmbi"
 
-#: src/pages/ServicesPage.tsx:1127
+#: src/pages/ServicesPage.tsx:1131
 msgid "Put back on sale"
 msgstr "Putmbi backmbi on salemwa"
 
 #. placeholder {0}: offer.location.name
-#: src/pages/ServicesPage.tsx:1090
+#: src/pages/ServicesPage.tsx:1094
 msgid "Put back on sale here ({0})"
 msgstr "Putmbi backmbi on salemwa herenya ({0})"
 
@@ -6998,7 +7031,7 @@ msgstr "Putmbi backmbi on salemwa herenya ({0})"
 msgid "Put something new on your menu"
 msgstr "Putmbi somethingnyanya newrwamwa on yourmbihoiki menuzekoshya"
 
-#: src/pages/ServicesPage.tsx:718
+#: src/pages/ServicesPage.tsx:722
 msgid "Put your first service on sale"
 msgstr "Putmbi yourmbihoiki firstkondi serviceuguaba on salemwa"
 
@@ -7007,15 +7040,15 @@ msgctxt "search words"
 msgid "qr code scan download app store google play install poster print counter card get customers"
 msgstr "qr codendiugu scanaba downloadkoshyashyashya appaba storembi googlezeshya playshya installugunya posterndiugu printaba counternyambizembi cardho gethoze customersmwako"
 
-#: src/pages/ServicesPage.tsx:1045
+#: src/pages/ServicesPage.tsx:1049
 msgid "question"
 msgstr "questionrwamwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:217
+#: src/pages/choices/ChoicesEditor.tsx:226
 msgid "Question {number}: write what you ask customers."
 msgstr "Questionikinya {number}: writendi whatnya youugu askzeshya customersmwako."
 
-#: src/pages/ServicesPage.tsx:1045
+#: src/pages/ServicesPage.tsx:1049
 msgid "questions"
 msgstr "questionsmwaze"
 
@@ -7027,7 +7060,7 @@ msgstr "Questionszerwa andmwa repliesshya"
 msgid "Questions before someone books"
 msgstr "Questionszerwa beforembiho someonenyaaba booksrwa"
 
-#: src/pages/ServicesPage.tsx:1602
+#: src/pages/ServicesPage.tsx:1643
 msgid "Questions for customers"
 msgstr "Questionszerwa forabaze customersmwako"
 
@@ -7112,7 +7145,7 @@ msgstr "Readingnyaiki"
 msgid "Ready for your next payout"
 msgstr "Readyaba forabaze yourmbihoiki nextndi payouthoze"
 
-#: src/pages/choices/ChoicesEditor.tsx:1233
+#: src/pages/choices/ChoicesEditor.tsx:1327
 msgid "Ready to choose a time"
 msgstr "Readyaba to choosendiuguiki a timendi"
 
@@ -7123,7 +7156,7 @@ msgstr "Readyaba to choosendiuguiki a timendi"
 msgid "Ready to send"
 msgstr "Readyaba to sendshya"
 
-#: src/pages/choices/ChoicesEditor.tsx:463
+#: src/pages/choices/ChoicesEditor.tsx:476
 msgid "Ready-made for {kindName}"
 msgstr "Readyaba-madendi forabaze {kindName}"
 
@@ -7152,21 +7185,21 @@ msgstr "Relaxermbize"
 msgid "remove"
 msgstr "removerwaho"
 
-#: src/pages/choices/ChoicesEditor.tsx:534
+#: src/pages/choices/ChoicesEditor.tsx:547
 #: src/pages/ClosuresPage.tsx:468
 #: src/pages/ClosuresPage.tsx:483
 #: src/pages/ClosuresPage.tsx:718
 #: src/pages/ProfilePage.tsx:476
 #: src/pages/ProfilePage.tsx:691
 #: src/pages/ProfilePage.tsx:699
-#: src/pages/ServicesPage.tsx:1894
+#: src/pages/ServicesPage.tsx:1945
 #: src/pages/StaffPage.tsx:535
 #: src/pages/StaffPage.tsx:550
 msgid "Remove"
 msgstr "Removekoaba"
 
 #. placeholder {0}: titleOf(group)
-#: src/pages/choices/ChoicesEditor.tsx:377
+#: src/pages/choices/ChoicesEditor.tsx:386
 msgid "Remove “{0}”?"
 msgstr "Removekoaba “{0}”?"
 
@@ -7183,11 +7216,11 @@ msgid "Remove {0}?"
 msgstr "Removekoaba {0}?"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1092
+#: src/pages/choices/ChoicesEditor.tsx:1186
 msgid "Remove answer {0}"
 msgstr "Removekoaba answershya {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:393
+#: src/pages/choices/ChoicesEditor.tsx:402
 msgid "Remove question"
 msgstr "Removekoaba questionrwamwa"
 
@@ -7195,7 +7228,7 @@ msgstr "Removekoaba questionrwamwa"
 msgid "Remove the photo"
 msgstr "Removekoaba theugumbi photonya"
 
-#: src/pages/choices/ChoicesEditor.tsx:1093
+#: src/pages/choices/ChoicesEditor.tsx:1187
 msgid "Remove this answer"
 msgstr "Removekoaba thisrwaaba answershya"
 
@@ -7203,15 +7236,15 @@ msgstr "Removekoaba thisrwaaba answershya"
 msgid "Remove this photo?"
 msgstr "Removekoaba thisrwaaba photonya?"
 
-#: src/pages/choices/ChoicesEditor.tsx:784
+#: src/pages/choices/ChoicesEditor.tsx:810
 msgid "Remove this question"
 msgstr "Removekoaba thisrwaaba questionrwamwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:377
+#: src/pages/choices/ChoicesEditor.tsx:386
 msgid "Remove this question?"
 msgstr "Removekoaba thisrwaaba questionrwamwa?"
 
-#: src/pages/ServicesPage.tsx:439
+#: src/pages/ServicesPage.tsx:443
 msgid "Removing photos…"
 msgstr "Removingzeshya photosndimwa…"
 
@@ -7367,11 +7400,15 @@ msgstr "Saturdayzemwa morningnyako is Umugandahohoze"
 msgid "Save"
 msgstr "Saveugu"
 
-#: src/pages/ServicesPage.tsx:1813
+#: src/pages/ServicesPage.tsx:1449
+msgid "Save anyway"
+msgstr "Saveugu anywayndiugu"
+
+#: src/pages/ServicesPage.tsx:1854
 msgid "Save as draft"
 msgstr "Saveugu as draftndi"
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Save changes"
 msgstr "Saveugu changesmwaiki"
 
@@ -7379,7 +7416,7 @@ msgstr "Saveugu changesmwaiki"
 msgid "Save reply"
 msgstr "Saveugu replynya"
 
-#: src/pages/choices/ChoicesEditor.tsx:645
+#: src/pages/choices/ChoicesEditor.tsx:661
 msgid "Save the service — customers see it when they book"
 msgstr "Saveugu theugumbi serviceuguaba — customersmwako seeaba it whenko theynya bookugundi"
 
@@ -7392,11 +7429,11 @@ msgstr "Saveugu theugumbi weekrwa"
 msgid "Saved"
 msgstr "Savedugu"
 
-#: src/pages/ServicesPage.tsx:945
+#: src/pages/ServicesPage.tsx:949
 msgid "Saved as a draft while you type"
 msgstr "Savedugu as a draftndi whilembi youugu typerwa"
 
-#: src/pages/ServicesPage.tsx:669
+#: src/pages/ServicesPage.tsx:673
 msgid "Saved just now"
 msgstr "Savedugu justshya nownya"
 
@@ -7404,7 +7441,7 @@ msgstr "Savedugu justshya nownya"
 msgid "Saved."
 msgstr "Savedugu."
 
-#: src/pages/ServicesPage.tsx:936
+#: src/pages/ServicesPage.tsx:940
 msgid "Saving draft…"
 msgstr "Savingnyako draftndi…"
 
@@ -7419,9 +7456,9 @@ msgstr "Savingnyako draftndi…"
 #: src/pages/OverviewPage.tsx:586
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/ReviewsPage.tsx:602
-#: src/pages/ServicesPage.tsx:379
-#: src/pages/ServicesPage.tsx:936
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:383
+#: src/pages/ServicesPage.tsx:940
+#: src/pages/ServicesPage.tsx:1864
 #: src/pages/StaffPage.tsx:317
 msgid "Saving…"
 msgstr "Savingnyako…"
@@ -7677,16 +7714,16 @@ msgstr "Servicendimwa"
 msgid "Service name"
 msgstr "Servicendimwa namemwa"
 
-#: src/pages/ServicesPage.tsx:1081
+#: src/pages/ServicesPage.tsx:1085
 msgid "service stopped"
 msgstr "serviceuguaba stoppedzeshya"
 
-#: src/pages/ServicesPage.tsx:1101
+#: src/pages/ServicesPage.tsx:1105
 msgid "Service stopped"
 msgstr "Servicendimwa stoppedzeshya"
 
 #: src/nav.ts:70
-#: src/pages/ServicesPage.tsx:584
+#: src/pages/ServicesPage.tsx:588
 msgid "Services"
 msgstr "Servicesrwarwa"
 
@@ -7711,7 +7748,7 @@ msgstr "Setshya theseaba hoursugu"
 msgid "Set up your shop"
 msgstr "Setshya up yourmbihoiki shopko"
 
-#: src/pages/choices/ChoicesEditor.tsx:644
+#: src/pages/choices/ChoicesEditor.tsx:660
 msgid "Set what each answer adds to the price or the time"
 msgstr "Setshya whatnya eachugu answershya addsiki to theugumbi pricembiugumbi or theugumbi timendi"
 
@@ -7746,7 +7783,7 @@ msgstr "Shopko suspendedzeshya"
 msgid "Shops close 08:00–11:00, but {one} is open for bookings then."
 msgstr "Shopsmbihondi closenya 08:00–11:00, butndiho {one} is openrwa forabaze bookingskomwa thenmwa."
 
-#: src/pages/choices/ChoicesEditor.tsx:1048
+#: src/pages/choices/ChoicesEditor.tsx:1142
 msgid "Shops usually charge for this"
 msgstr "Shopsmbihondi usuallymwazeshyashya chargekoaba forabaze thisrwaaba"
 
@@ -7755,15 +7792,15 @@ msgstr "Shopsmbihondi usuallymwazeshyashya chargekoaba forabaze thisrwaaba"
 msgid "Shops with clear, high-resolution photos and full details get booked far more often · {done} of {0} done"
 msgstr "Shopsmbihondi withikimbi clearmwa, highrwashya-resolutionnyandi photosndimwa andmwa fullabarwa detailsrwamwambiiki gethoze bookedikiikimbi farze moreaba oftenshya · {done} of {0} donerwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:633
+#: src/pages/choices/ChoicesEditor.tsx:649
 msgid "Short"
 msgstr "Shortrwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:898
+#: src/pages/choices/ChoicesEditor.tsx:925
 msgid "Short name on your bookings <0>optional</0>"
 msgstr "Shortrwa namemwa on yourmbihoiki bookingskomwa <0>optionalrwashyamwaze</0>"
 
-#: src/pages/ServicesPage.tsx:1383
+#: src/pages/ServicesPage.tsx:1387
 msgid "Shorten the description by {overDescription} and the special instructions by {overInstructions} characters — the count is at the top right of each box."
 msgstr "Shortenzeaba theugumbi descriptionrwaabaiki by {overDescription} andmwa theugumbi specialndiko instructionsndirwaho by {overInstructions} charactersikimbi — theugumbi countaba is at theugumbi topugu rightrwa of eachugu boxze."
 
@@ -7853,11 +7890,11 @@ msgstr "Showingndiko <0>{0}</0> of <1>{1}</1>"
 msgid "Showing <0>{0}</0> of <1>{total}</1>"
 msgstr "Showingndiko <0>{0}</0> of <1>{total}</1>"
 
-#: src/pages/ServicesPage.tsx:1514
+#: src/pages/ServicesPage.tsx:1546
 msgid "Shown as “Before you come” — on the service, and again on the customer’s reservation."
 msgstr "Shownmbi as “Beforemwanyaze youugu comeiki” — on theugumbi serviceuguaba, andmwa againshyakoshya on theugumbi customerkoshya’s reservationkonyako."
 
-#: src/pages/choices/ChoicesEditor.tsx:908
+#: src/pages/choices/ChoicesEditor.tsx:935
 msgid "Shown on the booking, like “{exampleName}: {exampleAnswer}”. Leave it empty to use the question."
 msgstr "Shownmbi on theugumbi bookinguguiki, likemwa “{exampleName}: {exampleAnswer}”. Leavendi it emptymbi to useaba theugumbi questionrwamwa."
 
@@ -7877,7 +7914,7 @@ msgstr "Shownmbi to customersmwako as "
 msgid "Shown under “About this service” before they book."
 msgstr "Shownmbi underkoshyako “Aboutzerwa thisrwaaba serviceuguaba” beforembiho theynya bookugundi."
 
-#: src/pages/ServicesPage.tsx:1498
+#: src/pages/ServicesPage.tsx:1529
 msgid "Shown under “About this service”."
 msgstr "Shownmbi underkoshyako “Aboutzerwa thisrwaaba serviceuguaba”."
 
@@ -7950,7 +7987,7 @@ msgstr "Sixnya digitsshya, andmwa theynya areiki in"
 msgid "Six digits, no button"
 msgstr "Sixnya digitsshya, no buttonrwaaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:725
+#: src/pages/choices/ChoicesEditor.tsx:741
 msgid "Skin fade"
 msgstr "Skinaba fadenya"
 
@@ -7977,6 +8014,10 @@ msgstr "So theynya caniki bookugundi youugu againshyakoshya fromko theirshya pho
 #: src/ads/todaySlides.ts:82
 msgid "Some deposits are slow or failing. Customers’ times stay held while they retry."
 msgstr "Someikiugu depositsmwakoabarwa areiki slowugu or failingnyaze. Customersmbiiki’ timesiki stayugu heldmwa whilembi theynya retryiki."
+
+#: src/pages/ServicesPage.tsx:1438
+msgid "Some questions ask for private information"
+msgstr "Someikiugu questionsmwaze askzeshya forabaze privatendiugu informationikindimwa"
 
 #: src/pages/SupportPage.tsx:69
 msgid "Someone is on it"
@@ -8024,7 +8065,7 @@ msgstr "Specialabandishya hoursugu"
 msgid "Special hours — {why}"
 msgstr "Specialabandishya hoursugu — {why}"
 
-#: src/pages/ServicesPage.tsx:1502
+#: src/pages/ServicesPage.tsx:1534
 msgid "Special instructions"
 msgstr "Specialabandishya instructionsndirwaho"
 
@@ -8095,7 +8136,7 @@ msgid "Start with {0}: {1}{2}"
 msgstr "Startnya withikimbi {0}: {1}{2}"
 
 #. placeholder {0}: item.createdBy.email
-#: src/pages/ServicesPage.tsx:674
+#: src/pages/ServicesPage.tsx:678
 msgid "started by {0}"
 msgstr "startedmbiho by {0}"
 
@@ -8161,22 +8202,22 @@ msgstr "Stillrwa to comeiki or unpaidndiko"
 msgid "Still to pay you at the shop"
 msgstr "Stillrwa to payko youugu at theugumbi shopko"
 
-#: src/pages/ServicesPage.tsx:775
+#: src/pages/ServicesPage.tsx:779
 msgid "Still yours, and bookable by nobody. Kept so past appointments resolve to what was booked. Switch a branch back on — or press <0>Put back on sale</0> if you retired it everywhere."
 msgstr "Stillrwa yourshomwa, andmwa bookableabanya by nobodymbihoiki. Keptrwa so pastko appointmentsshyakonyanyandiaba resolveshya to whatnya wasmwa bookedikiikimbi. Switchrwaho a branchkomwa backmbi on — or pressugu <0>Putmbi backmbi on salemwa</0> if youugu retiredzeshya it everywherenyaikizemwaiki."
 
 #. placeholder {0}: service.name
-#: src/pages/ServicesPage.tsx:540
+#: src/pages/ServicesPage.tsx:544
 msgid "Stop offering “{0}” at every branch?"
 msgstr "Stopko offeringshyamwa “{0}” at everyndi branchkomwa?"
 
-#: src/pages/ServicesPage.tsx:551
-#: src/pages/ServicesPage.tsx:1135
+#: src/pages/ServicesPage.tsx:555
+#: src/pages/ServicesPage.tsx:1139
 msgid "Stop offering everywhere"
 msgstr "Stopko offeringshyamwa everywherenyaikizemwaiki"
 
 #. placeholder {0}: offer.location.name
-#: src/pages/ServicesPage.tsx:1090
+#: src/pages/ServicesPage.tsx:1094
 msgid "Stop offering here ({0})"
 msgstr "Stopko offeringshyamwa herenya ({0})"
 
@@ -8227,15 +8268,15 @@ msgstr "Swimko sessionshya"
 msgid "Swimming lesson"
 msgstr "Swimmingugushya lessonrwahomwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:1078
+#: src/pages/choices/ChoicesEditor.tsx:1172
 msgid "Switch off when you can’t do it for now — customers see “Not available”."
 msgstr "Switchrwaho offmwa whenko youugu caniki’t do it forabaze nownya — customersmwako seeaba “Notmbi availablendiko”."
 
-#: src/pages/choices/ChoicesEditor.tsx:1078
+#: src/pages/choices/ChoicesEditor.tsx:1172
 msgid "Switch on to offer it again."
 msgstr "Switchrwaho on to offeriki it againshyakoshya."
 
-#: src/pages/ServicesPage.tsx:1101
+#: src/pages/ServicesPage.tsx:1105
 msgid "Switched off at every branch"
 msgstr "Switchedndirwa offmwa at everyndi branchkomwa"
 
@@ -8284,15 +8325,15 @@ msgid "Taken down: {0}"
 msgstr "Takenabarwaugu downko: {0}"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1041
+#: src/pages/choices/ChoicesEditor.tsx:1135
 msgid "Taken off the price for answer {0}"
 msgstr "Takenabarwaugu offmwa theugumbi pricembiugumbi forabaze answershya {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1229
+#: src/pages/choices/ChoicesEditor.tsx:1323
 msgid "Takes"
 msgstr "Takesshya"
 
-#: src/pages/choices/ChoicesEditor.tsx:1031
+#: src/pages/choices/ChoicesEditor.tsx:1125
 msgid "Takes off the price"
 msgstr "Takesshya offmwa theugumbi pricembiugumbi"
 
@@ -8309,7 +8350,7 @@ msgstr "Talkshyaugu to us"
 msgid "Talking to customers"
 msgstr "Talkingrwarwa to customersmwako"
 
-#: src/pages/choices/ChoicesEditor.tsx:1164
+#: src/pages/choices/ChoicesEditor.tsx:1258
 msgid "Tap the answers — the total changes"
 msgstr "Tapze theugumbi answersabaiki — theugumbi totalkombi changesmwaiki"
 
@@ -8418,7 +8459,7 @@ msgstr "Thatugu didmwa notmwa saveaba."
 #: src/onboarding/Welcome.tsx:485
 #: src/onboarding/Welcome.tsx:641
 #: src/onboarding/Welcome.tsx:779
-#: src/pages/ServicesPage.tsx:559
+#: src/pages/ServicesPage.tsx:563
 msgid "That did not save. Check your connection and try again."
 msgstr "Thatugu didmwa notmwa saveaba. Checkshyambi yourmbihoiki connectionikinya andmwa trymbi againshyakoshya."
 
@@ -8447,7 +8488,7 @@ msgstr "Thatugu didmwa notmwa sendshya. Checkshyambi yourmbihoiki connectionikin
 #: src/pages/ProfilePage.tsx:777
 #: src/pages/ProfilePage.tsx:808
 #: src/pages/SecurityPage.tsx:56
-#: src/pages/ServicesPage.tsx:639
+#: src/pages/ServicesPage.tsx:643
 #: src/pages/StaffPage.tsx:448
 #: src/pages/SupportPage.tsx:653
 msgid "That did not work."
@@ -8493,11 +8534,11 @@ msgstr "Thatugu picturerwamwa didmwa notmwa uploadabarwa. Trymbi a JPGndi or PNG
 msgid "That service did not save."
 msgstr "Thatugu serviceuguaba didmwa notmwa saveaba."
 
-#: src/pages/choices/ChoicesEditor.tsx:559
+#: src/pages/choices/ChoicesEditor.tsx:572
 msgid "That’s the most — {MAX_GROUPS} questions per service"
 msgstr "Thatugu’s theugumbi mostze — {MAX_GROUPS} questionsmwaze perugu serviceuguaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:884
+#: src/pages/choices/ChoicesEditor.tsx:911
 msgid "That’s the most — {MAX_OPTIONS} answers"
 msgstr "Thatugu’s theugumbi mostze — {MAX_OPTIONS} answersabaiki"
 
@@ -8513,7 +8554,7 @@ msgstr "Theugu agreementsuguiki youugu workaba underkoshyako"
 msgid "The annual income tax return is due by {date}"
 msgstr "Theugu annualmwazemwa incomezerwa taxzerwa returnhorwa is dueko by {date}"
 
-#: src/pages/choices/ChoicesEditor.tsx:854
+#: src/pages/choices/ChoicesEditor.tsx:881
 msgid "The answers"
 msgstr "Theugu answersabaiki"
 
@@ -8569,7 +8610,7 @@ msgstr "Theugu codendiugu couldmbi notmwa be sentho. Checkshyambi yourmbihoiki c
 msgid "The cover is the photo on the service’s card in the app. Choose it with “Make cover”."
 msgstr "Theugu coverugu is theugumbi photonya on theugumbi serviceuguaba’s cardho in theugumbi appaba. Choosendiugu it withikimbi “Makeho coverugu”."
 
-#: src/pages/ServicesPage.tsx:470
+#: src/pages/ServicesPage.tsx:474
 msgid "the cover was not changed"
 msgstr "theugumbi coverugu wasmwa notmwa changednyanya"
 
@@ -8609,8 +8650,8 @@ msgstr "Theugu depositikinyambiiki is paidnya. Theynya readrwa outshya theirshya
 msgid "The deposit paid, and what is left to pay you"
 msgstr "Theugu depositikinyambiiki paidnya, andmwa whatnya is leftndishya to payko youugu"
 
-#: src/pages/choices/ChoicesEditor.tsx:604
-#: src/pages/choices/ChoicesEditor.tsx:614
+#: src/pages/choices/ChoicesEditor.tsx:620
+#: src/pages/choices/ChoicesEditor.tsx:630
 msgid "The final price is agreed at the shop"
 msgstr "Theugu finalnya pricembiugumbi is agreedrwarwa at theugumbi shopko"
 
@@ -8622,7 +8663,7 @@ msgstr "Theugu firstkondi photonya is theugumbi coverugu customersmwako scrollab
 msgid "The first thing a customer sees on your page."
 msgstr "Theugu firstkondi thinghoikiho a customerkoshya seesko on yourmbihoiki pagemwazeko."
 
-#: src/pages/ServicesPage.tsx:1482
+#: src/pages/ServicesPage.tsx:1513
 msgid "The headline right under the photos. The name above stays the short label on cards."
 msgstr "Theugu headlinekoaba rightrwa underkoshyako theugumbi photosndimwa. Theugu namemwa abovezeko staysrwa theugumbi shortrwaabanya labeliki on cardsaba."
 
@@ -8631,7 +8672,7 @@ msgid "The hours it opens, day by day"
 msgstr "Theugu hoursugu it openszeko, dayko by dayko"
 
 #. placeholder {0}: niceDay(initial.discountEndsOn.slice(0, 10))
-#: src/pages/ServicesPage.tsx:1682
+#: src/pages/ServicesPage.tsx:1723
 msgid "The last sale ended on {0}."
 msgstr "Theugu lastikiiki salemwa endednya on {0}."
 
@@ -8643,7 +8684,7 @@ msgstr "Theugu lastikiiki twoiki weeksmwa, andmwa whatnya is bookedikiikimbi for
 msgid "The money is for the owner"
 msgstr "Theugu moneynyakoko is forabaze theugumbi owneraba"
 
-#: src/pages/choices/ChoicesEditor.tsx:831
+#: src/pages/choices/ChoicesEditor.tsx:858
 msgid "The most answers a customer may pick"
 msgstr "Theugu mostze answersabaiki a customerkoshya mayzeko pickndiugu"
 
@@ -8724,11 +8765,11 @@ msgstr "Theugu platformmwambi’s feenya ({fee} of theugumbi pricembiugumbi) com
 msgid "The preview shows your changes — save to make them live."
 msgstr "Theugu previewshya showsiki yourmbihoiki changesmwaiki — saveaba to makeho themnyaiki liveshyako."
 
-#: src/pages/ServicesPage.tsx:1584
+#: src/pages/ServicesPage.tsx:1625
 msgid "The price is for one person. Leave a branch blank to stop offering it there."
 msgstr "Theugu pricembiugumbi is forabaze onenya personndirwa. Leavendi a branchkomwa blankkombi to stopko offeringshyamwa it therekokokomwa."
 
-#: src/pages/choices/ChoicesEditor.tsx:799
+#: src/pages/choices/ChoicesEditor.tsx:825
 msgid "The question customers see"
 msgstr "Theugu questionrwamwa customersmwako seeaba"
 
@@ -8825,15 +8866,15 @@ msgstr "Theseaba areiki theugumbi brancheskombihohondi youugu workaba at. Theugu
 msgid "They book a time and pay a deposit"
 msgstr "Theynya bookugundi a timendi andmwa payko a depositikinyambiiki"
 
-#: src/pages/choices/ChoicesEditor.tsx:513
+#: src/pages/choices/ChoicesEditor.tsx:526
 msgid "They can pick several"
 msgstr "Theynya caniki pickndiugu severalnyakoshyarwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:846
+#: src/pages/choices/ChoicesEditor.tsx:873
 msgid "They can skip it."
 msgstr "Theynya caniki skipze it."
 
-#: src/pages/choices/ChoicesEditor.tsx:846
+#: src/pages/choices/ChoicesEditor.tsx:873
 msgid "They can’t book without picking."
 msgstr "Theynya caniki’t bookugundi withoutnyako pickingabanya."
 
@@ -8845,16 +8886,16 @@ msgstr "Theynya gethoze an emailnyakomwa. If theynya do notmwa havenyanya an acc
 msgid "They lose access straight away. Their name stays on anything they already did, and you can invite them again later."
 msgstr "Theynya loseugu accessnyambi straightshyashya awayshya. Theirshya namemwa staysrwa on anythinghougu theynya alreadynyambi didmwa, andmwa youugu caniki invitendikondi themnyaiki againshyakoshya laterkoshya."
 
-#: src/pages/choices/ChoicesEditor.tsx:513
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:526
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick one"
 msgstr "Theynya pickndiugu onenya"
 
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick one or more"
 msgstr "Theynya pickndiugu onenya or moreaba"
 
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick up to {picks}"
 msgstr "Theynya pickndiugu up to {picks}"
 
@@ -8877,6 +8918,26 @@ msgstr "Theynya showugu youugu theirshya 6-digitmwa codendiugu. Pressugundimwa h
 #: src/auth/LoginPage.tsx:49
 msgid "This account was closed. Use the same email to start a new business, or a different one."
 msgstr "Thisiki accountabaiki wasmwa closedrwarwarwa. Useugu theugumbi samehohoze emailnyakomwa to starthomwa a newrwamwa businessshyarwa, or a differentmbiikiikinyaze onenya."
+
+#: src/pages/choices/ChoicesEditor.tsx:1036
+msgid "This asks about an illness, a test or medicines. Please don’t ask it: it is private medical information, and the seller rules forbid it."
+msgstr "Thisiki asksho aboutmwa an illnessnyambi, a testkonyandi or medicinesmbiiki. Pleasenyanya donzenya’t askzeshya it: it is privatendiugu medicalndimwa informationikindimwa, andmwa theugumbi sellermwaze rulesaba forbidshyaabaugu it."
+
+#: src/pages/choices/ChoicesEditor.tsx:1042
+msgid "This asks about health — an allergy, a pregnancy or an injury. Ask it only if it changes how you do the service, and make it a private question."
+msgstr "Thisiki asksho aboutmwa healthnyandi — an allergynyaze, a pregnancyndihoikinyaiki or an injurymbimwa. Askmbi it onlynya if it changesmwaiki howko youugu do theugumbi serviceuguaba, andmwa makeho it a privatendiugu questionrwamwa."
+
+#: src/pages/choices/ChoicesEditor.tsx:1038
+msgid "This asks about religion, ethnicity or politics. Never ask it: it has nothing to do with a booking."
+msgstr "Thisiki asksho aboutmwa religionzerwa, ethnicitymbishya or politicszeaba. Neveriki askzeshya it: it hasshya nothingzeko to do withikimbi a bookinguguiki."
+
+#: src/pages/choices/ChoicesEditor.tsx:1039
+msgid "This asks for a PIN or a password. Never ask it: customers must never share these with anyone, not even you."
+msgstr "Thisiki asksho forabaze a PINugu or a passwordndiko. Neveriki askzeshya it: customersmwako mustndishya neverkoshya shareaba theseaba withikimbi anyonehondi, notmwa eveniki youugu."
+
+#: src/pages/choices/ChoicesEditor.tsx:1037
+msgid "This asks for an ID, passport or insurance number. Please don’t ask it: the seller rules forbid it. If you must see an ID, look at it at the counter."
+msgstr "Thisiki asksho forabaze an ID, passportshyamwa or insuranceshyashyambiho numberabarwa. Pleasenyanya donzenya’t askzeshya it: theugumbi sellermwaze rulesaba forbidshyaabaugu it. If youugu mustndishya seeaba an ID, lookzembiugu at it at theugumbi counternyambizembi."
 
 #: src/pages/AppointmentsPage.tsx:1091
 msgid "This booking could not be opened"
@@ -8982,7 +9043,7 @@ msgstr "Thisiki weekrwa"
 msgid "Those hours did not save."
 msgstr "Thosemwa hoursugu didmwa notmwa saveaba."
 
-#: src/pages/ServicesPage.tsx:683
+#: src/pages/ServicesPage.tsx:687
 msgid "Throw this draft away?"
 msgstr "Throwhorwa thisrwaaba draftndi awayshya?"
 
@@ -9004,7 +9065,7 @@ msgstr "Timendi to signndi in againshyakoshya"
 msgid "Tip"
 msgstr "Tipmbi"
 
-#: src/pages/ServicesPage.tsx:995
+#: src/pages/ServicesPage.tsx:999
 msgid "Title"
 msgstr "Titlekokombi"
 
@@ -9014,7 +9075,7 @@ msgid "Title <0>{0}/{TITLE_MAX}</0>"
 msgstr "Titlekokombi <0>{0}/{TITLE_MAX}</0>"
 
 #. placeholder {0}: title.length
-#: src/pages/ServicesPage.tsx:1472
+#: src/pages/ServicesPage.tsx:1503
 msgid "Title <0>{0}/100</0>"
 msgstr "Titlekokombi <0>{0}/100</0>"
 
@@ -9091,7 +9152,7 @@ msgctxt "after an amount: the full price"
 msgid "total"
 msgstr "totalkombi"
 
-#: src/pages/choices/ChoicesEditor.tsx:1221
+#: src/pages/choices/ChoicesEditor.tsx:1315
 msgid "Total"
 msgstr "Totalikinyako"
 
@@ -9134,7 +9195,7 @@ msgstr "Trymbi againshyakoshya"
 msgid "Try again, or print the card instead."
 msgstr "Trymbi againshyakoshya, or printaba theugumbi cardho insteadikiiki."
 
-#: src/pages/choices/ChoicesEditor.tsx:1163
+#: src/pages/choices/ChoicesEditor.tsx:1257
 msgid "Try it as a customer"
 msgstr "Trymbi it as a customerkoshya"
 
@@ -9214,7 +9275,7 @@ msgstr "Twoiki slotszenya freenya thisrwaaba afternoonnyambiugunyandi — bookug
 msgid "Type"
 msgstr "Typeko"
 
-#: src/pages/ServicesPage.tsx:1810
+#: src/pages/ServicesPage.tsx:1851
 msgid "Type something first"
 msgstr "Typeko somethingnyanya firstkondi"
 
@@ -9264,7 +9325,7 @@ msgstr "Unpaidabauguaba"
 msgid "Unread "
 msgstr "Unreadmbiiki "
 
-#: src/pages/ServicesPage.tsx:942
+#: src/pages/ServicesPage.tsx:946
 msgid "Unsaved changes"
 msgstr "Unsavedikize changesmwaiki"
 
@@ -9277,11 +9338,12 @@ msgstr "Untilnya"
 msgid "Until there is a branch, there is nothing for customers to book. Add its address, pin it on the map, then set its hours."
 msgstr "Untilnya therekokokomwa is a branchkomwa, therekokokomwa is nothingzeko forabaze customersmwako to bookugundi. Addndi itsrwa addressshya, pinabanya it on theugumbi maprwa, thenmwa setshya itsrwa hoursugu."
 
-#: src/pages/choices/ChoicesEditor.tsx:716
+#: src/pages/choices/ChoicesEditor.tsx:732
+#: src/pages/ServicesPage.tsx:1436
 msgid "Untitled question"
 msgstr "Untitledugundimwaho questionrwamwa"
 
-#: src/pages/ServicesPage.tsx:668
+#: src/pages/ServicesPage.tsx:672
 msgid "Untitled service"
 msgstr "Untitledugundimwaho serviceuguaba"
 
@@ -9289,7 +9351,7 @@ msgstr "Untitledugundimwaho serviceuguaba"
 msgid "Unused for {idle}, a sign-in ends by itself."
 msgstr "Unusedhomwa forabaze {idle}, a signndi-in endsshyamwa by itselfmbishya."
 
-#: src/pages/choices/ChoicesEditor.tsx:543
+#: src/pages/choices/ChoicesEditor.tsx:556
 msgid "Up to {MAX_GROUPS} questions per service"
 msgstr "Up to {MAX_GROUPS} questionsmwaze perugu serviceuguaba"
 
@@ -9301,11 +9363,11 @@ msgstr "Up to {MAX_KIND_CATEGORIES} categoriesikimbi"
 msgid "Up to {MAX_KIND_CATEGORIES} kinds — take one off first"
 msgstr "Up to {MAX_KIND_CATEGORIES} kindsugu — takeze onenya offmwa firstkondi"
 
-#: src/pages/choices/ChoicesEditor.tsx:733
+#: src/pages/choices/ChoicesEditor.tsx:749
 msgid "up to +{longest} min"
 msgstr "up to +{longest} minhoho"
 
-#: src/pages/choices/ChoicesEditor.tsx:732
+#: src/pages/choices/ChoicesEditor.tsx:748
 msgid "up to +{mostPrice}"
 msgstr "up to +{mostPrice}"
 
@@ -9330,8 +9392,8 @@ msgstr "Uploadingabaugu {0} of {1}…"
 #. placeholder {0}: index + 1
 #. placeholder {1}: files.length
 #. placeholder {1}: fresh.length
-#: src/pages/ServicesPage.tsx:390
-#: src/pages/ServicesPage.tsx:450
+#: src/pages/ServicesPage.tsx:394
+#: src/pages/ServicesPage.tsx:454
 msgid "Uploading photo {0} of {1}…"
 msgstr "Uploadingabaugu photonya {0} of {1}…"
 
@@ -9501,6 +9563,10 @@ msgstr "Waitingndiaba forabaze themnyaiki to arrivezeshya"
 msgid "Waiting to be checked by our team"
 msgstr "Waitingndiaba to be checkedmwandi by ourrwa teamaba"
 
+#: src/pages/ServicesPage.tsx:1551
+msgid "Warn about risks here, like “not suitable during pregnancy”. Never ask customers to send health details, an ID number or a PIN — by message or anywhere else."
+msgstr "Warniki aboutmwa riskshoze herenya, likemwa “notmwa suitablendishya duringuguko pregnancyndihoikinyaiki”. Neveriki askzeshya customersmwako to sendshya healthnyandi detailsrwamwambiiki, an ID numberabarwa or a PINugu — by messageugumbi or anywhereabahomwahomwa elseaba."
+
 #: src/pages/StaffPage.tsx:198
 msgid "was a manager"
 msgstr "wasmwa a manageruguko"
@@ -9553,7 +9619,7 @@ msgstr "We checkshya it, youugu postho it"
 msgid "We could not approve it yet. Everything you set up is still here."
 msgstr "We couldmbi notmwa approvemwako it yetiki. Everythingugunya youugu setshya up is stillkomwa herenya."
 
-#: src/pages/ServicesPage.tsx:318
+#: src/pages/ServicesPage.tsx:322
 msgid "We could not save what you typed last — check your connection. Everything before it is saved."
 msgstr "We couldmbi notmwa saveaba whatnya youugu typedshyashya lastikiiki — checkshya yourmbihoiki connectionikinya. Everythingugunya beforembiho it is savedaba."
 
@@ -9634,7 +9700,7 @@ msgstr "Welcomenyaze<0/><1>backmbi.</1>"
 msgid "wellness centre"
 msgstr "wellnessmwanya centrezemwa"
 
-#: src/pages/ServicesPage.tsx:1104
+#: src/pages/ServicesPage.tsx:1108
 msgid "What a customer reads on the service's page"
 msgstr "Whatshya a customerkoshya readszenya on theugumbi serviceuguaba's pagemwazeko"
 
@@ -9664,7 +9730,7 @@ msgstr "Whatshya customersmwako areiki bookinguguiki"
 msgid "What customers can book"
 msgstr "Whatshya customersmwako caniki bookugundi"
 
-#: src/pages/ServicesPage.tsx:1459
+#: src/pages/ServicesPage.tsx:1490
 msgid "What customers read when they choose it"
 msgstr "Whatshya customersmwako readrwa whenko theynya choosendiuguiki it"
 
@@ -9692,7 +9758,7 @@ msgstr "Whatshya customersmwako seeaba: yourmbihoiki shopfrontndimwahoikiugu, th
 msgid "What did the customer recall — the booking time, the service, anything that identified them?"
 msgstr "Whatshya didmwa theugumbi customerkoshya recallndiko — theugumbi bookinguguiki timendi, theugumbi serviceuguaba, anythinghougu thatugu identifiedabahoze themnyaiki?"
 
-#: src/pages/choices/ChoicesEditor.tsx:791
+#: src/pages/choices/ChoicesEditor.tsx:817
 msgid "What do you ask customers?"
 msgstr "Whatshya do youugu askzeshya customersmwako?"
 
@@ -9728,7 +9794,7 @@ msgstr "Whatshya is theirshya 6-digitmwa codendiugu?"
 msgid "What is this about?"
 msgstr "Whatshya is thisrwaaba aboutmwa?"
 
-#: src/pages/ServicesPage.tsx:1496
+#: src/pages/ServicesPage.tsx:1527
 msgid "What it is and what is included — a customer reads this before choosing it."
 msgstr "Whatshya it is andmwa whatnya is includedrwarwa — a customerkoshya readszenya thisrwaaba beforembiho choosingshyaaba it."
 
@@ -9774,11 +9840,11 @@ msgstr "Whatshya theynya chosenya"
 msgid "What they do"
 msgstr "Whatshya theynya do"
 
-#: src/pages/ServicesPage.tsx:1511
+#: src/pages/ServicesPage.tsx:1543
 msgid "What to know before coming: arrive ten minutes early, bring a towel, park at the back…"
 msgstr "Whatshya to knowmwa beforembiho comingmbize: arrivezeshya tenndi minutesmbiiki earlyugu, bringshya a towelugu, parkiki at theugumbi backmbi…"
 
-#: src/pages/ServicesPage.tsx:684
+#: src/pages/ServicesPage.tsx:688
 msgid "What was written in it cannot be brought back."
 msgstr "Whatshya wasmwa writtenuguiki in it cannotmwako be broughtzeshya backmbi."
 
@@ -9870,7 +9936,7 @@ msgstr "Whenrwa areiki youugu openrwa?"
 msgid "When customers book for today, they appear here in time order, each with a button to check them in."
 msgstr "Whenrwa customersmwako bookugundi forabaze todaymbi, theynya appearndirwa herenya in timendi orderhorwa, eachugu withikimbi a buttonrwaaba to checkshya themnyaiki in."
 
-#: src/pages/ServicesPage.tsx:740
+#: src/pages/ServicesPage.tsx:744
 msgid "When the owner adds a service at your branch, it shows here."
 msgstr "Whenrwa theugumbi owneraba addsiki a serviceuguaba at yourmbihoiki branchkomwa, it showsiki herenya."
 
@@ -9878,11 +9944,11 @@ msgstr "Whenrwa theugumbi owneraba addsiki a serviceuguaba at yourmbihoiki branc
 msgid "When they are finished, mark it done on <0>Appointments</0>."
 msgstr "Whenrwa theynya areiki finishedshyako, markugu it donerwa on <0>Appointmentsshyashya</0>."
 
-#: src/pages/choices/ChoicesEditor.tsx:916
+#: src/pages/choices/ChoicesEditor.tsx:943
 msgid "When to ask it"
 msgstr "Whenrwa to askzeshya it"
 
-#: src/pages/choices/ChoicesEditor.tsx:924
+#: src/pages/choices/ChoicesEditor.tsx:951
 msgid "When to ask this question"
 msgstr "Whenrwa to askzeshya thisrwaaba questionrwamwa"
 
@@ -10068,7 +10134,7 @@ msgid "Without the code"
 msgstr "Withoutnyanya theugumbi codendiugu"
 
 #. placeholder {0}: notePrompt.length
-#: src/pages/choices/ChoicesEditor.tsx:589
+#: src/pages/choices/ChoicesEditor.tsx:603
 msgid "Words above their note box <0>{0}/120</0>"
 msgstr "Wordsmwandirwa abovezeko theirshya noterwa boxze <0>{0}/120</0>"
 
@@ -10101,7 +10167,7 @@ msgstr "Worksiki theugumbi frontugu deskndi at theirshya brancheskombihohondi: c
 msgid "Write a reply"
 msgstr "Writeaba a replynya"
 
-#: src/pages/choices/ChoicesEditor.tsx:559
+#: src/pages/choices/ChoicesEditor.tsx:572
 msgid "Write my own question"
 msgstr "Writeaba my ownnya questionrwamwa"
 
@@ -10156,7 +10222,7 @@ msgstr "Youaba areiki <0>in!</0>"
 msgid "You are live! 🎉"
 msgstr "Youaba areiki liveshyako! 🎉"
 
-#: src/pages/choices/ChoicesEditor.tsx:641
+#: src/pages/choices/ChoicesEditor.tsx:657
 msgid "You ask a question; when customers book, they tap an answer. An answer can cost more or take longer — you decide."
 msgstr "Youaba askzeshya a questionrwamwa; whenko customersmwako bookugundi, theynya tapmwa an answershya. An answershya caniki costndi moreaba or takeze longeruguaba — youugu decideikinya."
 
@@ -10164,7 +10230,7 @@ msgstr "Youaba askzeshya a questionrwamwa; whenko customersmwako bookugundi, the
 msgid "You can reopen it for {REOPEN_WINDOW_DAYS} days"
 msgstr "Youaba caniki reopenugukondi it forabaze {REOPEN_WINDOW_DAYS} daysmbi"
 
-#: src/pages/ServicesPage.tsx:608
+#: src/pages/ServicesPage.tsx:612
 msgid "You can see what is on sale at your branches. The owner or a manager changes it."
 msgstr "Youaba caniki seeaba whatnya is on salemwa at yourmbihoiki brancheskombihohondi. Theugu owneraba or a manageruguko changesmwaiki it."
 
@@ -10172,7 +10238,7 @@ msgstr "Youaba caniki seeaba whatnya is on salemwa at yourmbihoiki brancheskombi
 msgid "You can send one message a week, so make it count."
 msgstr "Youaba caniki sendshya onenya messageugumbi a weekrwa, so makeho it countaba."
 
-#: src/pages/ServicesPage.tsx:607
+#: src/pages/ServicesPage.tsx:611
 msgid "You can switch a service on or off at your branches. The owner, or a manager of every branch, changes the menu and its prices."
 msgstr "Youaba caniki switchrwarwa a serviceuguaba on or offmwa at yourmbihoiki brancheskombihohondi. Theugu owneraba, or a manageruguko of everyndi branchkomwa, changesmwaiki theugumbi menuzekoshya andmwa itsrwa priceshondi."
 
@@ -10302,7 +10368,7 @@ msgid "Your category and type"
 msgstr "Yourmwa categoryikiugu andmwa typerwa"
 
 #. placeholder {0}: editor.service.name
-#: src/pages/ServicesPage.tsx:300
+#: src/pages/ServicesPage.tsx:304
 msgid "Your changes to “{0}” are not saved yet. If you leave now, the service stays as it was."
 msgstr "Yourmwa changesmwaiki to “{0}” areiki notmwa savedaba yetiki. If youugu leaveugu nownya, theugumbi serviceuguaba staysrwa as it wasmwa."
 

@@ -19307,8 +19307,9 @@ a service that no longer takes one is refused, not dropped.
 
 ### 300.6 Private answers
 
-For allergies, diet, a pregnancy, an injury, a body area, the kind of legal
-help — anything sensitive. They are:
+For allergies, diet, a pregnancy, an injury, a body area, ~~the kind of legal
+help — anything sensitive~~ — only what the shop needs to serve someone
+safely (§312). They are:
 
 - **always free** (no price, no minutes), so nothing about them reaches a
   receipt; a question shown only after a private answer is private too;
@@ -20320,3 +20321,44 @@ sketches, a mascot), and a professional 404 so nobody meets a bad error.
   Checked at 1440 and 390 (320 for the 404) with faked empty answers; the
   console was viewed with faked answers in the screenshot browser only — no
   account was made or changed.
+
+## 312. Sellers are warned not to ask for private information (2026-10-23)
+
+The user asked whether the platform asks customers for sensitive things like
+health when a seller makes a service, and wanted sellers warned against it —
+where they create services, and in the extra information they write. It did:
+§300's ready-made questions included private ones. Asked to choose, the user
+kept the safety ones and dropped the medical ones.
+
+- **Ready-made questions** (`choice-suggestions.ts`): kept — allergies, diet,
+  a pregnancy, an injury or a body area, access needs, all private (§300.6).
+  Removed — which lab tests, which vaccine and which dose, "do you have a
+  referral?", the area of law, and the answers "high blood pressure" and "a
+  heart or breathing (or blood-pressure) condition". No saved service used
+  them. The server's translations of them went with them.
+- **The rule, said where questions are written** (`AskOnlyWhatYouNeed`, top
+  of "Questions for customers"): ask only what you need to serve them; never
+  an illness, tests or medicines, an ID, passport or insurance number,
+  religion, ethnicity or politics, or a PIN or password. An allergy, a
+  pregnancy or an injury only when it changes how you work, and as a private
+  question.
+- **A check as they type** (`lib/sensitive.ts`): a question's words and its
+  answers are read in English, Kinyarwanda and French whatever the app's
+  language (Kinyarwanda's common word forms listed whole; "indwara
+  z'ubwivumbure" read as an allergy). A never-asked one gets a red note and
+  a "Do not ask this" badge; a safety one that is not private gets an amber
+  note with "Make it private". Pressing Save with a never-asked question
+  still in it asks once more ("Save anyway" / "Change them"). It is a
+  warning, not a wall: words that tell customers NOT to share ("never write a
+  password here") and questions about an animal pass.
+- **The extra information**: the customer-note setting now says not to
+  invite private details; the words above the note box are checked; the
+  special instructions say "warn about risks here, like 'not suitable during
+  pregnancy' — never ask customers to send health details, an ID number or a
+  PIN", and the description and instructions are checked for ID numbers,
+  beliefs and PINs (not health words: a health warning belongs there, seller
+  agreement 10.3).
+- The seller agreement (9.3) already forbids a diagnosis, medical history,
+  test results, medicines and ID, passport or insurance numbers; religion,
+  ethnicity, politics and PINs are in the app's warning but not yet in the
+  agreement — one for the lawyer's next review.

@@ -411,3 +411,7 @@
 .svc-state.is-on { background: var(--ok-soft); color: var(--ok-deep); }
 .sv-photo-add small { font-size: 11.5px; font-weight: 600; color: var(--muted); }
 .sv-photo-problem { margin-top: 8px; }
+
+/* What not to ask for, under the special instructions (§312). */
+.sv-help-private { display: flex; align-items: flex-start; gap: 6px; margin-top: 6px; color: var(--ink-2); }
+.sv-help-private > svg { flex: none; margin-top: 2px; color: var(--ok-deep); }

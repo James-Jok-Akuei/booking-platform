@@ -30,7 +30,7 @@ msgstr " · igabanywa ririho ubu"
 msgid " · edited"
 msgstr " · cyahinduwe"
 
-#: src/pages/choices/ChoicesEditor.tsx:514
+#: src/pages/choices/ChoicesEditor.tsx:527
 msgid " · must answer"
 msgstr " · kigomba gusubizwa"
 
@@ -43,7 +43,7 @@ msgstr " · ntiyishyuwe"
 msgid " · paid {0}"
 msgstr " · yishyuwe {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1175
+#: src/pages/choices/ChoicesEditor.tsx:1269
 msgid " · Required"
 msgstr " · Ni ngombwa"
 
@@ -52,11 +52,11 @@ msgid " · try a discount"
 msgstr " · gerageza igabanywa"
 
 #. placeholder {0}: niceDay(service.discountEndsOn.slice(0, 10))
-#: src/pages/ServicesPage.tsx:1062
+#: src/pages/ServicesPage.tsx:1066
 msgid " · until {0}"
 msgstr " · kugeza {0}"
 
-#: src/pages/ServicesPage.tsx:1062
+#: src/pages/ServicesPage.tsx:1066
 msgid " · until you end it"
 msgstr " · kugeza urihagaritse"
 
@@ -109,15 +109,15 @@ msgstr "“{0}” — gusubiza vuba bishobora gutuma ubona gahunda."
 msgid "“{name}” is over {limit} MB — try a smaller copy."
 msgstr "“{name}” irengeje MB {limit} — gerageza ifoto ntoya."
 
-#: src/pages/choices/ChoicesEditor.tsx:218
+#: src/pages/choices/ChoicesEditor.tsx:227
 msgid "“{title}”: add at least one answer."
 msgstr "“{title}”: ongeraho nibura igisubizo kimwe."
 
-#: src/pages/choices/ChoicesEditor.tsx:221
+#: src/pages/choices/ChoicesEditor.tsx:230
 msgid "“{title}”: answer {answer} is empty — write it, or remove it."
 msgstr "“{title}”: igisubizo cya {answer} kirimo ubusa — cyandike, cyangwa ugisibe."
 
-#: src/pages/choices/ChoicesEditor.tsx:223
+#: src/pages/choices/ChoicesEditor.tsx:232
 msgid "“{title}”: customers must answer it, so at least one answer has to be offered."
 msgstr "“{title}”: abakiriya bagomba kugisubiza, bityo hagomba kuba nibura igisubizo kimwe cyo guhitamo."
 
@@ -138,8 +138,13 @@ msgstr "“Byihuse, bakira neza, kandi ni nk’uko nabisabye.”"
 msgid "{0, plural, one {“What you do” is # character too long.} other {“What you do” is # characters too long.}}"
 msgstr "{0, plural, one {“Ibyo ukora” birengejeho inyuguti #.} other {“Ibyo ukora” birengejeho inyuguti #.}}"
 
+#. placeholder {0}: forbidden.length
+#: src/pages/ServicesPage.tsx:1441
+msgid "{0, plural, one {{named} asks for something customers should never have to give a shop — an illness, an ID number, their beliefs or a PIN. Please change or remove it.} other {{named} ask for something customers should never have to give a shop — an illness, an ID number, their beliefs or a PIN. Please change or remove them.}}"
+msgstr "{0, plural, one {{named} gisaba ikintu umukiriya atagomba na rimwe guha iduka — indwara, nimero y’indangamuntu, imyemerere ye cyangwa PIN. Turagusaba kugihindura cyangwa kugikuramo.} other {{named} bisaba ikintu umukiriya atagomba na rimwe guha iduka — indwara, nimero y’indangamuntu, imyemerere ye cyangwa PIN. Turagusaba kubihindura cyangwa kubikuramo.}}"
+
 #. placeholder {0}: titles.length
-#: src/pages/choices/ChoicesEditor.tsx:169
+#: src/pages/choices/ChoicesEditor.tsx:178
 msgid "{0, plural, one {{names} is asked only after an answer here.} other {{names} are asked only after an answer here.}}"
 msgstr "{0, plural, one {{names} kibazwa gusa nyuma y’igisubizo hano.} other {{names} bibazwa gusa nyuma y’igisubizo hano.}}"
 
@@ -149,12 +154,12 @@ msgid "{0, plural, one {{onTheWay} of it is on its way to you, in # payment.} ot
 msgstr "{0, plural, one {{onTheWay} muri ayo ari mu nzira akugana, mu bwishyu #.} other {{onTheWay} muri ayo ari mu nzira akugana, mu bwishyu #.}}"
 
 #. placeholder {0}: picked.length - room
-#: src/pages/ServicesPage.tsx:1295
+#: src/pages/ServicesPage.tsx:1299
 msgid "{0, plural, one {{PHOTO_LIMIT} photos is the most for a service, so # was left out.} other {{PHOTO_LIMIT} photos is the most for a service, so # were left out.}}"
 msgstr "{0, plural, one {Serivisi ishobora kugira amafoto {PHOTO_LIMIT} gusa, bityo ifoto # ntiyashyizweho.} other {Serivisi ishobora kugira amafoto {PHOTO_LIMIT} gusa, bityo amafoto # ntiyashyizweho.}}"
 
 #. placeholder {0}: group.options.length
-#: src/pages/choices/ChoicesEditor.tsx:731
+#: src/pages/choices/ChoicesEditor.tsx:747
 msgid "{0, plural, one {# answer} other {# answers}}"
 msgstr "{0, plural, one {igisubizo #} other {ibisubizo #}}"
 
@@ -194,12 +199,12 @@ msgid "{0, plural, one {# person} other {# people}}"
 msgstr "{0, plural, one {umuntu #} other {abantu #}}"
 
 #. placeholder {0}: service.images.length
-#: src/pages/ServicesPage.tsx:1024
+#: src/pages/ServicesPage.tsx:1028
 msgid "{0, plural, one {# photo} other {# photos}}"
 msgstr "{0, plural, one {Ifoto #} other {Amafoto #}}"
 
 #. placeholder {0}: groups.length
-#: src/pages/ServicesPage.tsx:1605
+#: src/pages/ServicesPage.tsx:1646
 msgid "{0, plural, one {# question customers answer when they book} other {# questions customers answer when they book}}"
 msgstr "{0, plural, one {Ikibazo # abakiriya basubiza iyo bafata gahunda} other {Ibibazo # abakiriya basubiza iyo bafata gahunda}}"
 
@@ -254,7 +259,7 @@ msgid "{0, plural, one {from # customer} other {from # customers}}"
 msgstr "{0, plural, one {ku mukiriya #} other {ku bakiriya #}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1800
+#: src/pages/ServicesPage.tsx:1841
 msgid "{0, plural, one {Goes live at # branch.} other {Goes live at # branches.}}"
 msgstr "{0, plural, one {Izajya ku murongo ku ishami #.} other {Izajya ku murongo ku mashami #.}}"
 
@@ -264,22 +269,22 @@ msgid "{0, plural, one {Photos on # service} other {Photos on # services}}"
 msgstr "{0, plural, one {Amafoto kuri serivisi #} other {Amafoto kuri serivisi #}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1794
+#: src/pages/ServicesPage.tsx:1835
 msgid "{0, plural, one {Ready at # branch — customers see it once you open your shop again.} other {Ready at # branches — customers see it once you open your shop again.}}"
 msgstr "{0, plural, one {Yiteguye ku ishami # — abakiriya bazayibona nusubira gufungura iduka ryawe.} other {Yiteguye ku mashami # — abakiriya bazayibona nusubira gufungura iduka ryawe.}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1790
+#: src/pages/ServicesPage.tsx:1831
 msgid "{0, plural, one {Ready at # branch — customers see it once you post your shop.} other {Ready at # branches — customers see it once you post your shop.}}"
 msgstr "{0, plural, one {Yiteguye ku ishami # — abakiriya bazayibona nushyira iduka ryawe ahagaragara.} other {Yiteguye ku mashami # — abakiriya bazayibona nushyira iduka ryawe ahagaragara.}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1785
+#: src/pages/ServicesPage.tsx:1826
 msgid "{0, plural, one {Ready at # branch — customers see it once your shop is live.} other {Ready at # branches — customers see it once your shop is live.}}"
 msgstr "{0, plural, one {Yiteguye ku ishami # — abakiriya bazayibona iduka ryawe nirimara kujya ku murongo.} other {Yiteguye ku mashami # — abakiriya bazayibona iduka ryawe nirimara kujya ku murongo.}}"
 
 #. placeholder {0}: failed.length
-#: src/pages/ServicesPage.tsx:478
+#: src/pages/ServicesPage.tsx:482
 msgid "{0, plural, one {Saved, but # photo change did not go through: {why}. Open Edit on the service to try again.} other {Saved, but # photo changes did not go through: {why}. Open Edit on the service to try again.}}"
 msgstr "{0, plural, one {Byabitswe, ariko impinduka # y’ifoto ntiyakunze: {why}. Fungura Hindura kuri serivisi wongere ugerageze.} other {Byabitswe, ariko impinduka # z’amafoto ntizakunze: {why}. Fungura Hindura kuri serivisi wongere ugerageze.}}"
 
@@ -449,7 +454,7 @@ msgstr "yatinze {0}"
 #. placeholder {0}: service.durationMinutes
 #: src/pages/AppointmentsPage.tsx:746
 #: src/pages/OverviewPage.tsx:560
-#: src/pages/ServicesPage.tsx:1035
+#: src/pages/ServicesPage.tsx:1039
 msgid "{0} min"
 msgstr "{0} min"
 
@@ -470,7 +475,7 @@ msgid "{0} of {count}: {1}"
 msgstr "{0} kuri {count}: {1}"
 
 #. placeholder {0}: photos.length
-#: src/pages/ServicesPage.tsx:1702
+#: src/pages/ServicesPage.tsx:1743
 msgid "{0} of {PHOTO_LIMIT} · choose the cover with “Make cover”"
 msgstr "{0} kuri {PHOTO_LIMIT} · hitamo iy’imbere ukoresheje “Hitamo nk’iy’imbere”"
 
@@ -519,7 +524,7 @@ msgid "{0} unread messages"
 msgstr "Ubutumwa butarasomwa: {0}"
 
 #. placeholder {0}: money.format(depositShare(minor))
-#: src/pages/ServicesPage.tsx:1577
+#: src/pages/ServicesPage.tsx:1618
 msgid "{0} up front"
 msgstr "Avansi: {0}"
 
@@ -558,7 +563,7 @@ msgid "{0}% complete"
 msgstr "Byuzuye {0}%"
 
 #. placeholder {0}: service.depositPercentage
-#: src/pages/ServicesPage.tsx:1039
+#: src/pages/ServicesPage.tsx:1043
 msgid "{0}% deposit"
 msgstr "Avansi {0}%"
 
@@ -682,11 +687,11 @@ msgstr "{followers, plural, one {Kohereza ku muntu # ugukurikira?} other {Kohere
 msgid "{followers, plural, one {Send to # follower} other {Send to # followers}}"
 msgstr "{followers, plural, one {Ohereza ku muntu # ugukurikira} other {Ohereza ku bantu # bagukurikira}}"
 
-#: src/pages/choices/ChoicesEditor.tsx:385
+#: src/pages/choices/ChoicesEditor.tsx:394
 msgid "{followUps} was asked only after an answer here, so it will be asked every time."
 msgstr "{followUps} cyabazwaga gusa nyuma y’igisubizo hano, none kizajya kibazwa buri gihe."
 
-#: src/pages/choices/ChoicesEditor.tsx:386
+#: src/pages/choices/ChoicesEditor.tsx:395
 msgid "{followUps} were asked only after an answer here, so they will be asked every time."
 msgstr "{followUps} byabazwaga gusa nyuma y’igisubizo hano, none bizajya bibazwa buri gihe."
 
@@ -789,11 +794,11 @@ msgstr "hashize {minutes} min"
 msgid "{minutes}m ago"
 msgstr "hashize {minutes}m"
 
-#: src/pages/choices/ChoicesEditor.tsx:1233
+#: src/pages/choices/ChoicesEditor.tsx:1327
 msgid "{missing} to answer"
 msgstr "Hasigaye {missing} byo gusubiza"
 
-#: src/pages/choices/ChoicesEditor.tsx:892
+#: src/pages/choices/ChoicesEditor.tsx:919
 msgid "{moreSet} set"
 msgstr "Byashyizweho: {moreSet}"
 
@@ -819,7 +824,7 @@ msgstr "Kuri {name} hasigaye umwanya w’amafoto {room} gusa (ntarengwa {limit})
 msgid "{name} has room for {room} more ({limit} at most), so 1 was left out."
 msgstr "Kuri {name} hasigaye umwanya w’amafoto {room} gusa (ntarengwa {limit}), bityo 1 ntiyashyizweho."
 
-#: src/pages/ServicesPage.tsx:626
+#: src/pages/ServicesPage.tsx:630
 msgid "{noPhotos} without photos"
 msgstr "Izidafite amafoto: {noPhotos}"
 
@@ -835,11 +840,11 @@ msgstr "{openDays, plural, one {Bifungura umunsi # mu cyumweru} other {Bifungura
 msgid "{outstanding, plural, one {# document has changed since you agreed.} other {# documents have changed since you agreed.}}"
 msgstr "{outstanding, plural, one {Inyandiko # yarahindutse kuva wayemera.} other {Inyandiko # zarahindutse kuva wazemera.}}"
 
-#: src/pages/ServicesPage.tsx:1385
+#: src/pages/ServicesPage.tsx:1389
 msgid "{overDescription, plural, one {Shorten the description by # character — the count is at the top right of each box.} other {Shorten the description by # characters — the count is at the top right of each box.}}"
 msgstr "{overDescription, plural, one {Gabanya ibisobanuro inyuguti # — umubare uri hejuru iburyo bwa buri gasanduku.} other {Gabanya ibisobanuro inyuguti # — umubare uri hejuru iburyo bwa buri gasanduku.}}"
 
-#: src/pages/ServicesPage.tsx:1389
+#: src/pages/ServicesPage.tsx:1393
 msgid "{overInstructions, plural, one {Shorten the special instructions by # character — the count is at the top right of each box.} other {Shorten the special instructions by # characters — the count is at the top right of each box.}}"
 msgstr "{overInstructions, plural, one {Gabanya amabwiriza yihariye inyuguti # — umubare uri hejuru iburyo bwa buri gasanduku.} other {Gabanya amabwiriza yihariye inyuguti # — umubare uri hejuru iburyo bwa buri gasanduku.}}"
 
@@ -848,11 +853,11 @@ msgid "{pct}% complete"
 msgstr "Byuzuye {pct}%"
 
 #. placeholder {0}: niceDay(saleEndsOn)
-#: src/pages/ServicesPage.tsx:1677
+#: src/pages/ServicesPage.tsx:1718
 msgid "{percentOff}% off until the end of {0}. Bookings made before then keep the discounted price."
 msgstr "Igabanywa rya {percentOff}% kugeza ku musozo wa {0}. Gahunda zifashwe mbere y’icyo gihe zigumana igiciro cyagabanyijwe."
 
-#: src/pages/ServicesPage.tsx:1678
+#: src/pages/ServicesPage.tsx:1719
 msgid "{percentOff}% off until you end it. Bookings already made keep the price they were made at."
 msgstr "Igabanywa rya {percentOff}% kugeza urihagaritse. Gahunda zamaze gufatwa zigumana igiciro zafashweho."
 
@@ -884,7 +889,7 @@ msgstr "{ratingCount} byose hamwe"
 msgid "{rest} and {last}"
 msgstr "{rest} na {last}"
 
-#: src/pages/ServicesPage.tsx:1061
+#: src/pages/ServicesPage.tsx:1065
 msgid "{sale}% off"
 msgstr "Igabanywa rya {sale}%"
 
@@ -921,7 +926,7 @@ msgstr "{withOffers, plural, one {# amenyeshwa promosiyo zawe} other {# bamenyes
 msgid "{withOffers} of them said yes to your offers, so they also get it as an alert or email."
 msgstr "{withOffers} muri bo bemeye kwakira promosiyo zawe, bityo banabwakira nk’imenyesha cyangwa imeyili."
 
-#: src/pages/ServicesPage.tsx:620
+#: src/pages/ServicesPage.tsx:624
 msgid "{withSale} with a discount"
 msgstr "Izifite igabanywa: {withSale}"
 
@@ -929,36 +934,36 @@ msgstr "Izifite igabanywa: {withSale}"
 msgid "{withYou} with you now, and nobody else expected today."
 msgstr "{withYou} bari kumwe nawe ubu, kandi nta wundi utegerejwe uyu munsi."
 
-#: src/pages/choices/ChoicesEditor.tsx:1024
+#: src/pages/choices/ChoicesEditor.tsx:1118
 msgid "+ Add a short description"
 msgstr "+ Ongeraho ibisobanuro bigufi"
 
 #. placeholder {0}: o.extraMinutes
 #. placeholder {0}: pick.extraMinutes
 #: src/lib/BookingChoices.tsx:16
-#: src/pages/choices/ChoicesEditor.tsx:630
+#: src/pages/choices/ChoicesEditor.tsx:646
 msgid "+{0} min"
 msgstr "+{0} min"
 
-#: src/pages/choices/ChoicesEditor.tsx:1208
+#: src/pages/choices/ChoicesEditor.tsx:1302
 msgid "+{mins} min"
 msgstr "+{mins} min"
 
-#: src/pages/choices/ChoicesEditor.tsx:634
+#: src/pages/choices/ChoicesEditor.tsx:650
 msgid "+15 min"
 msgstr "+15 min"
 
-#: src/pages/choices/ChoicesEditor.tsx:635
+#: src/pages/choices/ChoicesEditor.tsx:651
 msgid "+30 min"
 msgstr "+30 min"
 
 #. placeholder {0}: notOnSale.length
-#: src/pages/ServicesPage.tsx:631
+#: src/pages/ServicesPage.tsx:635
 msgid "<0/> {0} not on sale"
 msgstr "<0/> {0} zitatangwa"
 
 #. placeholder {0}: onSale.length
-#: src/pages/ServicesPage.tsx:615
+#: src/pages/ServicesPage.tsx:619
 msgid "<0/> {0} on sale"
 msgstr "<0/> {0} zitangwa"
 
@@ -1116,7 +1121,7 @@ msgstr "<0>Uhabwa imeyili</0>Kuri {address}, ukimara kwemezwa."
 msgid "<0>You post your shop</0>When you are ready — one button on your dashboard. Customers see it from then, not before."
 msgstr "<0>Ushyira iduka ryawe ahagaragara</0>Igihe witeguye — ni buto imwe kuri Incamake yawe. Abakiriya baribona guhera ubwo, si mbere yaho."
 
-#: src/pages/ServicesPage.tsx:1884
+#: src/pages/ServicesPage.tsx:1935
 msgid "★ Cover"
 msgstr "★ Ifoto y’imbere"
 
@@ -1274,7 +1279,7 @@ msgstr "Ijanisha ry’avansi ntirishobora kujya munsi y’amafaranga ya serivisi
 msgid "A description on every service"
 msgstr "Ibisobanuro kuri buri serivisi"
 
-#: src/pages/ServicesPage.tsx:1423
+#: src/pages/ServicesPage.tsx:1427
 msgid "A discount is a whole number from 1 to 90 percent off — or leave it empty for no discount."
 msgstr "Igabanywa ni umubare wuzuye kuva kuri 1 kugeza kuri 90 ku ijana — cyangwa usige ahatanditse niba nta gabanywa."
 
@@ -1287,7 +1292,7 @@ msgstr "Serivisi iri ku igabanywa igaragaza ikimenyetso cya −% n’igiciro cya
 msgid "A few words <0>{0}/{CAPTION_MAX}</0>"
 msgstr "Amagambo make <0>{0}/{CAPTION_MAX}</0>"
 
-#: src/pages/ServicesPage.tsx:1379
+#: src/pages/ServicesPage.tsx:1383
 msgid "A little too long"
 msgstr "Ni birebire gato"
 
@@ -1295,7 +1300,7 @@ msgstr "Ni birebire gato"
 msgid "A manager runs the branches you choose — their bookings, hours, closures and photos. With every branch, they also run the shopfront, the services and prices, and see the money."
 msgstr "Umuyobozi acunga amashami uhitamo — gahunda zayo, amasaha, iminsi ifunze n’amafoto. Iyo afite amashami yose, anacunga isura y’iduka, serivisi n’ibiciro, kandi akabona amafaranga."
 
-#: src/pages/ServicesPage.tsx:719
+#: src/pages/ServicesPage.tsx:723
 msgid "A name, how long it takes, a price at each branch — and a photo or two. Customers can book it the moment it is posted."
 msgstr "Izina, igihe imara, igiciro kuri buri shami — n’ifoto imwe cyangwa ebyiri. Abakiriya bashobora kuyifatira gahunda ikimara gushyirwa ahagaragara."
 
@@ -1352,7 +1357,7 @@ msgstr "Ifoto n’amagambo make by’uyu munsi. Abakiriya babibona hejuru muri p
 msgid "A photo for today, at the top of the app"
 msgstr "Ifoto y’uyu munsi, hejuru muri porogaramu"
 
-#: src/pages/ServicesPage.tsx:443
+#: src/pages/ServicesPage.tsx:447
 msgid "a photo was not removed"
 msgstr "ifoto imwe ntiyakuweho"
 
@@ -1360,15 +1365,15 @@ msgstr "ifoto imwe ntiyakuweho"
 msgid "a photo, PDF, Word, Excel, CSV or text file"
 msgstr "ifoto, cyangwa dosiye ya PDF, Word, Excel, CSV cyangwa y’inyandiko"
 
-#: src/pages/choices/ChoicesEditor.tsx:943
+#: src/pages/choices/ChoicesEditor.tsx:970
 msgid "A private question"
 msgstr "Ikibazo cy’ibanga"
 
-#: src/pages/choices/ChoicesEditor.tsx:939
+#: src/pages/choices/ChoicesEditor.tsx:966
 msgid "A private question: health or personal"
 msgstr "Ikibazo cy’ibanga: ubuzima cyangwa ibyihariye"
 
-#: src/pages/choices/ChoicesEditor.tsx:1093
+#: src/pages/choices/ChoicesEditor.tsx:1187
 msgid "A question needs at least one answer"
 msgstr "Ikibazo gikenera nibura igisubizo kimwe"
 
@@ -1388,7 +1393,7 @@ msgstr "Amanota gusa, nta magambo."
 msgid "A reply is public"
 msgstr "Igisubizo kibonwa na bose"
 
-#: src/pages/ServicesPage.tsx:725
+#: src/pages/ServicesPage.tsx:729
 msgid "A sale, whenever you want one"
 msgstr "Igabanywa ry’igiciro, igihe ubishakiye"
 
@@ -1424,18 +1429,18 @@ msgstr "Iduka rifite inkuru rigira uruziga rw’ibara rya korali muri porogaramu
 msgid "A shop’s page in the customer app: its photos, rating and services."
 msgstr "Urupapuro rw’iduka muri porogaramu y’abakiriya: amafoto yaryo, amanota na serivisi."
 
-#: src/pages/choices/ChoicesEditor.tsx:1019
+#: src/pages/choices/ChoicesEditor.tsx:1113
 msgid "A short description — e.g. Below the shoulders"
 msgstr "Ibisobanuro bigufi — urugero: Munsi y’intugu"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1015
+#: src/pages/choices/ChoicesEditor.tsx:1109
 msgid "A short description of answer {0}"
 msgstr "Ibisobanuro bigufi by’igisubizo cya {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:579
-msgid "A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the booking. Allergies and health go in a private question, never in the note."
-msgstr "Ubutumwa bugufi bakwandikira igihe bafata gahunda (inyuguti zitarenze 250), nka “Nkoresha ukuboko kw’ibumoso”. Ububona kuri gahunda. Aleriji n’ubuzima bijya mu kibazo cy’ibanga, ntibijya mu butumwa."
+#: src/pages/choices/ChoicesEditor.tsx:592
+msgid "A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the booking. Don’t invite private details here — no illness, medicines or ID numbers. Allergies go in a private question."
+msgstr "Ubutumwa bugufi bakwandikira igihe bafata gahunda (inyuguti zigera kuri 250), nka “Nkoresha ukuboko kw’ibumoso”. Ububona kuri gahunda yafashwe. Ntusabe amakuru y’ibanga hano — nta ndwara, imiti cyangwa nimero z’indangamuntu. Indwara z’ubwivumbure zibazwa mu kibazo cy’ibanga."
 
 #: src/tour/steps.ts:53
 msgid "A small part of the price, from their phone by mobile money. The rest they pay you at the shop."
@@ -1484,7 +1489,7 @@ msgid "Actions"
 msgstr "Ibikorwa"
 
 #: src/onboarding/GoLiveCard.tsx:446
-#: src/pages/choices/ChoicesEditor.tsx:546
+#: src/pages/choices/ChoicesEditor.tsx:559
 #: src/pages/ProfilePage.tsx:516
 msgid "Add"
 msgstr "Ongeraho"
@@ -1521,24 +1526,24 @@ msgstr "Ongeraho ifoto y’imbere"
 msgid "Add a logo"
 msgstr "Ongeraho ikirango"
 
-#: src/pages/ServicesPage.tsx:1015
+#: src/pages/ServicesPage.tsx:1019
 msgid "Add a photo"
 msgstr "Ongeraho ifoto"
 
-#: src/pages/choices/ChoicesEditor.tsx:643
+#: src/pages/choices/ChoicesEditor.tsx:659
 msgid "Add a question — a ready-made one below, or your own"
 msgstr "Ongeraho ikibazo — kimwe mu biteguye hasi, cyangwa icyawe"
 
 #: src/ads/todaySlides.ts:159
 #: src/pages/OverviewPage.tsx:276
-#: src/pages/ServicesPage.tsx:597
-#: src/pages/ServicesPage.tsx:732
-#: src/pages/ServicesPage.tsx:813
+#: src/pages/ServicesPage.tsx:601
+#: src/pages/ServicesPage.tsx:736
+#: src/pages/ServicesPage.tsx:817
 #: src/shell/CommandPalette.tsx:77
 msgid "Add a service"
 msgstr "Ongeraho serivisi"
 
-#: src/pages/choices/ChoicesEditor.tsx:884
+#: src/pages/choices/ChoicesEditor.tsx:911
 msgid "Add an answer"
 msgstr "Ongeraho igisubizo"
 
@@ -1550,7 +1555,7 @@ msgstr "Ongeraho indi dosiye"
 msgid "Add another kind…"
 msgstr "Ongeraho ubundi bwoko…"
 
-#: src/pages/choices/ChoicesEditor.tsx:454
+#: src/pages/choices/ChoicesEditor.tsx:467
 msgid "Add another question"
 msgstr "Ongeraho ikindi kibazo"
 
@@ -1571,7 +1576,7 @@ msgstr "Nzabyongeraho nyuma"
 msgid "Add it now"
 msgstr "Ongeraho ubu"
 
-#: src/pages/ServicesPage.tsx:1745
+#: src/pages/ServicesPage.tsx:1786
 msgid "Add more photos"
 msgstr "Ongeraho andi mafoto"
 
@@ -1587,14 +1592,14 @@ msgstr "Ongeraho izindi, zifite amafoto n’ibisobanuro, muri <0>Serivisi</0> ig
 msgid "Add one — until then there is nothing for a customer to book and nothing to set hours for."
 msgstr "Ongeraho rimwe — kugeza icyo gihe, nta cyo umukiriya yafatira gahunda kandi nta cyo washyiriraho amasaha."
 
-#: src/pages/choices/ChoicesEditor.tsx:464
+#: src/pages/choices/ChoicesEditor.tsx:477
 msgid "Add one in a tap, then set your prices. You can change any of the words."
 msgstr "Ongeraho kimwe ukanze rimwe, hanyuma ushyireho ibiciro byawe. Ushobora guhindura amagambo yose."
 
 #: src/ads/guide.ts:126
 #: src/onboarding/GoLiveCard.tsx:136
 #: src/pages/ProfilePage.tsx:719
-#: src/pages/ServicesPage.tsx:1745
+#: src/pages/ServicesPage.tsx:1786
 msgid "Add photos"
 msgstr "Ongeraho amafoto"
 
@@ -1619,11 +1624,11 @@ msgstr "Ongeraho aho ukorera"
 msgid "Add this break"
 msgstr "Ongeraho iki kiruhuko"
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Add this service"
 msgstr "Ongeraho iyi serivisi"
 
-#: src/pages/choices/ChoicesEditor.tsx:454
+#: src/pages/choices/ChoicesEditor.tsx:467
 msgid "Add your first question"
 msgstr "Ongeraho ikibazo cyawe cya mbere"
 
@@ -1631,12 +1636,12 @@ msgstr "Ongeraho ikibazo cyawe cya mbere"
 msgid "Add your logo"
 msgstr "Ongeraho ikirango cyawe"
 
-#: src/pages/choices/ChoicesEditor.tsx:502
+#: src/pages/choices/ChoicesEditor.tsx:515
 msgid "Added"
 msgstr "Cyongeweho"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1041
+#: src/pages/choices/ChoicesEditor.tsx:1135
 msgid "Added to the price for answer {0}"
 msgstr "Byongerwa ku giciro ku gisubizo cya {0}"
 
@@ -1657,15 +1662,15 @@ msgstr "Gushakisha aderesi ntibiboneka ubu. Yandike yose."
 msgid "Address, map pin, hours — then customers can book"
 msgstr "Aderesi, ikimenyetso ku ikarita, amasaha — maze abakiriya bafate gahunda"
 
-#: src/pages/choices/ChoicesEditor.tsx:523
+#: src/pages/choices/ChoicesEditor.tsx:536
 msgid "Adds “{parentName}” too — it is asked after an answer there."
 msgstr "Byongeraho na “{parentName}” — kibazwa nyuma y’igisubizo cyaho."
 
-#: src/pages/choices/ChoicesEditor.tsx:1056
+#: src/pages/choices/ChoicesEditor.tsx:1150
 msgid "Adds time"
 msgstr "Byongera igihe"
 
-#: src/pages/choices/ChoicesEditor.tsx:1031
+#: src/pages/choices/ChoicesEditor.tsx:1125
 msgid "Adds to the price"
 msgstr "Byongera ku giciro"
 
@@ -1674,7 +1679,7 @@ msgid "Adverts hidden until you next sign in."
 msgstr "Amatangazo yahishwe kugeza wongeye kwinjira."
 
 #. placeholder {0}: parentOption.label
-#: src/pages/choices/ChoicesEditor.tsx:774
+#: src/pages/choices/ChoicesEditor.tsx:800
 msgid "After “{0}”"
 msgstr "Nyuma ya “{0}”"
 
@@ -1770,7 +1775,7 @@ msgstr "Amashami yose"
 msgid "All caught up"
 msgstr "Byose byasomwe"
 
-#: src/pages/ServicesPage.tsx:944
+#: src/pages/ServicesPage.tsx:948
 msgid "All changes saved"
 msgstr "Impinduka zose zabitswe"
 
@@ -1811,7 +1816,7 @@ msgstr "Biri mu giciro cyose kiri hasi."
 msgid "Also"
 msgstr "Ikindi"
 
-#: src/pages/choices/ChoicesEditor.tsx:574
+#: src/pages/choices/ChoicesEditor.tsx:587
 msgid "Also for this service"
 msgstr "Ibindi kuri iyi serivisi"
 
@@ -1827,7 +1832,11 @@ msgstr "Umuyobozi w’urubuga yahishe igitekerezo. Ntikikibarwa mu manota yawe."
 msgid "An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079)."
 msgstr "Ni nimero ya Airtel. Kuri ubu ubwishyu bwoherezwa na MTN MoMo gusa, bityo ntiyabwakira — koresha nimero ya MTN (078 cyangwa 079)."
 
-#: src/pages/choices/ChoicesEditor.tsx:648
+#: src/pages/choices/ChoicesEditor.tsx:1013
+msgid "An allergy, a pregnancy or an injury can matter for safety. Ask it only when it changes how you work, and as a private question: only you see the answers, and they are deleted 30 days after the visit."
+msgstr "Indwara y’ubwivumbure, gutwita cyangwa imvune bishobora kuba ngombwa ku bw’umutekano. Bibaze gusa iyo bihindura uko ukora, kandi mu kibazo cy’ibanga: ni wowe wenyine ubona ibisubizo, kandi bisibwa nyuma y’iminsi 30 nyuma yo kuza."
+
+#: src/pages/choices/ChoicesEditor.tsx:664
 msgid "An example of what customers see"
 msgstr "Urugero rw’ibyo abakiriya babona"
 
@@ -1858,7 +1867,7 @@ msgstr "Kandi niba ugifite"
 msgid "Anonymous"
 msgstr "Utazwi"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "Another answer"
 msgstr "Ikindi gisubizo"
 
@@ -1870,12 +1879,12 @@ msgstr "Ufite irindi duka mu wundi muhanda, akarere cyangwa umujyi? Ryongere mur
 msgid "Another street, district or town — each branch gets its own page, hours, photos and prices, and customers near it find it on its own."
 msgstr "Undi muhanda, akarere cyangwa umujyi — buri shami rigira paji yaryo, amasaha, amafoto n’ibiciro byaryo, kandi abakiriya bari hafi yaryo barisanga ukwaryo."
 
-#: src/pages/choices/ChoicesEditor.tsx:1004
+#: src/pages/choices/ChoicesEditor.tsx:1098
 msgid "Answer "
 msgstr "Igisubizo "
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1006
+#: src/pages/choices/ChoicesEditor.tsx:1100
 msgid "Answer {0}"
 msgstr "Igisubizo {0}"
 
@@ -1883,7 +1892,7 @@ msgstr "Igisubizo {0}"
 msgid "Answer them "
 msgstr "Bisubize "
 
-#: src/pages/choices/ChoicesEditor.tsx:833
+#: src/pages/choices/ChoicesEditor.tsx:860
 msgid "Any number"
 msgstr "Nta mupaka"
 
@@ -1895,7 +1904,7 @@ msgstr "Ibivugwa kuri gahunda yafashwe"
 msgid "Anything that shows the problem"
 msgstr "Icyerekana ikibazo"
 
-#: src/pages/choices/ChoicesEditor.tsx:596
+#: src/pages/choices/ChoicesEditor.tsx:610
 #: src/shopfront/CustomerPhone.tsx:562
 msgid "Anything the shop should know?"
 msgstr "Hari icyo iduka rikwiye kumenya?"
@@ -1958,17 +1967,21 @@ msgstr "Saba ubufasha"
 msgid "Ask for their code"
 msgstr "Musabe kode ye"
 
-#: src/pages/choices/ChoicesEditor.tsx:782
+#: src/pages/choices/ChoicesEditor.tsx:808
 msgid "Ask it earlier"
 msgstr "Kibaze mbere"
 
-#: src/pages/choices/ChoicesEditor.tsx:783
+#: src/pages/choices/ChoicesEditor.tsx:809
 msgid "Ask it later"
 msgstr "Kibaze nyuma"
 
-#: src/pages/choices/ChoicesEditor.tsx:930
+#: src/pages/choices/ChoicesEditor.tsx:957
 msgid "Ask it only after a certain answer above — like “Colour?” only after “Dye”."
 msgstr "Kibaze gusa nyuma y’igisubizo runaka kiri hejuru — nka “Ibara?” nyuma ya “Gusiga irangi” gusa."
+
+#: src/pages/choices/ChoicesEditor.tsx:1005
+msgid "Ask only what you need to serve them"
+msgstr "Baza gusa ibyo ukeneye kugira ngo ubakorere"
 
 #: src/components/Allowed.tsx:24
 msgid "Ask the owner to invite someone, or to change who works where."
@@ -1991,7 +2004,7 @@ msgid "Ask us anything, any time. This tour is in Help too, whenever you want it
 msgstr "Tubaze icyo ushaka, igihe cyose. Uru rugendo rwo kumenyereza ruri no muri Ubufasha, igihe cyose urushaka."
 
 #. placeholder {0}: parentOption.label
-#: src/pages/choices/ChoicesEditor.tsx:772
+#: src/pages/choices/ChoicesEditor.tsx:798
 msgid "Asked only when “{0}” is picked"
 msgstr "Kibazwa gusa iyo hahiswemo “{0}”"
 
@@ -2009,7 +2022,7 @@ msgstr "Umunsi w’Ijyanwa mu Ijuru rya Bikira Mariya"
 msgid "at {0} · {1}"
 msgstr "saa {0} · {1}"
 
-#: src/pages/choices/ChoicesEditor.tsx:827
+#: src/pages/choices/ChoicesEditor.tsx:854
 msgid "At most"
 msgstr "Ntarengwa"
 
@@ -2379,7 +2392,7 @@ msgstr "kafe yawe"
 msgid "Calendar"
 msgstr "Kalendari"
 
-#: src/pages/choices/ChoicesEditor.tsx:730
+#: src/pages/choices/ChoicesEditor.tsx:746
 msgid "can skip"
 msgstr "bashobora kugisimbuka"
 
@@ -2392,7 +2405,7 @@ msgstr "Ntiwaribonye? Shyiramo umurongo w’ikarita cyangwa ukoreshe aho uri"
 #: src/pages/HoursPage.tsx:634
 #: src/pages/PayoutsPage.tsx:477
 #: src/pages/ReviewsPage.tsx:598
-#: src/pages/ServicesPage.tsx:1818
+#: src/pages/ServicesPage.tsx:1859
 #: src/pages/StaffPage.tsx:314
 #: src/pages/SupportPage.tsx:444
 #: src/session/ConfirmItsYou.tsx:145
@@ -2451,11 +2464,11 @@ msgstr "Koza imodoka"
 msgid "carousel"
 msgstr "amashusho asimburana"
 
-#: src/pages/ServicesPage.tsx:696
+#: src/pages/ServicesPage.tsx:700
 msgid "Carry on "
 msgstr "Komeza "
 
-#: src/pages/ServicesPage.tsx:812
+#: src/pages/ServicesPage.tsx:816
 msgid "Carry on with your service"
 msgstr "Komeza serivisi yawe"
 
@@ -2486,6 +2499,10 @@ msgstr "Hindura ifoto"
 #: src/pages/PayoutsPage.tsx:484
 msgid "Change the number"
 msgstr "Hindura nimero"
+
+#: src/pages/ServicesPage.tsx:1450
+msgid "Change them"
+msgstr "Bihindure"
 
 #: src/pages/ClosuresPage.tsx:630
 msgid "Change this day"
@@ -2562,7 +2579,7 @@ msgstr "Akira udakoresheje kode"
 msgid "Check someone in"
 msgstr "Akira umukiriya"
 
-#: src/pages/ServicesPage.tsx:1422
+#: src/pages/ServicesPage.tsx:1426
 msgid "Check the discount"
 msgstr "Reba neza igabanywa ry’igiciro"
 
@@ -2649,8 +2666,8 @@ msgstr "Hitamo ibihuye byose, kugeza kuri bine — iduka rifite salo ku ishami r
 msgid "Choose an advert"
 msgstr "Hitamo itangazo"
 
-#: src/pages/choices/ChoicesEditor.tsx:655
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:671
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Choose any"
 msgstr "Hitamo ibyo ushaka"
 
@@ -2675,7 +2692,7 @@ msgid "Choose the days you open."
 msgstr "Hitamo iminsi ufungura."
 
 #. placeholder {0}: g.maxPicks
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Choose up to {0}"
 msgstr "Hitamo kugeza kuri {0}"
 
@@ -2756,7 +2773,7 @@ msgstr "Urashaka gufunga {0}?"
 msgid "Close a day, or block a break"
 msgstr "Funga umunsi, cyangwa ushyireho akaruhuko"
 
-#: src/pages/ServicesPage.tsx:321
+#: src/pages/ServicesPage.tsx:325
 msgid "Close anyway"
 msgstr "Funga uko biri"
 
@@ -2790,12 +2807,12 @@ msgid "Close this notice"
 msgstr "Funga iri tangazo"
 
 #: src/pages/AppointmentsPage.tsx:1082
-#: src/pages/ServicesPage.tsx:914
+#: src/pages/ServicesPage.tsx:918
 #: src/ui/Panel.tsx:48
 msgid "Close this panel"
 msgstr "Funga iki gice"
 
-#: src/pages/ServicesPage.tsx:317
+#: src/pages/ServicesPage.tsx:321
 msgid "Close without your last changes?"
 msgstr "Funga utabitse ibyo wahinduye bwa nyuma?"
 
@@ -2874,7 +2891,7 @@ msgstr "Gahunda ziri imbere n’izashize. Fungura imwe urebe ibyo umukiriya yahi
 msgid "Coming up at {0}"
 msgstr "Ibiteganyijwe kuri {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:605
+#: src/pages/choices/ChoicesEditor.tsx:621
 msgid "Common for shops like yours"
 msgstr "Bikunze ku maduka nk’iryawe"
 
@@ -3084,7 +3101,7 @@ msgstr "Ubu abakiriya bashobora kubona <0>{name}</0> no gufata gahunda. Gahunda 
 msgid "Customers can review a booking once you mark it done. Their stars and words show here, with your reply under each — for everyone to see."
 msgstr "Abakiriya bashobora gutanga igitekerezo kuri gahunda umaze kuyemeza ko yarangiye. Inyenyeri n’amagambo yabo bigaragara hano, n’igisubizo cyawe munsi ya buri kimwe — buri wese akabibona."
 
-#: src/pages/choices/ChoicesEditor.tsx:577
+#: src/pages/choices/ChoicesEditor.tsx:590
 msgid "Customers can write a note"
 msgstr "Abakiriya bashobora kwandika ubutumwa bugufi"
 
@@ -3164,8 +3181,8 @@ msgstr "Abakiriya bagukurikira bari kuri paji yawe muri porogaramu, no nyuma yo 
 msgid "Customers may arrive late or change plans."
 msgstr "Abakiriya bashobora gukererwa cyangwa guhindura gahunda."
 
-#: src/pages/choices/ChoicesEditor.tsx:843
-#: src/pages/choices/ChoicesEditor.tsx:845
+#: src/pages/choices/ChoicesEditor.tsx:870
+#: src/pages/choices/ChoicesEditor.tsx:872
 msgid "Customers must answer"
 msgstr "Abakiriya bagomba gusubiza"
 
@@ -3179,7 +3196,7 @@ msgstr "Abakiriya bari hafi bazakubona hano."
 
 #. placeholder {0}: money.format(salePrice(list, percentOff))
 #. placeholder {1}: money.format(list)
-#: src/pages/ServicesPage.tsx:1667
+#: src/pages/ServicesPage.tsx:1708
 msgid "customers pay <0>{0}</0> instead of <1>{1}</1>"
 msgstr "abakiriya bishyura <0>{0}</0> aho kwishyura <1>{1}</1>"
 
@@ -3207,11 +3224,11 @@ msgstr "Abakiriya babona buri shami ukwaryo: abari hafi babona iribegereye, kand
 msgid "Customers see nothing until we approve your shop and you post it."
 msgstr "Abakiriya nta cyo babona kugeza twemeje iduka ryawe nawe ukarishyira ahagaragara."
 
-#: src/pages/ServicesPage.tsx:1706
+#: src/pages/ServicesPage.tsx:1747
 msgid "Customers see these when they pick this service. Add them now and they go up with it; you can change them later from Edit."
 msgstr "Abakiriya babibona iyo bahisemo iyi serivisi. Bishyireho ubu bijyane nayo; uzabihindura nyuma uhereye kuri Hindura."
 
-#: src/pages/ServicesPage.tsx:1707
+#: src/pages/ServicesPage.tsx:1748
 msgid "Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it."
 msgstr "Abakiriya babibona iyo bahisemo iyi serivisi. Impinduka zikorewe hano zitegereza “Bika impinduka” — nta kintu gihinduka muri porogaramu kugeza uyikanze."
 
@@ -3227,7 +3244,7 @@ msgstr "Abakiriya babona iduka ryawe umaze kurishyira ahagaragara."
 msgid "Customers see your stories once your shop is live. You can post them now — they show as soon as it is."
 msgstr "Abakiriya babona inkuru zawe iduka ryawe rimaze kujya ku murongo. Ushobora kuzishyiraho ubu — zizagaragara rikimara kujya ku murongo."
 
-#: src/pages/choices/ChoicesEditor.tsx:380
+#: src/pages/choices/ChoicesEditor.tsx:389
 msgid "Customers stop being asked it once you save. Bookings already made keep the answers they had."
 msgstr "Abakiriya ntibazongera kukibazwa umaze kubika. Gahunda zamaze gufatwa zigumana ibisubizo zari zifite."
 
@@ -3255,7 +3272,7 @@ msgstr "Abakiriya bakurikira iduka ryawe babona serivisi zawe nshya, amagabanywa
 msgid "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 msgstr "Intera y’abakiriya ibarwa uhereye kuri iki kimenyetso. Shyiramo link ya Google Maps y’iduka, cyangwa ukande kuri buto niba uri ku iduka ubu."
 
-#: src/pages/choices/ChoicesEditor.tsx:724
+#: src/pages/choices/ChoicesEditor.tsx:740
 msgid "Cut"
 msgstr "Imogoshe"
 
@@ -3317,7 +3334,7 @@ msgstr "avansi"
 msgid "Deposit"
 msgstr "Avansi"
 
-#: src/pages/ServicesPage.tsx:1537
+#: src/pages/ServicesPage.tsx:1578
 msgid "Deposit %"
 msgstr "Avansi %"
 
@@ -3397,8 +3414,8 @@ msgstr "Avansi zakiriwe, n’amafaranga ari mu nzira akugana"
 msgid "Deposits to MTN MoMo"
 msgstr "Avansi kuri MTN MoMo"
 
-#: src/pages/ServicesPage.tsx:996
-#: src/pages/ServicesPage.tsx:1487
+#: src/pages/ServicesPage.tsx:1000
+#: src/pages/ServicesPage.tsx:1518
 msgid "Description"
 msgstr "Ibisobanuro"
 
@@ -3444,12 +3461,12 @@ msgstr "Umubare wa {0}"
 msgid "Dinner to collect"
 msgstr "Ifunguro rya nimugoroba ryo gutwara"
 
-#: src/pages/ServicesPage.tsx:687
-#: src/pages/ServicesPage.tsx:694
+#: src/pages/ServicesPage.tsx:691
+#: src/pages/ServicesPage.tsx:698
 msgid "Discard"
 msgstr "Siba"
 
-#: src/pages/ServicesPage.tsx:1627
+#: src/pages/ServicesPage.tsx:1668
 msgid "Discount"
 msgstr "Igabanywa"
 
@@ -3461,6 +3478,10 @@ msgstr "Amagabanywa"
 #: src/components/NewBranchForm.tsx:180
 msgid "District"
 msgstr "Akarere"
+
+#: src/pages/choices/ChoicesEditor.tsx:794
+msgid "Do not ask this"
+msgstr "Ntubaze ibi"
 
 #: src/onboarding/Welcome.tsx:1223
 msgid "Dog grooming"
@@ -3499,12 +3520,12 @@ msgid "Download the picture"
 msgstr "Manura ifoto"
 
 #. placeholder {0}: at(look.at)
-#: src/pages/ServicesPage.tsx:938
+#: src/pages/ServicesPage.tsx:942
 msgid "Draft saved · {0}"
 msgstr "Byabitswe mu bitarangiye · {0}"
 
 #. placeholder {0}: drafts.data!.length
-#: src/pages/ServicesPage.tsx:654
+#: src/pages/ServicesPage.tsx:658
 msgid "Drafts<0>{0}</0><1>Saved as you typed — customers never see a draft</1>"
 msgstr "Ibitarangiye<0>{0}</0><1>Byabitswe uko wandikaga — abakiriya ntibabona ibitarangiye</1>"
 
@@ -3524,7 +3545,7 @@ msgstr "ishuri ryawe ryigisha gutwara imodoka"
 msgid "Drop a photo here, or press “Add a cover photo”"
 msgstr "Shyira ifoto hano, cyangwa ukande “Ongeraho ifoto y’imbere”"
 
-#: src/pages/ServicesPage.tsx:1713
+#: src/pages/ServicesPage.tsx:1754
 msgid "Drop photos for this service"
 msgstr "Shyira hano amafoto y’iyi serivisi"
 
@@ -3595,7 +3616,7 @@ msgstr "Igihe kirageze"
 msgid "e.g. {0}"
 msgstr "Urugero: {0}"
 
-#: src/pages/ServicesPage.tsx:1638
+#: src/pages/ServicesPage.tsx:1679
 msgid "e.g. 20"
 msgstr "Urugero: 20"
 
@@ -3627,7 +3648,7 @@ msgstr "Urugero: Gusura umurima w’ikawa"
 msgid "e.g. Cooking at your table"
 msgstr "Urugero: Gutekera ku meza y’umukiriya"
 
-#: src/pages/choices/ChoicesEditor.tsx:905
+#: src/pages/choices/ChoicesEditor.tsx:932
 msgid "e.g. Cut"
 msgstr "Urugero: Imogoshe"
 
@@ -3639,7 +3660,7 @@ msgstr "Urugero: Kwandika CV"
 msgid "e.g. Drone filming"
 msgstr "Urugero: Gufata amashusho na drone"
 
-#: src/pages/ServicesPage.tsx:1466
+#: src/pages/ServicesPage.tsx:1497
 msgid "e.g. Haircut"
 msgstr "Urugero: Kogosha"
 
@@ -3659,7 +3680,7 @@ msgstr "Urugero: KG 11 Ave, Kimironko"
 msgid "e.g. Kigali Barbers"
 msgstr "Urugero: Kigali Barbers"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "e.g. Long"
 msgstr "Urugero: Muremure"
 
@@ -3679,7 +3700,7 @@ msgstr "Urugero: Amajoro y’ubusizi"
 msgid "e.g. Reflexology"
 msgstr "Urugero: Gukanda ibirenge"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "e.g. Short"
 msgstr "Urugero: Mugufi"
 
@@ -3687,7 +3708,7 @@ msgstr "Urugero: Mugufi"
 msgid "e.g. Solar panel fitting"
 msgstr "Urugero: Gushyiraho imirasire y’izuba"
 
-#: src/pages/choices/ChoicesEditor.tsx:798
+#: src/pages/choices/ChoicesEditor.tsx:824
 msgid "e.g. Which cut would you like?"
 msgstr "Urugero: Wifuza imogoshe iyihe?"
 
@@ -3715,7 +3736,7 @@ msgstr "Buri shami rigira paji yaryo, amasaha n’ibiciro byaryo"
 msgid "Each one"
 msgstr "Imwe imwe"
 
-#: src/pages/ServicesPage.tsx:586
+#: src/pages/ServicesPage.tsx:590
 msgid "Each service is offered at the branches you choose, at <0>that branch's price</0> — a city-centre shop can charge more than a quieter one for the same work. The deposit percentage is what a customer pays up front to hold the slot; the rest is settled with you directly."
 msgstr "Buri serivisi itangirwa ku mashami uhitamo, ku <0>giciro cy’iryo shami</0> — iduka riri mu mujyi rwagati rishobora guca menshi kurusha irindi riri ahatuje ku kazi kamwe. Ijanisha ry’avansi ni igice umukiriya yishyura mbere ngo afate umwanya; asigaye umukiriya ayakwishyura imbonankubone."
 
@@ -3747,10 +3768,10 @@ msgstr "Wayakoreye, ariko ntaragera kuri Mobile Money yawe."
 msgid "Easter Monday"
 msgstr "Ku wa Mbere wa Pasika"
 
-#: src/pages/choices/ChoicesEditor.tsx:530
+#: src/pages/choices/ChoicesEditor.tsx:543
 #: src/pages/ReviewsPage.tsx:527
-#: src/pages/ServicesPage.tsx:1119
-#: src/pages/ServicesPage.tsx:1133
+#: src/pages/ServicesPage.tsx:1123
+#: src/pages/ServicesPage.tsx:1137
 msgid "Edit"
 msgstr "Hindura"
 
@@ -3759,7 +3780,7 @@ msgstr "Hindura"
 msgid "Edit details"
 msgstr "Hindura amakuru"
 
-#: src/pages/ServicesPage.tsx:813
+#: src/pages/ServicesPage.tsx:817
 msgid "Edit service"
 msgstr "Hindura serivisi"
 
@@ -3792,7 +3813,7 @@ msgstr "Shakisha gahunda"
 msgid "End"
 msgstr "Irangira"
 
-#: src/pages/ServicesPage.tsx:1693
+#: src/pages/ServicesPage.tsx:1734
 msgid "End the discount"
 msgstr "Hagarika igabanywa"
 
@@ -3886,7 +3907,7 @@ msgstr "Buri gitekerezo cyasubijwe"
 msgid "Every service until Sunday. Book in the app — the discount is already applied."
 msgstr "Serivisi zose kugeza ku Cyumweru. Fata gahunda muri porogaramu — igabanywa ryamaze gushyirwamo."
 
-#: src/pages/choices/ChoicesEditor.tsx:925
+#: src/pages/choices/ChoicesEditor.tsx:952
 msgid "Every time"
 msgstr "Buri gihe"
 
@@ -3930,7 +3951,7 @@ msgstr "Hose"
 msgid "Exam revision"
 msgstr "Kwitegura ibizamini"
 
-#: src/pages/choices/ChoicesEditor.tsx:651
+#: src/pages/choices/ChoicesEditor.tsx:667
 msgid "Example — what customers see"
 msgstr "Urugero — ibyo abakiriya babona"
 
@@ -3953,7 +3974,7 @@ msgid "Exporting…"
 msgstr "Biramanurwa…"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1065
+#: src/pages/choices/ChoicesEditor.tsx:1159
 msgid "Extra minutes for answer {0}"
 msgstr "Iminota y’inyongera ku gisubizo cya {0}"
 
@@ -4020,7 +4041,7 @@ msgstr "Rangiza gutunganya"
 msgid "Finish setting up your shop"
 msgstr "Rangiza gutunganya iduka ryawe"
 
-#: src/pages/ServicesPage.tsx:1413
+#: src/pages/ServicesPage.tsx:1417
 msgid "Finish your questions"
 msgstr "Rangiza ibibazo byawe"
 
@@ -4103,7 +4124,7 @@ msgctxt "search words"
 msgid "followers offers message customers blast promotion marketing send"
 msgstr "abagukurikira abakurikira promosiyo ubutumwa abakiriya kwamamaza kohereza ohereza"
 
-#: src/pages/choices/ChoicesEditor.tsx:944
+#: src/pages/choices/ChoicesEditor.tsx:971
 msgid "For allergies, health or anything personal."
 msgstr "Ku ndwara z’ubwivumbure, ubuzima cyangwa ikindi cyose cyihariye."
 
@@ -4132,7 +4153,7 @@ msgstr "Ubu iyi kode ifungura porogaramu y’abakiriya muri Expo Go kuri iyi Wi-
 msgid "For testing"
 msgstr "Ni igerageza"
 
-#: src/pages/choices/ChoicesEditor.tsx:608
+#: src/pages/choices/ChoicesEditor.tsx:624
 msgid "For work you can only price after seeing it, like a repair. Customers see “from” before your price, and the deposit is taken on that price."
 msgstr "Ku kazi ushobora kugenera igiciro ari uko umaze kukabona, nko gusana. Abakiriya babona “guhera kuri” imbere y’igiciro cyawe, kandi avansi ibarwa kuri icyo giciro."
 
@@ -4189,7 +4210,7 @@ msgstr "Turaboneka iki gicamunsi"
 msgid "Free this afternoon — book now"
 msgstr "Turaboneka iki gicamunsi — fata gahunda ubu"
 
-#: src/pages/choices/ChoicesEditor.tsx:1221
+#: src/pages/choices/ChoicesEditor.tsx:1315
 #: src/pages/ClosuresPage.tsx:587
 #: src/pages/NotificationSettingsPage.tsx:148
 msgid "From"
@@ -4206,7 +4227,7 @@ msgid "from {0} reviews"
 msgstr "mu bitekerezo {0}"
 
 #. placeholder {0}: money.format(depositMinor)
-#: src/pages/ServicesPage.tsx:1056
+#: src/pages/ServicesPage.tsx:1060
 msgid "from {0} up front"
 msgstr "avansi guhera kuri {0}"
 
@@ -4308,11 +4329,11 @@ msgstr "Kwishyurwa "
 msgid "Getting your shop live"
 msgstr "Gushyira iduka ryawe ku murongo"
 
-#: src/pages/choices/ChoicesEditor.tsx:1237
+#: src/pages/choices/ChoicesEditor.tsx:1331
 msgid "Give a price at a branch to see the full total."
 msgstr "Shyira igiciro ku ishami kugira ngo ubone igiteranyo cyose."
 
-#: src/pages/ServicesPage.tsx:1403
+#: src/pages/ServicesPage.tsx:1407
 msgid "Give a price at a least one branch, or nobody can book it."
 msgstr "Shyira igiciro nibura ku ishami rimwe, bitabaye ibyo ntawe ushobora kuyifatira gahunda."
 
@@ -4325,7 +4346,7 @@ msgstr "Ha serivisi iyo ari yo yose igabanywa ry’igiciro kuva kuri 1% kugeza k
 msgid "Give it a discount"
 msgstr "Shyiraho igabanywa ry’igiciro"
 
-#: src/pages/ServicesPage.tsx:1402
+#: src/pages/ServicesPage.tsx:1406
 msgid "Give it a price"
 msgstr "Shyiraho igiciro"
 
@@ -4361,7 +4382,7 @@ msgstr "Bijya mu kwishyurwa gukurikira."
 
 #. placeholder {0}: offers.length
 #. placeholder {1}: photos.length
-#: src/pages/ServicesPage.tsx:1799
+#: src/pages/ServicesPage.tsx:1840
 msgid "Goes live at {0, plural, one {# branch} other {# branches}} with {1, plural, one {# photo} other {# photos}}."
 msgstr "Izajya ku murongo ku {0, plural, one {ishami #} other {mashami #}} ifite {1, plural, one {ifoto #} other {amafoto #}}."
 
@@ -4465,6 +4486,10 @@ msgstr "Ufite amaduka ahantu hatandukanye? Buri rimwe ryongere nk’ishami."
 #: src/onboarding/Welcome.tsx:1208
 msgid "Health check"
 msgstr "Isuzuma ry’ubuzima"
+
+#: src/pages/choices/ChoicesEditor.tsx:1041
+msgid "Health details don’t belong in the note box — it is not private. Ask about an allergy, a pregnancy or an injury in a private question instead."
+msgstr "Amakuru y’ubuzima ntagomba kujya mu gasanduku k’ubutumwa — si ibanga. Ahubwo baza ku ndwara y’ubwivumbure, gutwita cyangwa imvune mu kibazo cy’ibanga."
 
 #: src/pages/NotificationSettingsPage.tsx:327
 msgid "Hear about a new booking the moment it comes in, even with the app in another tab."
@@ -4626,19 +4651,19 @@ msgstr "Uko bikora · {0}"
 msgid "How long does it take?"
 msgstr "Bimara igihe kingana iki?"
 
-#: src/pages/choices/ChoicesEditor.tsx:654
+#: src/pages/choices/ChoicesEditor.tsx:670
 msgid "How long is your hair?"
 msgstr "Umusatsi wawe ureshya ute?"
 
-#: src/pages/ServicesPage.tsx:1519
+#: src/pages/ServicesPage.tsx:1560
 msgid "How long it takes, and what it costs at each branch"
 msgstr "Igihe bimara, n’igiciro cyabyo kuri buri shami"
 
-#: src/pages/choices/ChoicesEditor.tsx:803
+#: src/pages/choices/ChoicesEditor.tsx:830
 msgid "How many answers can they pick?"
 msgstr "Bashobora guhitamo ibisubizo bingahe?"
 
-#: src/pages/choices/ChoicesEditor.tsx:804
+#: src/pages/choices/ChoicesEditor.tsx:831
 msgid "How many answers they can pick"
 msgstr "Umubare w’ibisubizo bashobora guhitamo"
 
@@ -4646,7 +4671,7 @@ msgstr "Umubare w’ibisubizo bashobora guhitamo"
 msgid "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 msgstr "Umubare w’abakiriya iri shami rishobora kwakira icyarimwe — umubare umwe kuri serivisi zose zaho. Gahunda y’abantu 3 ifata imyanya 3 kuri icyo gihe; iyo imyanya yose yafashwe, abakiriya babona icyo gihe nk’icyafashwe. Ni na wo mubare munini w’abantu gahunda imwe ishobora kugenerwa. Kuwugabanya ntibihagarika gahunda zamaze gufatwa."
 
-#: src/pages/ServicesPage.tsx:1589
+#: src/pages/ServicesPage.tsx:1630
 msgid "How many people can book the same time is set for each branch, under <0>Branches & hours</0> → “People served at once”."
 msgstr "Umubare w’abantu bashobora gufata gahunda ku gihe kimwe ushyirwaho kuri buri shami, muri <0>Amashami n’amasaha</0> → “Abakirwa icyarimwe”."
 
@@ -4768,7 +4793,7 @@ msgstr "Harimo n’ayo uzafungura nyuma"
 msgid "Independence Day"
 msgstr "Umunsi w’Ubwigenge"
 
-#: src/pages/ServicesPage.tsx:997
+#: src/pages/ServicesPage.tsx:1001
 msgid "Instructions"
 msgstr "Amabwiriza"
 
@@ -4832,7 +4857,7 @@ msgstr "Si wowe wabiteye. Ongera ugerageze — kandi niba bikomeje, tubibwire un
 msgid "It lands in your bookings"
 msgstr "Igera muri gahunda zawe"
 
-#: src/pages/ServicesPage.tsx:543
+#: src/pages/ServicesPage.tsx:547
 msgid "It moves to “Not on sale”, keeps its prices, and you can put it back at any time. Appointments already made are unaffected."
 msgstr "Ijya mu “Izitaboneka”, ibiciro byayo bikagumaho, kandi ushobora kuyisubizaho igihe cyose. Gahunda zamaze gufatwa ntizihinduka."
 
@@ -4856,11 +4881,11 @@ msgstr "Ategereza iminsi mike nyuma yo kuza k’umukiriya, hanyuma akoherezwa mu
 msgid "Italic"
 msgstr "Inyuguti ziberamye"
 
-#: src/pages/choices/ChoicesEditor.tsx:506
+#: src/pages/choices/ChoicesEditor.tsx:519
 msgid "Its answers"
 msgstr "Ibisubizo byacyo"
 
-#: src/pages/ServicesPage.tsx:723
+#: src/pages/ServicesPage.tsx:727
 msgid "Its own price at each branch"
 msgstr "Igiciro cyayo kuri buri shami"
 
@@ -4888,7 +4913,7 @@ msgstr "Bishya · {0}"
 msgid "just now"
 msgstr "ubu nyine"
 
-#: src/pages/choices/ChoicesEditor.tsx:818
+#: src/pages/choices/ChoicesEditor.tsx:845
 msgid "Just one"
 msgstr "Kimwe gusa"
 
@@ -4896,17 +4921,17 @@ msgstr "Kimwe gusa"
 msgid "Just one to start. You can add the rest later, with photos."
 msgstr "Imwe gusa yo gutangiriraho. Izindi uzazongeraho nyuma, hamwe n’amafoto."
 
-#: src/pages/ServicesPage.tsx:308
+#: src/pages/ServicesPage.tsx:312
 msgid "Keep editing"
 msgstr "Komeza guhindura"
 
 #: src/pages/AppointmentsPage.tsx:338
-#: src/pages/choices/ChoicesEditor.tsx:394
+#: src/pages/choices/ChoicesEditor.tsx:403
 #: src/pages/SecurityPage.tsx:38
 msgid "Keep it"
 msgstr "Bireke uko biri"
 
-#: src/pages/ServicesPage.tsx:552
+#: src/pages/ServicesPage.tsx:556
 msgid "Keep it on sale"
 msgstr "Ikomeze iboneke"
 
@@ -4915,7 +4940,7 @@ msgstr "Ikomeze iboneke"
 msgid "Keep it open"
 msgstr "Rireke rifunguye"
 
-#: src/pages/ServicesPage.tsx:1810
+#: src/pages/ServicesPage.tsx:1851
 msgid "Keep it under Drafts and finish it later"
 msgstr "Yibike mu bitarangiye maze uyirangize nyuma"
 
@@ -4923,7 +4948,7 @@ msgstr "Yibike mu bitarangiye maze uyirangize nyuma"
 msgid "Keep typing — three letters are enough to start."
 msgstr "Komeza wandike — inyuguti eshatu zirahagije ngo dutangire."
 
-#: src/pages/ServicesPage.tsx:322
+#: src/pages/ServicesPage.tsx:326
 msgid "Keep writing"
 msgstr "Komeza wandike"
 
@@ -4951,7 +4976,7 @@ msgstr "Ishami rya Kimironko"
 msgid "Kind of shop"
 msgstr "Ubwoko bw’iduka"
 
-#: src/pages/choices/ChoicesEditor.tsx:468
+#: src/pages/choices/ChoicesEditor.tsx:481
 msgid "Kinds of shop"
 msgstr "Amoko y’iduka"
 
@@ -4994,12 +5019,12 @@ msgstr "Kuzamura ibitsike"
 msgid "Last {0}"
 msgstr "{0} ishize"
 
-#: src/pages/ServicesPage.tsx:1646
+#: src/pages/ServicesPage.tsx:1687
 msgid "Last day"
 msgstr "Umunsi wa nyuma"
 
 #. placeholder {0}: ago(item.updatedAt)
-#: src/pages/ServicesPage.tsx:669
+#: src/pages/ServicesPage.tsx:673
 msgid "Last saved {0}"
 msgstr "Biheruka kubikwa {0}"
 
@@ -5032,11 +5057,11 @@ msgstr "Ibitekerezo biheruka"
 msgid "Leave empty to use the business phone"
 msgstr "Siga ubusa hakoreshwe telefoni y’ubucuruzi"
 
-#: src/pages/choices/ChoicesEditor.tsx:598
+#: src/pages/choices/ChoicesEditor.tsx:612
 msgid "Leave it empty to use the words shown here."
 msgstr "Siga ubusa hakoreshwe amagambo ari hano."
 
-#: src/pages/choices/ChoicesEditor.tsx:858
+#: src/pages/choices/ChoicesEditor.tsx:885
 msgid "Leave the price and time at 0 when an answer costs nothing extra."
 msgstr "Siga igiciro n’igihe kuri 0 igihe igisubizo nta kindi kiyongeraho."
 
@@ -5044,11 +5069,11 @@ msgstr "Siga igiciro n’igihe kuri 0 igihe igisubizo nta kindi kiyongeraho."
 msgid "Leave this account on this device"
 msgstr "Sohoka muri iyi konti kuri iki gikoresho"
 
-#: src/pages/ServicesPage.tsx:307
+#: src/pages/ServicesPage.tsx:311
 msgid "Leave without saving"
 msgstr "Genda utabitse"
 
-#: src/pages/ServicesPage.tsx:297
+#: src/pages/ServicesPage.tsx:301
 msgid "Leave without saving?"
 msgstr "Uragenda utabitse?"
 
@@ -5058,11 +5083,11 @@ msgstr "Uragenda utabitse?"
 msgid "Legal"
 msgstr "Amategeko"
 
-#: src/pages/choices/ChoicesEditor.tsx:640
+#: src/pages/choices/ChoicesEditor.tsx:656
 msgid "Let customers say what they want"
 msgstr "Reka abakiriya bavuge icyo bashaka"
 
-#: src/pages/choices/ChoicesEditor.tsx:585
+#: src/pages/choices/ChoicesEditor.tsx:599
 msgid "Let customers write a note"
 msgstr "Reka abakiriya bandike ubutumwa bugufi"
 
@@ -5070,11 +5095,11 @@ msgstr "Reka abakiriya bandike ubutumwa bugufi"
 msgid "Liberation Day"
 msgstr "Umunsi wo Kwibohora"
 
-#: src/pages/choices/ChoicesEditor.tsx:819
+#: src/pages/choices/ChoicesEditor.tsx:846
 msgid "Like extras to add"
 msgstr "Nk’ibindi byongerwaho"
 
-#: src/pages/choices/ChoicesEditor.tsx:819
+#: src/pages/choices/ChoicesEditor.tsx:846
 msgid "Like the length of hair"
 msgstr "Nk’uburebure bw’umusatsi"
 
@@ -5124,7 +5149,7 @@ msgstr "sohoka gusohoka va"
 msgid "Logo"
 msgstr "Ikirango"
 
-#: src/pages/choices/ChoicesEditor.tsx:635
+#: src/pages/choices/ChoicesEditor.tsx:651
 msgid "Long"
 msgstr "Muremure"
 
@@ -5168,9 +5193,13 @@ msgstr "Nyamukuru"
 msgid "Main kind"
 msgstr "Ubwoko nyamukuru"
 
-#: src/pages/ServicesPage.tsx:1891
+#: src/pages/ServicesPage.tsx:1942
 msgid "Make cover"
 msgstr "Yigire ifoto y’imbere"
+
+#: src/pages/choices/ChoicesEditor.tsx:1053
+msgid "Make it private"
+msgstr "Kigire ibanga"
 
 #: src/ads/AdRail.tsx:110
 msgid "Make it stand out"
@@ -5279,7 +5308,7 @@ msgstr "Ivunjisha ku isoko · {0}"
 msgid "Meditation session"
 msgstr "Isomo rya meditasiyo"
 
-#: src/pages/choices/ChoicesEditor.tsx:634
+#: src/pages/choices/ChoicesEditor.tsx:650
 msgid "Medium"
 msgstr "Uringaniye"
 
@@ -5318,13 +5347,13 @@ msgstr "Ubutumwa"
 msgid "Messages "
 msgstr "Ubutumwa "
 
-#: src/pages/choices/ChoicesEditor.tsx:1070
-#: src/pages/choices/ChoicesEditor.tsx:1230
-#: src/pages/ServicesPage.tsx:1533
+#: src/pages/choices/ChoicesEditor.tsx:1164
+#: src/pages/choices/ChoicesEditor.tsx:1324
+#: src/pages/ServicesPage.tsx:1574
 msgid "min"
 msgstr "iminota"
 
-#: src/pages/ServicesPage.tsx:1522
+#: src/pages/ServicesPage.tsx:1563
 msgid "Minutes"
 msgstr "Iminota"
 
@@ -5370,7 +5399,7 @@ msgid "Month"
 msgstr "Ukwezi"
 
 #: src/pages/calendar/AppointmentCalendar.tsx:1251
-#: src/pages/choices/ChoicesEditor.tsx:510
+#: src/pages/choices/ChoicesEditor.tsx:523
 msgid "more"
 msgstr "ibindi"
 
@@ -5382,7 +5411,7 @@ msgstr "Ibindi"
 msgid "More branches and photos are in <0>Branches & hours</0>, whenever you want them."
 msgstr "Andi mashami n’amafoto biri muri <0>Amashami n’amasaha</0>, igihe cyose ubishakiye."
 
-#: src/pages/choices/ChoicesEditor.tsx:780
+#: src/pages/choices/ChoicesEditor.tsx:806
 msgid "More for “{title}”"
 msgstr "Ibindi kuri “{title}”"
 
@@ -5390,11 +5419,11 @@ msgstr "Ibindi kuri “{title}”"
 msgid "More for this booking"
 msgstr "Ibindi kuri iyi gahunda"
 
-#: src/pages/choices/ChoicesEditor.tsx:780
+#: src/pages/choices/ChoicesEditor.tsx:806
 msgid "More for this question"
 msgstr "Ibindi kuri iki kibazo"
 
-#: src/pages/choices/ChoicesEditor.tsx:891
+#: src/pages/choices/ChoicesEditor.tsx:918
 msgid "More options"
 msgstr "Andi mahitamo"
 
@@ -5431,7 +5460,7 @@ msgstr "MTN MoMo iratinda muri iki gihe"
 msgid "MTN MoMo reference <0>{0}</0>"
 msgstr "Nimero y’ubwishyu kuri MTN MoMo <0>{0}</0>"
 
-#: src/pages/choices/ChoicesEditor.tsx:730
+#: src/pages/choices/ChoicesEditor.tsx:746
 msgid "must answer"
 msgstr "agomba gusubiza"
 
@@ -5455,11 +5484,11 @@ msgstr "Guca inzara"
 msgid "nail studio"
 msgstr "saloni yawe y’inzara"
 
-#: src/pages/ServicesPage.tsx:1461
+#: src/pages/ServicesPage.tsx:1492
 msgid "Name"
 msgstr "Izina"
 
-#: src/pages/ServicesPage.tsx:1459
+#: src/pages/ServicesPage.tsx:1490
 msgid "Name and words"
 msgstr "Izina n’amagambo"
 
@@ -5501,6 +5530,10 @@ msgstr "Ukeneye amagambo? Kanda rimwe"
 msgid "Needs a change"
 msgstr "Hari icyo guhindura"
 
+#: src/pages/choices/ChoicesEditor.tsx:1007
+msgid "Never ask about an illness, tests or medicines; for an ID, passport or insurance number; about religion, ethnicity or politics; or for a PIN or password."
+msgstr "Ntuzigere ubaza ku ndwara, ibizamini cyangwa imiti; nimero y’indangamuntu, ya pasiporo cyangwa y’ubwishingizi; idini, ubwoko bw’abantu cyangwa politiki; cyangwa PIN n’ijambo ry’ibanga."
+
 #: src/pages/OverviewPage.tsx:342
 msgid "New"
 msgstr "Bishya"
@@ -5527,7 +5560,7 @@ msgstr "Kode nshya mu {0}"
 msgid "New here"
 msgstr "Uri mushya"
 
-#: src/pages/choices/ChoicesEditor.tsx:757
+#: src/pages/choices/ChoicesEditor.tsx:777
 msgid "New question"
 msgstr "Ikibazo gishya"
 
@@ -5535,7 +5568,7 @@ msgstr "Ikibazo gishya"
 msgid "New review ★★★★★"
 msgstr "Igitekerezo gishya ★★★★★"
 
-#: src/pages/ServicesPage.tsx:812
+#: src/pages/ServicesPage.tsx:816
 msgid "New service"
 msgstr "Serivisi nshya"
 
@@ -5676,15 +5709,15 @@ msgstr "Nta nimero irashyirwaho — <0>ntushobora kwishyurwa</0> utarayishyiraho
 msgid "No password to remember. A fresh code every time."
 msgstr "Nta jambo ry’ibanga ryo kwibuka. Kode nshya buri gihe."
 
-#: src/pages/ServicesPage.tsx:1015
+#: src/pages/ServicesPage.tsx:1019
 msgid "No photo yet"
 msgstr "Nta foto irashyirwaho"
 
-#: src/pages/ServicesPage.tsx:1023
+#: src/pages/ServicesPage.tsx:1027
 msgid "No photos"
 msgstr "Nta mafoto"
 
-#: src/pages/ServicesPage.tsx:1759
+#: src/pages/ServicesPage.tsx:1800
 msgid "No photos. A service with a photo is easier to choose than one without."
 msgstr "Nta mafoto. Serivisi ifite ifoto yoroshye guhitamo kurusha itayifite."
 
@@ -5713,7 +5746,7 @@ msgstr "Nta bitekerezo biratangwa"
 msgid "No story up right now"
 msgstr "Nta nkuru iriho ubu"
 
-#: src/pages/ServicesPage.tsx:1030
+#: src/pages/ServicesPage.tsx:1034
 msgid "No title yet"
 msgstr "Nta mutwe urashyirwaho"
 
@@ -5727,7 +5760,7 @@ msgstr "Ntiyaje"
 msgid "No. {number}"
 msgstr "Nimero {number}"
 
-#: src/pages/ServicesPage.tsx:516
+#: src/pages/ServicesPage.tsx:520
 msgid "Nobody can book it now"
 msgstr "Nta muntu ushobora kuyifatira gahunda ubu"
 
@@ -5793,11 +5826,11 @@ msgstr "Nta n’umwe kugeza ubu"
 msgid "Not agreed yet"
 msgstr "Ntiwaremera"
 
-#: src/pages/choices/ChoicesEditor.tsx:1202
+#: src/pages/choices/ChoicesEditor.tsx:1296
 msgid "Not available"
 msgstr "Ntiboneka"
 
-#: src/pages/choices/ChoicesEditor.tsx:1083
+#: src/pages/choices/ChoicesEditor.tsx:1177
 msgid "Not available now — switch on to offer it"
 msgstr "Ntiboneka ubu — fungura kugira ngo uyitange"
 
@@ -5815,17 +5848,17 @@ msgid "Not live yet"
 msgstr "Ntirirajya ku murongo"
 
 #: src/components/LegalGate.tsx:105
-#: src/pages/choices/ChoicesEditor.tsx:1085
+#: src/pages/choices/ChoicesEditor.tsx:1179
 #: src/pages/LegalPage.tsx:185
 msgid "Not now"
 msgstr "Si ubu"
 
-#: src/pages/ServicesPage.tsx:1571
+#: src/pages/ServicesPage.tsx:1612
 msgid "not offered"
 msgstr "ntitangwa"
 
 #. placeholder {0}: notOnSale.length
-#: src/pages/ServicesPage.tsx:769
+#: src/pages/ServicesPage.tsx:773
 msgid "Not on sale<0>{0}</0>"
 msgstr "Ntizitangwa<0>{0}</0>"
 
@@ -5850,11 +5883,11 @@ msgstr "Ntirirashyirwa ahagaragara"
 msgid "Not replied yet"
 msgstr "Ntikirasubizwa"
 
-#: src/pages/ServicesPage.tsx:1885
+#: src/pages/ServicesPage.tsx:1936
 msgid "Not saved"
 msgstr "Ntiyabitswe"
 
-#: src/pages/ServicesPage.tsx:940
+#: src/pages/ServicesPage.tsx:944
 msgid "Not saved — trying again"
 msgstr "Ntibyabitswe — turongera tugerageze"
 
@@ -5940,7 +5973,7 @@ msgstr "Nta gihuye"
 msgid "Nothing matches “{query}”"
 msgstr "Nta gihuye na “{query}”"
 
-#: src/pages/ServicesPage.tsx:739
+#: src/pages/ServicesPage.tsx:743
 msgid "Nothing on sale at your branches yet"
 msgstr "Nta serivisi iratangwa ku mashami yawe"
 
@@ -6026,11 +6059,11 @@ msgstr "Urutonde rufite nimero"
 msgid "of {count}"
 msgstr "kuri {count}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1085
+#: src/pages/choices/ChoicesEditor.tsx:1179
 msgid "Offered"
 msgstr "Iratangwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:1083
+#: src/pages/choices/ChoicesEditor.tsx:1177
 msgid "Offered — switch off for “not available now”"
 msgstr "Iratangwa — zimya kugira ngo ibe “ntiboneka ubu”"
 
@@ -6059,11 +6092,11 @@ msgstr "Ku kalendari"
 msgid "On its way"
 msgstr "Ari mu nzira"
 
-#: src/pages/ServicesPage.tsx:1084
+#: src/pages/ServicesPage.tsx:1088
 msgid "On sale"
 msgstr "Iratangwa"
 
-#: src/pages/ServicesPage.tsx:1888
+#: src/pages/ServicesPage.tsx:1939
 msgid "On the card"
 msgstr "Ni yo igaragara"
 
@@ -6107,7 +6140,7 @@ msgstr "Gabanya umwe"
 msgid "One line summary"
 msgstr "Incamake mu murongo umwe"
 
-#: src/pages/ServicesPage.tsx:1479
+#: src/pages/ServicesPage.tsx:1510
 msgid "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 msgstr "Umurongo umwe utuma umuntu ayishaka — urugero: “Kogosha neza, imisatsi itunganye”"
 
@@ -6127,7 +6160,7 @@ msgstr "Ijoro rimwe, icyumba cy’umuntu umwe"
 msgid "One of them said yes to your offers, so that person also gets it as an alert or email."
 msgstr "Umwe muri bo yemeye kumenyeshwa promosiyo zawe, bityo na we azabibona nk’imenyesha cyangwa imeyili."
 
-#: src/pages/choices/ChoicesEditor.tsx:818
+#: src/pages/choices/ChoicesEditor.tsx:845
 msgid "One or more"
 msgstr "Kimwe cyangwa byinshi"
 
@@ -6192,16 +6225,16 @@ msgstr "Nyir’iduka wenyine ni we ushobora gutunganya iduka"
 msgid "Only the owner pauses the shop."
 msgstr "Nyir’iduka wenyine ni we uhagarika iduka by’agateganyo."
 
-#: src/pages/choices/ChoicesEditor.tsx:1181
+#: src/pages/choices/ChoicesEditor.tsx:1275
 msgid "Only the shop sees this."
 msgstr "Iduka ryonyine ni ryo ribibona."
 
 #. placeholder {0}: o.label.trim()
-#: src/pages/choices/ChoicesEditor.tsx:715
+#: src/pages/choices/ChoicesEditor.tsx:731
 msgid "Only when they pick “{0}”"
 msgstr "Gusa iyo bahisemo “{0}”"
 
-#: src/pages/choices/ChoicesEditor.tsx:951
+#: src/pages/choices/ChoicesEditor.tsx:978
 msgid "Only you and the customer see these answers — never in an email or a phone alert — and they are removed 30 days after the visit. They are always free and take no extra time."
 msgstr "Wowe n’umukiriya ni mwe mwenyine mubona ibi bisubizo — ntibijya muri imeyili cyangwa mu imenyesha rya telefoni — kandi bisibwa iminsi 30 nyuma yo kuza. Buri gihe ni ubuntu kandi ntibyongera igihe."
 
@@ -6379,11 +6412,11 @@ msgstr "Si ngombwa"
 msgid "Optional — add it later"
 msgstr "Si ngombwa — wabyongeraho nyuma"
 
-#: src/pages/ServicesPage.tsx:1606
+#: src/pages/ServicesPage.tsx:1647
 msgid "Optional — ask what they want, like the cut or extras"
 msgstr "Si ngombwa — baza icyo bashaka, nk’uburyo bwo kogosha cyangwa ibyongerwaho"
 
-#: src/pages/ServicesPage.tsx:1627
+#: src/pages/ServicesPage.tsx:1668
 msgid "Optional — customers see the old price crossed out"
 msgstr "Si ngombwa — abakiriya babona igiciro cya mbere giciyeho umurongo"
 
@@ -6399,7 +6432,7 @@ msgstr "Si ngombwa. {ACCEPTED_LABEL} — kugeza kuri dosiye {MAX_ATTACHMENTS}, b
 msgid "Or a manager who looks after every branch. Ask them to finish setting it up — you can still look around."
 msgstr "Cyangwa umuyobozi ushinzwe amashami yose. Musabe arangize kuritunganya — wowe ushobora gukomeza kureba hirya no hino."
 
-#: src/pages/choices/ChoicesEditor.tsx:1051
+#: src/pages/choices/ChoicesEditor.tsx:1145
 msgid "or add to the price"
 msgstr "cyangwa wongere ku giciro"
 
@@ -6416,7 +6449,7 @@ msgid "or drop one here"
 msgstr "cyangwa ukurure imwe hano"
 
 #: src/pages/ProfilePage.tsx:720
-#: src/pages/ServicesPage.tsx:1746
+#: src/pages/ServicesPage.tsx:1787
 msgid "or drop them here"
 msgstr "cyangwa uyakurure hano"
 
@@ -6424,7 +6457,7 @@ msgstr "cyangwa uyakurure hano"
 msgid "Or go straight to"
 msgstr "Cyangwa ujye ako kanya kuri"
 
-#: src/pages/choices/ChoicesEditor.tsx:1051
+#: src/pages/choices/ChoicesEditor.tsx:1145
 msgid "or take money off"
 msgstr "cyangwa ukureho amafaranga"
 
@@ -6565,7 +6598,7 @@ msgid "Pause the shop?"
 msgstr "Uhagarike iduka by’agateganyo?"
 
 #: src/onboarding/steps.ts:151
-#: src/pages/ServicesPage.tsx:1084
+#: src/pages/ServicesPage.tsx:1088
 #: src/shell/Topbar.tsx:156
 msgid "Paused"
 msgstr "Byahagaritswe"
@@ -6668,7 +6701,7 @@ msgstr "Abantu bari hafi yawe ni bo bakubona mbere"
 msgid "People served at once"
 msgstr "Abantu bakirwa icyarimwe"
 
-#: src/pages/ServicesPage.tsx:1630
+#: src/pages/ServicesPage.tsx:1671
 msgid "Percent off"
 msgstr "Igabanywa mu ijanisha"
 
@@ -6694,7 +6727,7 @@ msgstr "Telefoni y’iri shami <0>si ngombwa</0>"
 msgid "Phone number"
 msgstr "Nimero ya telefoni"
 
-#: src/pages/ServicesPage.tsx:1764
+#: src/pages/ServicesPage.tsx:1805
 msgid "Photo changes are not saved yet — customers still see the photos as they were until you press “Save changes”."
 msgstr "Impinduka ku mafoto ntiziraba zibitswe — abakiriya baracyabona amafoto uko yari ari kugeza ukanze “Bika impinduka”."
 
@@ -6707,9 +6740,9 @@ msgid "Photograph the place too: customers want to see where they are walking in
 msgstr "Fotora n’aho hantu: abakiriya bashaka kubona aho bagiye kwinjira."
 
 #: src/pages/ProfilePage.tsx:594
-#: src/pages/ServicesPage.tsx:1123
-#: src/pages/ServicesPage.tsx:1134
-#: src/pages/ServicesPage.tsx:1701
+#: src/pages/ServicesPage.tsx:1127
+#: src/pages/ServicesPage.tsx:1138
+#: src/pages/ServicesPage.tsx:1742
 msgid "Photos"
 msgstr "Amafoto"
 
@@ -6722,14 +6755,14 @@ msgstr "Amafoto <0>{0}</0>"
 msgid "Photos at every branch"
 msgstr "Amafoto kuri buri shami"
 
-#: src/pages/ServicesPage.tsx:724
+#: src/pages/ServicesPage.tsx:728
 msgid "Photos customers swipe through"
 msgstr "Amafoto abakiriya bareba bayanyuzamo"
 
 #. placeholder {0}: b.name
 #. placeholder {0}: service.name
 #: src/ads/useAdData.ts:149
-#: src/pages/ServicesPage.tsx:1008
+#: src/pages/ServicesPage.tsx:1012
 msgid "Photos of {0}"
 msgstr "Amafoto ya {0}"
 
@@ -6745,8 +6778,8 @@ msgstr "Amafoto atuma bafata gahunda"
 msgid "Photos, words, hours and payouts — all set."
 msgstr "Amafoto, amagambo, amasaha no kwishyurwa — byose biteguye."
 
-#: src/pages/choices/ChoicesEditor.tsx:655
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:671
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Pick 1"
 msgstr "Hitamo 1"
 
@@ -6831,7 +6864,7 @@ msgstr "Shyiraho inkuru"
 msgid "Post the picture so regulars can get the app from home."
 msgstr "Shyiraho ifoto kugira ngo abakiriya bawe basanzwe babone porogaramu bari mu rugo."
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Post this service"
 msgstr "Shyira iyi serivisi ahagaragara"
 
@@ -6843,7 +6876,7 @@ msgstr "Ryashyizwe ahagaragara"
 msgid "Posted — live for 24 hours."
 msgstr "Yashyizweho — igaragara amasaha 24."
 
-#: src/pages/ServicesPage.tsx:385
+#: src/pages/ServicesPage.tsx:389
 msgid "Posting the service…"
 msgstr "Serivisi irashyirwa ahagaragara…"
 
@@ -6895,16 +6928,16 @@ msgstr "Ukwezi gushize"
 msgid "Price"
 msgstr "Igiciro"
 
-#: src/pages/ServicesPage.tsx:1519
+#: src/pages/ServicesPage.tsx:1560
 msgid "Price and time"
 msgstr "Igiciro n’igihe"
 
-#: src/pages/ServicesPage.tsx:1051
+#: src/pages/ServicesPage.tsx:1055
 msgid "price at the shop"
 msgstr "igiciro ku iduka"
 
 #. placeholder {0}: money.code
-#: src/pages/ServicesPage.tsx:1554
+#: src/pages/ServicesPage.tsx:1595
 msgid "Price per branch ({0})"
 msgstr "Igiciro kuri buri shami ({0})"
 
@@ -6925,8 +6958,8 @@ msgstr "Capa ikarita uyishyire aho abantu bategerereza cyangwa bishyurira."
 msgid "Privacy Policy"
 msgstr "Politiki y’Ibanga"
 
-#: src/pages/choices/ChoicesEditor.tsx:518
-#: src/pages/choices/ChoicesEditor.tsx:768
+#: src/pages/choices/ChoicesEditor.tsx:531
+#: src/pages/choices/ChoicesEditor.tsx:788
 msgid "Private"
 msgstr "Ibanga"
 
@@ -6938,7 +6971,7 @@ msgstr "Ibanga — ni ibyawe wenyine. Ntukabisangize cyangwa ngo ubyohereze undi
 msgid "Private answers — open the booking"
 msgstr "Ibisubizo by’ibanga — fungura gahunda"
 
-#: src/pages/choices/ChoicesEditor.tsx:857
+#: src/pages/choices/ChoicesEditor.tsx:884
 msgid "Private answers are always free and take no extra time."
 msgstr "Ibisubizo by’ibanga ntibyishyuzwa kandi ntibyongera igihe."
 
@@ -6985,12 +7018,12 @@ msgstr "Bigaragara kuri bose, munsi y’igitekerezo. Ushobora kugihindura mu min
 msgid "Put back"
 msgstr "Yasubijwe"
 
-#: src/pages/ServicesPage.tsx:1127
+#: src/pages/ServicesPage.tsx:1131
 msgid "Put back on sale"
 msgstr "Ongera uyishyire ku isoko"
 
 #. placeholder {0}: offer.location.name
-#: src/pages/ServicesPage.tsx:1090
+#: src/pages/ServicesPage.tsx:1094
 msgid "Put back on sale here ({0})"
 msgstr "Ongera uyishyire ku isoko hano ({0})"
 
@@ -6998,7 +7031,7 @@ msgstr "Ongera uyishyire ku isoko hano ({0})"
 msgid "Put something new on your menu"
 msgstr "Ongeraho ikintu gishya mu byo utanga"
 
-#: src/pages/ServicesPage.tsx:718
+#: src/pages/ServicesPage.tsx:722
 msgid "Put your first service on sale"
 msgstr "Shyira serivisi yawe ya mbere ku isoko"
 
@@ -7007,15 +7040,15 @@ msgctxt "search words"
 msgid "qr code scan download app store google play install poster print counter card get customers"
 msgstr "kode qr sikana manura porogaramu app store google play shyiramo ifishi capa ikarita abakiriya"
 
-#: src/pages/ServicesPage.tsx:1045
+#: src/pages/ServicesPage.tsx:1049
 msgid "question"
 msgstr "ikibazo"
 
-#: src/pages/choices/ChoicesEditor.tsx:217
+#: src/pages/choices/ChoicesEditor.tsx:226
 msgid "Question {number}: write what you ask customers."
 msgstr "Ikibazo cya {number}: andika icyo ubaza abakiriya."
 
-#: src/pages/ServicesPage.tsx:1045
+#: src/pages/ServicesPage.tsx:1049
 msgid "questions"
 msgstr "ibibazo"
 
@@ -7027,7 +7060,7 @@ msgstr "Ibibazo n’ibisubizo"
 msgid "Questions before someone books"
 msgstr "Ibibazo mbere y’uko umuntu afata gahunda"
 
-#: src/pages/ServicesPage.tsx:1602
+#: src/pages/ServicesPage.tsx:1643
 msgid "Questions for customers"
 msgstr "Ibibazo ubaza abakiriya"
 
@@ -7112,7 +7145,7 @@ msgstr "Gusoma"
 msgid "Ready for your next payout"
 msgstr "Ategereje kwishyurwa ubutaha"
 
-#: src/pages/choices/ChoicesEditor.tsx:1233
+#: src/pages/choices/ChoicesEditor.tsx:1327
 msgid "Ready to choose a time"
 msgstr "Witeguye guhitamo umwanya"
 
@@ -7123,7 +7156,7 @@ msgstr "Witeguye guhitamo umwanya"
 msgid "Ready to send"
 msgstr "Biteguye koherezwa"
 
-#: src/pages/choices/ChoicesEditor.tsx:463
+#: src/pages/choices/ChoicesEditor.tsx:476
 msgid "Ready-made for {kindName}"
 msgstr "Ibibazo biteguye bya {kindName}"
 
@@ -7152,21 +7185,21 @@ msgstr "Kugorora imisatsi"
 msgid "remove"
 msgstr "kuramo"
 
-#: src/pages/choices/ChoicesEditor.tsx:534
+#: src/pages/choices/ChoicesEditor.tsx:547
 #: src/pages/ClosuresPage.tsx:468
 #: src/pages/ClosuresPage.tsx:483
 #: src/pages/ClosuresPage.tsx:718
 #: src/pages/ProfilePage.tsx:476
 #: src/pages/ProfilePage.tsx:691
 #: src/pages/ProfilePage.tsx:699
-#: src/pages/ServicesPage.tsx:1894
+#: src/pages/ServicesPage.tsx:1945
 #: src/pages/StaffPage.tsx:535
 #: src/pages/StaffPage.tsx:550
 msgid "Remove"
 msgstr "Kuramo"
 
 #. placeholder {0}: titleOf(group)
-#: src/pages/choices/ChoicesEditor.tsx:377
+#: src/pages/choices/ChoicesEditor.tsx:386
 msgid "Remove “{0}”?"
 msgstr "Kuramo “{0}”?"
 
@@ -7183,11 +7216,11 @@ msgid "Remove {0}?"
 msgstr "Kuramo {0}?"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1092
+#: src/pages/choices/ChoicesEditor.tsx:1186
 msgid "Remove answer {0}"
 msgstr "Kuramo igisubizo cya {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:393
+#: src/pages/choices/ChoicesEditor.tsx:402
 msgid "Remove question"
 msgstr "Kuramo ikibazo"
 
@@ -7195,7 +7228,7 @@ msgstr "Kuramo ikibazo"
 msgid "Remove the photo"
 msgstr "Kuramo ifoto"
 
-#: src/pages/choices/ChoicesEditor.tsx:1093
+#: src/pages/choices/ChoicesEditor.tsx:1187
 msgid "Remove this answer"
 msgstr "Kuramo iki gisubizo"
 
@@ -7203,15 +7236,15 @@ msgstr "Kuramo iki gisubizo"
 msgid "Remove this photo?"
 msgstr "Siba iyi foto?"
 
-#: src/pages/choices/ChoicesEditor.tsx:784
+#: src/pages/choices/ChoicesEditor.tsx:810
 msgid "Remove this question"
 msgstr "Kuramo iki kibazo"
 
-#: src/pages/choices/ChoicesEditor.tsx:377
+#: src/pages/choices/ChoicesEditor.tsx:386
 msgid "Remove this question?"
 msgstr "Kuramo iki kibazo?"
 
-#: src/pages/ServicesPage.tsx:439
+#: src/pages/ServicesPage.tsx:443
 msgid "Removing photos…"
 msgstr "Amafoto arakurwamo…"
 
@@ -7367,11 +7400,15 @@ msgstr "Ku wa Gatandatu mu gitondo ni Umuganda"
 msgid "Save"
 msgstr "Bika"
 
-#: src/pages/ServicesPage.tsx:1813
+#: src/pages/ServicesPage.tsx:1449
+msgid "Save anyway"
+msgstr "Bika uko biri"
+
+#: src/pages/ServicesPage.tsx:1854
 msgid "Save as draft"
 msgstr "Bika mu bitarangiye"
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Save changes"
 msgstr "Bika impinduka"
 
@@ -7379,7 +7416,7 @@ msgstr "Bika impinduka"
 msgid "Save reply"
 msgstr "Bika igisubizo"
 
-#: src/pages/choices/ChoicesEditor.tsx:645
+#: src/pages/choices/ChoicesEditor.tsx:661
 msgid "Save the service — customers see it when they book"
 msgstr "Bika serivisi — abakiriya babibona iyo bafata gahunda"
 
@@ -7392,11 +7429,11 @@ msgstr "Bika amasaha y’icyumweru"
 msgid "Saved"
 msgstr "Byabitswe"
 
-#: src/pages/ServicesPage.tsx:945
+#: src/pages/ServicesPage.tsx:949
 msgid "Saved as a draft while you type"
 msgstr "Bibikwa mu bitarangiye uko wandika"
 
-#: src/pages/ServicesPage.tsx:669
+#: src/pages/ServicesPage.tsx:673
 msgid "Saved just now"
 msgstr "Byabitswe nonaha"
 
@@ -7404,7 +7441,7 @@ msgstr "Byabitswe nonaha"
 msgid "Saved."
 msgstr "Byabitswe."
 
-#: src/pages/ServicesPage.tsx:936
+#: src/pages/ServicesPage.tsx:940
 msgid "Saving draft…"
 msgstr "Birabikwa mu bitarangiye…"
 
@@ -7419,9 +7456,9 @@ msgstr "Birabikwa mu bitarangiye…"
 #: src/pages/OverviewPage.tsx:586
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/ReviewsPage.tsx:602
-#: src/pages/ServicesPage.tsx:379
-#: src/pages/ServicesPage.tsx:936
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:383
+#: src/pages/ServicesPage.tsx:940
+#: src/pages/ServicesPage.tsx:1864
 #: src/pages/StaffPage.tsx:317
 msgid "Saving…"
 msgstr "Birabikwa…"
@@ -7677,16 +7714,16 @@ msgstr "Serivisi"
 msgid "Service name"
 msgstr "Izina rya serivisi"
 
-#: src/pages/ServicesPage.tsx:1081
+#: src/pages/ServicesPage.tsx:1085
 msgid "service stopped"
 msgstr "serivisi yahagaritswe"
 
-#: src/pages/ServicesPage.tsx:1101
+#: src/pages/ServicesPage.tsx:1105
 msgid "Service stopped"
 msgstr "Serivisi yahagaritswe"
 
 #: src/nav.ts:70
-#: src/pages/ServicesPage.tsx:584
+#: src/pages/ServicesPage.tsx:588
 msgid "Services"
 msgstr "Serivisi"
 
@@ -7711,7 +7748,7 @@ msgstr "Shyiraho aya masaha"
 msgid "Set up your shop"
 msgstr "Tegura iduka ryawe"
 
-#: src/pages/choices/ChoicesEditor.tsx:644
+#: src/pages/choices/ChoicesEditor.tsx:660
 msgid "Set what each answer adds to the price or the time"
 msgstr "Shyiraho icyo buri gisubizo cyongera ku giciro cyangwa ku gihe"
 
@@ -7746,7 +7783,7 @@ msgstr "Iduka ryahagaritswe"
 msgid "Shops close 08:00–11:00, but {one} is open for bookings then."
 msgstr "Amaduka afunga saa 08:00–11:00, ariko {one} riracyafata gahunda icyo gihe."
 
-#: src/pages/choices/ChoicesEditor.tsx:1048
+#: src/pages/choices/ChoicesEditor.tsx:1142
 msgid "Shops usually charge for this"
 msgstr "Ubusanzwe amaduka arabyishyuza"
 
@@ -7755,15 +7792,15 @@ msgstr "Ubusanzwe amaduka arabyishyuza"
 msgid "Shops with clear, high-resolution photos and full details get booked far more often · {done} of {0} done"
 msgstr "Amaduka afite amafoto asobanutse kandi meza n’amakuru yuzuye afatirwaho gahunda kenshi cyane · {done} kuri {0} byakozwe"
 
-#: src/pages/choices/ChoicesEditor.tsx:633
+#: src/pages/choices/ChoicesEditor.tsx:649
 msgid "Short"
 msgstr "Mugufi"
 
-#: src/pages/choices/ChoicesEditor.tsx:898
+#: src/pages/choices/ChoicesEditor.tsx:925
 msgid "Short name on your bookings <0>optional</0>"
 msgstr "Izina rigufi kuri gahunda zawe <0>si ngombwa</0>"
 
-#: src/pages/ServicesPage.tsx:1383
+#: src/pages/ServicesPage.tsx:1387
 msgid "Shorten the description by {overDescription} and the special instructions by {overInstructions} characters — the count is at the top right of each box."
 msgstr "Gabanya ibisobanuro inyuguti {overDescription}, n’amabwiriza yihariye inyuguti {overInstructions} — umubare uri hejuru iburyo bwa buri gasanduku."
 
@@ -7853,11 +7890,11 @@ msgstr "Hagaragara <0>{0}</0> kuri <1>{1}</1>"
 msgid "Showing <0>{0}</0> of <1>{total}</1>"
 msgstr "Hagaragara <0>{0}</0> kuri <1>{total}</1>"
 
-#: src/pages/ServicesPage.tsx:1514
+#: src/pages/ServicesPage.tsx:1546
 msgid "Shown as “Before you come” — on the service, and again on the customer’s reservation."
 msgstr "Bigaragara nka “Mbere yo kuza” — kuri serivisi, no kuri gahunda y’umukiriya."
 
-#: src/pages/choices/ChoicesEditor.tsx:908
+#: src/pages/choices/ChoicesEditor.tsx:935
 msgid "Shown on the booking, like “{exampleName}: {exampleAnswer}”. Leave it empty to use the question."
 msgstr "Rigaragara kuri gahunda, nka “{exampleName}: {exampleAnswer}”. Usige ubusa kugira ngo hakoreshwe ikibazo."
 
@@ -7877,7 +7914,7 @@ msgstr "Abakiriya babona "
 msgid "Shown under “About this service” before they book."
 msgstr "Bigaragara munsi ya “Ibyerekeye iyi serivisi” mbere y’uko bafata gahunda."
 
-#: src/pages/ServicesPage.tsx:1498
+#: src/pages/ServicesPage.tsx:1529
 msgid "Shown under “About this service”."
 msgstr "Bigaragara munsi ya “Ibyerekeye iyi serivisi”."
 
@@ -7950,7 +7987,7 @@ msgstr "Imibare itandatu, aba yakiriwe"
 msgid "Six digits, no button"
 msgstr "Imibare itandatu, nta kindi ukanda"
 
-#: src/pages/choices/ChoicesEditor.tsx:725
+#: src/pages/choices/ChoicesEditor.tsx:741
 msgid "Skin fade"
 msgstr "Skin fade"
 
@@ -7977,6 +8014,10 @@ msgstr "Kugira ngo bongere bafate gahunda iwawe bakoresheje telefoni."
 #: src/ads/todaySlides.ts:82
 msgid "Some deposits are slow or failing. Customers’ times stay held while they retry."
 msgstr "Avansi zimwe ziratinda cyangwa zikanga. Igihe umukiriya yafashe kirabikwa."
+
+#: src/pages/ServicesPage.tsx:1438
+msgid "Some questions ask for private information"
+msgstr "Ibibazo bimwe bisaba amakuru y’ibanga"
 
 #: src/pages/SupportPage.tsx:69
 msgid "Someone is on it"
@@ -8024,7 +8065,7 @@ msgstr "Amasaha yihariye"
 msgid "Special hours — {why}"
 msgstr "Amasaha yihariye — {why}"
 
-#: src/pages/ServicesPage.tsx:1502
+#: src/pages/ServicesPage.tsx:1534
 msgid "Special instructions"
 msgstr "Amabwiriza yihariye"
 
@@ -8095,7 +8136,7 @@ msgid "Start with {0}: {1}{2}"
 msgstr "Hera ku {0}: {1}{2}"
 
 #. placeholder {0}: item.createdBy.email
-#: src/pages/ServicesPage.tsx:674
+#: src/pages/ServicesPage.tsx:678
 msgid "started by {0}"
 msgstr "byatangijwe na {0}"
 
@@ -8161,22 +8202,22 @@ msgstr "Izitaraba cyangwa zitishyuwe"
 msgid "Still to pay you at the shop"
 msgstr "Asigaye kukwishyura ku iduka"
 
-#: src/pages/ServicesPage.tsx:775
+#: src/pages/ServicesPage.tsx:779
 msgid "Still yours, and bookable by nobody. Kept so past appointments resolve to what was booked. Switch a branch back on — or press <0>Put back on sale</0> if you retired it everywhere."
 msgstr "Ziracyari izawe, ariko nta wazifatira gahunda. Zibikwa kugira ngo gahunda zashize zigaragaze icyafatiwe gahunda. Ongera ufungure ishami — cyangwa ukande <0>Ongera uyitange</0> niba warayihagaritse ahantu hose."
 
 #. placeholder {0}: service.name
-#: src/pages/ServicesPage.tsx:540
+#: src/pages/ServicesPage.tsx:544
 msgid "Stop offering “{0}” at every branch?"
 msgstr "Uhagarike gutanga “{0}” ku mashami yose?"
 
-#: src/pages/ServicesPage.tsx:551
-#: src/pages/ServicesPage.tsx:1135
+#: src/pages/ServicesPage.tsx:555
+#: src/pages/ServicesPage.tsx:1139
 msgid "Stop offering everywhere"
 msgstr "Hagarika kuyitanga hose"
 
 #. placeholder {0}: offer.location.name
-#: src/pages/ServicesPage.tsx:1090
+#: src/pages/ServicesPage.tsx:1094
 msgid "Stop offering here ({0})"
 msgstr "Hagarika kuyitanga hano ({0})"
 
@@ -8227,15 +8268,15 @@ msgstr "Igihe cyo koga"
 msgid "Swimming lesson"
 msgstr "Isomo ryo koga"
 
-#: src/pages/choices/ChoicesEditor.tsx:1078
+#: src/pages/choices/ChoicesEditor.tsx:1172
 msgid "Switch off when you can’t do it for now — customers see “Not available”."
 msgstr "Zimya igihe utabishobora ubu — abakiriya babona “Ntibiboneka”."
 
-#: src/pages/choices/ChoicesEditor.tsx:1078
+#: src/pages/choices/ChoicesEditor.tsx:1172
 msgid "Switch on to offer it again."
 msgstr "Fungura kugira ngo wongere ubitange."
 
-#: src/pages/ServicesPage.tsx:1101
+#: src/pages/ServicesPage.tsx:1105
 msgid "Switched off at every branch"
 msgstr "Yazimijwe ku mashami yose"
 
@@ -8284,15 +8325,15 @@ msgid "Taken down: {0}"
 msgstr "Yakuweho: {0}"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1041
+#: src/pages/choices/ChoicesEditor.tsx:1135
 msgid "Taken off the price for answer {0}"
 msgstr "Bikurwa ku giciro ku gisubizo cya {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1229
+#: src/pages/choices/ChoicesEditor.tsx:1323
 msgid "Takes"
 msgstr "Bimara"
 
-#: src/pages/choices/ChoicesEditor.tsx:1031
+#: src/pages/choices/ChoicesEditor.tsx:1125
 msgid "Takes off the price"
 msgstr "Bikura ku giciro"
 
@@ -8309,7 +8350,7 @@ msgstr "Tuvugishe"
 msgid "Talking to customers"
 msgstr "Kuvugana n’abakiriya"
 
-#: src/pages/choices/ChoicesEditor.tsx:1164
+#: src/pages/choices/ChoicesEditor.tsx:1258
 msgid "Tap the answers — the total changes"
 msgstr "Kanda ku bisubizo — igiteranyo kirahinduka"
 
@@ -8418,7 +8459,7 @@ msgstr "Ntibyabitswe."
 #: src/onboarding/Welcome.tsx:485
 #: src/onboarding/Welcome.tsx:641
 #: src/onboarding/Welcome.tsx:779
-#: src/pages/ServicesPage.tsx:559
+#: src/pages/ServicesPage.tsx:563
 msgid "That did not save. Check your connection and try again."
 msgstr "Ntibyabitswe. Reba internet yawe wongere ugerageze."
 
@@ -8447,7 +8488,7 @@ msgstr "Ntibyoherejwe. Reba internet yawe."
 #: src/pages/ProfilePage.tsx:777
 #: src/pages/ProfilePage.tsx:808
 #: src/pages/SecurityPage.tsx:56
-#: src/pages/ServicesPage.tsx:639
+#: src/pages/ServicesPage.tsx:643
 #: src/pages/StaffPage.tsx:448
 #: src/pages/SupportPage.tsx:653
 msgid "That did not work."
@@ -8493,11 +8534,11 @@ msgstr "Iyo foto ntiyashyizweho. Gerageza JPG cyangwa PNG iri munsi ya MB 5."
 msgid "That service did not save."
 msgstr "Iyo serivisi ntiyabitswe."
 
-#: src/pages/choices/ChoicesEditor.tsx:559
+#: src/pages/choices/ChoicesEditor.tsx:572
 msgid "That’s the most — {MAX_GROUPS} questions per service"
 msgstr "Wageze ku ntarengwa — ibibazo {MAX_GROUPS} kuri serivisi"
 
-#: src/pages/choices/ChoicesEditor.tsx:884
+#: src/pages/choices/ChoicesEditor.tsx:911
 msgid "That’s the most — {MAX_OPTIONS} answers"
 msgstr "Wageze ku ntarengwa — ibisubizo {MAX_OPTIONS}"
 
@@ -8513,7 +8554,7 @@ msgstr "Amasezerano ugenderaho"
 msgid "The annual income tax return is due by {date}"
 msgstr "Imenyekanisha ry’umusoro ku nyungu ry’umwaka ritangwa bitarenze {date}"
 
-#: src/pages/choices/ChoicesEditor.tsx:854
+#: src/pages/choices/ChoicesEditor.tsx:881
 msgid "The answers"
 msgstr "Ibisubizo"
 
@@ -8569,7 +8610,7 @@ msgstr "Kode ntiyashoboye koherezwa. Reba internet yawe."
 msgid "The cover is the photo on the service’s card in the app. Choose it with “Make cover”."
 msgstr "Ifoto y’imbere ni ifoto iri ku ikarita ya serivisi muri porogaramu. Yihitemo ukoresheje “Yigire iy’imbere”."
 
-#: src/pages/ServicesPage.tsx:470
+#: src/pages/ServicesPage.tsx:474
 msgid "the cover was not changed"
 msgstr "ifoto y’imbere ntiyahinduwe"
 
@@ -8609,8 +8650,8 @@ msgstr "Avansi yishyuwe. Nagera, azakubwira kode ye y’imibare 6 — umubare wa
 msgid "The deposit paid, and what is left to pay you"
 msgstr "Avansi yishyuwe, n’ibisigaye kukwishyura"
 
-#: src/pages/choices/ChoicesEditor.tsx:604
-#: src/pages/choices/ChoicesEditor.tsx:614
+#: src/pages/choices/ChoicesEditor.tsx:620
+#: src/pages/choices/ChoicesEditor.tsx:630
 msgid "The final price is agreed at the shop"
 msgstr "Igiciro cya nyuma cyumvikanwaho ku iduka"
 
@@ -8622,7 +8663,7 @@ msgstr "Ifoto ya mbere ni yo y’imbere abakiriya babona banyuraho. Hitamo iyawe
 msgid "The first thing a customer sees on your page."
 msgstr "Ni cyo kintu cya mbere umukiriya abona ku ipaji yawe."
 
-#: src/pages/ServicesPage.tsx:1482
+#: src/pages/ServicesPage.tsx:1513
 msgid "The headline right under the photos. The name above stays the short label on cards."
 msgstr "Umutwe uri munsi y’amafoto. Izina riri hejuru rikomeza kuba izina rigufi ku makarita."
 
@@ -8631,7 +8672,7 @@ msgid "The hours it opens, day by day"
 msgstr "Amasaha rifunguraho, umunsi ku wundi"
 
 #. placeholder {0}: niceDay(initial.discountEndsOn.slice(0, 10))
-#: src/pages/ServicesPage.tsx:1682
+#: src/pages/ServicesPage.tsx:1723
 msgid "The last sale ended on {0}."
 msgstr "Igabanywa riheruka ryarangiye ku {0}."
 
@@ -8643,7 +8684,7 @@ msgstr "Ibyumweru bibiri bishize, n’ibyafashwe gahunda mu cyumweru gitaha"
 msgid "The money is for the owner"
 msgstr "Iby’amafaranga ni ibya nyir’iduka"
 
-#: src/pages/choices/ChoicesEditor.tsx:831
+#: src/pages/choices/ChoicesEditor.tsx:858
 msgid "The most answers a customer may pick"
 msgstr "Umubare ntarengwa w’ibisubizo umukiriya ashobora guhitamo"
 
@@ -8724,11 +8765,11 @@ msgstr "Amafaranga ya serivisi y’urubuga ({fee} by’igiciro) akurwa kuri iyo 
 msgid "The preview shows your changes — save to make them live."
 msgstr "Ibigaragara hano ni impinduka zawe — bika kugira ngo zijye ku murongo."
 
-#: src/pages/ServicesPage.tsx:1584
+#: src/pages/ServicesPage.tsx:1625
 msgid "The price is for one person. Leave a branch blank to stop offering it there."
 msgstr "Igiciro ni icy’umuntu umwe. Siga ishami ubusa kugira ngo uhagarike kuyitangirayo."
 
-#: src/pages/choices/ChoicesEditor.tsx:799
+#: src/pages/choices/ChoicesEditor.tsx:825
 msgid "The question customers see"
 msgstr "Ikibazo abakiriya babona"
 
@@ -8825,15 +8866,15 @@ msgstr "Aya ni amashami ukoreramo. Nyir’iduka cyangwa umuyobozi ni we uhindura
 msgid "They book a time and pay a deposit"
 msgstr "Bafata gahunda bakishyura avansi"
 
-#: src/pages/choices/ChoicesEditor.tsx:513
+#: src/pages/choices/ChoicesEditor.tsx:526
 msgid "They can pick several"
 msgstr "Bashobora guhitamo byinshi"
 
-#: src/pages/choices/ChoicesEditor.tsx:846
+#: src/pages/choices/ChoicesEditor.tsx:873
 msgid "They can skip it."
 msgstr "Bashobora kugisimbuka."
 
-#: src/pages/choices/ChoicesEditor.tsx:846
+#: src/pages/choices/ChoicesEditor.tsx:873
 msgid "They can’t book without picking."
 msgstr "Ntibashobora gufata gahunda batahisemo."
 
@@ -8845,16 +8886,16 @@ msgstr "Ahabwa imeyili. Niba nta konti afite, ifungurwa igihe yemeye — ntakene
 msgid "They lose access straight away. Their name stays on anything they already did, and you can invite them again later."
 msgstr "Ahita atakaza uburenganzira bwo kwinjira. Izina rye riguma ku byo yamaze gukora, kandi ushobora kongera kumutumira nyuma."
 
-#: src/pages/choices/ChoicesEditor.tsx:513
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:526
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick one"
 msgstr "Bahitamo kimwe"
 
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick one or more"
 msgstr "Bahitamo kimwe cyangwa byinshi"
 
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick up to {picks}"
 msgstr "Bahitamo bitarenze {picks}"
 
@@ -8877,6 +8918,26 @@ msgstr "Bakwereka kode yabo y’imibare 6. Kanda hano maze uyandike — ibyo bit
 #: src/auth/LoginPage.tsx:49
 msgid "This account was closed. Use the same email to start a new business, or a different one."
 msgstr "Iyi konti yarafunzwe. Koresha iyo imeyili ufungure ubucuruzi bushya, cyangwa ukoreshe indi."
+
+#: src/pages/choices/ChoicesEditor.tsx:1036
+msgid "This asks about an illness, a test or medicines. Please don’t ask it: it is private medical information, and the seller rules forbid it."
+msgstr "Iki kibaza ku ndwara, ikizamini cyangwa imiti. Turagusaba kutakibaza: ni amakuru y’ibanga y’ubuzima, kandi amategeko y’abacuruzi arabibuza."
+
+#: src/pages/choices/ChoicesEditor.tsx:1042
+msgid "This asks about health — an allergy, a pregnancy or an injury. Ask it only if it changes how you do the service, and make it a private question."
+msgstr "Iki kibaza ku buzima — indwara y’ubwivumbure, gutwita cyangwa imvune. Kibaze gusa niba gihindura uko utanga serivisi, kandi ukigire ikibazo cy’ibanga."
+
+#: src/pages/choices/ChoicesEditor.tsx:1038
+msgid "This asks about religion, ethnicity or politics. Never ask it: it has nothing to do with a booking."
+msgstr "Iki kibaza ku idini, ubwoko bw’abantu cyangwa politiki. Ntuzigere ukibaza: nta aho gihuriye na gahunda."
+
+#: src/pages/choices/ChoicesEditor.tsx:1039
+msgid "This asks for a PIN or a password. Never ask it: customers must never share these with anyone, not even you."
+msgstr "Iki gisaba PIN cyangwa ijambo ry’ibanga. Ntuzigere ukibaza: abakiriya ntibagomba kubiha umuntu uwo ari we wese, ndetse nawe."
+
+#: src/pages/choices/ChoicesEditor.tsx:1037
+msgid "This asks for an ID, passport or insurance number. Please don’t ask it: the seller rules forbid it. If you must see an ID, look at it at the counter."
+msgstr "Iki gisaba nimero y’indangamuntu, ya pasiporo cyangwa y’ubwishingizi. Turagusaba kutakibaza: amategeko y’abacuruzi arabibuza. Niba ugomba kureba indangamuntu, uyirebere kuri kontwari."
 
 #: src/pages/AppointmentsPage.tsx:1091
 msgid "This booking could not be opened"
@@ -8982,7 +9043,7 @@ msgstr "Iki cyumweru"
 msgid "Those hours did not save."
 msgstr "Ayo masaha ntiyabitswe."
 
-#: src/pages/ServicesPage.tsx:683
+#: src/pages/ServicesPage.tsx:687
 msgid "Throw this draft away?"
 msgstr "Usibe iyi serivisi itarangiye?"
 
@@ -9004,7 +9065,7 @@ msgstr "Igihe cyo kongera kwinjira"
 msgid "Tip"
 msgstr "Inama"
 
-#: src/pages/ServicesPage.tsx:995
+#: src/pages/ServicesPage.tsx:999
 msgid "Title"
 msgstr "Umutwe"
 
@@ -9014,7 +9075,7 @@ msgid "Title <0>{0}/{TITLE_MAX}</0>"
 msgstr "Umutwe <0>{0}/{TITLE_MAX}</0>"
 
 #. placeholder {0}: title.length
-#: src/pages/ServicesPage.tsx:1472
+#: src/pages/ServicesPage.tsx:1503
 msgid "Title <0>{0}/100</0>"
 msgstr "Umutwe <0>{0}/100</0>"
 
@@ -9091,7 +9152,7 @@ msgctxt "after an amount: the full price"
 msgid "total"
 msgstr "yose hamwe"
 
-#: src/pages/choices/ChoicesEditor.tsx:1221
+#: src/pages/choices/ChoicesEditor.tsx:1315
 msgid "Total"
 msgstr "Igiteranyo"
 
@@ -9134,7 +9195,7 @@ msgstr "Ongera ugerageze"
 msgid "Try again, or print the card instead."
 msgstr "Ongera ugerageze, cyangwa ucape ikarita."
 
-#: src/pages/choices/ChoicesEditor.tsx:1163
+#: src/pages/choices/ChoicesEditor.tsx:1257
 msgid "Try it as a customer"
 msgstr "Bigerageze nk’umukiriya"
 
@@ -9214,7 +9275,7 @@ msgstr "Imyanya ibiri iboneka nyuma ya saa sita — fata gahunda ubu"
 msgid "Type"
 msgstr "Ubwoko"
 
-#: src/pages/ServicesPage.tsx:1810
+#: src/pages/ServicesPage.tsx:1851
 msgid "Type something first"
 msgstr "Banza wandike ikintu"
 
@@ -9264,7 +9325,7 @@ msgstr "Itarishyurwa"
 msgid "Unread "
 msgstr "Bitarasomwa "
 
-#: src/pages/ServicesPage.tsx:942
+#: src/pages/ServicesPage.tsx:946
 msgid "Unsaved changes"
 msgstr "Impinduka zitarabikwa"
 
@@ -9277,11 +9338,12 @@ msgstr "Kugeza"
 msgid "Until there is a branch, there is nothing for customers to book. Add its address, pin it on the map, then set its hours."
 msgstr "Igihe nta shami rirahari, abakiriya nta cyo bashobora gufatira gahunda. Shyiraho aderesi yaryo, urishyire ku ikarita, hanyuma ushyireho amasaha yaryo."
 
-#: src/pages/choices/ChoicesEditor.tsx:716
+#: src/pages/choices/ChoicesEditor.tsx:732
+#: src/pages/ServicesPage.tsx:1436
 msgid "Untitled question"
 msgstr "Ikibazo kitagira umutwe"
 
-#: src/pages/ServicesPage.tsx:668
+#: src/pages/ServicesPage.tsx:672
 msgid "Untitled service"
 msgstr "Serivisi itagira izina"
 
@@ -9289,7 +9351,7 @@ msgstr "Serivisi itagira izina"
 msgid "Unused for {idle}, a sign-in ends by itself."
 msgstr "Nyuma ya {idle} nta gikorwa, kwinjira birangira ubwabyo."
 
-#: src/pages/choices/ChoicesEditor.tsx:543
+#: src/pages/choices/ChoicesEditor.tsx:556
 msgid "Up to {MAX_GROUPS} questions per service"
 msgstr "Ibibazo bitarenze {MAX_GROUPS} kuri buri serivisi"
 
@@ -9301,11 +9363,11 @@ msgstr "Kugeza ku byiciro {MAX_KIND_CATEGORIES}"
 msgid "Up to {MAX_KIND_CATEGORIES} kinds — take one off first"
 msgstr "Kugeza ku moko {MAX_KIND_CATEGORIES} — banza ukuremo bumwe"
 
-#: src/pages/choices/ChoicesEditor.tsx:733
+#: src/pages/choices/ChoicesEditor.tsx:749
 msgid "up to +{longest} min"
 msgstr "kugeza kuri +{longest} min"
 
-#: src/pages/choices/ChoicesEditor.tsx:732
+#: src/pages/choices/ChoicesEditor.tsx:748
 msgid "up to +{mostPrice}"
 msgstr "kugeza kuri +{mostPrice}"
 
@@ -9330,8 +9392,8 @@ msgstr "Birashyirwaho {0} kuri {1}…"
 #. placeholder {0}: index + 1
 #. placeholder {1}: files.length
 #. placeholder {1}: fresh.length
-#: src/pages/ServicesPage.tsx:390
-#: src/pages/ServicesPage.tsx:450
+#: src/pages/ServicesPage.tsx:394
+#: src/pages/ServicesPage.tsx:454
 msgid "Uploading photo {0} of {1}…"
 msgstr "Harashyirwaho ifoto {0} kuri {1}…"
 
@@ -9501,6 +9563,10 @@ msgstr "Ategerejwe kuza"
 msgid "Waiting to be checked by our team"
 msgstr "Itegereje kugenzurwa n’itsinda ryacu"
 
+#: src/pages/ServicesPage.tsx:1551
+msgid "Warn about risks here, like “not suitable during pregnancy”. Never ask customers to send health details, an ID number or a PIN — by message or anywhere else."
+msgstr "Vuga hano ibishobora guteza ibyago, nka “ntibikwiriye ku bantu batwite”. Ntuzigere usaba abakiriya kohereza amakuru y’ubuzima, nimero y’indangamuntu cyangwa PIN — mu butumwa cyangwa ahandi hose."
+
 #: src/pages/StaffPage.tsx:198
 msgid "was a manager"
 msgstr "yari umuyobozi"
@@ -9553,7 +9619,7 @@ msgstr "Turarisuzuma, ukarishyira ahagaragara"
 msgid "We could not approve it yet. Everything you set up is still here."
 msgstr "Ntitwashoboye kuryemeza ubu. Ibyo wateguye byose biracyahari."
 
-#: src/pages/ServicesPage.tsx:318
+#: src/pages/ServicesPage.tsx:322
 msgid "We could not save what you typed last — check your connection. Everything before it is saved."
 msgstr "Ntitwashoboye kubika ibyo wanditse bwa nyuma — reba internet yawe. Ibyabibanjirije byose byabitswe."
 
@@ -9634,7 +9700,7 @@ msgstr "Ikaze<0/><1>nanone.</1>"
 msgid "wellness centre"
 msgstr "ikigo cyawe cy’ubuzima bwiza"
 
-#: src/pages/ServicesPage.tsx:1104
+#: src/pages/ServicesPage.tsx:1108
 msgid "What a customer reads on the service's page"
 msgstr "Ibyo umukiriya asoma ku rupapuro rwa serivisi"
 
@@ -9664,7 +9730,7 @@ msgstr "Ibyo abakiriya bafatira gahunda"
 msgid "What customers can book"
 msgstr "Ibyo abakiriya bashobora gufatira gahunda"
 
-#: src/pages/ServicesPage.tsx:1459
+#: src/pages/ServicesPage.tsx:1490
 msgid "What customers read when they choose it"
 msgstr "Ibyo abakiriya basoma igihe bayihitamo"
 
@@ -9692,7 +9758,7 @@ msgstr "Ibyo abakiriya babona: isura y’iduka ryawe, serivisi ucuruza, aho uher
 msgid "What did the customer recall — the booking time, the service, anything that identified them?"
 msgstr "Umukiriya yibutse iki — isaha ya gahunda, serivisi, cyangwa ikindi cyose cyamugaragaje?"
 
-#: src/pages/choices/ChoicesEditor.tsx:791
+#: src/pages/choices/ChoicesEditor.tsx:817
 msgid "What do you ask customers?"
 msgstr "Ubaza abakiriya iki?"
 
@@ -9728,7 +9794,7 @@ msgstr "Kode ye y’imibare 6 ni iyihe?"
 msgid "What is this about?"
 msgstr "Bijyanye n’iki?"
 
-#: src/pages/ServicesPage.tsx:1496
+#: src/pages/ServicesPage.tsx:1527
 msgid "What it is and what is included — a customer reads this before choosing it."
 msgstr "Icyo ari cyo n’ibirimo — umukiriya abisoma mbere yo kuyihitamo."
 
@@ -9774,11 +9840,11 @@ msgstr "Ibyo yahisemo"
 msgid "What they do"
 msgstr "Ibyo bakora"
 
-#: src/pages/ServicesPage.tsx:1511
+#: src/pages/ServicesPage.tsx:1543
 msgid "What to know before coming: arrive ten minutes early, bring a towel, park at the back…"
 msgstr "Ibyo kumenya mbere yo kuza: hagera iminota icumi mbere, zana igitambaro, parika inyuma…"
 
-#: src/pages/ServicesPage.tsx:684
+#: src/pages/ServicesPage.tsx:688
 msgid "What was written in it cannot be brought back."
 msgstr "Ibyari byanditswemo ntibishobora kugarurwa."
 
@@ -9870,7 +9936,7 @@ msgstr "Ufungura ryari?"
 msgid "When customers book for today, they appear here in time order, each with a button to check them in."
 msgstr "Iyo abakiriya bafashe gahunda z’uyu munsi, bagaragara hano bakurikije amasaha, buri wese afite buto yo kumwakira."
 
-#: src/pages/ServicesPage.tsx:740
+#: src/pages/ServicesPage.tsx:744
 msgid "When the owner adds a service at your branch, it shows here."
 msgstr "Iyo nyir’iduka yongeyeho serivisi ku ishami ryawe, igaragara hano."
 
@@ -9878,11 +9944,11 @@ msgstr "Iyo nyir’iduka yongeyeho serivisi ku ishami ryawe, igaragara hano."
 msgid "When they are finished, mark it done on <0>Appointments</0>."
 msgstr "Nibirangira, emeza ko byarangiye kuri <0>Gahunda</0>."
 
-#: src/pages/choices/ChoicesEditor.tsx:916
+#: src/pages/choices/ChoicesEditor.tsx:943
 msgid "When to ask it"
 msgstr "Igihe cyo kukibaza"
 
-#: src/pages/choices/ChoicesEditor.tsx:924
+#: src/pages/choices/ChoicesEditor.tsx:951
 msgid "When to ask this question"
 msgstr "Igihe cyo kubaza iki kibazo"
 
@@ -10068,7 +10134,7 @@ msgid "Without the code"
 msgstr "Nta kode"
 
 #. placeholder {0}: notePrompt.length
-#: src/pages/choices/ChoicesEditor.tsx:589
+#: src/pages/choices/ChoicesEditor.tsx:603
 msgid "Words above their note box <0>{0}/120</0>"
 msgstr "Amagambo ari hejuru y’aho bandika ubutumwa <0>{0}/120</0>"
 
@@ -10101,7 +10167,7 @@ msgstr "Akora ku kwakira abakiriya mu mashami ye: arabakira, yemeza ko gahunda z
 msgid "Write a reply"
 msgstr "Andika igisubizo"
 
-#: src/pages/choices/ChoicesEditor.tsx:559
+#: src/pages/choices/ChoicesEditor.tsx:572
 msgid "Write my own question"
 msgstr "Andika ikibazo cyanjye"
 
@@ -10156,7 +10222,7 @@ msgstr "Ubu <0>winjiye!</0>"
 msgid "You are live! 🎉"
 msgstr "Uri ku murongo! 🎉"
 
-#: src/pages/choices/ChoicesEditor.tsx:641
+#: src/pages/choices/ChoicesEditor.tsx:657
 msgid "You ask a question; when customers book, they tap an answer. An answer can cost more or take longer — you decide."
 msgstr "Ubaza ikibazo; iyo abakiriya bafata gahunda, bakanda ku gisubizo. Igisubizo gishobora kongera igiciro cyangwa igihe — ni wowe ubyemeza."
 
@@ -10164,7 +10230,7 @@ msgstr "Ubaza ikibazo; iyo abakiriya bafata gahunda, bakanda ku gisubizo. Igisub
 msgid "You can reopen it for {REOPEN_WINDOW_DAYS} days"
 msgstr "Ushobora kongera kubifungura mu minsi {REOPEN_WINDOW_DAYS}"
 
-#: src/pages/ServicesPage.tsx:608
+#: src/pages/ServicesPage.tsx:612
 msgid "You can see what is on sale at your branches. The owner or a manager changes it."
 msgstr "Ushobora kubona serivisi zitangwa ku mashami yawe. Nyir’iduka cyangwa umuyobozi ni bo bazihindura."
 
@@ -10172,7 +10238,7 @@ msgstr "Ushobora kubona serivisi zitangwa ku mashami yawe. Nyir’iduka cyangwa 
 msgid "You can send one message a week, so make it count."
 msgstr "Ushobora kohereza ubutumwa bumwe mu cyumweru, bityo ubunoze neza."
 
-#: src/pages/ServicesPage.tsx:607
+#: src/pages/ServicesPage.tsx:611
 msgid "You can switch a service on or off at your branches. The owner, or a manager of every branch, changes the menu and its prices."
 msgstr "Ushobora gufungura cyangwa gufunga serivisi ku mashami yawe. Nyir’iduka, cyangwa umuyobozi w’amashami yose, ni bo bahindura urutonde rwa serivisi n’ibiciro byazo."
 
@@ -10302,7 +10368,7 @@ msgid "Your category and type"
 msgstr "Icyiciro n’ubwoko byawe"
 
 #. placeholder {0}: editor.service.name
-#: src/pages/ServicesPage.tsx:300
+#: src/pages/ServicesPage.tsx:304
 msgid "Your changes to “{0}” are not saved yet. If you leave now, the service stays as it was."
 msgstr "Impinduka wakoze kuri “{0}” ntizirabikwa. Nuva hano ubu, serivisi iraguma uko yari iri."
 

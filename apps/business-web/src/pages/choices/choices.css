@@ -562,3 +562,45 @@
   .ch-group, .ch-option, .ch-card, .ch-card-added, .ch-q, .ch-how-example li, .ch-more-body { animation: none; }
   .ch-group-fold, .ch-group-body, .ch-group-chev { transition: none; }
 }
+
+/* ---- what not to ask (§312) ---- */
+
+.ch-rule {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--sunken);
+  border: 1px solid var(--line);
+}
+.ch-rule-icon { flex: none; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; background: var(--panel); color: var(--ok-deep, #0f7a3d); }
+.ch-rule strong { display: block; font-size: 14px; }
+.ch-rule p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+
+.ch-badge.is-danger { background: var(--danger); color: #fff; }
+
+.ch-sensitive {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: rise-in 300ms var(--ease) both;
+}
+.ch-sensitive > svg { flex: none; margin-top: 2px; }
+.ch-sensitive.is-never { background: var(--danger-soft); color: #9c1f14; }
+.ch-sensitive.is-safety { background: var(--warn-soft); color: #7a4a00; }
+.ch-sensitive-fix {
+  display: inline-flex;
+  margin: 8px 0 0;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  white-space: normal;
+}
+.ch-sensitive span { display: flex; flex-direction: column; align-items: flex-start; }

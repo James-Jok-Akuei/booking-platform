@@ -30,7 +30,7 @@ msgstr " · réduction en cours"
 msgid " · edited"
 msgstr " · modifié"
 
-#: src/pages/choices/ChoicesEditor.tsx:514
+#: src/pages/choices/ChoicesEditor.tsx:527
 msgid " · must answer"
 msgstr " · réponse obligatoire"
 
@@ -43,7 +43,7 @@ msgstr " · non payé"
 msgid " · paid {0}"
 msgstr " · payé le {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1175
+#: src/pages/choices/ChoicesEditor.tsx:1269
 msgid " · Required"
 msgstr " · Obligatoire"
 
@@ -52,11 +52,11 @@ msgid " · try a discount"
 msgstr " · essayez une réduction"
 
 #. placeholder {0}: niceDay(service.discountEndsOn.slice(0, 10))
-#: src/pages/ServicesPage.tsx:1062
+#: src/pages/ServicesPage.tsx:1066
 msgid " · until {0}"
 msgstr " · jusqu’au {0}"
 
-#: src/pages/ServicesPage.tsx:1062
+#: src/pages/ServicesPage.tsx:1066
 msgid " · until you end it"
 msgstr " · jusqu’à ce que vous y mettiez fin"
 
@@ -109,15 +109,15 @@ msgstr "« {0} » — répondre vite, c’est l’occasion de décrocher la r�
 msgid "“{name}” is over {limit} MB — try a smaller copy."
 msgstr "« {name} » dépasse {limit} Mo — essayez une copie plus légère."
 
-#: src/pages/choices/ChoicesEditor.tsx:218
+#: src/pages/choices/ChoicesEditor.tsx:227
 msgid "“{title}”: add at least one answer."
 msgstr "« {title} » : ajoutez au moins une réponse."
 
-#: src/pages/choices/ChoicesEditor.tsx:221
+#: src/pages/choices/ChoicesEditor.tsx:230
 msgid "“{title}”: answer {answer} is empty — write it, or remove it."
 msgstr "« {title} » : la réponse {answer} est vide — remplissez-la ou supprimez-la."
 
-#: src/pages/choices/ChoicesEditor.tsx:223
+#: src/pages/choices/ChoicesEditor.tsx:232
 msgid "“{title}”: customers must answer it, so at least one answer has to be offered."
 msgstr "« {title} » : les clients doivent y répondre, il faut donc proposer au moins une réponse."
 
@@ -138,8 +138,13 @@ msgstr "« Rapide, sympathique, exactement ce que j’avais demandé. »"
 msgid "{0, plural, one {“What you do” is # character too long.} other {“What you do” is # characters too long.}}"
 msgstr "{0, plural, one {« Ce que vous faites » dépasse de # caractère.} other {« Ce que vous faites » dépasse de # caractères.}}"
 
+#. placeholder {0}: forbidden.length
+#: src/pages/ServicesPage.tsx:1441
+msgid "{0, plural, one {{named} asks for something customers should never have to give a shop — an illness, an ID number, their beliefs or a PIN. Please change or remove it.} other {{named} ask for something customers should never have to give a shop — an illness, an ID number, their beliefs or a PIN. Please change or remove them.}}"
+msgstr "{0, plural, one {{named} demande une chose qu’un client ne devrait jamais avoir à donner à un commerce — une maladie, un numéro d’identité, ses convictions ou un code PIN. Modifiez-la ou retirez-la.} other {{named} demandent une chose qu’un client ne devrait jamais avoir à donner à un commerce — une maladie, un numéro d’identité, ses convictions ou un code PIN. Modifiez-les ou retirez-les.}}"
+
 #. placeholder {0}: titles.length
-#: src/pages/choices/ChoicesEditor.tsx:169
+#: src/pages/choices/ChoicesEditor.tsx:178
 msgid "{0, plural, one {{names} is asked only after an answer here.} other {{names} are asked only after an answer here.}}"
 msgstr "{0, plural, one {{names} n’est posée qu’après une réponse ici.} other {{names} ne sont posées qu’après une réponse ici.}}"
 
@@ -149,12 +154,12 @@ msgid "{0, plural, one {{onTheWay} of it is on its way to you, in # payment.} ot
 msgstr "{0, plural, one {{onTheWay} de cette somme est en route vers vous, en # versement.} other {{onTheWay} de cette somme est en route vers vous, en # versements.}}"
 
 #. placeholder {0}: picked.length - room
-#: src/pages/ServicesPage.tsx:1295
+#: src/pages/ServicesPage.tsx:1299
 msgid "{0, plural, one {{PHOTO_LIMIT} photos is the most for a service, so # was left out.} other {{PHOTO_LIMIT} photos is the most for a service, so # were left out.}}"
 msgstr "{0, plural, one {{PHOTO_LIMIT} photos au maximum par service : # photo n’a pas été ajoutée.} other {{PHOTO_LIMIT} photos au maximum par service : # photos n’ont pas été ajoutées.}}"
 
 #. placeholder {0}: group.options.length
-#: src/pages/choices/ChoicesEditor.tsx:731
+#: src/pages/choices/ChoicesEditor.tsx:747
 msgid "{0, plural, one {# answer} other {# answers}}"
 msgstr "{0, plural, one {# réponse} other {# réponses}}"
 
@@ -194,12 +199,12 @@ msgid "{0, plural, one {# person} other {# people}}"
 msgstr "{0, plural, one {# personne} other {# personnes}}"
 
 #. placeholder {0}: service.images.length
-#: src/pages/ServicesPage.tsx:1024
+#: src/pages/ServicesPage.tsx:1028
 msgid "{0, plural, one {# photo} other {# photos}}"
 msgstr "{0, plural, one {# photo} other {# photos}}"
 
 #. placeholder {0}: groups.length
-#: src/pages/ServicesPage.tsx:1605
+#: src/pages/ServicesPage.tsx:1646
 msgid "{0, plural, one {# question customers answer when they book} other {# questions customers answer when they book}}"
 msgstr "{0, plural, one {# question à laquelle les clients répondent en réservant} other {# questions auxquelles les clients répondent en réservant}}"
 
@@ -254,7 +259,7 @@ msgid "{0, plural, one {from # customer} other {from # customers}}"
 msgstr "{0, plural, one {auprès de # client} other {auprès de # clients}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1800
+#: src/pages/ServicesPage.tsx:1841
 msgid "{0, plural, one {Goes live at # branch.} other {Goes live at # branches.}}"
 msgstr "{0, plural, one {Mise en ligne dans # succursale.} other {Mise en ligne dans # succursales.}}"
 
@@ -264,22 +269,22 @@ msgid "{0, plural, one {Photos on # service} other {Photos on # services}}"
 msgstr "{0, plural, one {Photos sur # service} other {Photos sur # services}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1794
+#: src/pages/ServicesPage.tsx:1835
 msgid "{0, plural, one {Ready at # branch — customers see it once you open your shop again.} other {Ready at # branches — customers see it once you open your shop again.}}"
 msgstr "{0, plural, one {Prêt dans # succursale — les clients le verront dès que vous rouvrirez votre établissement.} other {Prêt dans # succursales — les clients le verront dès que vous rouvrirez votre établissement.}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1790
+#: src/pages/ServicesPage.tsx:1831
 msgid "{0, plural, one {Ready at # branch — customers see it once you post your shop.} other {Ready at # branches — customers see it once you post your shop.}}"
 msgstr "{0, plural, one {Prêt dans # succursale — les clients le verront dès que vous publierez votre établissement.} other {Prêt dans # succursales — les clients le verront dès que vous publierez votre établissement.}}"
 
 #. placeholder {0}: offers.length
-#: src/pages/ServicesPage.tsx:1785
+#: src/pages/ServicesPage.tsx:1826
 msgid "{0, plural, one {Ready at # branch — customers see it once your shop is live.} other {Ready at # branches — customers see it once your shop is live.}}"
 msgstr "{0, plural, one {Prêt dans # succursale — les clients le verront dès que votre établissement sera en ligne.} other {Prêt dans # succursales — les clients le verront dès que votre établissement sera en ligne.}}"
 
 #. placeholder {0}: failed.length
-#: src/pages/ServicesPage.tsx:478
+#: src/pages/ServicesPage.tsx:482
 msgid "{0, plural, one {Saved, but # photo change did not go through: {why}. Open Edit on the service to try again.} other {Saved, but # photo changes did not go through: {why}. Open Edit on the service to try again.}}"
 msgstr "{0, plural, one {Enregistré, mais # modification de photo n’a pas abouti : {why}. Ouvrez Modifier sur le service pour réessayer.} other {Enregistré, mais # modifications de photos n’ont pas abouti : {why}. Ouvrez Modifier sur le service pour réessayer.}}"
 
@@ -449,7 +454,7 @@ msgstr "{0} de retard"
 #. placeholder {0}: service.durationMinutes
 #: src/pages/AppointmentsPage.tsx:746
 #: src/pages/OverviewPage.tsx:560
-#: src/pages/ServicesPage.tsx:1035
+#: src/pages/ServicesPage.tsx:1039
 msgid "{0} min"
 msgstr "{0} min"
 
@@ -470,7 +475,7 @@ msgid "{0} of {count}: {1}"
 msgstr "{0} sur {count} : {1}"
 
 #. placeholder {0}: photos.length
-#: src/pages/ServicesPage.tsx:1702
+#: src/pages/ServicesPage.tsx:1743
 msgid "{0} of {PHOTO_LIMIT} · choose the cover with “Make cover”"
 msgstr "{0} sur {PHOTO_LIMIT} · choisissez la couverture avec « Mettre en couverture »"
 
@@ -519,7 +524,7 @@ msgid "{0} unread messages"
 msgstr "Messages non lus : {0}"
 
 #. placeholder {0}: money.format(depositShare(minor))
-#: src/pages/ServicesPage.tsx:1577
+#: src/pages/ServicesPage.tsx:1618
 msgid "{0} up front"
 msgstr "{0} d’acompte"
 
@@ -558,7 +563,7 @@ msgid "{0}% complete"
 msgstr "Complet à {0} %"
 
 #. placeholder {0}: service.depositPercentage
-#: src/pages/ServicesPage.tsx:1039
+#: src/pages/ServicesPage.tsx:1043
 msgid "{0}% deposit"
 msgstr "Acompte de {0} %"
 
@@ -682,11 +687,11 @@ msgstr "{followers, plural, one {Envoyer à # abonné ?} other {Envoyer à # ab
 msgid "{followers, plural, one {Send to # follower} other {Send to # followers}}"
 msgstr "{followers, plural, one {Envoyer à # abonné} other {Envoyer à # abonnés}}"
 
-#: src/pages/choices/ChoicesEditor.tsx:385
+#: src/pages/choices/ChoicesEditor.tsx:394
 msgid "{followUps} was asked only after an answer here, so it will be asked every time."
 msgstr "{followUps} n’était posée qu’après une réponse ici, elle sera donc posée à chaque fois."
 
-#: src/pages/choices/ChoicesEditor.tsx:386
+#: src/pages/choices/ChoicesEditor.tsx:395
 msgid "{followUps} were asked only after an answer here, so they will be asked every time."
 msgstr "{followUps} n’étaient posées qu’après une réponse ici, elles seront donc posées à chaque fois."
 
@@ -789,11 +794,11 @@ msgstr "il y a {minutes} min"
 msgid "{minutes}m ago"
 msgstr "il y a {minutes} min"
 
-#: src/pages/choices/ChoicesEditor.tsx:1233
+#: src/pages/choices/ChoicesEditor.tsx:1327
 msgid "{missing} to answer"
 msgstr "Réponses manquantes : {missing}"
 
-#: src/pages/choices/ChoicesEditor.tsx:892
+#: src/pages/choices/ChoicesEditor.tsx:919
 msgid "{moreSet} set"
 msgstr "Définies : {moreSet}"
 
@@ -819,7 +824,7 @@ msgstr "{name} peut encore recevoir {room} photo(s) ({limit} au maximum), donc {
 msgid "{name} has room for {room} more ({limit} at most), so 1 was left out."
 msgstr "{name} peut encore recevoir {room} photo(s) ({limit} au maximum), donc 1 n’a pas été ajoutée."
 
-#: src/pages/ServicesPage.tsx:626
+#: src/pages/ServicesPage.tsx:630
 msgid "{noPhotos} without photos"
 msgstr "Sans photos : {noPhotos}"
 
@@ -835,11 +840,11 @@ msgstr "{openDays, plural, one {Ouvert # jour par semaine} other {Ouvert # jours
 msgid "{outstanding, plural, one {# document has changed since you agreed.} other {# documents have changed since you agreed.}}"
 msgstr "{outstanding, plural, one {# document a changé depuis que vous l’avez accepté.} other {# documents ont changé depuis que vous les avez acceptés.}}"
 
-#: src/pages/ServicesPage.tsx:1385
+#: src/pages/ServicesPage.tsx:1389
 msgid "{overDescription, plural, one {Shorten the description by # character — the count is at the top right of each box.} other {Shorten the description by # characters — the count is at the top right of each box.}}"
 msgstr "{overDescription, plural, one {Raccourcissez la description de # caractère — le compteur est en haut à droite de chaque champ.} other {Raccourcissez la description de # caractères — le compteur est en haut à droite de chaque champ.}}"
 
-#: src/pages/ServicesPage.tsx:1389
+#: src/pages/ServicesPage.tsx:1393
 msgid "{overInstructions, plural, one {Shorten the special instructions by # character — the count is at the top right of each box.} other {Shorten the special instructions by # characters — the count is at the top right of each box.}}"
 msgstr "{overInstructions, plural, one {Raccourcissez les instructions particulières de # caractère — le compteur est en haut à droite de chaque champ.} other {Raccourcissez les instructions particulières de # caractères — le compteur est en haut à droite de chaque champ.}}"
 
@@ -848,11 +853,11 @@ msgid "{pct}% complete"
 msgstr "Complet à {pct} %"
 
 #. placeholder {0}: niceDay(saleEndsOn)
-#: src/pages/ServicesPage.tsx:1677
+#: src/pages/ServicesPage.tsx:1718
 msgid "{percentOff}% off until the end of {0}. Bookings made before then keep the discounted price."
 msgstr "{percentOff} % de réduction jusqu’à la fin du {0}. Les réservations faites d’ici là gardent le prix réduit."
 
-#: src/pages/ServicesPage.tsx:1678
+#: src/pages/ServicesPage.tsx:1719
 msgid "{percentOff}% off until you end it. Bookings already made keep the price they were made at."
 msgstr "{percentOff} % de réduction jusqu’à ce que vous y mettiez fin. Les réservations déjà faites gardent le prix auquel elles ont été faites."
 
@@ -884,7 +889,7 @@ msgstr "{ratingCount} au total"
 msgid "{rest} and {last}"
 msgstr "{rest} et {last}"
 
-#: src/pages/ServicesPage.tsx:1061
+#: src/pages/ServicesPage.tsx:1065
 msgid "{sale}% off"
 msgstr "{sale} % de réduction"
 
@@ -921,7 +926,7 @@ msgstr "{withOffers, plural, one {# reçoit vos offres en alerte} other {# reço
 msgid "{withOffers} of them said yes to your offers, so they also get it as an alert or email."
 msgstr "{withOffers} d’entre eux ont accepté vos offres : ils le reçoivent donc aussi en notification ou par e-mail."
 
-#: src/pages/ServicesPage.tsx:620
+#: src/pages/ServicesPage.tsx:624
 msgid "{withSale} with a discount"
 msgstr "En promo : {withSale}"
 
@@ -929,36 +934,36 @@ msgstr "En promo : {withSale}"
 msgid "{withYou} with you now, and nobody else expected today."
 msgstr "{withYou} avec vous en ce moment, et personne d’autre n’est attendu aujourd’hui."
 
-#: src/pages/choices/ChoicesEditor.tsx:1024
+#: src/pages/choices/ChoicesEditor.tsx:1118
 msgid "+ Add a short description"
 msgstr "+ Ajouter une courte description"
 
 #. placeholder {0}: o.extraMinutes
 #. placeholder {0}: pick.extraMinutes
 #: src/lib/BookingChoices.tsx:16
-#: src/pages/choices/ChoicesEditor.tsx:630
+#: src/pages/choices/ChoicesEditor.tsx:646
 msgid "+{0} min"
 msgstr "+{0} min"
 
-#: src/pages/choices/ChoicesEditor.tsx:1208
+#: src/pages/choices/ChoicesEditor.tsx:1302
 msgid "+{mins} min"
 msgstr "+{mins} min"
 
-#: src/pages/choices/ChoicesEditor.tsx:634
+#: src/pages/choices/ChoicesEditor.tsx:650
 msgid "+15 min"
 msgstr "+15 min"
 
-#: src/pages/choices/ChoicesEditor.tsx:635
+#: src/pages/choices/ChoicesEditor.tsx:651
 msgid "+30 min"
 msgstr "+30 min"
 
 #. placeholder {0}: notOnSale.length
-#: src/pages/ServicesPage.tsx:631
+#: src/pages/ServicesPage.tsx:635
 msgid "<0/> {0} not on sale"
 msgstr "<0/> {0} non proposés"
 
 #. placeholder {0}: onSale.length
-#: src/pages/ServicesPage.tsx:615
+#: src/pages/ServicesPage.tsx:619
 msgid "<0/> {0} on sale"
 msgstr "<0/> {0} proposés"
 
@@ -1116,7 +1121,7 @@ msgstr "<0>Vous recevez un e-mail</0>À {address}, dès que vous êtes approuvé
 msgid "<0>You post your shop</0>When you are ready — one button on your dashboard. Customers see it from then, not before."
 msgstr "<0>Vous publiez votre établissement</0>Quand vous êtes prêt — un seul bouton sur votre tableau de bord. Les clients le voient à partir de là, pas avant."
 
-#: src/pages/ServicesPage.tsx:1884
+#: src/pages/ServicesPage.tsx:1935
 msgid "★ Cover"
 msgstr "★ Couverture"
 
@@ -1274,7 +1279,7 @@ msgstr "Le pourcentage d’acompte ne peut pas être inférieur aux frais, donc 
 msgid "A description on every service"
 msgstr "Une description pour chaque service"
 
-#: src/pages/ServicesPage.tsx:1423
+#: src/pages/ServicesPage.tsx:1427
 msgid "A discount is a whole number from 1 to 90 percent off — or leave it empty for no discount."
 msgstr "Une réduction est un nombre entier de 1 à 90 % — ou laissez vide pour aucune réduction."
 
@@ -1287,7 +1292,7 @@ msgstr "Un service en promo affiche son badge −% et l’ancien prix barré, et
 msgid "A few words <0>{0}/{CAPTION_MAX}</0>"
 msgstr "Quelques mots <0>{0}/{CAPTION_MAX}</0>"
 
-#: src/pages/ServicesPage.tsx:1379
+#: src/pages/ServicesPage.tsx:1383
 msgid "A little too long"
 msgstr "Un peu trop long"
 
@@ -1295,7 +1300,7 @@ msgstr "Un peu trop long"
 msgid "A manager runs the branches you choose — their bookings, hours, closures and photos. With every branch, they also run the shopfront, the services and prices, and see the money."
 msgstr "Un gérant gère les succursales que vous choisissez — leurs réservations, horaires, fermetures et photos. Avec toutes les succursales, il gère aussi la vitrine, les services et les prix, et voit l’argent."
 
-#: src/pages/ServicesPage.tsx:719
+#: src/pages/ServicesPage.tsx:723
 msgid "A name, how long it takes, a price at each branch — and a photo or two. Customers can book it the moment it is posted."
 msgstr "Un nom, une durée, un prix dans chaque succursale — et une photo ou deux. Les clients peuvent le réserver dès sa publication."
 
@@ -1352,7 +1357,7 @@ msgstr "Une photo et quelques mots pour aujourd’hui. Les clients la voient en 
 msgid "A photo for today, at the top of the app"
 msgstr "Une photo du jour, en haut de l’application"
 
-#: src/pages/ServicesPage.tsx:443
+#: src/pages/ServicesPage.tsx:447
 msgid "a photo was not removed"
 msgstr "une photo n’a pas été retirée"
 
@@ -1360,15 +1365,15 @@ msgstr "une photo n’a pas été retirée"
 msgid "a photo, PDF, Word, Excel, CSV or text file"
 msgstr "une photo, ou un fichier PDF, Word, Excel, CSV ou texte"
 
-#: src/pages/choices/ChoicesEditor.tsx:943
+#: src/pages/choices/ChoicesEditor.tsx:970
 msgid "A private question"
 msgstr "Une question privée"
 
-#: src/pages/choices/ChoicesEditor.tsx:939
+#: src/pages/choices/ChoicesEditor.tsx:966
 msgid "A private question: health or personal"
 msgstr "Une question privée : santé ou vie personnelle"
 
-#: src/pages/choices/ChoicesEditor.tsx:1093
+#: src/pages/choices/ChoicesEditor.tsx:1187
 msgid "A question needs at least one answer"
 msgstr "Une question doit avoir au moins une réponse"
 
@@ -1388,7 +1393,7 @@ msgstr "Une note, sans commentaire."
 msgid "A reply is public"
 msgstr "Une réponse est publique"
 
-#: src/pages/ServicesPage.tsx:725
+#: src/pages/ServicesPage.tsx:729
 msgid "A sale, whenever you want one"
 msgstr "Une promotion, quand vous le voulez"
 
@@ -1424,18 +1429,18 @@ msgstr "Un établissement avec une story reçoit un anneau corail dans l’appli
 msgid "A shop’s page in the customer app: its photos, rating and services."
 msgstr "La page d’un établissement dans l’application client : ses photos, sa note et ses services."
 
-#: src/pages/choices/ChoicesEditor.tsx:1019
+#: src/pages/choices/ChoicesEditor.tsx:1113
 msgid "A short description — e.g. Below the shoulders"
 msgstr "Une courte description — ex. : Sous les épaules"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1015
+#: src/pages/choices/ChoicesEditor.tsx:1109
 msgid "A short description of answer {0}"
 msgstr "Une courte description de la réponse {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:579
-msgid "A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the booking. Allergies and health go in a private question, never in the note."
-msgstr "Un court message pour vous quand ils réservent (250 caractères max.), comme « Je suis gaucher ». Vous le voyez sur la réservation. Les allergies et la santé vont dans une question privée, jamais dans la note."
+#: src/pages/choices/ChoicesEditor.tsx:592
+msgid "A short message to you when they book (up to 250 letters), like “I’m left-handed”. You see it on the booking. Don’t invite private details here — no illness, medicines or ID numbers. Allergies go in a private question."
+msgstr "Un court message pour vous au moment de réserver (jusqu’à 250 caractères), comme « Je suis gaucher ». Vous le voyez sur la réservation. N’invitez pas de détails privés ici — ni maladie, ni médicaments, ni numéros d’identité. Les allergies se posent dans une question privée."
 
 #: src/tour/steps.ts:53
 msgid "A small part of the price, from their phone by mobile money. The rest they pay you at the shop."
@@ -1484,7 +1489,7 @@ msgid "Actions"
 msgstr "Actions"
 
 #: src/onboarding/GoLiveCard.tsx:446
-#: src/pages/choices/ChoicesEditor.tsx:546
+#: src/pages/choices/ChoicesEditor.tsx:559
 #: src/pages/ProfilePage.tsx:516
 msgid "Add"
 msgstr "Ajouter"
@@ -1521,24 +1526,24 @@ msgstr "Ajouter une photo de couverture"
 msgid "Add a logo"
 msgstr "Ajouter un logo"
 
-#: src/pages/ServicesPage.tsx:1015
+#: src/pages/ServicesPage.tsx:1019
 msgid "Add a photo"
 msgstr "Ajouter une photo"
 
-#: src/pages/choices/ChoicesEditor.tsx:643
+#: src/pages/choices/ChoicesEditor.tsx:659
 msgid "Add a question — a ready-made one below, or your own"
 msgstr "Ajoutez une question — une toute prête ci-dessous, ou la vôtre"
 
 #: src/ads/todaySlides.ts:159
 #: src/pages/OverviewPage.tsx:276
-#: src/pages/ServicesPage.tsx:597
-#: src/pages/ServicesPage.tsx:732
-#: src/pages/ServicesPage.tsx:813
+#: src/pages/ServicesPage.tsx:601
+#: src/pages/ServicesPage.tsx:736
+#: src/pages/ServicesPage.tsx:817
 #: src/shell/CommandPalette.tsx:77
 msgid "Add a service"
 msgstr "Ajouter un service"
 
-#: src/pages/choices/ChoicesEditor.tsx:884
+#: src/pages/choices/ChoicesEditor.tsx:911
 msgid "Add an answer"
 msgstr "Ajouter une réponse"
 
@@ -1550,7 +1555,7 @@ msgstr "Ajouter un autre fichier"
 msgid "Add another kind…"
 msgstr "Ajouter un autre type…"
 
-#: src/pages/choices/ChoicesEditor.tsx:454
+#: src/pages/choices/ChoicesEditor.tsx:467
 msgid "Add another question"
 msgstr "Ajouter une autre question"
 
@@ -1571,7 +1576,7 @@ msgstr "Ajouter plus tard"
 msgid "Add it now"
 msgstr "Ajouter maintenant"
 
-#: src/pages/ServicesPage.tsx:1745
+#: src/pages/ServicesPage.tsx:1786
 msgid "Add more photos"
 msgstr "Ajouter d’autres photos"
 
@@ -1587,14 +1592,14 @@ msgstr "Ajoutez-en d’autres, avec photos et descriptions, dans <0>Services</0>
 msgid "Add one — until then there is nothing for a customer to book and nothing to set hours for."
 msgstr "Ajoutez-en une — d’ici là, il n’y a rien à réserver pour un client ni d’horaires à définir."
 
-#: src/pages/choices/ChoicesEditor.tsx:464
+#: src/pages/choices/ChoicesEditor.tsx:477
 msgid "Add one in a tap, then set your prices. You can change any of the words."
 msgstr "Ajoutez-en une en un geste, puis fixez vos prix. Vous pouvez modifier tous les mots."
 
 #: src/ads/guide.ts:126
 #: src/onboarding/GoLiveCard.tsx:136
 #: src/pages/ProfilePage.tsx:719
-#: src/pages/ServicesPage.tsx:1745
+#: src/pages/ServicesPage.tsx:1786
 msgid "Add photos"
 msgstr "Ajouter des photos"
 
@@ -1619,11 +1624,11 @@ msgstr "Ajoutez le lieu où vous travaillez"
 msgid "Add this break"
 msgstr "Ajouter cette pause"
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Add this service"
 msgstr "Ajouter ce service"
 
-#: src/pages/choices/ChoicesEditor.tsx:454
+#: src/pages/choices/ChoicesEditor.tsx:467
 msgid "Add your first question"
 msgstr "Ajoutez votre première question"
 
@@ -1631,12 +1636,12 @@ msgstr "Ajoutez votre première question"
 msgid "Add your logo"
 msgstr "Ajoutez votre logo"
 
-#: src/pages/choices/ChoicesEditor.tsx:502
+#: src/pages/choices/ChoicesEditor.tsx:515
 msgid "Added"
 msgstr "Ajoutée"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1041
+#: src/pages/choices/ChoicesEditor.tsx:1135
 msgid "Added to the price for answer {0}"
 msgstr "Ajouté au prix pour la réponse {0}"
 
@@ -1657,15 +1662,15 @@ msgstr "La recherche d’adresse n’est pas disponible pour le moment. Saisisse
 msgid "Address, map pin, hours — then customers can book"
 msgstr "Adresse, repère sur la carte, horaires — et les clients peuvent réserver"
 
-#: src/pages/choices/ChoicesEditor.tsx:523
+#: src/pages/choices/ChoicesEditor.tsx:536
 msgid "Adds “{parentName}” too — it is asked after an answer there."
 msgstr "Ajoute aussi « {parentName} » — elle est posée après une réponse à celle-ci."
 
-#: src/pages/choices/ChoicesEditor.tsx:1056
+#: src/pages/choices/ChoicesEditor.tsx:1150
 msgid "Adds time"
 msgstr "Ajoute du temps"
 
-#: src/pages/choices/ChoicesEditor.tsx:1031
+#: src/pages/choices/ChoicesEditor.tsx:1125
 msgid "Adds to the price"
 msgstr "S’ajoute au prix"
 
@@ -1674,7 +1679,7 @@ msgid "Adverts hidden until you next sign in."
 msgstr "Annonces masquées jusqu’à votre prochaine connexion."
 
 #. placeholder {0}: parentOption.label
-#: src/pages/choices/ChoicesEditor.tsx:774
+#: src/pages/choices/ChoicesEditor.tsx:800
 msgid "After “{0}”"
 msgstr "Après « {0} »"
 
@@ -1770,7 +1775,7 @@ msgstr "Toutes les succursales"
 msgid "All caught up"
 msgstr "Vous êtes à jour"
 
-#: src/pages/ServicesPage.tsx:944
+#: src/pages/ServicesPage.tsx:948
 msgid "All changes saved"
 msgstr "Toutes les modifications sont enregistrées"
 
@@ -1811,7 +1816,7 @@ msgstr "Déjà inclus dans le prix total ci-dessous."
 msgid "Also"
 msgstr "Aussi"
 
-#: src/pages/choices/ChoicesEditor.tsx:574
+#: src/pages/choices/ChoicesEditor.tsx:587
 msgid "Also for this service"
 msgstr "Aussi pour ce service"
 
@@ -1827,7 +1832,11 @@ msgstr "Un administrateur a masqué un avis. Il ne compte plus dans votre note."
 msgid "An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079)."
 msgstr "Un numéro Airtel. Pour l’instant, les paiements sont envoyés uniquement par MTN MoMo, il ne pourrait donc pas les recevoir — utilisez un numéro MTN (078 ou 079)."
 
-#: src/pages/choices/ChoicesEditor.tsx:648
+#: src/pages/choices/ChoicesEditor.tsx:1013
+msgid "An allergy, a pregnancy or an injury can matter for safety. Ask it only when it changes how you work, and as a private question: only you see the answers, and they are deleted 30 days after the visit."
+msgstr "Une allergie, une grossesse ou une blessure peut compter pour la sécurité. Ne la demandez que si elle change votre façon de travailler, et dans une question privée : vous seul voyez les réponses, et elles sont supprimées 30 jours après la visite."
+
+#: src/pages/choices/ChoicesEditor.tsx:664
 msgid "An example of what customers see"
 msgstr "Un exemple de ce que voient les clients"
 
@@ -1858,7 +1867,7 @@ msgstr "Et si vous en avez un"
 msgid "Anonymous"
 msgstr "Anonyme"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "Another answer"
 msgstr "Autre réponse"
 
@@ -1870,12 +1879,12 @@ msgstr "Un autre établissement dans une autre rue, un autre district ou une aut
 msgid "Another street, district or town — each branch gets its own page, hours, photos and prices, and customers near it find it on its own."
 msgstr "Une autre rue, un autre district ou une autre ville — chaque succursale a sa propre page, ses horaires, ses photos et ses prix, et les clients proches la trouvent d’eux-mêmes."
 
-#: src/pages/choices/ChoicesEditor.tsx:1004
+#: src/pages/choices/ChoicesEditor.tsx:1098
 msgid "Answer "
 msgstr "Réponse "
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1006
+#: src/pages/choices/ChoicesEditor.tsx:1100
 msgid "Answer {0}"
 msgstr "Réponse {0}"
 
@@ -1883,7 +1892,7 @@ msgstr "Réponse {0}"
 msgid "Answer them "
 msgstr "Y répondre "
 
-#: src/pages/choices/ChoicesEditor.tsx:833
+#: src/pages/choices/ChoicesEditor.tsx:860
 msgid "Any number"
 msgstr "Sans limite"
 
@@ -1895,7 +1904,7 @@ msgstr "Tout ce qui se dit sur une réservation"
 msgid "Anything that shows the problem"
 msgstr "Tout ce qui montre le problème"
 
-#: src/pages/choices/ChoicesEditor.tsx:596
+#: src/pages/choices/ChoicesEditor.tsx:610
 #: src/shopfront/CustomerPhone.tsx:562
 msgid "Anything the shop should know?"
 msgstr "Quelque chose que l’établissement doit savoir ?"
@@ -1958,17 +1967,21 @@ msgstr "Demander de l’aide"
 msgid "Ask for their code"
 msgstr "Demandez son code"
 
-#: src/pages/choices/ChoicesEditor.tsx:782
+#: src/pages/choices/ChoicesEditor.tsx:808
 msgid "Ask it earlier"
 msgstr "Poser plus tôt"
 
-#: src/pages/choices/ChoicesEditor.tsx:783
+#: src/pages/choices/ChoicesEditor.tsx:809
 msgid "Ask it later"
 msgstr "Poser plus tard"
 
-#: src/pages/choices/ChoicesEditor.tsx:930
+#: src/pages/choices/ChoicesEditor.tsx:957
 msgid "Ask it only after a certain answer above — like “Colour?” only after “Dye”."
 msgstr "Ne la poser qu’après une certaine réponse plus haut — comme « Couleur ? » seulement après « Coloration »."
+
+#: src/pages/choices/ChoicesEditor.tsx:1005
+msgid "Ask only what you need to serve them"
+msgstr "Ne demandez que ce qu’il faut pour les servir"
 
 #: src/components/Allowed.tsx:24
 msgid "Ask the owner to invite someone, or to change who works where."
@@ -1991,7 +2004,7 @@ msgid "Ask us anything, any time. This tour is in Help too, whenever you want it
 msgstr "Posez-nous vos questions, à tout moment. Cette visite guidée est aussi dans Aide, quand vous voulez la revoir."
 
 #. placeholder {0}: parentOption.label
-#: src/pages/choices/ChoicesEditor.tsx:772
+#: src/pages/choices/ChoicesEditor.tsx:798
 msgid "Asked only when “{0}” is picked"
 msgstr "Posée uniquement si « {0} » est choisi"
 
@@ -2009,7 +2022,7 @@ msgstr "Assomption"
 msgid "at {0} · {1}"
 msgstr "à {0} · {1}"
 
-#: src/pages/choices/ChoicesEditor.tsx:827
+#: src/pages/choices/ChoicesEditor.tsx:854
 msgid "At most"
 msgstr "Au maximum"
 
@@ -2379,7 +2392,7 @@ msgstr "café"
 msgid "Calendar"
 msgstr "Calendrier"
 
-#: src/pages/choices/ChoicesEditor.tsx:730
+#: src/pages/choices/ChoicesEditor.tsx:746
 msgid "can skip"
 msgstr "facultative"
 
@@ -2392,7 +2405,7 @@ msgstr "Introuvable ? Collez un lien de carte ou utilisez votre position"
 #: src/pages/HoursPage.tsx:634
 #: src/pages/PayoutsPage.tsx:477
 #: src/pages/ReviewsPage.tsx:598
-#: src/pages/ServicesPage.tsx:1818
+#: src/pages/ServicesPage.tsx:1859
 #: src/pages/StaffPage.tsx:314
 #: src/pages/SupportPage.tsx:444
 #: src/session/ConfirmItsYou.tsx:145
@@ -2451,11 +2464,11 @@ msgstr "Lavage auto"
 msgid "carousel"
 msgstr "carrousel"
 
-#: src/pages/ServicesPage.tsx:696
+#: src/pages/ServicesPage.tsx:700
 msgid "Carry on "
 msgstr "Continuer "
 
-#: src/pages/ServicesPage.tsx:812
+#: src/pages/ServicesPage.tsx:816
 msgid "Carry on with your service"
 msgstr "Continuer votre service"
 
@@ -2486,6 +2499,10 @@ msgstr "Modifier la photo"
 #: src/pages/PayoutsPage.tsx:484
 msgid "Change the number"
 msgstr "Modifier le numéro"
+
+#: src/pages/ServicesPage.tsx:1450
+msgid "Change them"
+msgstr "Les modifier"
 
 #: src/pages/ClosuresPage.tsx:630
 msgid "Change this day"
@@ -2562,7 +2579,7 @@ msgstr "Enregistrer l’arrivée sans le code"
 msgid "Check someone in"
 msgstr "Enregistrer une arrivée"
 
-#: src/pages/ServicesPage.tsx:1422
+#: src/pages/ServicesPage.tsx:1426
 msgid "Check the discount"
 msgstr "Vérifiez la réduction"
 
@@ -2649,8 +2666,8 @@ msgstr "Choisissez tout ce qui correspond, jusqu’à quatre — un établisseme
 msgid "Choose an advert"
 msgstr "Choisir une annonce"
 
-#: src/pages/choices/ChoicesEditor.tsx:655
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:671
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Choose any"
 msgstr "Plusieurs choix"
 
@@ -2675,7 +2692,7 @@ msgid "Choose the days you open."
 msgstr "Choisissez vos jours d’ouverture."
 
 #. placeholder {0}: g.maxPicks
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Choose up to {0}"
 msgstr "Jusqu’à {0} choix"
 
@@ -2756,7 +2773,7 @@ msgstr "Fermer {0} ?"
 msgid "Close a day, or block a break"
 msgstr "Fermer un jour ou bloquer une pause"
 
-#: src/pages/ServicesPage.tsx:321
+#: src/pages/ServicesPage.tsx:325
 msgid "Close anyway"
 msgstr "Fermer quand même"
 
@@ -2790,12 +2807,12 @@ msgid "Close this notice"
 msgstr "Fermer ce message"
 
 #: src/pages/AppointmentsPage.tsx:1082
-#: src/pages/ServicesPage.tsx:914
+#: src/pages/ServicesPage.tsx:918
 #: src/ui/Panel.tsx:48
 msgid "Close this panel"
 msgstr "Fermer ce panneau"
 
-#: src/pages/ServicesPage.tsx:317
+#: src/pages/ServicesPage.tsx:321
 msgid "Close without your last changes?"
 msgstr "Fermer sans vos dernières modifications ?"
 
@@ -2874,7 +2891,7 @@ msgstr "À venir et passées. Ouvrez-en une pour voir ce que le client a choisi 
 msgid "Coming up at {0}"
 msgstr "À venir à {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:605
+#: src/pages/choices/ChoicesEditor.tsx:621
 msgid "Common for shops like yours"
 msgstr "Courant pour les établissements comme le vôtre"
 
@@ -3084,7 +3101,7 @@ msgstr "Les clients peuvent maintenant trouver <0>{name}</0> et réserver. Les n
 msgid "Customers can review a booking once you mark it done. Their stars and words show here, with your reply under each — for everyone to see."
 msgstr "Les clients peuvent laisser un avis une fois la réservation marquée terminée. Leurs étoiles et leurs mots apparaissent ici, avec votre réponse sous chacun — visibles de tous."
 
-#: src/pages/choices/ChoicesEditor.tsx:577
+#: src/pages/choices/ChoicesEditor.tsx:590
 msgid "Customers can write a note"
 msgstr "Les clients peuvent écrire une note"
 
@@ -3164,8 +3181,8 @@ msgstr "Les clients s’abonnent depuis votre page dans l’application, et apr�
 msgid "Customers may arrive late or change plans."
 msgstr "Les clients pourraient arriver en retard ou changer leurs plans."
 
-#: src/pages/choices/ChoicesEditor.tsx:843
-#: src/pages/choices/ChoicesEditor.tsx:845
+#: src/pages/choices/ChoicesEditor.tsx:870
+#: src/pages/choices/ChoicesEditor.tsx:872
 msgid "Customers must answer"
 msgstr "Les clients doivent répondre"
 
@@ -3179,7 +3196,7 @@ msgstr "Les clients à proximité vous trouveront ici."
 
 #. placeholder {0}: money.format(salePrice(list, percentOff))
 #. placeholder {1}: money.format(list)
-#: src/pages/ServicesPage.tsx:1667
+#: src/pages/ServicesPage.tsx:1708
 msgid "customers pay <0>{0}</0> instead of <1>{1}</1>"
 msgstr "les clients paient <0>{0}</0> au lieu de <1>{1}</1>"
 
@@ -3207,11 +3224,11 @@ msgstr "Les clients voient chaque succursale séparément : les gens à proximi
 msgid "Customers see nothing until we approve your shop and you post it."
 msgstr "Les clients ne voient rien tant que nous n’avons pas approuvé votre établissement et que vous ne l’avez pas publié."
 
-#: src/pages/ServicesPage.tsx:1706
+#: src/pages/ServicesPage.tsx:1747
 msgid "Customers see these when they pick this service. Add them now and they go up with it; you can change them later from Edit."
 msgstr "Les clients les voient en choisissant ce service. Ajoutez-les maintenant et ils seront publiés avec lui ; vous pourrez les modifier plus tard via Modifier."
 
-#: src/pages/ServicesPage.tsx:1707
+#: src/pages/ServicesPage.tsx:1748
 msgid "Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it."
 msgstr "Les clients les voient en choisissant ce service. Les changements ici attendent “Enregistrer les modifications” — rien ne change dans l’application tant que vous n’appuyez pas dessus."
 
@@ -3227,7 +3244,7 @@ msgstr "Les clients voient votre établissement dès que vous le publiez."
 msgid "Customers see your stories once your shop is live. You can post them now — they show as soon as it is."
 msgstr "Les clients voient vos stories dès que votre établissement est en ligne. Vous pouvez les publier maintenant — elles s’afficheront dès qu’il le sera."
 
-#: src/pages/choices/ChoicesEditor.tsx:380
+#: src/pages/choices/ChoicesEditor.tsx:389
 msgid "Customers stop being asked it once you save. Bookings already made keep the answers they had."
 msgstr "La question n’est plus posée aux clients dès que vous enregistrez. Les réservations déjà faites gardent leurs réponses."
 
@@ -3255,7 +3272,7 @@ msgstr "Les clients qui suivent votre établissement voient vos nouveaux service
 msgid "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 msgstr "La distance des clients est mesurée depuis ce repère. Collez le lien Google Maps de l’établissement, ou appuyez sur le bouton si vous y êtes en ce moment."
 
-#: src/pages/choices/ChoicesEditor.tsx:724
+#: src/pages/choices/ChoicesEditor.tsx:740
 msgid "Cut"
 msgstr "Coupe"
 
@@ -3317,7 +3334,7 @@ msgstr "acompte"
 msgid "Deposit"
 msgstr "Acompte"
 
-#: src/pages/ServicesPage.tsx:1537
+#: src/pages/ServicesPage.tsx:1578
 msgid "Deposit %"
 msgstr "Acompte %"
 
@@ -3397,8 +3414,8 @@ msgstr "Les acomptes reçus, et ce qui est en route vers vous"
 msgid "Deposits to MTN MoMo"
 msgstr "Acomptes sur MTN MoMo"
 
-#: src/pages/ServicesPage.tsx:996
-#: src/pages/ServicesPage.tsx:1487
+#: src/pages/ServicesPage.tsx:1000
+#: src/pages/ServicesPage.tsx:1518
 msgid "Description"
 msgstr "Description"
 
@@ -3444,12 +3461,12 @@ msgstr "Chiffre {0}"
 msgid "Dinner to collect"
 msgstr "Dîner à emporter"
 
-#: src/pages/ServicesPage.tsx:687
-#: src/pages/ServicesPage.tsx:694
+#: src/pages/ServicesPage.tsx:691
+#: src/pages/ServicesPage.tsx:698
 msgid "Discard"
 msgstr "Supprimer"
 
-#: src/pages/ServicesPage.tsx:1627
+#: src/pages/ServicesPage.tsx:1668
 msgid "Discount"
 msgstr "Réduction"
 
@@ -3461,6 +3478,10 @@ msgstr "Réductions"
 #: src/components/NewBranchForm.tsx:180
 msgid "District"
 msgstr "District"
+
+#: src/pages/choices/ChoicesEditor.tsx:794
+msgid "Do not ask this"
+msgstr "Ne demandez pas cela"
 
 #: src/onboarding/Welcome.tsx:1223
 msgid "Dog grooming"
@@ -3499,12 +3520,12 @@ msgid "Download the picture"
 msgstr "Télécharger l’image"
 
 #. placeholder {0}: at(look.at)
-#: src/pages/ServicesPage.tsx:938
+#: src/pages/ServicesPage.tsx:942
 msgid "Draft saved · {0}"
 msgstr "Brouillon enregistré · {0}"
 
 #. placeholder {0}: drafts.data!.length
-#: src/pages/ServicesPage.tsx:654
+#: src/pages/ServicesPage.tsx:658
 msgid "Drafts<0>{0}</0><1>Saved as you typed — customers never see a draft</1>"
 msgstr "Brouillons<0>{0}</0><1>Enregistrés pendant la saisie — les clients ne voient jamais un brouillon</1>"
 
@@ -3524,7 +3545,7 @@ msgstr "auto-école"
 msgid "Drop a photo here, or press “Add a cover photo”"
 msgstr "Déposez une photo ici, ou appuyez sur « Ajouter une photo de couverture »"
 
-#: src/pages/ServicesPage.tsx:1713
+#: src/pages/ServicesPage.tsx:1754
 msgid "Drop photos for this service"
 msgstr "Déposez les photos de ce service"
 
@@ -3595,7 +3616,7 @@ msgstr "C’est l’heure"
 msgid "e.g. {0}"
 msgstr "ex. : {0}"
 
-#: src/pages/ServicesPage.tsx:1638
+#: src/pages/ServicesPage.tsx:1679
 msgid "e.g. 20"
 msgstr "ex. : 20"
 
@@ -3627,7 +3648,7 @@ msgstr "ex. : Visite d’une plantation de café"
 msgid "e.g. Cooking at your table"
 msgstr "ex. : Cuisine à votre table"
 
-#: src/pages/choices/ChoicesEditor.tsx:905
+#: src/pages/choices/ChoicesEditor.tsx:932
 msgid "e.g. Cut"
 msgstr "ex. : Coupe"
 
@@ -3639,7 +3660,7 @@ msgstr "ex. : Rédaction de CV"
 msgid "e.g. Drone filming"
 msgstr "ex. : Tournage par drone"
 
-#: src/pages/ServicesPage.tsx:1466
+#: src/pages/ServicesPage.tsx:1497
 msgid "e.g. Haircut"
 msgstr "ex. : Coupe de cheveux"
 
@@ -3659,7 +3680,7 @@ msgstr "ex. : KG 11 Ave, Kimironko"
 msgid "e.g. Kigali Barbers"
 msgstr "ex. : Kigali Barbers"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "e.g. Long"
 msgstr "ex. : Long"
 
@@ -3679,7 +3700,7 @@ msgstr "ex. : Soirées poésie"
 msgid "e.g. Reflexology"
 msgstr "ex. : Réflexologie"
 
-#: src/pages/choices/ChoicesEditor.tsx:1010
+#: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "e.g. Short"
 msgstr "ex. : Court"
 
@@ -3687,7 +3708,7 @@ msgstr "ex. : Court"
 msgid "e.g. Solar panel fitting"
 msgstr "ex. : Pose de panneaux solaires"
 
-#: src/pages/choices/ChoicesEditor.tsx:798
+#: src/pages/choices/ChoicesEditor.tsx:824
 msgid "e.g. Which cut would you like?"
 msgstr "ex. : Quelle coupe souhaitez-vous ?"
 
@@ -3715,7 +3736,7 @@ msgstr "Chacune a sa page, ses horaires et ses prix"
 msgid "Each one"
 msgstr "Une par une"
 
-#: src/pages/ServicesPage.tsx:586
+#: src/pages/ServicesPage.tsx:590
 msgid "Each service is offered at the branches you choose, at <0>that branch's price</0> — a city-centre shop can charge more than a quieter one for the same work. The deposit percentage is what a customer pays up front to hold the slot; the rest is settled with you directly."
 msgstr "Chaque service est proposé dans les succursales que vous choisissez, au <0>prix de cette succursale</0> — un établissement du centre-ville peut facturer plus qu’un autre plus calme pour le même travail. Le pourcentage d’acompte est ce que le client paie à l’avance pour retenir le créneau ; le reste se règle directement avec vous."
 
@@ -3747,10 +3768,10 @@ msgstr "Gagné, mais pas encore sur votre mobile money."
 msgid "Easter Monday"
 msgstr "Lundi de Pâques"
 
-#: src/pages/choices/ChoicesEditor.tsx:530
+#: src/pages/choices/ChoicesEditor.tsx:543
 #: src/pages/ReviewsPage.tsx:527
-#: src/pages/ServicesPage.tsx:1119
-#: src/pages/ServicesPage.tsx:1133
+#: src/pages/ServicesPage.tsx:1123
+#: src/pages/ServicesPage.tsx:1137
 msgid "Edit"
 msgstr "Modifier"
 
@@ -3759,7 +3780,7 @@ msgstr "Modifier"
 msgid "Edit details"
 msgstr "Modifier les détails"
 
-#: src/pages/ServicesPage.tsx:813
+#: src/pages/ServicesPage.tsx:817
 msgid "Edit service"
 msgstr "Modifier le service"
 
@@ -3792,7 +3813,7 @@ msgstr "E-mail, service, succursale ou n°"
 msgid "End"
 msgstr "Fin"
 
-#: src/pages/ServicesPage.tsx:1693
+#: src/pages/ServicesPage.tsx:1734
 msgid "End the discount"
 msgstr "Mettre fin à la réduction"
 
@@ -3886,7 +3907,7 @@ msgstr "Chaque avis a une réponse"
 msgid "Every service until Sunday. Book in the app — the discount is already applied."
 msgstr "Tous les services jusqu’à dimanche. Réservez dans l’application — la réduction est déjà appliquée."
 
-#: src/pages/choices/ChoicesEditor.tsx:925
+#: src/pages/choices/ChoicesEditor.tsx:952
 msgid "Every time"
 msgstr "Toujours"
 
@@ -3930,7 +3951,7 @@ msgstr "Partout"
 msgid "Exam revision"
 msgstr "Révisions d’examen"
 
-#: src/pages/choices/ChoicesEditor.tsx:651
+#: src/pages/choices/ChoicesEditor.tsx:667
 msgid "Example — what customers see"
 msgstr "Exemple — ce que voient les clients"
 
@@ -3953,7 +3974,7 @@ msgid "Exporting…"
 msgstr "Exportation…"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1065
+#: src/pages/choices/ChoicesEditor.tsx:1159
 msgid "Extra minutes for answer {0}"
 msgstr "Minutes en plus pour la réponse {0}"
 
@@ -4020,7 +4041,7 @@ msgstr "Terminer la configuration"
 msgid "Finish setting up your shop"
 msgstr "Terminez la configuration de votre établissement"
 
-#: src/pages/ServicesPage.tsx:1413
+#: src/pages/ServicesPage.tsx:1417
 msgid "Finish your questions"
 msgstr "Terminez vos questions"
 
@@ -4103,7 +4124,7 @@ msgctxt "search words"
 msgid "followers offers message customers blast promotion marketing send"
 msgstr "abonnés offres message clients diffusion promotion marketing publicité envoyer"
 
-#: src/pages/choices/ChoicesEditor.tsx:944
+#: src/pages/choices/ChoicesEditor.tsx:971
 msgid "For allergies, health or anything personal."
 msgstr "Pour les allergies, la santé ou tout ce qui est personnel."
 
@@ -4132,7 +4153,7 @@ msgstr "Pour l’instant, le code ouvre l’application client dans Expo Go sur 
 msgid "For testing"
 msgstr "Pour les tests"
 
-#: src/pages/choices/ChoicesEditor.tsx:608
+#: src/pages/choices/ChoicesEditor.tsx:624
 msgid "For work you can only price after seeing it, like a repair. Customers see “from” before your price, and the deposit is taken on that price."
 msgstr "Pour un travail dont vous ne fixez le prix qu’après l’avoir vu, comme une réparation. Les clients voient « dès » avant votre prix, et l’acompte est calculé sur ce prix."
 
@@ -4189,7 +4210,7 @@ msgstr "Disponible cet après-midi"
 msgid "Free this afternoon — book now"
 msgstr "Disponible cet après-midi — réservez maintenant"
 
-#: src/pages/choices/ChoicesEditor.tsx:1221
+#: src/pages/choices/ChoicesEditor.tsx:1315
 #: src/pages/ClosuresPage.tsx:587
 #: src/pages/NotificationSettingsPage.tsx:148
 msgid "From"
@@ -4206,7 +4227,7 @@ msgid "from {0} reviews"
 msgstr "sur {0} avis"
 
 #. placeholder {0}: money.format(depositMinor)
-#: src/pages/ServicesPage.tsx:1056
+#: src/pages/ServicesPage.tsx:1060
 msgid "from {0} up front"
 msgstr "acompte dès {0}"
 
@@ -4308,11 +4329,11 @@ msgstr "Versements "
 msgid "Getting your shop live"
 msgstr "Mettre votre établissement en ligne"
 
-#: src/pages/choices/ChoicesEditor.tsx:1237
+#: src/pages/choices/ChoicesEditor.tsx:1331
 msgid "Give a price at a branch to see the full total."
 msgstr "Indiquez un prix dans une succursale pour voir le total complet."
 
-#: src/pages/ServicesPage.tsx:1403
+#: src/pages/ServicesPage.tsx:1407
 msgid "Give a price at a least one branch, or nobody can book it."
 msgstr "Indiquez un prix dans au moins une succursale, sinon personne ne peut le réserver."
 
@@ -4325,7 +4346,7 @@ msgstr "Appliquez à n’importe quel service une réduction de 1 % à 90 %, dan
 msgid "Give it a discount"
 msgstr "Offrez-lui une réduction"
 
-#: src/pages/ServicesPage.tsx:1402
+#: src/pages/ServicesPage.tsx:1406
 msgid "Give it a price"
 msgstr "Indiquez un prix"
 
@@ -4361,7 +4382,7 @@ msgstr "Inclus dans le prochain versement."
 
 #. placeholder {0}: offers.length
 #. placeholder {1}: photos.length
-#: src/pages/ServicesPage.tsx:1799
+#: src/pages/ServicesPage.tsx:1840
 msgid "Goes live at {0, plural, one {# branch} other {# branches}} with {1, plural, one {# photo} other {# photos}}."
 msgstr "En ligne dans {0, plural, one {# succursale} other {# succursales}} avec {1, plural, one {# photo} other {# photos}}."
 
@@ -4465,6 +4486,10 @@ msgstr "Vous avez des établissements à plusieurs endroits ? Ajoutez chacun co
 #: src/onboarding/Welcome.tsx:1208
 msgid "Health check"
 msgstr "Bilan de santé"
+
+#: src/pages/choices/ChoicesEditor.tsx:1041
+msgid "Health details don’t belong in the note box — it is not private. Ask about an allergy, a pregnancy or an injury in a private question instead."
+msgstr "Les détails de santé n’ont pas leur place dans la note — elle n’est pas privée. Demandez plutôt une allergie, une grossesse ou une blessure dans une question privée."
 
 #: src/pages/NotificationSettingsPage.tsx:327
 msgid "Hear about a new booking the moment it comes in, even with the app in another tab."
@@ -4626,19 +4651,19 @@ msgstr "Comment ça marche · {0}"
 msgid "How long does it take?"
 msgstr "Combien de temps cela prend-il ?"
 
-#: src/pages/choices/ChoicesEditor.tsx:654
+#: src/pages/choices/ChoicesEditor.tsx:670
 msgid "How long is your hair?"
 msgstr "Quelle est la longueur de vos cheveux ?"
 
-#: src/pages/ServicesPage.tsx:1519
+#: src/pages/ServicesPage.tsx:1560
 msgid "How long it takes, and what it costs at each branch"
 msgstr "Sa durée, et son prix dans chaque succursale"
 
-#: src/pages/choices/ChoicesEditor.tsx:803
+#: src/pages/choices/ChoicesEditor.tsx:830
 msgid "How many answers can they pick?"
 msgstr "Combien de réponses peuvent-ils choisir ?"
 
-#: src/pages/choices/ChoicesEditor.tsx:804
+#: src/pages/choices/ChoicesEditor.tsx:831
 msgid "How many answers they can pick"
 msgstr "Nombre de réponses à choisir"
 
@@ -4646,7 +4671,7 @@ msgstr "Nombre de réponses à choisir"
 msgid "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 msgstr "Le nombre de clients que cette succursale peut accueillir en même temps — le même pour tous les services ici. Une réservation pour 3 personnes prend 3 places à cette heure-là ; quand toutes les places sont prises, les clients voient ce créneau comme réservé. C’est aussi le nombre maximal de personnes pour une seule réservation. Le réduire n’annule pas les réservations déjà faites."
 
-#: src/pages/ServicesPage.tsx:1589
+#: src/pages/ServicesPage.tsx:1630
 msgid "How many people can book the same time is set for each branch, under <0>Branches & hours</0> → “People served at once”."
 msgstr "Le nombre de personnes pouvant réserver le même créneau se règle pour chaque succursale, dans <0>Succursales et horaires</0> → « Personnes servies à la fois »."
 
@@ -4768,7 +4793,7 @@ msgstr "Y compris celles que vous ouvrirez plus tard"
 msgid "Independence Day"
 msgstr "Fête de l’Indépendance"
 
-#: src/pages/ServicesPage.tsx:997
+#: src/pages/ServicesPage.tsx:1001
 msgid "Instructions"
 msgstr "Instructions"
 
@@ -4832,7 +4857,7 @@ msgstr "Ce n’est pas de votre fait. Réessayez — et si cela continue, dites-
 msgid "It lands in your bookings"
 msgstr "Elle arrive dans vos réservations"
 
-#: src/pages/ServicesPage.tsx:543
+#: src/pages/ServicesPage.tsx:547
 msgid "It moves to “Not on sale”, keeps its prices, and you can put it back at any time. Appointments already made are unaffected."
 msgstr "Il passe dans « Hors vente », garde ses prix, et vous pouvez le remettre à tout moment. Les réservations déjà prises ne changent pas."
 
@@ -4856,11 +4881,11 @@ msgstr "Elle attend quelques jours après la visite, puis part dans le versement
 msgid "Italic"
 msgstr "Italique"
 
-#: src/pages/choices/ChoicesEditor.tsx:506
+#: src/pages/choices/ChoicesEditor.tsx:519
 msgid "Its answers"
 msgstr "Ses réponses"
 
-#: src/pages/ServicesPage.tsx:723
+#: src/pages/ServicesPage.tsx:727
 msgid "Its own price at each branch"
 msgstr "Son propre prix dans chaque succursale"
 
@@ -4888,7 +4913,7 @@ msgstr "Nouveau · {0}"
 msgid "just now"
 msgstr "à l’instant"
 
-#: src/pages/choices/ChoicesEditor.tsx:818
+#: src/pages/choices/ChoicesEditor.tsx:845
 msgid "Just one"
 msgstr "Une seule"
 
@@ -4896,17 +4921,17 @@ msgstr "Une seule"
 msgid "Just one to start. You can add the rest later, with photos."
 msgstr "Un seul pour commencer. Vous pourrez ajouter les autres plus tard, avec des photos."
 
-#: src/pages/ServicesPage.tsx:308
+#: src/pages/ServicesPage.tsx:312
 msgid "Keep editing"
 msgstr "Continuer à modifier"
 
 #: src/pages/AppointmentsPage.tsx:338
-#: src/pages/choices/ChoicesEditor.tsx:394
+#: src/pages/choices/ChoicesEditor.tsx:403
 #: src/pages/SecurityPage.tsx:38
 msgid "Keep it"
 msgstr "La garder"
 
-#: src/pages/ServicesPage.tsx:552
+#: src/pages/ServicesPage.tsx:556
 msgid "Keep it on sale"
 msgstr "Le garder en vente"
 
@@ -4915,7 +4940,7 @@ msgstr "Le garder en vente"
 msgid "Keep it open"
 msgstr "Laisser ouvert"
 
-#: src/pages/ServicesPage.tsx:1810
+#: src/pages/ServicesPage.tsx:1851
 msgid "Keep it under Drafts and finish it later"
 msgstr "Le garder dans les brouillons et le terminer plus tard"
 
@@ -4923,7 +4948,7 @@ msgstr "Le garder dans les brouillons et le terminer plus tard"
 msgid "Keep typing — three letters are enough to start."
 msgstr "Continuez à écrire — trois lettres suffisent pour commencer."
 
-#: src/pages/ServicesPage.tsx:322
+#: src/pages/ServicesPage.tsx:326
 msgid "Keep writing"
 msgstr "Continuer à écrire"
 
@@ -4951,7 +4976,7 @@ msgstr "Succursale de Kimironko"
 msgid "Kind of shop"
 msgstr "Type d’établissement"
 
-#: src/pages/choices/ChoicesEditor.tsx:468
+#: src/pages/choices/ChoicesEditor.tsx:481
 msgid "Kinds of shop"
 msgstr "Types d’établissement"
 
@@ -4994,12 +5019,12 @@ msgstr "Rehaussement de cils"
 msgid "Last {0}"
 msgstr "Sur {0}"
 
-#: src/pages/ServicesPage.tsx:1646
+#: src/pages/ServicesPage.tsx:1687
 msgid "Last day"
 msgstr "Dernier jour"
 
 #. placeholder {0}: ago(item.updatedAt)
-#: src/pages/ServicesPage.tsx:669
+#: src/pages/ServicesPage.tsx:673
 msgid "Last saved {0}"
 msgstr "Dernier enregistrement : {0}"
 
@@ -5032,11 +5057,11 @@ msgstr "Derniers avis"
 msgid "Leave empty to use the business phone"
 msgstr "Laissez vide pour utiliser le téléphone de l’entreprise"
 
-#: src/pages/choices/ChoicesEditor.tsx:598
+#: src/pages/choices/ChoicesEditor.tsx:612
 msgid "Leave it empty to use the words shown here."
 msgstr "Laissez vide pour utiliser les mots affichés ici."
 
-#: src/pages/choices/ChoicesEditor.tsx:858
+#: src/pages/choices/ChoicesEditor.tsx:885
 msgid "Leave the price and time at 0 when an answer costs nothing extra."
 msgstr "Laissez le prix et la durée à 0 quand une réponse ne coûte rien de plus."
 
@@ -5044,11 +5069,11 @@ msgstr "Laissez le prix et la durée à 0 quand une réponse ne coûte rien de p
 msgid "Leave this account on this device"
 msgstr "Quitter ce compte sur cet appareil"
 
-#: src/pages/ServicesPage.tsx:307
+#: src/pages/ServicesPage.tsx:311
 msgid "Leave without saving"
 msgstr "Quitter sans enregistrer"
 
-#: src/pages/ServicesPage.tsx:297
+#: src/pages/ServicesPage.tsx:301
 msgid "Leave without saving?"
 msgstr "Quitter sans enregistrer ?"
 
@@ -5058,11 +5083,11 @@ msgstr "Quitter sans enregistrer ?"
 msgid "Legal"
 msgstr "Mentions légales"
 
-#: src/pages/choices/ChoicesEditor.tsx:640
+#: src/pages/choices/ChoicesEditor.tsx:656
 msgid "Let customers say what they want"
 msgstr "Laissez les clients dire ce qu’ils veulent"
 
-#: src/pages/choices/ChoicesEditor.tsx:585
+#: src/pages/choices/ChoicesEditor.tsx:599
 msgid "Let customers write a note"
 msgstr "Laissez les clients écrire une note"
 
@@ -5070,11 +5095,11 @@ msgstr "Laissez les clients écrire une note"
 msgid "Liberation Day"
 msgstr "Fête de la Libération"
 
-#: src/pages/choices/ChoicesEditor.tsx:819
+#: src/pages/choices/ChoicesEditor.tsx:846
 msgid "Like extras to add"
 msgstr "Comme des extras à ajouter"
 
-#: src/pages/choices/ChoicesEditor.tsx:819
+#: src/pages/choices/ChoicesEditor.tsx:846
 msgid "Like the length of hair"
 msgstr "Comme la longueur des cheveux"
 
@@ -5124,7 +5149,7 @@ msgstr "déconnexion déconnecter quitter sortir"
 msgid "Logo"
 msgstr "Logo"
 
-#: src/pages/choices/ChoicesEditor.tsx:635
+#: src/pages/choices/ChoicesEditor.tsx:651
 msgid "Long"
 msgstr "Longs"
 
@@ -5168,9 +5193,13 @@ msgstr "Principal"
 msgid "Main kind"
 msgstr "Type principal"
 
-#: src/pages/ServicesPage.tsx:1891
+#: src/pages/ServicesPage.tsx:1942
 msgid "Make cover"
 msgstr "Mettre en couverture"
+
+#: src/pages/choices/ChoicesEditor.tsx:1053
+msgid "Make it private"
+msgstr "La rendre privée"
 
 #: src/ads/AdRail.tsx:110
 msgid "Make it stand out"
@@ -5279,7 +5308,7 @@ msgstr "Taux du marché · {0}"
 msgid "Meditation session"
 msgstr "Séance de méditation"
 
-#: src/pages/choices/ChoicesEditor.tsx:634
+#: src/pages/choices/ChoicesEditor.tsx:650
 msgid "Medium"
 msgstr "Mi-longs"
 
@@ -5318,13 +5347,13 @@ msgstr "Messages"
 msgid "Messages "
 msgstr "Messages "
 
-#: src/pages/choices/ChoicesEditor.tsx:1070
-#: src/pages/choices/ChoicesEditor.tsx:1230
-#: src/pages/ServicesPage.tsx:1533
+#: src/pages/choices/ChoicesEditor.tsx:1164
+#: src/pages/choices/ChoicesEditor.tsx:1324
+#: src/pages/ServicesPage.tsx:1574
 msgid "min"
 msgstr "min"
 
-#: src/pages/ServicesPage.tsx:1522
+#: src/pages/ServicesPage.tsx:1563
 msgid "Minutes"
 msgstr "Minutes"
 
@@ -5370,7 +5399,7 @@ msgid "Month"
 msgstr "Mois"
 
 #: src/pages/calendar/AppointmentCalendar.tsx:1251
-#: src/pages/choices/ChoicesEditor.tsx:510
+#: src/pages/choices/ChoicesEditor.tsx:523
 msgid "more"
 msgstr "autres"
 
@@ -5382,7 +5411,7 @@ msgstr "Plus"
 msgid "More branches and photos are in <0>Branches & hours</0>, whenever you want them."
 msgstr "D’autres succursales et photos se trouvent dans <0>Succursales et horaires</0>, quand vous le souhaitez."
 
-#: src/pages/choices/ChoicesEditor.tsx:780
+#: src/pages/choices/ChoicesEditor.tsx:806
 msgid "More for “{title}”"
 msgstr "Plus d’options pour « {title} »"
 
@@ -5390,11 +5419,11 @@ msgstr "Plus d’options pour « {title} »"
 msgid "More for this booking"
 msgstr "Plus d’options pour cette réservation"
 
-#: src/pages/choices/ChoicesEditor.tsx:780
+#: src/pages/choices/ChoicesEditor.tsx:806
 msgid "More for this question"
 msgstr "Plus d’options pour cette question"
 
-#: src/pages/choices/ChoicesEditor.tsx:891
+#: src/pages/choices/ChoicesEditor.tsx:918
 msgid "More options"
 msgstr "Plus d’options"
 
@@ -5431,7 +5460,7 @@ msgstr "MTN MoMo est lent en ce moment"
 msgid "MTN MoMo reference <0>{0}</0>"
 msgstr "Référence MTN MoMo <0>{0}</0>"
 
-#: src/pages/choices/ChoicesEditor.tsx:730
+#: src/pages/choices/ChoicesEditor.tsx:746
 msgid "must answer"
 msgstr "réponse obligatoire"
 
@@ -5455,11 +5484,11 @@ msgstr "Coupe des griffes"
 msgid "nail studio"
 msgstr "onglerie"
 
-#: src/pages/ServicesPage.tsx:1461
+#: src/pages/ServicesPage.tsx:1492
 msgid "Name"
 msgstr "Nom"
 
-#: src/pages/ServicesPage.tsx:1459
+#: src/pages/ServicesPage.tsx:1490
 msgid "Name and words"
 msgstr "Nom et texte"
 
@@ -5501,6 +5530,10 @@ msgstr "Besoin d’idées ? Touchez-en une"
 msgid "Needs a change"
 msgstr "À modifier"
 
+#: src/pages/choices/ChoicesEditor.tsx:1007
+msgid "Never ask about an illness, tests or medicines; for an ID, passport or insurance number; about religion, ethnicity or politics; or for a PIN or password."
+msgstr "Ne demandez jamais une maladie, des analyses ou des médicaments ; un numéro d’identité, de passeport ou d’assurance ; la religion, l’origine ethnique ou les opinions politiques ; ni un code PIN ou un mot de passe."
+
 #: src/pages/OverviewPage.tsx:342
 msgid "New"
 msgstr "Nouveau"
@@ -5527,7 +5560,7 @@ msgstr "Nouveau code dans {0}"
 msgid "New here"
 msgstr "Première visite"
 
-#: src/pages/choices/ChoicesEditor.tsx:757
+#: src/pages/choices/ChoicesEditor.tsx:777
 msgid "New question"
 msgstr "Nouvelle question"
 
@@ -5535,7 +5568,7 @@ msgstr "Nouvelle question"
 msgid "New review ★★★★★"
 msgstr "Nouvel avis ★★★★★"
 
-#: src/pages/ServicesPage.tsx:812
+#: src/pages/ServicesPage.tsx:816
 msgid "New service"
 msgstr "Nouveau service"
 
@@ -5676,15 +5709,15 @@ msgstr "Aucun numéro pour l’instant — <0>vous ne pouvez pas être payé</0>
 msgid "No password to remember. A fresh code every time."
 msgstr "Aucun mot de passe à retenir. Un nouveau code à chaque fois."
 
-#: src/pages/ServicesPage.tsx:1015
+#: src/pages/ServicesPage.tsx:1019
 msgid "No photo yet"
 msgstr "Pas encore de photo"
 
-#: src/pages/ServicesPage.tsx:1023
+#: src/pages/ServicesPage.tsx:1027
 msgid "No photos"
 msgstr "Aucune photo"
 
-#: src/pages/ServicesPage.tsx:1759
+#: src/pages/ServicesPage.tsx:1800
 msgid "No photos. A service with a photo is easier to choose than one without."
 msgstr "Aucune photo. Un service avec photo est plus facile à choisir qu’un service sans."
 
@@ -5713,7 +5746,7 @@ msgstr "Aucun avis pour l’instant"
 msgid "No story up right now"
 msgstr "Aucune story en ce moment"
 
-#: src/pages/ServicesPage.tsx:1030
+#: src/pages/ServicesPage.tsx:1034
 msgid "No title yet"
 msgstr "Pas encore de titre"
 
@@ -5727,7 +5760,7 @@ msgstr "Absent"
 msgid "No. {number}"
 msgstr "N° {number}"
 
-#: src/pages/ServicesPage.tsx:516
+#: src/pages/ServicesPage.tsx:520
 msgid "Nobody can book it now"
 msgstr "Plus personne ne peut le réserver"
 
@@ -5793,11 +5826,11 @@ msgstr "Aucun pour l’instant"
 msgid "Not agreed yet"
 msgstr "Pas encore accepté"
 
-#: src/pages/choices/ChoicesEditor.tsx:1202
+#: src/pages/choices/ChoicesEditor.tsx:1296
 msgid "Not available"
 msgstr "Indisponible"
 
-#: src/pages/choices/ChoicesEditor.tsx:1083
+#: src/pages/choices/ChoicesEditor.tsx:1177
 msgid "Not available now — switch on to offer it"
 msgstr "Indisponible pour le moment — activez pour le proposer"
 
@@ -5815,17 +5848,17 @@ msgid "Not live yet"
 msgstr "Pas encore en ligne"
 
 #: src/components/LegalGate.tsx:105
-#: src/pages/choices/ChoicesEditor.tsx:1085
+#: src/pages/choices/ChoicesEditor.tsx:1179
 #: src/pages/LegalPage.tsx:185
 msgid "Not now"
 msgstr "Pas maintenant"
 
-#: src/pages/ServicesPage.tsx:1571
+#: src/pages/ServicesPage.tsx:1612
 msgid "not offered"
 msgstr "non proposé"
 
 #. placeholder {0}: notOnSale.length
-#: src/pages/ServicesPage.tsx:769
+#: src/pages/ServicesPage.tsx:773
 msgid "Not on sale<0>{0}</0>"
 msgstr "Non proposés<0>{0}</0>"
 
@@ -5850,11 +5883,11 @@ msgstr "Non publié"
 msgid "Not replied yet"
 msgstr "Pas encore de réponse"
 
-#: src/pages/ServicesPage.tsx:1885
+#: src/pages/ServicesPage.tsx:1936
 msgid "Not saved"
 msgstr "Non enregistrée"
 
-#: src/pages/ServicesPage.tsx:940
+#: src/pages/ServicesPage.tsx:944
 msgid "Not saved — trying again"
 msgstr "Non enregistré — nouvelle tentative"
 
@@ -5940,7 +5973,7 @@ msgstr "Aucun résultat"
 msgid "Nothing matches “{query}”"
 msgstr "Aucun résultat pour « {query} »"
 
-#: src/pages/ServicesPage.tsx:739
+#: src/pages/ServicesPage.tsx:743
 msgid "Nothing on sale at your branches yet"
 msgstr "Aucun service proposé dans vos succursales pour l’instant"
 
@@ -6026,11 +6059,11 @@ msgstr "Liste numérotée"
 msgid "of {count}"
 msgstr "sur {count}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1085
+#: src/pages/choices/ChoicesEditor.tsx:1179
 msgid "Offered"
 msgstr "Proposé"
 
-#: src/pages/choices/ChoicesEditor.tsx:1083
+#: src/pages/choices/ChoicesEditor.tsx:1177
 msgid "Offered — switch off for “not available now”"
 msgstr "Proposé — désactivez pour « indisponible pour le moment »"
 
@@ -6059,11 +6092,11 @@ msgstr "Sur un calendrier"
 msgid "On its way"
 msgstr "En cours d’envoi"
 
-#: src/pages/ServicesPage.tsx:1084
+#: src/pages/ServicesPage.tsx:1088
 msgid "On sale"
 msgstr "Proposé"
 
-#: src/pages/ServicesPage.tsx:1888
+#: src/pages/ServicesPage.tsx:1939
 msgid "On the card"
 msgstr "Sur la fiche"
 
@@ -6107,7 +6140,7 @@ msgstr "Un de moins"
 msgid "One line summary"
 msgstr "Résumé en une ligne"
 
-#: src/pages/ServicesPage.tsx:1479
+#: src/pages/ServicesPage.tsx:1510
 msgid "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 msgstr "Une ligne qui donne envie — ex. « Dégradés nets et contours impeccables »"
 
@@ -6127,7 +6160,7 @@ msgstr "Une nuit, chambre simple"
 msgid "One of them said yes to your offers, so that person also gets it as an alert or email."
 msgstr "L’un d’eux a accepté d’être informé de vos offres : cette personne le recevra aussi en alerte ou par e-mail."
 
-#: src/pages/choices/ChoicesEditor.tsx:818
+#: src/pages/choices/ChoicesEditor.tsx:845
 msgid "One or more"
 msgstr "Un ou plusieurs"
 
@@ -6192,16 +6225,16 @@ msgstr "Seul le propriétaire peut configurer l’établissement"
 msgid "Only the owner pauses the shop."
 msgstr "Seul le propriétaire peut mettre l’établissement en pause."
 
-#: src/pages/choices/ChoicesEditor.tsx:1181
+#: src/pages/choices/ChoicesEditor.tsx:1275
 msgid "Only the shop sees this."
 msgstr "Seul l’établissement voit ceci."
 
 #. placeholder {0}: o.label.trim()
-#: src/pages/choices/ChoicesEditor.tsx:715
+#: src/pages/choices/ChoicesEditor.tsx:731
 msgid "Only when they pick “{0}”"
 msgstr "Seulement s’ils choisissent « {0} »"
 
-#: src/pages/choices/ChoicesEditor.tsx:951
+#: src/pages/choices/ChoicesEditor.tsx:978
 msgid "Only you and the customer see these answers — never in an email or a phone alert — and they are removed 30 days after the visit. They are always free and take no extra time."
 msgstr "Seuls vous et le client voyez ces réponses — jamais dans un e-mail ni dans une alerte sur le téléphone — et elles sont supprimées 30 jours après la visite. Elles sont toujours gratuites et ne prennent pas de temps en plus."
 
@@ -6379,11 +6412,11 @@ msgstr "Facultatif"
 msgid "Optional — add it later"
 msgstr "Facultatif — à ajouter plus tard"
 
-#: src/pages/ServicesPage.tsx:1606
+#: src/pages/ServicesPage.tsx:1647
 msgid "Optional — ask what they want, like the cut or extras"
 msgstr "Facultatif — demandez ce qu’ils veulent, comme la coupe ou les extras"
 
-#: src/pages/ServicesPage.tsx:1627
+#: src/pages/ServicesPage.tsx:1668
 msgid "Optional — customers see the old price crossed out"
 msgstr "Facultatif — les clients voient l’ancien prix barré"
 
@@ -6399,7 +6432,7 @@ msgstr "Facultatif. {ACCEPTED_LABEL} — jusqu’à {MAX_ATTACHMENTS} fichiers, 
 msgid "Or a manager who looks after every branch. Ask them to finish setting it up — you can still look around."
 msgstr "Ou un gérant qui s’occupe de toutes les succursales. Demandez-lui de terminer la configuration — vous pouvez quand même jeter un œil."
 
-#: src/pages/choices/ChoicesEditor.tsx:1051
+#: src/pages/choices/ChoicesEditor.tsx:1145
 msgid "or add to the price"
 msgstr "ou ajouter au prix"
 
@@ -6416,7 +6449,7 @@ msgid "or drop one here"
 msgstr "ou déposez-en une ici"
 
 #: src/pages/ProfilePage.tsx:720
-#: src/pages/ServicesPage.tsx:1746
+#: src/pages/ServicesPage.tsx:1787
 msgid "or drop them here"
 msgstr "ou déposez-les ici"
 
@@ -6424,7 +6457,7 @@ msgstr "ou déposez-les ici"
 msgid "Or go straight to"
 msgstr "Ou allez directement à"
 
-#: src/pages/choices/ChoicesEditor.tsx:1051
+#: src/pages/choices/ChoicesEditor.tsx:1145
 msgid "or take money off"
 msgstr "ou déduire du prix"
 
@@ -6565,7 +6598,7 @@ msgid "Pause the shop?"
 msgstr "Mettre l’établissement en pause ?"
 
 #: src/onboarding/steps.ts:151
-#: src/pages/ServicesPage.tsx:1084
+#: src/pages/ServicesPage.tsx:1088
 #: src/shell/Topbar.tsx:156
 msgid "Paused"
 msgstr "En pause"
@@ -6668,7 +6701,7 @@ msgstr "Les gens près de chez vous vous voient en premier"
 msgid "People served at once"
 msgstr "Personnes servies en même temps"
 
-#: src/pages/ServicesPage.tsx:1630
+#: src/pages/ServicesPage.tsx:1671
 msgid "Percent off"
 msgstr "Pourcentage de réduction"
 
@@ -6694,7 +6727,7 @@ msgstr "Téléphone de cette succursale <0>facultatif</0>"
 msgid "Phone number"
 msgstr "Numéro de téléphone"
 
-#: src/pages/ServicesPage.tsx:1764
+#: src/pages/ServicesPage.tsx:1805
 msgid "Photo changes are not saved yet — customers still see the photos as they were until you press “Save changes”."
 msgstr "Les modifications des photos ne sont pas encore enregistrées — les clients voient les photos comme avant jusqu’à ce que vous appuyiez sur « Enregistrer les modifications »."
 
@@ -6707,9 +6740,9 @@ msgid "Photograph the place too: customers want to see where they are walking in
 msgstr "Photographiez aussi les lieux : les clients veulent voir où ils vont entrer."
 
 #: src/pages/ProfilePage.tsx:594
-#: src/pages/ServicesPage.tsx:1123
-#: src/pages/ServicesPage.tsx:1134
-#: src/pages/ServicesPage.tsx:1701
+#: src/pages/ServicesPage.tsx:1127
+#: src/pages/ServicesPage.tsx:1138
+#: src/pages/ServicesPage.tsx:1742
 msgid "Photos"
 msgstr "Photos"
 
@@ -6722,14 +6755,14 @@ msgstr "Photos <0>{0}</0>"
 msgid "Photos at every branch"
 msgstr "Photos dans chaque succursale"
 
-#: src/pages/ServicesPage.tsx:724
+#: src/pages/ServicesPage.tsx:728
 msgid "Photos customers swipe through"
 msgstr "Des photos que les clients font défiler"
 
 #. placeholder {0}: b.name
 #. placeholder {0}: service.name
 #: src/ads/useAdData.ts:149
-#: src/pages/ServicesPage.tsx:1008
+#: src/pages/ServicesPage.tsx:1012
 msgid "Photos of {0}"
 msgstr "Photos de {0}"
 
@@ -6745,8 +6778,8 @@ msgstr "Des photos qui font réserver"
 msgid "Photos, words, hours and payouts — all set."
 msgstr "Photos, textes, horaires et versements — tout est prêt."
 
-#: src/pages/choices/ChoicesEditor.tsx:655
-#: src/pages/choices/ChoicesEditor.tsx:1174
+#: src/pages/choices/ChoicesEditor.tsx:671
+#: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Pick 1"
 msgstr "Choisissez-en 1"
 
@@ -6831,7 +6864,7 @@ msgstr "Publier la story"
 msgid "Post the picture so regulars can get the app from home."
 msgstr "Publiez l’image pour que vos habitués obtiennent l’application depuis chez eux."
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Post this service"
 msgstr "Publier ce service"
 
@@ -6843,7 +6876,7 @@ msgstr "Publié"
 msgid "Posted — live for 24 hours."
 msgstr "Publiée — visible pendant 24 heures."
 
-#: src/pages/ServicesPage.tsx:385
+#: src/pages/ServicesPage.tsx:389
 msgid "Posting the service…"
 msgstr "Publication du service…"
 
@@ -6895,16 +6928,16 @@ msgstr "Mois précédent"
 msgid "Price"
 msgstr "Prix"
 
-#: src/pages/ServicesPage.tsx:1519
+#: src/pages/ServicesPage.tsx:1560
 msgid "Price and time"
 msgstr "Prix et durée"
 
-#: src/pages/ServicesPage.tsx:1051
+#: src/pages/ServicesPage.tsx:1055
 msgid "price at the shop"
 msgstr "prix sur place"
 
 #. placeholder {0}: money.code
-#: src/pages/ServicesPage.tsx:1554
+#: src/pages/ServicesPage.tsx:1595
 msgid "Price per branch ({0})"
 msgstr "Prix par succursale ({0})"
 
@@ -6925,8 +6958,8 @@ msgstr "Imprimez la carte et posez-la là où l’on attend ou paie."
 msgid "Privacy Policy"
 msgstr "Politique de confidentialité"
 
-#: src/pages/choices/ChoicesEditor.tsx:518
-#: src/pages/choices/ChoicesEditor.tsx:768
+#: src/pages/choices/ChoicesEditor.tsx:531
+#: src/pages/choices/ChoicesEditor.tsx:788
 msgid "Private"
 msgstr "Privé"
 
@@ -6938,7 +6971,7 @@ msgstr "Privé — pour vous seul. Ne le partagez et ne le transférez jamais."
 msgid "Private answers — open the booking"
 msgstr "Réponses privées — ouvrez la réservation"
 
-#: src/pages/choices/ChoicesEditor.tsx:857
+#: src/pages/choices/ChoicesEditor.tsx:884
 msgid "Private answers are always free and take no extra time."
 msgstr "Les réponses privées sont toujours gratuites et ne prennent pas de temps en plus."
 
@@ -6985,12 +7018,12 @@ msgstr "Publique, sous l’avis. Vous pouvez la modifier pendant {REVIEW_EDIT_WI
 msgid "Put back"
 msgstr "Restitué"
 
-#: src/pages/ServicesPage.tsx:1127
+#: src/pages/ServicesPage.tsx:1131
 msgid "Put back on sale"
 msgstr "Remettre en vente"
 
 #. placeholder {0}: offer.location.name
-#: src/pages/ServicesPage.tsx:1090
+#: src/pages/ServicesPage.tsx:1094
 msgid "Put back on sale here ({0})"
 msgstr "Remettre en vente ici ({0})"
 
@@ -6998,7 +7031,7 @@ msgstr "Remettre en vente ici ({0})"
 msgid "Put something new on your menu"
 msgstr "Ajoutez une nouveauté à votre offre"
 
-#: src/pages/ServicesPage.tsx:718
+#: src/pages/ServicesPage.tsx:722
 msgid "Put your first service on sale"
 msgstr "Mettez en vente votre premier service"
 
@@ -7007,15 +7040,15 @@ msgctxt "search words"
 msgid "qr code scan download app store google play install poster print counter card get customers"
 msgstr "code qr scanner télécharger application app store google play installer affiche imprimer carte comptoir clients"
 
-#: src/pages/ServicesPage.tsx:1045
+#: src/pages/ServicesPage.tsx:1049
 msgid "question"
 msgstr "question"
 
-#: src/pages/choices/ChoicesEditor.tsx:217
+#: src/pages/choices/ChoicesEditor.tsx:226
 msgid "Question {number}: write what you ask customers."
 msgstr "Question {number} : écrivez ce que vous demandez aux clients."
 
-#: src/pages/ServicesPage.tsx:1045
+#: src/pages/ServicesPage.tsx:1049
 msgid "questions"
 msgstr "questions"
 
@@ -7027,7 +7060,7 @@ msgstr "Questions et réponses"
 msgid "Questions before someone books"
 msgstr "Les questions avant une réservation"
 
-#: src/pages/ServicesPage.tsx:1602
+#: src/pages/ServicesPage.tsx:1643
 msgid "Questions for customers"
 msgstr "Questions aux clients"
 
@@ -7112,7 +7145,7 @@ msgstr "Lecture"
 msgid "Ready for your next payout"
 msgstr "Prêt pour votre prochain versement"
 
-#: src/pages/choices/ChoicesEditor.tsx:1233
+#: src/pages/choices/ChoicesEditor.tsx:1327
 msgid "Ready to choose a time"
 msgstr "Prêt à choisir un créneau"
 
@@ -7123,7 +7156,7 @@ msgstr "Prêt à choisir un créneau"
 msgid "Ready to send"
 msgstr "Prêt à envoyer"
 
-#: src/pages/choices/ChoicesEditor.tsx:463
+#: src/pages/choices/ChoicesEditor.tsx:476
 msgid "Ready-made for {kindName}"
 msgstr "Questions prêtes pour {kindName}"
 
@@ -7152,21 +7185,21 @@ msgstr "Défrisage"
 msgid "remove"
 msgstr "retirer"
 
-#: src/pages/choices/ChoicesEditor.tsx:534
+#: src/pages/choices/ChoicesEditor.tsx:547
 #: src/pages/ClosuresPage.tsx:468
 #: src/pages/ClosuresPage.tsx:483
 #: src/pages/ClosuresPage.tsx:718
 #: src/pages/ProfilePage.tsx:476
 #: src/pages/ProfilePage.tsx:691
 #: src/pages/ProfilePage.tsx:699
-#: src/pages/ServicesPage.tsx:1894
+#: src/pages/ServicesPage.tsx:1945
 #: src/pages/StaffPage.tsx:535
 #: src/pages/StaffPage.tsx:550
 msgid "Remove"
 msgstr "Retirer"
 
 #. placeholder {0}: titleOf(group)
-#: src/pages/choices/ChoicesEditor.tsx:377
+#: src/pages/choices/ChoicesEditor.tsx:386
 msgid "Remove “{0}”?"
 msgstr "Retirer « {0} » ?"
 
@@ -7183,11 +7216,11 @@ msgid "Remove {0}?"
 msgstr "Retirer {0} ?"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1092
+#: src/pages/choices/ChoicesEditor.tsx:1186
 msgid "Remove answer {0}"
 msgstr "Retirer la réponse {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:393
+#: src/pages/choices/ChoicesEditor.tsx:402
 msgid "Remove question"
 msgstr "Retirer la question"
 
@@ -7195,7 +7228,7 @@ msgstr "Retirer la question"
 msgid "Remove the photo"
 msgstr "Retirer la photo"
 
-#: src/pages/choices/ChoicesEditor.tsx:1093
+#: src/pages/choices/ChoicesEditor.tsx:1187
 msgid "Remove this answer"
 msgstr "Retirer cette réponse"
 
@@ -7203,15 +7236,15 @@ msgstr "Retirer cette réponse"
 msgid "Remove this photo?"
 msgstr "Supprimer cette photo ?"
 
-#: src/pages/choices/ChoicesEditor.tsx:784
+#: src/pages/choices/ChoicesEditor.tsx:810
 msgid "Remove this question"
 msgstr "Retirer cette question"
 
-#: src/pages/choices/ChoicesEditor.tsx:377
+#: src/pages/choices/ChoicesEditor.tsx:386
 msgid "Remove this question?"
 msgstr "Retirer cette question ?"
 
-#: src/pages/ServicesPage.tsx:439
+#: src/pages/ServicesPage.tsx:443
 msgid "Removing photos…"
 msgstr "Retrait des photos…"
 
@@ -7367,11 +7400,15 @@ msgstr "Samedi matin, c’est l’Umuganda"
 msgid "Save"
 msgstr "Enregistrer"
 
-#: src/pages/ServicesPage.tsx:1813
+#: src/pages/ServicesPage.tsx:1449
+msgid "Save anyway"
+msgstr "Enregistrer quand même"
+
+#: src/pages/ServicesPage.tsx:1854
 msgid "Save as draft"
 msgstr "Enregistrer comme brouillon"
 
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:1864
 msgid "Save changes"
 msgstr "Enregistrer les modifications"
 
@@ -7379,7 +7416,7 @@ msgstr "Enregistrer les modifications"
 msgid "Save reply"
 msgstr "Enregistrer la réponse"
 
-#: src/pages/choices/ChoicesEditor.tsx:645
+#: src/pages/choices/ChoicesEditor.tsx:661
 msgid "Save the service — customers see it when they book"
 msgstr "Enregistrez le service — les clients le voient en réservant"
 
@@ -7392,11 +7429,11 @@ msgstr "Enregistrer la semaine"
 msgid "Saved"
 msgstr "Enregistré"
 
-#: src/pages/ServicesPage.tsx:945
+#: src/pages/ServicesPage.tsx:949
 msgid "Saved as a draft while you type"
 msgstr "Enregistré comme brouillon pendant la saisie"
 
-#: src/pages/ServicesPage.tsx:669
+#: src/pages/ServicesPage.tsx:673
 msgid "Saved just now"
 msgstr "Enregistré à l’instant"
 
@@ -7404,7 +7441,7 @@ msgstr "Enregistré à l’instant"
 msgid "Saved."
 msgstr "Enregistré."
 
-#: src/pages/ServicesPage.tsx:936
+#: src/pages/ServicesPage.tsx:940
 msgid "Saving draft…"
 msgstr "Enregistrement du brouillon…"
 
@@ -7419,9 +7456,9 @@ msgstr "Enregistrement du brouillon…"
 #: src/pages/OverviewPage.tsx:586
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/ReviewsPage.tsx:602
-#: src/pages/ServicesPage.tsx:379
-#: src/pages/ServicesPage.tsx:936
-#: src/pages/ServicesPage.tsx:1823
+#: src/pages/ServicesPage.tsx:383
+#: src/pages/ServicesPage.tsx:940
+#: src/pages/ServicesPage.tsx:1864
 #: src/pages/StaffPage.tsx:317
 msgid "Saving…"
 msgstr "Enregistrement…"
@@ -7677,16 +7714,16 @@ msgstr "Service"
 msgid "Service name"
 msgstr "Nom du service"
 
-#: src/pages/ServicesPage.tsx:1081
+#: src/pages/ServicesPage.tsx:1085
 msgid "service stopped"
 msgstr "service arrêté"
 
-#: src/pages/ServicesPage.tsx:1101
+#: src/pages/ServicesPage.tsx:1105
 msgid "Service stopped"
 msgstr "Service arrêté"
 
 #: src/nav.ts:70
-#: src/pages/ServicesPage.tsx:584
+#: src/pages/ServicesPage.tsx:588
 msgid "Services"
 msgstr "Services"
 
@@ -7711,7 +7748,7 @@ msgstr "Appliquer ces horaires"
 msgid "Set up your shop"
 msgstr "Préparez votre établissement"
 
-#: src/pages/choices/ChoicesEditor.tsx:644
+#: src/pages/choices/ChoicesEditor.tsx:660
 msgid "Set what each answer adds to the price or the time"
 msgstr "Indiquez ce que chaque réponse ajoute au prix ou à la durée"
 
@@ -7746,7 +7783,7 @@ msgstr "Établissement suspendu"
 msgid "Shops close 08:00–11:00, but {one} is open for bookings then."
 msgstr "Les commerces ferment de 08:00 à 11:00, mais {one} reste réservable."
 
-#: src/pages/choices/ChoicesEditor.tsx:1048
+#: src/pages/choices/ChoicesEditor.tsx:1142
 msgid "Shops usually charge for this"
 msgstr "Les établissements le font souvent payer"
 
@@ -7755,15 +7792,15 @@ msgstr "Les établissements le font souvent payer"
 msgid "Shops with clear, high-resolution photos and full details get booked far more often · {done} of {0} done"
 msgstr "Les établissements aux photos nettes, en haute résolution, et aux informations complètes sont bien plus souvent réservés · {done} sur {0} faits"
 
-#: src/pages/choices/ChoicesEditor.tsx:633
+#: src/pages/choices/ChoicesEditor.tsx:649
 msgid "Short"
 msgstr "Courts"
 
-#: src/pages/choices/ChoicesEditor.tsx:898
+#: src/pages/choices/ChoicesEditor.tsx:925
 msgid "Short name on your bookings <0>optional</0>"
 msgstr "Nom court sur vos réservations <0>facultatif</0>"
 
-#: src/pages/ServicesPage.tsx:1383
+#: src/pages/ServicesPage.tsx:1387
 msgid "Shorten the description by {overDescription} and the special instructions by {overInstructions} characters — the count is at the top right of each box."
 msgstr "Raccourcissez la description de {overDescription} caractères et les instructions particulières de {overInstructions} caractères — le compteur est en haut à droite de chaque champ."
 
@@ -7853,11 +7890,11 @@ msgstr "<0>{0}</0> sur <1>{1}</1> affichés"
 msgid "Showing <0>{0}</0> of <1>{total}</1>"
 msgstr "<0>{0}</0> sur <1>{total}</1> affichées"
 
-#: src/pages/ServicesPage.tsx:1514
+#: src/pages/ServicesPage.tsx:1546
 msgid "Shown as “Before you come” — on the service, and again on the customer’s reservation."
 msgstr "Affiché sous « Avant de venir » — sur le service, et à nouveau sur la réservation du client."
 
-#: src/pages/choices/ChoicesEditor.tsx:908
+#: src/pages/choices/ChoicesEditor.tsx:935
 msgid "Shown on the booking, like “{exampleName}: {exampleAnswer}”. Leave it empty to use the question."
 msgstr "Affiché sur la réservation, comme « {exampleName} : {exampleAnswer} ». Laissez vide pour utiliser la question."
 
@@ -7877,7 +7914,7 @@ msgstr "Affiché aux clients sous le nom "
 msgid "Shown under “About this service” before they book."
 msgstr "Affiché sous « À propos de ce service » avant la réservation."
 
-#: src/pages/ServicesPage.tsx:1498
+#: src/pages/ServicesPage.tsx:1529
 msgid "Shown under “About this service”."
 msgstr "Affiché sous « À propos de ce service »."
 
@@ -7950,7 +7987,7 @@ msgstr "Six chiffres, et l’arrivée est enregistrée"
 msgid "Six digits, no button"
 msgstr "Six chiffres, sans bouton"
 
-#: src/pages/choices/ChoicesEditor.tsx:725
+#: src/pages/choices/ChoicesEditor.tsx:741
 msgid "Skin fade"
 msgstr "Dégradé à blanc"
 
@@ -7977,6 +8014,10 @@ msgstr "Pour qu’ils réservent à nouveau chez vous depuis leur téléphone."
 #: src/ads/todaySlides.ts:82
 msgid "Some deposits are slow or failing. Customers’ times stay held while they retry."
 msgstr "Certains acomptes sont lents ou échouent. Le créneau du client reste retenu."
+
+#: src/pages/ServicesPage.tsx:1438
+msgid "Some questions ask for private information"
+msgstr "Certaines questions demandent des informations privées"
 
 #: src/pages/SupportPage.tsx:69
 msgid "Someone is on it"
@@ -8024,7 +8065,7 @@ msgstr "Horaires spéciaux"
 msgid "Special hours — {why}"
 msgstr "Horaires spéciaux — {why}"
 
-#: src/pages/ServicesPage.tsx:1502
+#: src/pages/ServicesPage.tsx:1534
 msgid "Special instructions"
 msgstr "Instructions particulières"
 
@@ -8095,7 +8136,7 @@ msgid "Start with {0}: {1}{2}"
 msgstr "Commencez par {0} : {1}{2}"
 
 #. placeholder {0}: item.createdBy.email
-#: src/pages/ServicesPage.tsx:674
+#: src/pages/ServicesPage.tsx:678
 msgid "started by {0}"
 msgstr "commencé par {0}"
 
@@ -8161,22 +8202,22 @@ msgstr "À venir ou non payées"
 msgid "Still to pay you at the shop"
 msgstr "Reste à vous payer sur place"
 
-#: src/pages/ServicesPage.tsx:775
+#: src/pages/ServicesPage.tsx:779
 msgid "Still yours, and bookable by nobody. Kept so past appointments resolve to what was booked. Switch a branch back on — or press <0>Put back on sale</0> if you retired it everywhere."
 msgstr "Toujours à vous, mais réservables par personne. Conservés pour que les rendez-vous passés renvoient à ce qui a été réservé. Réactivez une succursale — ou appuyez sur <0>Remettre en vente</0> si vous l’avez retiré partout."
 
 #. placeholder {0}: service.name
-#: src/pages/ServicesPage.tsx:540
+#: src/pages/ServicesPage.tsx:544
 msgid "Stop offering “{0}” at every branch?"
 msgstr "Arrêter de proposer « {0} » dans toutes les succursales ?"
 
-#: src/pages/ServicesPage.tsx:551
-#: src/pages/ServicesPage.tsx:1135
+#: src/pages/ServicesPage.tsx:555
+#: src/pages/ServicesPage.tsx:1139
 msgid "Stop offering everywhere"
 msgstr "Arrêter partout"
 
 #. placeholder {0}: offer.location.name
-#: src/pages/ServicesPage.tsx:1090
+#: src/pages/ServicesPage.tsx:1094
 msgid "Stop offering here ({0})"
 msgstr "Ne plus proposer ici ({0})"
 
@@ -8227,15 +8268,15 @@ msgstr "Séance de natation"
 msgid "Swimming lesson"
 msgstr "Cours de natation"
 
-#: src/pages/choices/ChoicesEditor.tsx:1078
+#: src/pages/choices/ChoicesEditor.tsx:1172
 msgid "Switch off when you can’t do it for now — customers see “Not available”."
 msgstr "Désactivez si vous ne pouvez pas le faire pour l’instant — les clients voient « Indisponible »."
 
-#: src/pages/choices/ChoicesEditor.tsx:1078
+#: src/pages/choices/ChoicesEditor.tsx:1172
 msgid "Switch on to offer it again."
 msgstr "Activez pour le proposer à nouveau."
 
-#: src/pages/ServicesPage.tsx:1101
+#: src/pages/ServicesPage.tsx:1105
 msgid "Switched off at every branch"
 msgstr "Désactivé dans toutes les succursales"
 
@@ -8284,15 +8325,15 @@ msgid "Taken down: {0}"
 msgstr "Retirée : {0}"
 
 #. placeholder {0}: index + 1
-#: src/pages/choices/ChoicesEditor.tsx:1041
+#: src/pages/choices/ChoicesEditor.tsx:1135
 msgid "Taken off the price for answer {0}"
 msgstr "Retiré du prix pour la réponse {0}"
 
-#: src/pages/choices/ChoicesEditor.tsx:1229
+#: src/pages/choices/ChoicesEditor.tsx:1323
 msgid "Takes"
 msgstr "Durée"
 
-#: src/pages/choices/ChoicesEditor.tsx:1031
+#: src/pages/choices/ChoicesEditor.tsx:1125
 msgid "Takes off the price"
 msgstr "Se déduit du prix"
 
@@ -8309,7 +8350,7 @@ msgstr "Contactez-nous"
 msgid "Talking to customers"
 msgstr "Échanger avec les clients"
 
-#: src/pages/choices/ChoicesEditor.tsx:1164
+#: src/pages/choices/ChoicesEditor.tsx:1258
 msgid "Tap the answers — the total changes"
 msgstr "Touchez les réponses — le total change"
 
@@ -8418,7 +8459,7 @@ msgstr "L’enregistrement a échoué."
 #: src/onboarding/Welcome.tsx:485
 #: src/onboarding/Welcome.tsx:641
 #: src/onboarding/Welcome.tsx:779
-#: src/pages/ServicesPage.tsx:559
+#: src/pages/ServicesPage.tsx:563
 msgid "That did not save. Check your connection and try again."
 msgstr "L’enregistrement a échoué. Vérifiez votre connexion et réessayez."
 
@@ -8447,7 +8488,7 @@ msgstr "L’envoi a échoué. Vérifiez votre connexion."
 #: src/pages/ProfilePage.tsx:777
 #: src/pages/ProfilePage.tsx:808
 #: src/pages/SecurityPage.tsx:56
-#: src/pages/ServicesPage.tsx:639
+#: src/pages/ServicesPage.tsx:643
 #: src/pages/StaffPage.tsx:448
 #: src/pages/SupportPage.tsx:653
 msgid "That did not work."
@@ -8493,11 +8534,11 @@ msgstr "Cette image n’a pas pu être envoyée. Essayez un JPG ou PNG de moins 
 msgid "That service did not save."
 msgstr "Ce service n’a pas été enregistré."
 
-#: src/pages/choices/ChoicesEditor.tsx:559
+#: src/pages/choices/ChoicesEditor.tsx:572
 msgid "That’s the most — {MAX_GROUPS} questions per service"
 msgstr "C’est le maximum — {MAX_GROUPS} questions par service"
 
-#: src/pages/choices/ChoicesEditor.tsx:884
+#: src/pages/choices/ChoicesEditor.tsx:911
 msgid "That’s the most — {MAX_OPTIONS} answers"
 msgstr "C’est le maximum — {MAX_OPTIONS} réponses"
 
@@ -8513,7 +8554,7 @@ msgstr "Les accords qui encadrent votre activité"
 msgid "The annual income tax return is due by {date}"
 msgstr "La déclaration annuelle d’impôt sur le revenu est due avant le {date}"
 
-#: src/pages/choices/ChoicesEditor.tsx:854
+#: src/pages/choices/ChoicesEditor.tsx:881
 msgid "The answers"
 msgstr "Les réponses"
 
@@ -8569,7 +8610,7 @@ msgstr "Le code n’a pas pu être envoyé. Vérifiez votre connexion."
 msgid "The cover is the photo on the service’s card in the app. Choose it with “Make cover”."
 msgstr "La couverture est la photo sur la carte du service dans l’application. Choisissez-la avec « Mettre en couverture »."
 
-#: src/pages/ServicesPage.tsx:470
+#: src/pages/ServicesPage.tsx:474
 msgid "the cover was not changed"
 msgstr "la photo de couverture n’a pas été changée"
 
@@ -8609,8 +8650,8 @@ msgstr "L’acompte est payé. À son arrivée, le client lit son code à 6 chif
 msgid "The deposit paid, and what is left to pay you"
 msgstr "L’acompte payé, et ce qu’il reste à vous payer"
 
-#: src/pages/choices/ChoicesEditor.tsx:604
-#: src/pages/choices/ChoicesEditor.tsx:614
+#: src/pages/choices/ChoicesEditor.tsx:620
+#: src/pages/choices/ChoicesEditor.tsx:630
 msgid "The final price is agreed at the shop"
 msgstr "Le prix final est convenu sur place"
 
@@ -8622,7 +8663,7 @@ msgstr "La première photo est la couverture que les clients voient en faisant d
 msgid "The first thing a customer sees on your page."
 msgstr "La première chose qu’un client voit sur votre page."
 
-#: src/pages/ServicesPage.tsx:1482
+#: src/pages/ServicesPage.tsx:1513
 msgid "The headline right under the photos. The name above stays the short label on cards."
 msgstr "Le titre juste sous les photos. Le nom ci-dessus reste l’intitulé court sur les cartes."
 
@@ -8631,7 +8672,7 @@ msgid "The hours it opens, day by day"
 msgstr "Ses horaires d’ouverture, jour par jour"
 
 #. placeholder {0}: niceDay(initial.discountEndsOn.slice(0, 10))
-#: src/pages/ServicesPage.tsx:1682
+#: src/pages/ServicesPage.tsx:1723
 msgid "The last sale ended on {0}."
 msgstr "La dernière promo s’est terminée le {0}."
 
@@ -8643,7 +8684,7 @@ msgstr "Les deux dernières semaines, et ce qui est réservé pour la semaine à
 msgid "The money is for the owner"
 msgstr "L’argent est réservé au propriétaire"
 
-#: src/pages/choices/ChoicesEditor.tsx:831
+#: src/pages/choices/ChoicesEditor.tsx:858
 msgid "The most answers a customer may pick"
 msgstr "Le nombre maximum de réponses qu’un client peut choisir"
 
@@ -8724,11 +8765,11 @@ msgstr "Les frais de plateforme ({fee} du prix) sont prélevés sur cet acompte.
 msgid "The preview shows your changes — save to make them live."
 msgstr "L’aperçu montre vos modifications — enregistrez pour les mettre en ligne."
 
-#: src/pages/ServicesPage.tsx:1584
+#: src/pages/ServicesPage.tsx:1625
 msgid "The price is for one person. Leave a branch blank to stop offering it there."
 msgstr "Le prix est pour une personne. Laissez une succursale vide pour ne plus le proposer là-bas."
 
-#: src/pages/choices/ChoicesEditor.tsx:799
+#: src/pages/choices/ChoicesEditor.tsx:825
 msgid "The question customers see"
 msgstr "La question que voient les clients"
 
@@ -8825,15 +8866,15 @@ msgstr "Voici les succursales où vous travaillez. Le propriétaire ou un géran
 msgid "They book a time and pay a deposit"
 msgstr "Ils réservent un créneau et paient un acompte"
 
-#: src/pages/choices/ChoicesEditor.tsx:513
+#: src/pages/choices/ChoicesEditor.tsx:526
 msgid "They can pick several"
 msgstr "Ils peuvent en choisir plusieurs"
 
-#: src/pages/choices/ChoicesEditor.tsx:846
+#: src/pages/choices/ChoicesEditor.tsx:873
 msgid "They can skip it."
 msgstr "Ils peuvent la passer."
 
-#: src/pages/choices/ChoicesEditor.tsx:846
+#: src/pages/choices/ChoicesEditor.tsx:873
 msgid "They can’t book without picking."
 msgstr "Ils ne peuvent pas réserver sans choisir."
 
@@ -8845,16 +8886,16 @@ msgstr "Cette personne reçoit un e-mail. Si elle n’a pas encore de compte, il
 msgid "They lose access straight away. Their name stays on anything they already did, and you can invite them again later."
 msgstr "Cette personne perd l’accès immédiatement. Son nom reste sur tout ce qu’elle a déjà fait, et vous pourrez l’inviter à nouveau plus tard."
 
-#: src/pages/choices/ChoicesEditor.tsx:513
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:526
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick one"
 msgstr "Ils en choisissent une"
 
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick one or more"
 msgstr "Ils en choisissent une ou plusieurs"
 
-#: src/pages/choices/ChoicesEditor.tsx:729
+#: src/pages/choices/ChoicesEditor.tsx:745
 msgid "They pick up to {picks}"
 msgstr "Ils en choisissent jusqu’à {picks}"
 
@@ -8877,6 +8918,26 @@ msgstr "Ils vous montrent leur code à 6 chiffres. Appuyez ici et saisissez-le �
 #: src/auth/LoginPage.tsx:49
 msgid "This account was closed. Use the same email to start a new business, or a different one."
 msgstr "Ce compte a été fermé. Utilisez la même adresse e-mail pour créer une nouvelle entreprise, ou une autre adresse."
+
+#: src/pages/choices/ChoicesEditor.tsx:1036
+msgid "This asks about an illness, a test or medicines. Please don’t ask it: it is private medical information, and the seller rules forbid it."
+msgstr "Ceci porte sur une maladie, une analyse ou des médicaments. Ne le demandez pas : ce sont des informations médicales privées, et les règles des commerçants l’interdisent."
+
+#: src/pages/choices/ChoicesEditor.tsx:1042
+msgid "This asks about health — an allergy, a pregnancy or an injury. Ask it only if it changes how you do the service, and make it a private question."
+msgstr "Ceci porte sur la santé — une allergie, une grossesse ou une blessure. Ne le demandez que si cela change votre façon de faire le service, et rendez la question privée."
+
+#: src/pages/choices/ChoicesEditor.tsx:1038
+msgid "This asks about religion, ethnicity or politics. Never ask it: it has nothing to do with a booking."
+msgstr "Ceci porte sur la religion, l’origine ethnique ou la politique. Ne le demandez jamais : cela n’a rien à voir avec une réservation."
+
+#: src/pages/choices/ChoicesEditor.tsx:1039
+msgid "This asks for a PIN or a password. Never ask it: customers must never share these with anyone, not even you."
+msgstr "Ceci demande un code PIN ou un mot de passe. Ne le demandez jamais : les clients ne doivent les donner à personne, pas même à vous."
+
+#: src/pages/choices/ChoicesEditor.tsx:1037
+msgid "This asks for an ID, passport or insurance number. Please don’t ask it: the seller rules forbid it. If you must see an ID, look at it at the counter."
+msgstr "Ceci demande un numéro d’identité, de passeport ou d’assurance. Ne le demandez pas : les règles des commerçants l’interdisent. S’il faut voir une pièce d’identité, regardez-la au comptoir."
 
 #: src/pages/AppointmentsPage.tsx:1091
 msgid "This booking could not be opened"
@@ -8982,7 +9043,7 @@ msgstr "Cette semaine"
 msgid "Those hours did not save."
 msgstr "Ces horaires n’ont pas été enregistrés."
 
-#: src/pages/ServicesPage.tsx:683
+#: src/pages/ServicesPage.tsx:687
 msgid "Throw this draft away?"
 msgstr "Supprimer ce brouillon ?"
 
@@ -9004,7 +9065,7 @@ msgstr "Il est temps de vous reconnecter"
 msgid "Tip"
 msgstr "Astuce"
 
-#: src/pages/ServicesPage.tsx:995
+#: src/pages/ServicesPage.tsx:999
 msgid "Title"
 msgstr "Titre"
 
@@ -9014,7 +9075,7 @@ msgid "Title <0>{0}/{TITLE_MAX}</0>"
 msgstr "Titre <0>{0}/{TITLE_MAX}</0>"
 
 #. placeholder {0}: title.length
-#: src/pages/ServicesPage.tsx:1472
+#: src/pages/ServicesPage.tsx:1503
 msgid "Title <0>{0}/100</0>"
 msgstr "Titre <0>{0}/100</0>"
 
@@ -9091,7 +9152,7 @@ msgctxt "after an amount: the full price"
 msgid "total"
 msgstr "au total"
 
-#: src/pages/choices/ChoicesEditor.tsx:1221
+#: src/pages/choices/ChoicesEditor.tsx:1315
 msgid "Total"
 msgstr "Total"
 
@@ -9134,7 +9195,7 @@ msgstr "Réessayer"
 msgid "Try again, or print the card instead."
 msgstr "Réessayez, ou imprimez plutôt la carte."
 
-#: src/pages/choices/ChoicesEditor.tsx:1163
+#: src/pages/choices/ChoicesEditor.tsx:1257
 msgid "Try it as a customer"
 msgstr "Essayez comme un client"
 
@@ -9214,7 +9275,7 @@ msgstr "Deux créneaux libres cet après-midi — réservez vite"
 msgid "Type"
 msgstr "Type"
 
-#: src/pages/ServicesPage.tsx:1810
+#: src/pages/ServicesPage.tsx:1851
 msgid "Type something first"
 msgstr "Écrivez d’abord quelque chose"
 
@@ -9264,7 +9325,7 @@ msgstr "Non payé"
 msgid "Unread "
 msgstr "Non lus "
 
-#: src/pages/ServicesPage.tsx:942
+#: src/pages/ServicesPage.tsx:946
 msgid "Unsaved changes"
 msgstr "Modifications non enregistrées"
 
@@ -9277,11 +9338,12 @@ msgstr "Jusqu’à"
 msgid "Until there is a branch, there is nothing for customers to book. Add its address, pin it on the map, then set its hours."
 msgstr "Tant qu’il n’y a pas de succursale, les clients n’ont rien à réserver. Ajoutez son adresse, placez-la sur la carte, puis fixez ses horaires."
 
-#: src/pages/choices/ChoicesEditor.tsx:716
+#: src/pages/choices/ChoicesEditor.tsx:732
+#: src/pages/ServicesPage.tsx:1436
 msgid "Untitled question"
 msgstr "Question sans titre"
 
-#: src/pages/ServicesPage.tsx:668
+#: src/pages/ServicesPage.tsx:672
 msgid "Untitled service"
 msgstr "Service sans nom"
 
@@ -9289,7 +9351,7 @@ msgstr "Service sans nom"
 msgid "Unused for {idle}, a sign-in ends by itself."
 msgstr "Sans activité pendant {idle}, une connexion prend fin d’elle-même."
 
-#: src/pages/choices/ChoicesEditor.tsx:543
+#: src/pages/choices/ChoicesEditor.tsx:556
 msgid "Up to {MAX_GROUPS} questions per service"
 msgstr "Jusqu’à {MAX_GROUPS} questions par service"
 
@@ -9301,11 +9363,11 @@ msgstr "Jusqu’à {MAX_KIND_CATEGORIES} catégories"
 msgid "Up to {MAX_KIND_CATEGORIES} kinds — take one off first"
 msgstr "Jusqu’à {MAX_KIND_CATEGORIES} types — retirez-en un d’abord"
 
-#: src/pages/choices/ChoicesEditor.tsx:733
+#: src/pages/choices/ChoicesEditor.tsx:749
 msgid "up to +{longest} min"
 msgstr "jusqu’à +{longest} min"
 
-#: src/pages/choices/ChoicesEditor.tsx:732
+#: src/pages/choices/ChoicesEditor.tsx:748
 msgid "up to +{mostPrice}"
 msgstr "jusqu’à +{mostPrice}"
 
@@ -9330,8 +9392,8 @@ msgstr "Envoi de {0} sur {1}…"
 #. placeholder {0}: index + 1
 #. placeholder {1}: files.length
 #. placeholder {1}: fresh.length
-#: src/pages/ServicesPage.tsx:390
-#: src/pages/ServicesPage.tsx:450
+#: src/pages/ServicesPage.tsx:394
+#: src/pages/ServicesPage.tsx:454
 msgid "Uploading photo {0} of {1}…"
 msgstr "Envoi de la photo {0} sur {1}…"
 
@@ -9501,6 +9563,10 @@ msgstr "En attente de son arrivée"
 msgid "Waiting to be checked by our team"
 msgstr "En attente de vérification par notre équipe"
 
+#: src/pages/ServicesPage.tsx:1551
+msgid "Warn about risks here, like “not suitable during pregnancy”. Never ask customers to send health details, an ID number or a PIN — by message or anywhere else."
+msgstr "Prévenez ici des risques, comme « déconseillé pendant la grossesse ». Ne demandez jamais aux clients d’envoyer des détails de santé, un numéro d’identité ou un code PIN — par message ou ailleurs."
+
 #: src/pages/StaffPage.tsx:198
 msgid "was a manager"
 msgstr "ancien gérant"
@@ -9553,7 +9619,7 @@ msgstr "Nous vérifions, vous publiez"
 msgid "We could not approve it yet. Everything you set up is still here."
 msgstr "Nous n’avons pas encore pu l’approuver. Tout ce que vous avez configuré est toujours là."
 
-#: src/pages/ServicesPage.tsx:318
+#: src/pages/ServicesPage.tsx:322
 msgid "We could not save what you typed last — check your connection. Everything before it is saved."
 msgstr "Nous n’avons pas pu enregistrer ce que vous avez saisi en dernier — vérifiez votre connexion. Tout ce qui précède est enregistré."
 
@@ -9634,7 +9700,7 @@ msgstr "Bon<0/><1>retour.</1>"
 msgid "wellness centre"
 msgstr "centre de bien-être"
 
-#: src/pages/ServicesPage.tsx:1104
+#: src/pages/ServicesPage.tsx:1108
 msgid "What a customer reads on the service's page"
 msgstr "Ce qu’un client lit sur la page du service"
 
@@ -9664,7 +9730,7 @@ msgstr "Ce que les clients réservent"
 msgid "What customers can book"
 msgstr "Ce que les clients peuvent réserver"
 
-#: src/pages/ServicesPage.tsx:1459
+#: src/pages/ServicesPage.tsx:1490
 msgid "What customers read when they choose it"
 msgstr "Ce que les clients lisent quand ils le choisissent"
 
@@ -9692,7 +9758,7 @@ msgstr "Ce que les clients voient : votre vitrine, les services que vous propos
 msgid "What did the customer recall — the booking time, the service, anything that identified them?"
 msgstr "De quoi le client s’est-il souvenu — l’heure de la réservation, le service, tout ce qui l’a identifié ?"
 
-#: src/pages/choices/ChoicesEditor.tsx:791
+#: src/pages/choices/ChoicesEditor.tsx:817
 msgid "What do you ask customers?"
 msgstr "Que demandez-vous aux clients ?"
 
@@ -9728,7 +9794,7 @@ msgstr "Quel est son code à 6 chiffres ?"
 msgid "What is this about?"
 msgstr "De quoi s’agit-il ?"
 
-#: src/pages/ServicesPage.tsx:1496
+#: src/pages/ServicesPage.tsx:1527
 msgid "What it is and what is included — a customer reads this before choosing it."
 msgstr "Ce que c’est et ce qui est inclus — le client le lit avant de le choisir."
 
@@ -9774,11 +9840,11 @@ msgstr "Ses choix"
 msgid "What they do"
 msgstr "Leurs services"
 
-#: src/pages/ServicesPage.tsx:1511
+#: src/pages/ServicesPage.tsx:1543
 msgid "What to know before coming: arrive ten minutes early, bring a towel, park at the back…"
 msgstr "À savoir avant de venir : arrivez dix minutes en avance, apportez une serviette, garez-vous à l’arrière…"
 
-#: src/pages/ServicesPage.tsx:684
+#: src/pages/ServicesPage.tsx:688
 msgid "What was written in it cannot be brought back."
 msgstr "Ce qui y était écrit ne pourra pas être récupéré."
 
@@ -9870,7 +9936,7 @@ msgstr "Quand êtes-vous ouvert ?"
 msgid "When customers book for today, they appear here in time order, each with a button to check them in."
 msgstr "Quand des clients réservent pour aujourd’hui, ils apparaissent ici par ordre d’heure, chacun avec un bouton pour enregistrer son arrivée."
 
-#: src/pages/ServicesPage.tsx:740
+#: src/pages/ServicesPage.tsx:744
 msgid "When the owner adds a service at your branch, it shows here."
 msgstr "Quand le propriétaire ajoute un service dans votre succursale, il apparaît ici."
 
@@ -9878,11 +9944,11 @@ msgstr "Quand le propriétaire ajoute un service dans votre succursale, il appar
 msgid "When they are finished, mark it done on <0>Appointments</0>."
 msgstr "Une fois terminé, marquez-la terminée dans <0>Rendez-vous</0>."
 
-#: src/pages/choices/ChoicesEditor.tsx:916
+#: src/pages/choices/ChoicesEditor.tsx:943
 msgid "When to ask it"
 msgstr "Quand la poser"
 
-#: src/pages/choices/ChoicesEditor.tsx:924
+#: src/pages/choices/ChoicesEditor.tsx:951
 msgid "When to ask this question"
 msgstr "Quand poser cette question"
 
@@ -10068,7 +10134,7 @@ msgid "Without the code"
 msgstr "Sans le code"
 
 #. placeholder {0}: notePrompt.length
-#: src/pages/choices/ChoicesEditor.tsx:589
+#: src/pages/choices/ChoicesEditor.tsx:603
 msgid "Words above their note box <0>{0}/120</0>"
 msgstr "Texte au-dessus de leur zone de note <0>{0}/120</0>"
 
@@ -10101,7 +10167,7 @@ msgstr "Tient l’accueil dans ses succursales : enregistre les arrivées, marq
 msgid "Write a reply"
 msgstr "Écrire une réponse"
 
-#: src/pages/choices/ChoicesEditor.tsx:559
+#: src/pages/choices/ChoicesEditor.tsx:572
 msgid "Write my own question"
 msgstr "Écrire ma propre question"
 
@@ -10156,7 +10222,7 @@ msgstr "C’est <0>parti !</0>"
 msgid "You are live! 🎉"
 msgstr "Vous êtes en ligne ! 🎉"
 
-#: src/pages/choices/ChoicesEditor.tsx:641
+#: src/pages/choices/ChoicesEditor.tsx:657
 msgid "You ask a question; when customers book, they tap an answer. An answer can cost more or take longer — you decide."
 msgstr "Vous posez une question ; quand les clients réservent, ils touchent une réponse. Une réponse peut coûter plus ou prendre plus de temps — c’est vous qui décidez."
 
@@ -10164,7 +10230,7 @@ msgstr "Vous posez une question ; quand les clients réservent, ils touchent un
 msgid "You can reopen it for {REOPEN_WINDOW_DAYS} days"
 msgstr "Vous pouvez la rouvrir pendant {REOPEN_WINDOW_DAYS} jours"
 
-#: src/pages/ServicesPage.tsx:608
+#: src/pages/ServicesPage.tsx:612
 msgid "You can see what is on sale at your branches. The owner or a manager changes it."
 msgstr "Vous voyez ce qui est proposé dans vos succursales. Le propriétaire ou un gérant le modifie."
 
@@ -10172,7 +10238,7 @@ msgstr "Vous voyez ce qui est proposé dans vos succursales. Le propriétaire ou
 msgid "You can send one message a week, so make it count."
 msgstr "Vous pouvez envoyer un message par semaine, alors soignez-le."
 
-#: src/pages/ServicesPage.tsx:607
+#: src/pages/ServicesPage.tsx:611
 msgid "You can switch a service on or off at your branches. The owner, or a manager of every branch, changes the menu and its prices."
 msgstr "Vous pouvez activer ou désactiver un service dans vos succursales. Le propriétaire, ou un gérant de toutes les succursales, modifie la carte et ses prix."
 
@@ -10302,7 +10368,7 @@ msgid "Your category and type"
 msgstr "Votre catégorie et votre type"
 
 #. placeholder {0}: editor.service.name
-#: src/pages/ServicesPage.tsx:300
+#: src/pages/ServicesPage.tsx:304
 msgid "Your changes to “{0}” are not saved yet. If you leave now, the service stays as it was."
 msgstr "Vos modifications de « {0} » ne sont pas encore enregistrées. Si vous partez maintenant, le service reste tel qu’il était."
 

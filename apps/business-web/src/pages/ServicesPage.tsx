@@ -42,8 +42,12 @@ import {
   groupsFromDraft,
   groupsFromService,
   groupsToInput,
+  neverAsked,
+  SensitiveNote,
+  titleOf,
   type GroupDraft,
 } from './choices/ChoicesEditor';
+import { sensitiveIn, type SensitiveKind } from '../lib/sensitive';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { formatTime, formatDate } from '../i18n/format';
@@ -1426,6 +1430,34 @@ function ServiceForm({
       });
       return;
     }
+    // A question that asks for something private (§312): said once more, plainly, before it reaches customers.
+    const forbidden = neverAsked(groups);
+    if (forbidden.length > 0) {
+      const named = forbidden.map((g) => `“${titleOf(g) || t`Untitled question`}”`).join(', ');
+      void confirmDialog({
+        title: t`Some questions ask for private information`,
+        body: (
+          <p>
+            {plural(forbidden.length, {
+              one: `${named} asks for something customers should never have to give a shop — an illness, an ID number, their beliefs or a PIN. Please change or remove it.`,
+              other: `${named} ask for something customers should never have to give a shop — an illness, an ID number, their beliefs or a PIN. Please change or remove them.`,
+            })}
+          </p>
+        ),
+        tone: 'danger',
+        icon: 'alert',
+        confirmLabel: t`Save anyway`,
+        cancelLabel: t`Change them`,
+      }).then((ok) => {
+        if (ok) send();
+        else setGroups((was) => was.map((g) => ({ ...g, open: g.key === forbidden[0].key })));
+      });
+      return;
+    }
+    send();
+  };
+
+  const send = () =>
     onSubmit(
       {
         name: name.trim(),
@@ -1447,7 +1479,6 @@ function ServiceForm({
       },
       photos,
     );
-  };
 
   const depositShare = (minor: number) => Math.round((minor * Number(deposit || 0)) / 100);
 
@@ -1496,6 +1527,7 @@ function ServiceForm({
               placeholder={t`What it is and what is included — a customer reads this before choosing it.`}
             />
             <span className="sv-help"><Trans>Shown under “About this service”.</Trans></span>
+            {textKind(description) && <SensitiveNote kind={textKind(description)!} />}
           </div>
           <div className="sv-field">
             <label id="sinstr-label" onClick={() => document.getElementById('sinstr')?.focus()}>
@@ -1513,6 +1545,15 @@ function ServiceForm({
             <span className="sv-help">
               <Trans>Shown as “Before you come” — on the service, and again on the customer’s reservation.</Trans>
             </span>
+            {/* Health warnings belong here (seller agreement 10.3); asking for private details does not (§312). */}
+            <span className="sv-help sv-help-private">
+              <Icon name="shield" size={13} />
+              <Trans>
+                Warn about risks here, like “not suitable during pregnancy”. Never ask customers to send health details, an
+                ID number or a PIN — by message or anywhere else.
+              </Trans>
+            </span>
+            {textKind(instructions) && <SensitiveNote kind={textKind(instructions)!} />}
           </div>
         </Section>
 
@@ -1829,6 +1870,16 @@ function ServiceForm({
 }
 
 /** The first question that would stop the form saving, to open it. */
+/**
+ * What a description or special instructions ask for that they must not
+ * (§312). Health words are left alone here: a warning about a risk belongs in
+ * the instructions; only ID numbers, beliefs and PINs are flagged.
+ */
+function textKind(text: string): SensitiveKind | null {
+  const kind = sensitiveIn(text);
+  return kind === 'id' || kind === 'beliefs' || kind === 'secrets' ? kind : null;
+}
+
 function firstTroubled(groups: GroupDraft[]) {
   return groups.findIndex((g) => choicesProblem([g]) !== null);
 }
