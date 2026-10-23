@@ -108,7 +108,15 @@ export class RefundsService {
   async sendOne(id: string): Promise<boolean> {
     const refund = await this.prisma.refund.findUnique({ where: { id } });
     if (!refund || refund.status !== RefundStatus.PENDING || !refund.phoneNumber || !refund.provider) return false;
-    if (!this.disbursements.isAvailable(refund.provider)) return false;
+    if (!this.disbursements.isAvailable(refund.provider)) {
+      // Nothing here can send on that network: straight to our team, rather than
+      // "on its way" for ever.
+      await this.prisma.refund.update({
+        where: { id },
+        data: { status: RefundStatus.FAILED, failureReason: `Refunds cannot be sent automatically on ${refund.provider}: send it by hand.` },
+      });
+      return false;
+    }
     const provider = this.disbursements.require(refund.provider);
 
     const reference = randomUUID();

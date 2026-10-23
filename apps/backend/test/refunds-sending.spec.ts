@@ -105,6 +105,14 @@ describe('Refunds, sent (§313)', () => {
     expect(await prisma.refund.findUniqueOrThrow({ where: { id: r!.id } })).toMatchObject({ status: RefundStatus.SENDING });
   });
 
+  it('one on a network we cannot send through goes straight to our team', async () => {
+    const r = await owed();
+    await prisma.refund.update({ where: { id: r!.id }, data: { provider: MobileMoneyProvider.AIRTEL_MONEY } });
+    await refunds.sendDue();
+    expect(provider.sendTransfer).not.toHaveBeenCalled();
+    expect(await prisma.refund.findUniqueOrThrow({ where: { id: r!.id } })).toMatchObject({ status: RefundStatus.FAILED });
+  });
+
   it('one with no number on record is sent by hand, and marked so', async () => {
     const r = await owed(null);
     await refunds.sendDue();

@@ -5899,7 +5899,7 @@ msgstr "Gahunda iri kuri PENDING_PAYMENT cyangwa BOOKED ni yo yonyine ishobora g
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/refunds/refunds.service.ts:253
+#: src/refunds/refunds.service.ts:261
 msgid "Only a refund waiting or refused can be tried again. This one is {status}."
 msgstr "Gusa ubwishyu busubizwa butegereje cyangwa bwanzwe ni bwo bushobora kongera kugeragezwa. Ubu ni {status}."
 
@@ -5959,7 +5959,7 @@ msgid "Only an administrator can do that."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora kubikora."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:201
+#: src/refunds/refunds.service.ts:209
 msgid "Only an administrator can do this."
 msgstr "Ibi bikorwa n’umuyobozi gusa."
 
@@ -6855,8 +6855,8 @@ msgid "Refreshments"
 msgstr "Ibyo kurya no kunywa"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:251
-#: src/refunds/refunds.service.ts:267
+#: src/refunds/refunds.service.ts:259
+#: src/refunds/refunds.service.ts:275
 msgid "Refund not found."
 msgstr "Ubwishyu busubizwa ntibwabonetse."
 
@@ -8133,7 +8133,7 @@ msgid "There is news on your question."
 msgstr "Hari amakuru mashya ku kibazo cyawe."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:256
+#: src/refunds/refunds.service.ts:264
 msgid "There is no number to send it to. Send it by hand and mark it sent."
 msgstr "Nta nimero yo kubwoherezaho ihari. Bwohereze n’intoki maze wemeze ko bwoherejwe."
 
@@ -8423,12 +8423,12 @@ msgid "This reaches {value0} people. Type {people} to confirm."
 msgstr "Ibi bigera ku bantu {value0}. Andika {people} kugira ngo wemeze."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:268
+#: src/refunds/refunds.service.ts:276
 msgid "This refund is already sent."
 msgstr "Ubu bwishyu busubizwa bwamaze koherezwa."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:270
+#: src/refunds/refunds.service.ts:278
 msgid "This refund is with the operator now. Wait for its answer before sending it another way."
 msgstr "Ubu bwishyu buri kwa sosiyete y’itumanaho ubu. Tegereza igisubizo cyayo mbere yo kubwohereza mu bundi buryo."
 

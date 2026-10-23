@@ -5899,7 +5899,7 @@ msgstr "Seul un rendez-vous PENDING_PAYMENT ou BOOKED peut être annulé. Celui-
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/refunds/refunds.service.ts:253
+#: src/refunds/refunds.service.ts:261
 msgid "Only a refund waiting or refused can be tried again. This one is {status}."
 msgstr "Seul un remboursement en attente ou refusé peut être relancé. Celui-ci est {status}."
 
@@ -5959,7 +5959,7 @@ msgid "Only an administrator can do that."
 msgstr "Seul un administrateur peut faire cela."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:201
+#: src/refunds/refunds.service.ts:209
 msgid "Only an administrator can do this."
 msgstr "Seul un administrateur peut faire cela."
 
@@ -6855,8 +6855,8 @@ msgid "Refreshments"
 msgstr "Rafraîchissements"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:251
-#: src/refunds/refunds.service.ts:267
+#: src/refunds/refunds.service.ts:259
+#: src/refunds/refunds.service.ts:275
 msgid "Refund not found."
 msgstr "Remboursement introuvable."
 
@@ -8133,7 +8133,7 @@ msgid "There is news on your question."
 msgstr "Il y a du nouveau sur votre question."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:256
+#: src/refunds/refunds.service.ts:264
 msgid "There is no number to send it to. Send it by hand and mark it sent."
 msgstr "Il n’y a pas de numéro où l’envoyer. Envoyez-le à la main et marquez-le comme envoyé."
 
@@ -8423,12 +8423,12 @@ msgid "This reaches {value0} people. Type {people} to confirm."
 msgstr "Ce message touche {value0} personnes. Saisissez {people} pour confirmer."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:268
+#: src/refunds/refunds.service.ts:276
 msgid "This refund is already sent."
 msgstr "Ce remboursement est déjà envoyé."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/refunds/refunds.service.ts:270
+#: src/refunds/refunds.service.ts:278
 msgid "This refund is with the operator now. Wait for its answer before sending it another way."
 msgstr "Ce remboursement est chez l’opérateur en ce moment. Attendez sa réponse avant de l’envoyer autrement."
 
