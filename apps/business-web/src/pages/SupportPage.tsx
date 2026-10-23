@@ -29,6 +29,7 @@ import './support.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { formatDateTime } from '../i18n/format';
+import { EmptyState } from '../ui/EmptyState';
 
 /** An icon for each kind of question, the same in the list and the form. */
 const CATEGORY_ICON: Record<TicketCategory, IconName> = {
@@ -181,10 +182,13 @@ export function SupportPage() {
         {tickets.isLoading && <div className="skeleton hp-skeleton" />}
 
         {tickets.data && rows.length === 0 && (
-          <p className="hp-none">
-            <Icon name="checkCircle" size={18} />{' '}
-            <Trans>You have not asked us anything yet. That is a good sign.</Trans>
-          </p>
+          <EmptyState
+            size="row"
+            className="hp-none-state"
+            art="clear"
+            title={t`You have not asked us anything yet`}
+            text={t`That is a good sign. When you do, our replies arrive here and by email.`}
+          />
         )}
 
         {live.length > 0 && <TicketGroup title={t`Open`} rows={live} onOpen={setOpenId} />}

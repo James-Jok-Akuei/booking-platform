@@ -16,6 +16,7 @@ import { useMediaQuery } from '../shell/useMediaQuery';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { formatDate } from '../i18n/format';
+import { EmptyState } from '../ui/EmptyState';
 
 const when = (iso: string) => {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -90,12 +91,13 @@ export function Notifications() {
       </header>
 
       {rows.length === 0 && (
-        <div className="bell-empty">
-          <span>
-            <Icon name="inbox" size={22} />
-          </span>
-          <strong><Trans>Nothing yet.</Trans></strong>
-        </div>
+        <EmptyState
+          size="card"
+          className="bell-empty"
+          art="bell"
+          title={t`Nothing yet.`}
+          text={t`New bookings, payments and messages are announced here.`}
+        />
       )}
 
       <ul>

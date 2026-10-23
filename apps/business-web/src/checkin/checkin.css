@@ -169,9 +169,8 @@
 .ci-due.is-soon { background: var(--ask-soft); color: var(--ask); }
 .ci-due.is-late { background: var(--warn-soft); color: #9a5d00; }
 
-.ci-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 34px 20px 20px; }
-.ci-empty > span { width: 60px; height: 60px; display: grid; place-items: center; border-radius: 20px; background: var(--sunken); color: var(--muted); }
-.ci-empty p { margin: 0; max-width: 34ch; }
+.es.ci-empty { padding: 14px 16px 10px; }
+.es.ci-empty .es-art { width: 160px; }
 
 /* ---- the chosen customer ---- */
 

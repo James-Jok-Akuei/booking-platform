@@ -20,6 +20,7 @@ import { alertDialog, promptDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { ShopMark } from '../ui/ShopMark';
 import './ledger.css';
+import { EmptyState } from '../ui/EmptyState';
 
 type Tab = 'adjustments' | 'ledger';
 type State = 'outstanding' | 'executed' | 'all';
@@ -298,13 +299,13 @@ function Adjustments() {
 
       {list.isLoading && <div className="skeleton lg-skel" />}
       {list.data && rows.length === 0 && (
-        <div className="lg-empty">
-          <span>
-            <Icon name={state === 'outstanding' ? 'checkCircle' : 'sliders'} size={26} />
-          </span>
-          <strong>{state === 'outstanding' ? 'Nothing waiting to be executed' : 'No adjustments recorded'}</strong>
-          <p>Adjustments are recorded when a support ticket is resolved with money owed one way or the other.</p>
-        </div>
+        <EmptyState
+          size="card"
+          className="is-list"
+          art={state === 'outstanding' ? 'clear' : 'paper'}
+          title={state === 'outstanding' ? 'Nothing waiting to be executed' : 'No adjustments recorded'}
+          text="Adjustments are recorded when a support ticket is resolved with money owed one way or the other."
+        />
       )}
 
       <ul className="lg-adjs">
@@ -465,13 +466,13 @@ function Ledger() {
 
         {list.isLoading && <div className="skeleton lg-skel" />}
         {list.data && rows.length === 0 && (
-          <div className="lg-empty">
-            <span>
-              <Icon name="list" size={26} />
-            </span>
-            <strong>No entries here</strong>
-            <p>Nothing of that kind{q ? ` for “${q}”` : ''}{period !== 'any' ? ' in that time' : ''}.</p>
-          </div>
+          <EmptyState
+            size="card"
+            className="is-list"
+            art={q ? 'search' : 'bank'}
+            title="No entries here"
+            text={`Nothing of that kind${q ? ` for “${q}”` : ''}${period !== 'any' ? ' in that time' : ''}.`}
+          />
         )}
 
         <ul className={`lg-rows${list.isPlaceholderData ? ' is-refreshing' : ''}`}>

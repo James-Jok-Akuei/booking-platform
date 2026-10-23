@@ -24,6 +24,7 @@ import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { formatTime, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
+import { EmptyState } from '../ui/EmptyState';
 
 /**
  * Checking a customer in (§191) — the thing a seller does more than anything
@@ -278,17 +279,17 @@ function CheckInDialog({
                   [0, 1, 2].map((i) => <div key={i} className="skeleton ci-skeleton" />)}
 
                 {expected.data && total === 0 && (
-                  <div className="ci-empty">
-                    <span>
-                      <Icon name="calendarCheck" size={26} />
-                    </span>
-                    <strong>{search ? t`Nobody matches “${search}”` : t`Nobody is expected`}</strong>
-                    <p className="muted">
-                      {search
+                  <EmptyState
+                    size="card"
+                    className="ci-empty"
+                    art={search ? 'search' : 'calendar'}
+                    title={search ? t`Nobody matches “${search}”` : t`Nobody is expected`}
+                    text={
+                      search
                         ? t`Try part of their email, or the service.`
-                        : t`Customers appear here once they have booked and paid their deposit.`}
-                    </p>
-                  </div>
+                        : t`Customers appear here once they have booked and paid their deposit.`
+                    }
+                  />
                 )}
 
                 <Group title={t`Today`} rows={groups.today} onChoose={choose} today />

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { PageCrash } from '../ui/PageCrash';
 import { AdRail } from '../ads/AdRail';
 import { AdStrip } from '../ads/AdStrip';
 import { useAuth } from '../auth/auth-context';
@@ -231,8 +232,14 @@ function Frame() {
         setPalette(true);
       }
     };
+    // A page may ask for the search too — the not-found page's "Search every page" (§311).
+    const onAsk = () => setPalette(true);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('app:search', onAsk);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('app:search', onAsk);
+    };
   }, []);
 
   return (
@@ -263,7 +270,9 @@ function Frame() {
           {/* No room for the "For you" column: a slim banner opens every page
               but Overview, which has its own (§221). */}
           {!wide && location.pathname !== '/' && <AdStrip />}
-          <Outlet />
+          <PageCrash>
+            <Outlet />
+          </PageCrash>
         </main>
       </div>
 

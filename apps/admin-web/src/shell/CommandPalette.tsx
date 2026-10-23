@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '../nav';
 import { Icon, type IconName } from '../ui/Icon';
+import { EmptyState } from '../ui/EmptyState';
 
 type Entry = {
   id: string;
@@ -152,11 +153,13 @@ export function CommandPalette({ onClose, onSignOut }: { onClose: () => void; on
 
         <div className="cp-list" id="cp-list" role="listbox" ref={listRef}>
           {sections.length === 0 && (
-            <div className="cp-empty">
-              <Icon name="search" size={26} />
-              <strong>Nothing called “{query}”</strong>
-              <span>Try a page name, or a word like “momo” or “fee”.</span>
-            </div>
+            <EmptyState
+              size="card"
+              className="cp-empty is-panel"
+              art="search"
+              title={`Nothing called “${query}”`}
+              text="Try a page name, or a word like “momo” or “fee”."
+            />
           )}
           {sections.map((group) => (
             <div key={group.section} className="cp-section">

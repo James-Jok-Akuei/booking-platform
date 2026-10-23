@@ -19,6 +19,7 @@ import { Trans } from '@lingui/react/macro';
 import { plural, t } from '@lingui/core/macro';
 import { formatDateTime } from '../i18n/format';
 import { Plural } from '@lingui/react/macro';
+import { EmptyState } from '../ui/EmptyState';
 
 const PAGE = 25;
 
@@ -277,12 +278,13 @@ export function GettingPaidPage() {
         )}
         {payouts.isLoading && <div className="skeleton gp-skeleton" />}
         {payouts.data && payoutRows.length === 0 && (
-          <div className="gp-empty">
-            <span>
-              <Icon name="banknote" size={26} />
-            </span>
-            <p><Trans>Nothing sent yet.</Trans></p>
-          </div>
+          <EmptyState
+            size="row"
+            className="gp-empty-state"
+            art="bank"
+            title={t`Nothing sent yet`}
+            text={t`Your first payment shows here once money from a booking is ready to send.`}
+          />
         )}
         {payoutRows.length > 0 && (
           <ul className="gp-list">

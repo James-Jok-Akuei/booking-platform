@@ -22,6 +22,7 @@ import { Icon, type IconName } from '../ui/Icon';
 import { Select } from '../ui/Select';
 import { Switch } from '../ui/Switch';
 import './announcements.css';
+import { EmptyState } from '../ui/EmptyState';
 
 type Kind = AnnouncementDraft['kind'];
 type Audience = AnnouncementDraft['audience'];
@@ -579,10 +580,13 @@ export function AnnouncementsPage() {
           <span>{list.data?.announcements.length ?? 0}</span>
         </header>
         {list.data && list.data.announcements.length === 0 && (
-          <div className="an-empty">
-            <Icon name="megaphone" size={26} />
-            <p>Nothing yet. What you send shows here, with how many it reached and how many read it.</p>
-          </div>
+          <EmptyState
+            size="card"
+            className="is-list"
+            art="mailbox"
+            title="Nothing sent yet"
+            text="What you send shows here, with how many it reached and how many read it."
+          />
         )}
         <ul>
           {list.data?.announcements.map((a, i) => (

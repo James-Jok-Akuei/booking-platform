@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './Icon';
+import { EmptyState } from './EmptyState';
 
 /**
  * A search that waits as an icon at the end of a row of tabs (§289), and
@@ -116,16 +117,18 @@ export function SearchToggle({
 /** A search that found nothing, and the way back (§289). */
 export function NothingFound({ q, onClear }: { q: string; onClear: () => void }) {
   return (
-    <div className="q-empty sx-empty">
-      <span>
-        <Icon name="search" size={26} />
-      </span>
-      <strong>Nothing matches “{q}”</strong>
-      <p className="muted">Try a shop’s name, a branch or district, or the last digits of a number.</p>
+    <EmptyState
+      framed
+      size="card"
+      className="is-list"
+      art="search"
+      title={`Nothing matches “${q}”`}
+      text="Try a shop’s name, a branch or district, or the last digits of a number."
+    >
       <button type="button" onClick={onClear}>
         <Icon name="close" size={15} />
         Clear the search
       </button>
-    </div>
+    </EmptyState>
   );
 }

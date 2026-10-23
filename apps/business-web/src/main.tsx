@@ -12,6 +12,7 @@ import { DialogHost } from './ui/Dialog';
 import { ConfirmHost } from './session/ConfirmItsYou';
 import { leaveIntro } from './intro';
 import { guardFileDrops } from './ui/DropZone';
+import { PageCrash } from './ui/PageCrash';
 import './styles.css';
 
 const queryClient = new QueryClient({
@@ -67,7 +68,10 @@ void loadLocale().finally(() =>
         <BrowserRouter>
           <Localised>
             <AuthProvider>
-              <App />
+              {/* Anything that breaks the frame itself (§311). */}
+              <PageCrash whole>
+                <App />
+              </PageCrash>
               <DialogHost />
               <ConfirmHost />
               <IntroLeaves />

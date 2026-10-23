@@ -8,6 +8,7 @@ import { confirmDialog, promptDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { ShopMark } from '../ui/ShopMark';
 import './stories.css';
+import { EmptyState } from '../ui/EmptyState';
 
 const VIEWS: Array<{ value: StoryView; label: string }> = [
   { value: 'reported', label: 'Reported' },
@@ -162,17 +163,17 @@ export function StoriesPage() {
           )}
 
           {data && stories.length === 0 && (
-            <div className="ast-empty">
-              <span>
-                <Icon name={view === 'reported' ? 'checkCircle' : 'stories'} size={28} />
-              </span>
-              <strong>{view === 'reported' ? 'Nothing reported' : 'No stories up right now'}</strong>
-              <p>
-                {view === 'reported'
+            <EmptyState
+              size="card"
+              className="is-list"
+              art={view === 'reported' ? 'clear' : 'photo'}
+              title={view === 'reported' ? 'Nothing reported' : 'No stories up right now'}
+              text={
+                view === 'reported'
                   ? 'When a customer reports a story, it waits here — the most reported first.'
-                  : 'Shops post one from their Stories page. Each stays up for 24 hours.'}
-              </p>
-            </div>
+                  : 'Shops post one from their Stories page. Each stays up for 24 hours.'
+              }
+            />
           )}
 
           <ul className="ast-grid">

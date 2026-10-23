@@ -22,6 +22,7 @@ import { NETWORK_NAME, NetworkMark } from '../ui/NetworkMark';
 import { NothingFound, SearchToggle } from '../ui/SearchToggle';
 import { ShopMark } from '../ui/ShopMark';
 import './payouts.css';
+import { EmptyState } from '../ui/EmptyState';
 
 type Tab = PayoutStatus | 'ALL';
 
@@ -330,15 +331,14 @@ export function PayoutsPage() {
       {list.data && rows.length === 0 && q && <NothingFound q={q} onClear={() => setQ('')} />}
 
       {list.data && rows.length === 0 && !q && (
-        <div className="q-empty">
-          <span>
-            <Icon name={tab === 'PENDING' ? 'checkCircle' : 'send'} size={26} />
-          </span>
-          <strong>{tab === 'PENDING' ? 'Nothing to send' : tab === 'FAILED' ? 'No failed payouts' : 'No payouts here'}</strong>
-          <p className="muted">
-            {tab === 'PENDING' ? 'Run payouts to work out what each shop is owed now.' : 'None are in this state just now.'}
-          </p>
-        </div>
+        <EmptyState
+          framed
+          size="card"
+          className="is-list"
+          art={tab === 'PENDING' ? 'clear' : 'bank'}
+          title={tab === 'PENDING' ? 'Nothing to send' : tab === 'FAILED' ? 'No failed payouts' : 'No payouts here'}
+          text={tab === 'PENDING' ? 'Run payouts to work out what each shop is owed now.' : 'None are in this state just now.'}
+        />
       )}
 
       {rows.length > 0 && (

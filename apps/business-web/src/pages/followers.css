@@ -36,8 +36,6 @@
 .fl-readonly { display: flex; align-items: flex-start; gap: 10px; color: var(--ask); background: var(--ask-soft); box-shadow: none; }
 .fl-readonly p { margin: 0; font-size: 13.5px; font-weight: 600; line-height: 1.5; }
 
-.fl-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 22px 12px; text-align: center; color: var(--muted); }
-.fl-empty p { margin: 0; max-width: 320px; font-size: 13px; line-height: 1.5; }
 .fl-history { list-style: none; margin: 0; padding: 0; }
 .fl-history li { padding: 14px 0; animation: rise-in 420ms var(--ease) both; }
 .fl-history li + li { border-top: 1px solid var(--line); }

@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useInfiniteQuery, useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { BookingChoices, ChoiceMarks } from '../lib/BookingChoices';
@@ -22,6 +22,9 @@ import { MoreMenu, type MoreItem } from '../ui/MoreMenu';
 import { Portal } from '../ui/Portal';
 import { Select } from '../ui/Select';
 import { Icon, type IconName } from '../ui/Icon';
+import { EmptyHints, EmptyState } from '../ui/EmptyState';
+import type { EmptyArtName } from '../ui/emptyArtData';
+import { useShellData } from '../shell/useShellData';
 import { useScrollEdges } from '../ui/scrollEdges';
 import { addDays, clock, minutesBetween, relativeDay, sameDay, startOfDay, useNow } from '../lib/time';
 import {
@@ -242,6 +245,9 @@ export function AppointmentsPage() {
   const total = active ? waiting.data?.total ?? 0 : history.data?.pages[0]?.total ?? 0;
   const loading = active ? waiting.isLoading : history.isLoading;
   const searching = Boolean(q) || Boolean(branch);
+  // Never a booking at all (§311): the page shows what will be here instead of empty rows.
+  const shell = useShellData();
+  const neverBooked = !searching && counts[TABS.findIndex((t) => t.key === 'all')].data?.total === 0;
 
   const shown = useMemo(() => {
     const t = (a: Appointment) => new Date(a.startTime).getTime();
@@ -373,6 +379,8 @@ export function AppointmentsPage() {
           </div>
         </header>
 
+        {!neverBooked && (
+        <>
         <TodayStrip
           rows={(todays.data ?? []).filter((a) => !branch || a.location.id === branch)}
           withYou={withYou.data?.total}
@@ -461,6 +469,7 @@ export function AppointmentsPage() {
               })}
             </div>
           </div>
+          {(loading || shown.length > 0) && (
           <div className="ap-cols" aria-hidden="true">
             <span title={t`Time`}><Trans>Time</Trans></span>
             <span className="col-customer" title={t`Customer`}><Trans>Customer</Trans></span>
@@ -470,6 +479,7 @@ export function AppointmentsPage() {
             <span title={t`Status`}><Trans>Status</Trans></span>
             <span className="col-action" title={t`Action`}><Trans>Action</Trans></span>
           </div>
+          )}
           </>
           )}
         </div>
@@ -478,7 +488,11 @@ export function AppointmentsPage() {
             <CalendarHead cal={cal} />
           </div>
         )}
+        </>
+        )}
       </div>
+
+      {neverBooked && <FirstBooking live={shell.live} />}
 
       {act.error && (
         <p className="notice ap-notice" role="alert">
@@ -486,7 +500,7 @@ export function AppointmentsPage() {
         </p>
       )}
 
-      {mode === 'calendar' ? (
+      {neverBooked ? null : mode === 'calendar' ? (
         <div className="ap-board is-cal">
           <CalendarBody cal={cal} actions={actions} covers={covers} money={money.format} />
         </div>
@@ -902,40 +916,79 @@ async function downloadCsv(
 }
 
 function EmptyTab({ tab, searching }: { tab: TabKey; searching: boolean }) {
-  const copy: Record<TabKey, { icon: IconName; title: string; text: string }> = {
+  const copy: Record<TabKey, { art: EmptyArtName; title: string; text: string }> = {
     expected: {
-      icon: 'calendarCheck',
+      art: 'calendar',
       title: t`Nobody is expected`,
       text: t`Customers appear here once they have booked and paid their deposit.`,
     },
     'in-progress': {
-      icon: 'timer',
+      art: 'clear',
       title: t`Nobody is with you`,
       text: t`When you check a customer in, they wait here until you mark them done.`,
     },
     'awaiting-payment': {
-      icon: 'hourglass',
+      art: 'bank',
       title: t`Nothing waiting for payment`,
       text: t`A booking sits here while the customer approves their deposit on their phone.`,
     },
-    done: { icon: 'checkCircle', title: t`Nothing finished yet`, text: t`Bookings you mark done are kept here.` },
-    all: { icon: 'layers', title: t`No bookings yet`, text: t`Every booking, in every state, will be listed here.` },
+    done: { art: 'box', title: t`Nothing finished yet`, text: t`Bookings you mark done are kept here.` },
+    all: { art: 'calendar', title: t`No bookings yet`, text: t`Every booking, in every state, will be listed here.` },
   };
   const c = searching
     ? {
-        icon: 'search' as const,
+        art: 'search' as const,
         title: t`Nothing matches`,
         text: t`Try part of the email, the service, the branch — or the reservation number, like 3F2A-1C9B.`,
       }
     : copy[tab];
+  return <EmptyState size="card" className="ap-empty-state" art={c.art} title={c.title} text={c.text} />;
+}
+
+/**
+ * A shop that has never had a booking (§311): what this page will hold, and
+ * how the first booking comes — not a row of zeros and empty columns.
+ */
+function FirstBooking({ live }: { live: boolean }) {
+  const navigate = useNavigate();
   return (
-    <div className="ap-empty">
-      <span>
-        <Icon name={c.icon} size={28} />
-      </span>
-      <strong>{c.title}</strong>
-      <p>{c.text}</p>
-    </div>
+    <EmptyState
+      framed
+      art="calendar"
+      title={t`Your first booking will appear here`}
+      text={
+        live
+          ? t`Customers book you in the app. Show them your App QR code at the counter: they scan it, get the app, and can book you again.`
+          : t`Customers can book you once your shop is live. The Overview shows what is left to do.`
+      }
+      below={
+        <EmptyHints
+          items={[
+            { icon: <Icon name="calendarCheck" size={16} />, text: t`Who is coming, and when — as a list or on a calendar` },
+            { icon: <Icon name="ticket" size={16} />, text: t`Checking each customer in with their code` },
+            { icon: <Icon name="wallet" size={16} />, text: t`The deposit paid, and what is left to pay you` },
+          ]}
+        />
+      }
+    >
+      {live ? (
+        <>
+          <button type="button" className="primary" onClick={() => navigate('/app-qr')}>
+            <Icon name="qr" size={18} />
+            <Trans>Show the App QR code</Trans>
+          </button>
+          <button type="button" onClick={() => navigate('/profile')}>
+            <Icon name="store" size={18} />
+            <Trans>See your shopfront</Trans>
+          </button>
+        </>
+      ) : (
+        <button type="button" className="primary" onClick={() => navigate('/')}>
+          <Icon name="overview" size={18} />
+          <Trans>Go to Overview</Trans>
+        </button>
+      )}
+    </EmptyState>
   );
 }
 
@@ -1032,13 +1085,12 @@ function AppointmentDetail({
           </header>
 
           {detail.isError ? (
-            <div className="ap-empty">
-              <span>
-                <Icon name="alert" size={26} />
-              </span>
-              <strong><Trans>This booking could not be opened</Trans></strong>
-              <p>{detail.error instanceof ApiError ? detail.error.message : t`Check your connection and try again.`}</p>
-            </div>
+            <EmptyState
+              size="card"
+              art={detail.error instanceof ApiError && detail.error.status === 404 ? 'signpost' : 'plug'}
+              title={t`This booking could not be opened`}
+              text={detail.error instanceof ApiError ? detail.error.message : t`Check your connection and try again.`}
+            />
           ) : !d ? (
             <div className="ap-skeletons ap-drawer-skel">
               <div className="skeleton" />

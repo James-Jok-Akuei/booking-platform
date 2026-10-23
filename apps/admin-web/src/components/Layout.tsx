@@ -9,6 +9,7 @@ import { useMediaQuery } from '../shell/useMediaQuery';
 import { useShellData } from '../shell/useShellData';
 import { confirmDialog } from '../ui/Dialog';
 import '../shell/shell.css';
+import { PageCrash } from '../ui/PageCrash';
 
 const RAIL_KEY = 'booking-admin.sidebar-rail';
 
@@ -161,8 +162,14 @@ export function Layout() {
         setPalette(true);
       }
     };
+    // A page may ask for the search too — the not-found page's "Search every page" (§311).
+    const onAsk = () => setPalette(true);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('app:search', onAsk);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('app:search', onAsk);
+    };
   }, []);
 
   return (
@@ -180,7 +187,9 @@ export function Layout() {
           onSignOut={leave}
         />
         <main className="content" key={location.pathname}>
-          <Outlet />
+          <PageCrash>
+            <Outlet />
+          </PageCrash>
         </main>
       </div>
 

@@ -8,6 +8,7 @@ import { DialogHost } from './ui/Dialog';
 import { ConfirmHost } from './session/ConfirmItsYou';
 import { TwoStepGate } from './session/TwoStepSetup';
 import './styles.css';
+import { PageCrash } from './ui/PageCrash';
 
 const queryClient: QueryClient = new QueryClient({
   // Whatever an administrator does — approve, verify, send, answer — the
@@ -40,7 +41,10 @@ createRoot(document.getElementById('root')!).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
+          {/* Anything that breaks the frame itself (§311). */}
+          <PageCrash whole>
+            <App />
+          </PageCrash>
           <DialogHost />
           <ConfirmHost />
           <TwoStepGate />

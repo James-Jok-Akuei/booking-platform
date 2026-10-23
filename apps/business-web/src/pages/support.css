@@ -45,7 +45,7 @@
 .hp-board-head span { font-size: 13px; color: var(--muted); font-weight: 600; }
 .hp-board .hp-ticket { box-shadow: none; background: var(--sunken); border-color: transparent; }
 .hp-board .hp-ticket:hover:not(:disabled) { background: var(--panel); border-color: rgba(240, 83, 45, 0.3); box-shadow: var(--shadow-sm); }
-.hp-none { display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px 18px; border-radius: 18px; background: var(--ok-soft); color: var(--ok-deep); font-weight: 600; }
+.es.hp-none-state { padding: 6px 8px; border-radius: 18px; background: var(--sunken); }
 
 .hp-group h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 17px; }
 .hp-group h2 span { min-width: 22px; height: 22px; padding: 0 7px; display: grid; place-items: center; border-radius: 99px; background: var(--sunken-2); font-size: 11.5px; font-weight: 800; }

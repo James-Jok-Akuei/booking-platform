@@ -15,6 +15,7 @@ import { NETWORK_NAME, NetworkMark, networkOf, type Network } from '../ui/Networ
 import { NothingFound, SearchToggle } from '../ui/SearchToggle';
 import { ShopMark } from '../ui/ShopMark';
 import './destinations.css';
+import { EmptyState } from '../ui/EmptyState';
 
 type Tab = PayoutDestinationStatus | 'ALL';
 
@@ -236,17 +237,14 @@ export function PayoutDestinationsPage() {
       {list.data && rows.length === 0 && q && <NothingFound q={q} onClear={() => setQ('')} />}
 
       {list.data && rows.length === 0 && !q && (
-        <div className="q-empty">
-          <span>
-            <Icon name={tab === 'UNVERIFIED' ? 'checkCircle' : 'wallet'} size={26} />
-          </span>
-          <strong>{tab === 'UNVERIFIED' ? 'Every number is checked' : 'No numbers here'}</strong>
-          <p className="muted">
-            {tab === 'UNVERIFIED'
-              ? 'New numbers appear here, oldest first, as shops give them.'
-              : 'None are in this state just now.'}
-          </p>
-        </div>
+        <EmptyState
+          framed
+          size="card"
+          className="is-list"
+          art={tab === 'UNVERIFIED' ? 'clear' : 'bank'}
+          title={tab === 'UNVERIFIED' ? 'Every number is checked' : 'No numbers here'}
+          text={tab === 'UNVERIFIED' ? 'New numbers appear here, oldest first, as shops give them.' : 'None are in this state just now.'}
+        />
       )}
 
       {rows.length > 0 && (

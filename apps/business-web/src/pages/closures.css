@@ -1,8 +1,6 @@
 /* Closures & breaks (§196, §207): one planner — pick a day, change that day. */
 
 .cl-skeleton { height: 460px; border-radius: 28px; }
-.cl-empty { display: flex; align-items: center; gap: 12px; padding: 22px; border-radius: 22px; background: var(--panel); color: var(--muted); }
-.cl-empty p { margin: 0; }
 
 /* ---- the planner: the month and the day it points at, in one card ---- */
 

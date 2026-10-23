@@ -21,6 +21,7 @@ import { useAccess } from '../access';
 import { Trans } from '@lingui/react/macro';
 import { plural, select, t } from '@lingui/core/macro';
 import { dayName, formatDate } from '../i18n/format';
+import { EmptyState } from '../ui/EmptyState';
 
 /** A local calendar day as YYYY-MM-DD — the seller's today, not UTC's. */
 const ymdOf = (d: Date) =>
@@ -115,10 +116,12 @@ export function ClosuresPage() {
 
       {locations.isLoading && <div className="skeleton cl-skeleton" />}
       {branches.length === 0 && !locations.isLoading && (
-        <div className="cl-empty">
-          <Icon name="pin" size={26} />
-          <p>{canChange ? t`Add a branch first, under Branches & hours.` : t`You have no branch yet — ask the owner to choose yours.`}</p>
-        </div>
+        <EmptyState
+          framed
+          art="pin"
+          title={t`No branches yet`}
+          text={canChange ? t`Add a branch first, under Branches & hours.` : t`You have no branch yet — ask the owner to choose yours.`}
+        />
       )}
 
       {locationId && branch && (

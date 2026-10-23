@@ -56,10 +56,6 @@
 .ast-keep { background: var(--panel); }
 .ast-keep:hover:not(:disabled) { color: var(--ok-deep); border-color: #b9e3c9; background: var(--ok-soft); }
 
-.ast-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 48px 20px 44px; }
-.ast-empty > span { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 22px; background: var(--ok-soft); color: var(--ok-deep); margin-bottom: 4px; }
-.ast-empty strong { font-size: 15.5px; }
-.ast-empty p { margin: 0; max-width: 380px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
 
 /* Full size: the photo as a customer sees it, with the one decision beside it. */
 .ast-look { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 24px; background: rgba(12, 16, 12, 0.82); backdrop-filter: blur(4px); animation: ast-fade 200ms ease both; cursor: zoom-out; }

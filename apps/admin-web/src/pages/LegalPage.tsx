@@ -17,6 +17,7 @@ import { confirmDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 import { LegalText, blanksIn, blocksOf, diffBlocks } from '../ui/LegalText';
 import './legal.css';
+import { EmptyState } from '../ui/EmptyState';
 
 const KINDS: Array<{ value: LegalKind; label: string; who: string; icon: IconName }> = [
   { value: 'TERMS_OF_USE', label: 'Terms of Use', who: 'Everyone who uses the platform.', icon: 'legal' },
@@ -149,13 +150,13 @@ export function LegalPage() {
                   <LegalText body={wordsIn(shown, reading).body} />
                 </>
               ) : (
-                <div className="lgl-empty">
-                  <span>
-                    <Icon name={chosen.icon} size={28} />
-                  </span>
-                  <strong>No {chosen.label} yet</strong>
-                  <p>Until one is published, the apps show nothing in its place. {chosen.who}</p>
-                </div>
+                <EmptyState
+                  size="card"
+                  className="is-list"
+                  art="paper"
+                  title={`No ${chosen.label} yet`}
+                  text={`Until one is published, the apps show nothing in its place. ${chosen.who}`}
+                />
               )}
             </article>
 

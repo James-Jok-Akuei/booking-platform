@@ -11,6 +11,7 @@ import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { formatDate, formatTime } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
+import { EmptyState } from '../ui/EmptyState';
 
 const TITLE_MAX = 60;
 const BODY_MAX = 300;
@@ -253,10 +254,12 @@ export function FollowersPage() {
               <span>{data?.messages.length ?? 0}</span>
             </header>
             {data && data.messages.length === 0 && (
-              <div className="fl-empty">
-                <Icon name="megaphone" size={24} />
-                <p><Trans>Nothing sent yet. Your first message shows here, with how many opened it.</Trans></p>
-              </div>
+              <EmptyState
+                size="card"
+                art="mailbox"
+                title={t`Nothing sent yet`}
+                text={t`Your first message shows here, with how many opened it.`}
+              />
             )}
             <ul className="fl-history">
               {data?.messages.map((m, i) => <Sent key={m.id} message={m} index={i} />)}

@@ -46,6 +46,8 @@ import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { dayName, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
+import { EmptyState } from '../ui/EmptyState';
+import type { EmptyArtName } from '../ui/emptyArtData';
 
 /**
  * Today (§192) — the page a seller opens the app on.
@@ -364,7 +366,7 @@ export function OverviewPage() {
               </div>
             ) : todays.length === 0 ? (
               <Empty
-                icon="calendar"
+                art="calendar"
                 title={t`A quiet day so far`}
                 text={t`When customers book for today, they appear here in time order, each with a button to check them in.`}
               />
@@ -429,7 +431,7 @@ export function OverviewPage() {
               ))}
             </div>
           ) : (reviews.data ?? []).length === 0 ? (
-            <Empty icon="star" title={t`No reviews yet`} text={t`After a visit, customers can rate you. Their words will show here.`} />
+            <Empty art="reviews" title={t`No reviews yet`} text={t`After a visit, customers can rate you. Their words will show here.`} />
           ) : (
             <ul className="ov-reviews-list">
               {reviews.data!.map(({ review, branch }) => (
@@ -695,7 +697,7 @@ function Inbox({ threads, loading }: { threads: Thread[]; loading: boolean }) {
           <div className="skeleton" />
         </div>
       ) : recent.length === 0 ? (
-        <Empty icon="message" title={t`No messages yet`} text={t`When a customer asks something, it lands here.`} small />
+        <Empty art="chat" title={t`No messages yet`} text={t`When a customer asks something, it lands here.`} small />
       ) : (
         <ul className="ov-threads">
           {recent.map((thread) => (
@@ -799,7 +801,7 @@ function Busiest({
   if (pattern.total < 3) {
     return (
       <Empty
-        icon="chart"
+        art="chart"
         title={t`Not enough yet`}
         text={t`After a few more bookings, this shows the days and hours customers like best.`}
         small
@@ -927,14 +929,6 @@ function ReviewRow({ review, branch }: { review: Review; branch: string }) {
   );
 }
 
-function Empty({ icon, title, text, small = false }: { icon: IconName; title: string; text: string; small?: boolean }) {
-  return (
-    <div className={`ov-empty${small ? ' is-small' : ''}`}>
-      <span>
-        <Icon name={icon} size={small ? 22 : 28} />
-      </span>
-      <strong>{title}</strong>
-      <p>{text}</p>
-    </div>
-  );
+function Empty({ art, title, text, small = false }: { art: EmptyArtName; title: string; text: string; small?: boolean }) {
+  return <EmptyState size="card" className={`ov-empty${small ? ' is-small' : ''}`} art={art} title={title} text={text} />;
 }

@@ -22,6 +22,7 @@ import { ShopMark } from '../ui/ShopMark';
 import { PersonActPanel, PersonSupportSection, type PersonAct } from './PersonSupport';
 import './users.css';
 import { WriteFirst } from '../components/WriteFirst';
+import { EmptyState } from '../ui/EmptyState';
 
 type Role = 'ALL' | 'CUSTOMER' | 'BUSINESS' | 'ADMIN';
 
@@ -209,13 +210,13 @@ export function UsersPage() {
         )}
 
         {list.data && rows.length === 0 && (
-          <div className="us-empty">
-            <span>
-              <Icon name={q ? 'search' : 'users'} size={28} />
-            </span>
-            <strong>{q ? `Nobody matches “${q}”` : 'Nobody here yet'}</strong>
-            <p>{q ? 'Try part of their email, or the name they chose.' : 'Accounts appear here as people sign up.'}</p>
-          </div>
+          <EmptyState
+            size="card"
+            className="is-list"
+            art={q ? 'search' : 'people'}
+            title={q ? `Nobody matches “${q}”` : 'Nobody here yet'}
+            text={q ? 'Try part of their email, or the name they chose.' : 'Accounts appear here as people sign up.'}
+          />
         )}
 
         <ul className="us-list">

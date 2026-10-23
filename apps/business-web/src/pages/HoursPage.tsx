@@ -26,6 +26,7 @@ import { useAccess } from '../access';
 import { Trans } from '@lingui/react/macro';
 import { plural, t } from '@lingui/core/macro';
 import { dayName } from '../i18n/format';
+import { EmptyHints, EmptyState } from '../ui/EmptyState';
 
 /** Day names in the app's language (§308), Sunday first. */
 const DAYS = () => [0, 1, 2, 3, 4, 5, 6].map((day) => dayName(day));
@@ -110,28 +111,35 @@ export function HoursPage() {
       {/* Three other pages send people here to add their first branch (§117), so
           this is the screen that has to say what to do when there are none. */}
       {locations.data?.length === 0 && (
-        <div className="hr-empty">
-          <span>
-            <Icon name="pin" size={30} />
-          </span>
-          <h2><Trans>No branches yet</Trans></h2>
-          {access.runsBusiness ? (
-            <>
-              <p>
-                <Trans>
-                  Add one — until then there is nothing for a customer to book and nothing to set hours
-                  for.
-                </Trans>
-              </p>
-              <button type="button" className="primary" onClick={() => setAdding(true)}>
-                <Icon name="plus" size={18} stroke={2.4} />{' '}
-                <Trans>Add a branch</Trans>
-              </button>
-            </>
-          ) : (
-            <p><Trans>The owner has not given you a branch yet. Ask them to choose yours on the People page.</Trans></p>
-          )}
-        </div>
+        access.runsBusiness ? (
+          <EmptyState
+            framed
+            art="pin"
+            title={t`No branches yet`}
+            text={t`Add one — until then there is nothing for a customer to book and nothing to set hours for.`}
+            below={
+              <EmptyHints
+                items={[
+                  { icon: <Icon name="pin" size={16} />, text: t`Where it is, on the map customers use` },
+                  { icon: <Icon name="clock" size={16} />, text: t`The hours it opens, day by day` },
+                  { icon: <Icon name="users" size={16} />, text: t`How many people it serves at once` },
+                ]}
+              />
+            }
+          >
+            <button type="button" className="primary" onClick={() => setAdding(true)}>
+              <Icon name="plus" size={18} stroke={2.4} />
+              <Trans>Add a branch</Trans>
+            </button>
+          </EmptyState>
+        ) : (
+          <EmptyState
+            framed
+            art="pin"
+            title={t`No branches yet`}
+            text={t`The owner has not given you a branch yet. Ask them to choose yours on the People page.`}
+          />
+        )
       )}
 
       <div className="hr-list">

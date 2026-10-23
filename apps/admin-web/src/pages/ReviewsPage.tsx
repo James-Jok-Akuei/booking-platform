@@ -11,6 +11,7 @@ import { Select } from '../ui/Select';
 import { ShopMark } from '../ui/ShopMark';
 import { Stars } from '../ui/Stars';
 import './reviews.css';
+import { EmptyState } from '../ui/EmptyState';
 
 const PAGE = 20;
 
@@ -263,19 +264,19 @@ export function ReviewsPage() {
         )}
 
         {first && rows.length === 0 && (
-          <div className="rv-empty">
-            <span>
-              <Icon name={q ? 'search' : show === 'HIDDEN' ? 'eye' : 'star'} size={28} />
-            </span>
-            <strong>{q ? `Nothing matches “${q}”` : show === 'HIDDEN' ? 'Nothing is hidden' : 'No reviews here'}</strong>
-            <p>
-              {q
+          <EmptyState
+            size="card"
+            className="is-list"
+            art={q ? 'search' : show === 'HIDDEN' ? 'clear' : 'reviews'}
+            title={q ? `Nothing matches “${q}”` : show === 'HIDDEN' ? 'Nothing is hidden' : 'No reviews here'}
+            text={
+              q
                 ? 'Try other words, or another filter.'
                 : show === 'HIDDEN'
                   ? 'Every review customers wrote can be read.'
-                  : 'Customers can review a booking once the shop marks it done.'}
-            </p>
-          </div>
+                  : 'Customers can review a booking once the shop marks it done.'
+            }
+          />
         )}
 
         <ul className="rv-list">

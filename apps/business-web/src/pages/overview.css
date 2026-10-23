@@ -168,12 +168,9 @@ a.ov-stat:hover .ov-stat-go { color: var(--accent); transform: translate(2px, -2
 .ov-skeletons { display: flex; flex-direction: column; gap: 10px; }
 .ov-skeletons .skeleton { height: 64px; border-radius: 16px; }
 
-.ov-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 26px 16px 18px; }
-.ov-empty > span { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 22px; background: var(--sunken); color: var(--muted); margin-bottom: 4px; }
-.ov-empty strong { font-size: 15px; }
-.ov-empty p { margin: 0; color: var(--muted); font-size: 13.5px; max-width: 40ch; }
-.ov-empty.is-small { padding: 12px 8px 6px; }
-.ov-empty.is-small > span { width: 48px; height: 48px; border-radius: 16px; }
+/* Nothing in a card yet (§311). */
+.es.ov-empty { padding: 6px 8px 14px; }
+.es.ov-empty.is-small .es-art { width: 130px; }
 
 /* ---- today's schedule ---- */
 

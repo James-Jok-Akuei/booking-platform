@@ -733,8 +733,6 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-sp
 @keyframes sx-pop { from { transform: scale(0.4); opacity: 0; } }
 /* "Found for …" beside the count under a list. */
 .sx-for { color: var(--ink-2); }
-.q-empty.sx-empty > span { background: var(--sunken-2); color: var(--ink-2); }
-.sx-empty button { margin-top: 10px; display: inline-flex; align-items: center; gap: 7px; border-radius: 12px; }
 /* Where the tabs and an open field do not both fit — a tablet, a phone — the
    field takes a line of its own above the tabs rather than squeezing them. */
 @container (max-width: 940px) {
@@ -746,8 +744,4 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-sp
 .q-more { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
 .q-more button { border-radius: 12px; }
 
-.q-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 54px 20px; border-radius: 26px; background: var(--panel); border: 1px dashed var(--line-strong); }
-.q-empty > span { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 18px; background: var(--ok-soft); color: var(--ok-deep); margin-bottom: 6px; }
-.q-empty strong { font-size: 17px; }
-.q-empty p { margin: 0; max-width: 44ch; }
 

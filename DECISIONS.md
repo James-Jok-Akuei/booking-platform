@@ -20271,3 +20271,52 @@ customer app should follow its context too. Chosen for what this platform does
   written to fit them in all three languages — the part that matters ("not
   official", "times stay held") must not be the part cut off. Measured at 390
   and 320 wide in Kinyarwanda and French.
+
+## 311. Empty pages get their own face, and a page that is not there says so (2026-10-23)
+
+The user: empty pages in the business app and the console should look
+different from the same page with things in it — "same page in two different
+states" — with drawings like the reference sheets they sent (black-ink
+sketches, a mascot), and a professional 404 so nobody meets a bad error.
+
+- **The drawings** (`src/ui/emptyArtData.ts`, one file copied unchanged into
+  business-web and admin-web — keep them identical with `cmp`): our own
+  hand-drawn ink, not copies — the logo's green-black line, white and two warm
+  greys, a hard ink shadow, floating specks, and ONE orange thing per drawing,
+  the thing that changes when the page fills (the day ringed on the calendar,
+  the "+" coming out of the box, the answer bubble, the first star). Eighteen:
+  calendar, box, chat, bell, reviews, bank, mailbox, search, people,
+  followers, pin, photo, plug, signpost, paper, clear (a cup of tea — "all
+  caught up"), chart, and the 404. Kept as data, like the category drawings
+  (§264), so the phone app can draw them later. They move gently — specks
+  drift, the orange thing bobs, the bell swings — and stand still with
+  "reduce motion".
+- **One piece, three sizes** (`EmptyState`): `page` — the whole page is
+  empty, its usual parts make way (with `framed`, on a white card); `card` —
+  one list or card on a busy page; `row` — a strip. Under a page-sized one,
+  `EmptyHints`: three small points on what will show here.
+- **The rule**: when a page has NEVER had anything — no booking ever, no
+  service, no branch, no message, no review at a branch — its counters, filters,
+  tabs and column headings go and the page shows what it will hold and the
+  first step (Appointments: "Your first booking will appear here", with the
+  App QR code, or, before the shop is live, the Overview; How it is going:
+  "Your numbers start with your first booking"). When things exist but a
+  tab, filter or search is empty, a smaller drawing sits inside the list: the
+  magnifier for a search, the tea cup when an empty queue is good news
+  ("Nothing unread — all caught up", "Every number is checked").
+- **The 404** (`pages/NotFoundPage.tsx` in both apps): "4 · compass · 4" on
+  the three hills of the opening picture (§302), the needle unable to settle.
+  Inside the frame, so the menu still works; "Go to Overview", "Go back",
+  six usual places, "Search every page" (opens ⌘K through an `app:search`
+  event), and the address that was asked for. It replaces the old silent jump
+  to the Overview, which left people wondering where their link went. The top
+  bar says "Page not found".
+- **A page that breaks** (`ui/PageCrash.tsx`): instead of a white screen, the
+  unplugged drawing, "This page stopped working", Try again / Go to Overview,
+  and the error folded away under "Details for our team". Around every page
+  inside the frame (moving to another page starts afresh) and around the whole
+  app.
+- Business-app words in all three languages; the console stays English.
+  Checked at 1440 and 390 (320 for the 404) with faked empty answers; the
+  console was viewed with faked answers in the screenshot browser only — no
+  account was made or changed.

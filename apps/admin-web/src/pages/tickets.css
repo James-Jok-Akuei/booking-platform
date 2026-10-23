@@ -111,16 +111,12 @@
 .sp-who.is-free::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--warn); }
 .sp-reopened { color: var(--danger); }
 
-.sp-none { margin: 10px 16px; font-size: 13.5px; color: var(--muted); text-align: center; }
 .sp-more { margin: 0 14px 14px; min-height: 38px; border-radius: 12px; font-size: 13px; }
 
 /* ---- the open ticket ---- */
 
 .sp-pane { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-.sp-welcome { margin: auto; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 40px; max-width: 440px; }
-.sp-welcome > span { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 28px; background: var(--accent-soft); color: var(--accent-deep); margin-bottom: 6px; }
-.sp-welcome h2 { margin: 0; font-size: 20px; }
-.sp-welcome p { margin: 0; color: var(--muted); }
+.es.sp-welcome { margin: auto; max-width: 440px; padding: 40px 24px; }
 
 .sp-convo { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .sp-convo-skel { display: flex; flex-direction: column; gap: 12px; padding: 22px; }

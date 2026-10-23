@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { listMessages, listThreads, markThreadRead, sendMessage, type Message, type Thread } from '../api/chat';
@@ -15,6 +15,7 @@ import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
+import { EmptyHints, EmptyState } from '../ui/EmptyState';
 
 /** What a thread is about, so eight threads with one customer are not eight identical rows. */
 const subject = (thread: Thread) =>
@@ -98,6 +99,9 @@ export function MessagesPage() {
   // On a phone the open conversation is the whole screen, drawn at the top of
   // the page so nothing around it can clip or trap it.
   const phone = useMediaQuery('(max-width: 860px)');
+  const navigate = useNavigate();
+  // No conversation ever (§311): the page says what will be here, not two empty panes.
+  const none = Boolean(threads.data) && rows.length === 0;
 
   return (
     <section className="ms">
@@ -113,6 +117,30 @@ export function MessagesPage() {
         </header>
       </div>
 
+      {none && (
+        <EmptyState
+          framed
+          art="chat"
+          title={t`No messages yet`}
+          text={t`Customers can write to you from your page in the app — before they book, and about a booking they have made. You answer here.`}
+          below={
+            <EmptyHints
+              items={[
+                { icon: <Icon name="message" size={16} />, text: t`Questions before someone books` },
+                { icon: <Icon name="calendarCheck" size={16} />, text: t`Anything said about a booking` },
+                { icon: <Icon name="bell" size={16} />, text: t`The bell tells you when one arrives` },
+              ]}
+            />
+          }
+        >
+          <button type="button" onClick={() => navigate('/profile')}>
+            <Icon name="store" size={18} />
+            <Trans>See your shopfront</Trans>
+          </button>
+        </EmptyState>
+      )}
+
+      {!none && (
       <div className={`ms-inbox${openId ? ' has-open' : ''}`}>
         <aside className="ms-list">
           <div className="ms-list-top">
@@ -179,21 +207,13 @@ export function MessagesPage() {
             ))}
           </ul>
 
-          {threads.data && rows.length === 0 && (
-            <div className="ms-empty">
-              <span>
-                <Icon name="message" size={26} />
-              </span>
-              <p>
-                <Trans>
-                  No messages yet. Customers can write to you from your page in the app, before they book and
-                  about a booking they have made.
-                </Trans>
-              </p>
-            </div>
-          )}
           {threads.data && rows.length > 0 && shown.length === 0 && (
-            <p className="ms-none">{filter === 'unread' ? t`Nothing unread — all caught up.` : t`Nothing matches.`}</p>
+            <EmptyState
+              size="card"
+              className="ms-none-state"
+              art={search.trim() ? 'search' : 'clear'}
+              title={search.trim() ? t`Nothing matches` : t`Nothing unread — all caught up.`}
+            />
           )}
         </aside>
 
@@ -201,20 +221,21 @@ export function MessagesPage() {
           {openId && !phone ? (
             <Conversation key={openId} threadId={openId} thread={open} onBack={() => setOpenId(null)} />
           ) : (
-            <div className="ms-welcome">
-              <span>
-                <Icon name="message" size={34} />
-              </span>
-              <h2>
-                {waiting > 0
+            <EmptyState
+              size="card"
+              className="ms-welcome"
+              art="chat"
+              title={
+                waiting > 0
                   ? plural(waiting, { one: '# conversation is waiting', other: '# conversations are waiting' })
-                  : t`Choose a conversation`}
-              </h2>
-              <p><Trans>Pick one on the left to read it and reply. Replies reach the customer in their app straight away.</Trans></p>
-            </div>
+                  : t`Choose a conversation`
+              }
+              text={t`Pick one on the left to read it and reply. Replies reach the customer in their app straight away.`}
+            />
           )}
         </div>
       </div>
+      )}
 
       {openId &&
         phone &&

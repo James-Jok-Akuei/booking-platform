@@ -28,6 +28,7 @@ import {
 } from './BookingSupport';
 import type { SupportConversation, SupportPrivateAnswers } from '../api/admin';
 import './appointments.css';
+import { EmptyState } from '../ui/EmptyState';
 
 type TabKey = 'all' | 'expected' | 'in-progress' | 'unpaid' | 'done' | 'no-show' | 'cancelled';
 
@@ -261,6 +262,7 @@ export function AppointmentsPage() {
               <span className="ap-subfilter-note">The only ones that can still be put on the shop.</span>
             </div>
           )}
+          {!(list.data && rows.length === 0) && (
           <div className="ap-cols" aria-hidden="true">
             <span>When</span>
             <span className="col-customer">Customer</span>
@@ -270,6 +272,7 @@ export function AppointmentsPage() {
             <span>Status</span>
             <span className="col-action" />
           </div>
+          )}
         </div>
       </div>
 
@@ -290,19 +293,19 @@ export function AppointmentsPage() {
         )}
 
         {list.data && rows.length === 0 && (
-          <div className="ap-empty">
-            <span>
-              <Icon name={q ? 'search' : tab.icon} size={28} />
-            </span>
-            <strong>{q ? 'Nothing matches' : 'No bookings here'}</strong>
-            <p>
-              {q
+          <EmptyState
+            size="card"
+            className="is-list"
+            art={q ? 'search' : 'calendar'}
+            title={q ? 'Nothing matches' : 'No bookings here'}
+            text={
+              q
                 ? 'Try the reservation number as the customer’s app shows it (like 3F2A-1C9B), part of an email, or a shop’s name.'
                 : tab.key === 'cancelled' && paidOnly
                   ? 'No customer has cancelled after paying.'
-                  : 'Bookings in this state will be listed here.'}
-            </p>
-          </div>
+                  : 'Bookings in this state will be listed here.'
+            }
+          />
         )}
 
         {groups.map((group) => (

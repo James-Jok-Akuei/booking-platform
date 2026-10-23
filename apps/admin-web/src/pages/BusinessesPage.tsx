@@ -26,6 +26,7 @@ import './businesses.css';
 import { WriteFirst } from '../components/WriteFirst';
 import { RichText } from '../ui/RichText';
 import { hasRichText } from '../lib/richText';
+import { EmptyState } from '../ui/EmptyState';
 
 type Tab = 'WAITING' | 'SETTING_UP' | 'APPROVED' | 'SUSPENDED' | 'REJECTED' | 'ALL';
 
@@ -254,23 +255,22 @@ export function BusinessesPage() {
       )}
 
       {list.data && rows.length === 0 && (
-        <div className="q-empty">
-          <span>
-            <Icon name={q ? 'search' : tab === 'WAITING' ? 'checkCircle' : 'store'} size={26} />
-          </span>
-          <strong>
-            {q ? `Nothing found for “${q}”` : tab === 'WAITING' ? 'Nobody is waiting' : tab === 'SETTING_UP' ? 'Nobody is setting up' : 'No businesses here'}
-          </strong>
-          <p className="muted">
-            {q
+        <EmptyState
+          framed
+          size="card"
+          className="is-list"
+          art={q ? 'search' : tab === 'WAITING' ? 'clear' : 'box'}
+          title={q ? `Nothing found for “${q}”` : tab === 'WAITING' ? 'Nobody is waiting' : tab === 'SETTING_UP' ? 'Nobody is setting up' : 'No businesses here'}
+          text={
+            q
               ? 'Try part of the name, a phone number or an email.'
               : tab === 'WAITING'
                 ? 'Every shop that asked has an answer. New ones appear here, oldest first, and you are told when one arrives.'
                 : tab === 'SETTING_UP'
                   ? 'Shops that signed up and have not sent themselves for review yet appear here.'
-                  : 'None are in this state just now.'}
-          </p>
-        </div>
+                  : 'None are in this state just now.'
+          }
+        />
       )}
 
       {rows.length > 0 && (

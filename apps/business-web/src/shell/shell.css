@@ -622,9 +622,8 @@ body {
 .nf-settings { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); font-weight: 700; text-decoration: none; }
 .nf-settings:hover { color: var(--accent-deep); }
 .nf-flyout .bell-body { -webkit-line-clamp: 3; }
-.bell-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 30px 0 34px; color: var(--muted); }
-.bell-empty span { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: var(--sunken); }
-.bell-empty strong { color: var(--ink-2); }
+.es.bell-empty { padding: 10px 16px 26px; }
+.es.bell-empty .es-art { width: 150px; }
 
 /* ---------- legal banner (§126.3) ---------- */
 
@@ -706,8 +705,8 @@ body {
 .cp-row-tag { font-size: 11.5px; font-weight: 700; color: var(--muted); background: var(--sunken); padding: 3px 10px; border-radius: var(--r-pill); white-space: nowrap; }
 .cp-row-go { color: var(--accent); opacity: 0; transform: translateX(-4px); transition: opacity 160ms var(--ease), transform 200ms var(--ease); flex: none; }
 .cp-row.is-active .cp-row-go { opacity: 1; transform: none; }
-.cp-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 40px 16px; color: var(--muted); text-align: center; }
-.cp-empty strong { color: var(--ink); font-size: 15px; }
+.es.cp-empty { padding: 18px 16px 26px; }
+.es.cp-empty .es-art { width: 150px; }
 .cp-foot { display: flex; gap: 18px; flex-wrap: wrap; padding: 11px 20px; border-top: 1px solid var(--line); background: var(--sunken); font-size: 12px; color: var(--muted); font-weight: 600; }
 .cp-foot .kbd { margin-right: 4px; }
 

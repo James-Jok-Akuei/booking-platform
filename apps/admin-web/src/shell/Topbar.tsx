@@ -48,7 +48,7 @@ export function Topbar({
           <span className="tb-crumbs">
             <span>{item?.group ?? 'Admin'}</span>
             <Icon name="chevronRight" size={13} stroke={2.2} />
-            <strong>{item?.label ?? 'Overview'}</strong>
+            <strong>{item?.label ?? 'Page not found'}</strong>
           </span>
           <span className="tb-date">
             {today}

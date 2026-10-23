@@ -6,6 +6,7 @@ import { Icon, type IconName } from '../ui/Icon';
 import { useTour } from '../tour/Tour';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
+import { EmptyState } from '../ui/EmptyState';
 
 /** Each group's heading, in the app's language (§308); the keys above stay as they are. */
 const SECTION_TITLE: Record<Entry['section'], () => string> = {
@@ -197,11 +198,13 @@ export function CommandPalette({
 
         <div className="cp-list" id="cp-list" role="listbox" ref={listRef}>
           {sections.length === 0 && (
-            <div className="cp-empty">
-              <Icon name="search" size={26} />
-              <strong><Trans>Nothing called “{query}”</Trans></strong>
-              <span><Trans>Try a page name, or a word like “prices” or “holiday”.</Trans></span>
-            </div>
+            <EmptyState
+              size="card"
+              className="cp-empty"
+              art="search"
+              title={t`Nothing called “${query}”`}
+              text={t`Try a page name, or a word like “prices” or “holiday”.`}
+            />
           )}
           {sections.map((group) => (
             <div key={group.section} className="cp-section">

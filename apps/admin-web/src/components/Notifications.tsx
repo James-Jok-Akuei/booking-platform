@@ -7,6 +7,7 @@ import { useMediaQuery } from '../shell/useMediaQuery';
 import { Icon } from '../ui/Icon';
 import { Portal } from '../ui/Portal';
 import { useDismiss } from '../ui/useDismiss';
+import { EmptyState } from '../ui/EmptyState';
 
 const when = (iso: string) => {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -64,12 +65,7 @@ export function Notifications() {
       </header>
 
       {rows.length === 0 && (
-        <div className="bell-empty">
-          <span>
-            <Icon name="inbox" size={22} />
-          </span>
-          <strong>Nothing yet.</strong>
-        </div>
+        <EmptyState size="card" className="bell-empty is-panel" art="bell" title="Nothing yet." text="New shops, payouts and tickets are announced here." />
       )}
 
       <ul>

@@ -95,11 +95,6 @@
 .sto-tile-facts span { display: inline-flex; align-items: center; gap: 4px; }
 .sto-tile-removed { padding: 4px 8px; border-radius: 8px; background: var(--danger); font-size: 11px; font-weight: 700; }
 
-.sto-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 26px 12px; text-align: center; color: var(--muted); }
-.sto-empty-ring { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; margin-bottom: 6px; color: var(--accent-deep); background: var(--accent-soft); box-shadow: 0 0 0 3px var(--panel), 0 0 0 5px var(--accent); animation: sto-pulse 2.4s var(--ease) infinite; }
-@keyframes sto-pulse { 50% { box-shadow: 0 0 0 3px var(--panel), 0 0 0 8px rgba(240, 83, 45, 0.25); } }
-.sto-empty strong { color: var(--ink); font-size: 15px; }
-.sto-empty p { margin: 0; max-width: 340px; font-size: 13px; line-height: 1.5; }
 
 /* Narrower: the lists go below, and the phone stands beside the words. */
 @container page (max-width: 900px) {
@@ -112,7 +107,4 @@
   .sto-composer { grid-template-columns: minmax(0, 1fr); }
   .sto-composer .sto-phone { width: min(100%, 250px); margin: 0 auto; }
   .sto-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .sto-empty-ring { animation: none; }
 }

@@ -20,6 +20,8 @@ import './reviews.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { formatDate } from '../i18n/format';
+import { EmptyHints, EmptyState } from '../ui/EmptyState';
+import { useNavigate } from 'react-router-dom';
 
 const PAGE = 20;
 
@@ -108,6 +110,9 @@ export function ReviewsPage() {
   const rows = useMemo(() => list.data?.pages.flatMap((p) => p.reviews) ?? [], [list.data]);
   const breakdown = first?.breakdown;
   const count = breakdown ? breakdown.stars.reduce((sum, n) => sum + n, 0) : 0;
+  // No review at this branch yet (§311): the page says what will be here, not a summary of zeros.
+  const noneHere = Boolean(first) && count === 0;
+  const navigate = useNavigate();
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ['reviews', locationId] });
     queryClient.invalidateQueries({ queryKey: ['ads-reviews'] });
@@ -165,7 +170,7 @@ export function ReviewsPage() {
           extra={(b) => (b.ratingCount > 0 ? `★ ${b.ratingAvg}` : null)}
         />
 
-        {locationId && (
+        {locationId && !noneHere && (
           <Summary
             loading={!first}
             ratingAvg={first?.ratingAvg ?? null}
@@ -178,7 +183,7 @@ export function ReviewsPage() {
           />
         )}
 
-        {locationId && (
+        {locationId && !noneHere && (
           <div className="rv-card-top pin-from">
             <div className="rv-toolbar">
               <label className="rv-search">
@@ -221,10 +226,33 @@ export function ReviewsPage() {
 
       {locations.isLoading && <div className="skeleton rv-skeleton" />}
       {branches.length === 0 && !locations.isLoading && (
-        <p className="muted"><Trans>Add a branch first, under Branches & hours.</Trans></p>
+        <EmptyState framed art="pin" title={t`No branches yet`} text={t`Add a branch first, under Branches & hours.`} />
       )}
 
-      {locationId && (
+      {locationId && noneHere && (
+        <EmptyState
+          framed
+          art="reviews"
+          title={t`No reviews for this branch yet`}
+          text={t`Customers can review a booking once you mark it done. Their stars and words show here, with your reply under each — for everyone to see.`}
+          below={
+            <EmptyHints
+              items={[
+                { icon: <Icon name="star" size={16} />, text: t`Every rating, and what it said` },
+                { icon: <Icon name="message" size={16} />, text: t`Your reply, under each review` },
+                { icon: <Icon name="bell" size={16} />, text: t`Which ones are waiting for a reply` },
+              ]}
+            />
+          }
+        >
+          <button type="button" onClick={() => navigate('/appointments')}>
+            <Icon name="calendarCheck" size={18} />
+            <Trans>Go to Appointments</Trans>
+          </button>
+        </EmptyState>
+      )}
+
+      {locationId && !noneHere && (
         <div className={`rv-board${list.isPlaceholderData ? ' is-refreshing' : ''}`}>
           {list.isLoading && (
             <div className="rv-skeletons" aria-hidden="true">
@@ -241,23 +269,14 @@ export function ReviewsPage() {
             </div>
           )}
 
-          {first && count === 0 && (
-            <div className="rv-empty">
-              <span>
-                <Icon name="star" size={28} />
-              </span>
-              <strong><Trans>No reviews for this branch yet</Trans></strong>
-              <p><Trans>Customers can review a booking once you mark it done.</Trans></p>
-            </div>
-          )}
           {first && count > 0 && rows.length === 0 && (
-            <div className="rv-empty">
-              <span>
-                <Icon name={filter === 'waiting' ? 'checkCircle' : 'search'} size={28} />
-              </span>
-              <strong>{filter === 'waiting' && !q ? t`Every review has a reply` : t`Nothing matches`}</strong>
-              <p>{filter === 'waiting' && !q ? t`Nice work — nothing is waiting for you.` : t`Try other words, or another filter.`}</p>
-            </div>
+            <EmptyState
+              size="card"
+              className="rv-empty-state"
+              art={filter === 'waiting' && !q ? 'clear' : 'search'}
+              title={filter === 'waiting' && !q ? t`Every review has a reply` : t`Nothing matches`}
+              text={filter === 'waiting' && !q ? t`Nice work — nothing is waiting for you.` : t`Try other words, or another filter.`}
+            />
           )}
 
           <ul className="rv-list">

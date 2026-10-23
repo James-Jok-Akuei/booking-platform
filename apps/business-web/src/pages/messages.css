@@ -77,18 +77,14 @@
 .ms-thread.is-unread .ms-thread-top strong { font-weight: 800; }
 .ms-thread.is-unread .ms-thread-preview { color: var(--ink); font-weight: 650; }
 
-.ms-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 30px 22px; color: var(--muted); }
-.ms-empty > span { width: 58px; height: 58px; display: grid; place-items: center; border-radius: 20px; background: var(--sunken); }
-.ms-empty p { margin: 0; font-size: 13.5px; }
 .ms-none { margin: 10px 16px; font-size: 13.5px; color: var(--muted); text-align: center; }
 
 /* ---- the conversation ---- */
 
 .ms-pane { min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-.ms-welcome { margin: auto; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 40px; max-width: 420px; }
-.ms-welcome > span { width: 84px; height: 84px; display: grid; place-items: center; border-radius: 28px; background: var(--accent-soft); color: var(--accent-deep); margin-bottom: 6px; }
-.ms-welcome h2 { margin: 0; font-size: 20px; }
-.ms-welcome p { margin: 0; color: var(--muted); }
+.es.ms-welcome { margin: auto; max-width: 440px; padding: 40px 24px; }
+.es.ms-none-state { padding: 22px 12px; }
+.es.ms-none-state .es-art { width: 150px; }
 
 .ms-chat { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .ms-chat-head { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line); }

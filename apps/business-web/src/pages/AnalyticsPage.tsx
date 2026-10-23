@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getAnalytics, getProfile, listLocations, type Analytics } from '../api/business';
+import { getAnalytics, getProfile, listAppointments, listLocations, type Analytics } from '../api/business';
 import { useMoney } from '../money';
 import { bookingsBetween, REAL_STATUSES } from '../lib/bookings';
 import { addDays, sameDay, shortDay, startOfDay } from '../lib/time';
@@ -11,6 +11,8 @@ import { useAccess } from '../access';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { dayName } from '../i18n/format';
+import { useNavigate } from 'react-router-dom';
+import { EmptyHints, EmptyState } from '../ui/EmptyState';
 
 /** Day names in the app's language (§308), Sunday first. */
 const DAYS = () => [0, 1, 2, 3, 4, 5, 6].map((day) => dayName(day));
@@ -93,6 +95,10 @@ export function AnalyticsPage() {
   }, [bookings.data, days, locationId]);
 
   const branches = locations.data ?? [];
+  // Never a booking (§311): there is nothing to count yet, so no wall of zeros.
+  const ever = useQuery({ queryKey: ['appointments', 'count', 'ALL', '', ''], queryFn: () => listAppointments({ limit: 1 }) });
+  const navigate = useNavigate();
+  const nothingYet = ever.data?.total === 0;
 
   return (
     <section className="an">
@@ -147,7 +153,30 @@ export function AnalyticsPage() {
 
       {stats.isLoading && <div className="skeleton an-skeleton" />}
 
-      {data && (
+      {nothingYet && (
+        <EmptyState
+          framed
+          art="chart"
+          title={t`Your numbers start with your first booking`}
+          text={t`Once customers book, this page shows how many came, the money they brought and how they rated you — week by week.`}
+          below={
+            <EmptyHints
+              items={[
+                { icon: <Icon name="calendarCheck" size={16} />, text: t`Bookings, and how many came` },
+                { icon: <Icon name="wallet" size={16} />, text: t`Deposits taken, and what is on its way to you` },
+                { icon: <Icon name="star" size={16} />, text: t`Your rating, and your busiest days` },
+              ]}
+            />
+          }
+        >
+          <button type="button" className="primary" onClick={() => navigate('/app-qr')}>
+            <Icon name="qr" size={18} />
+            <Trans>Show the App QR code</Trans>
+          </button>
+        </EmptyState>
+      )}
+
+      {data && !nothingYet && (
         <>
           <div className="an-top">
             <BookingsCard data={data} prev={prev} series={series} loading={bookings.isLoading} days={days} />

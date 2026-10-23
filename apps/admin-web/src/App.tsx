@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { LoginPage } from './auth/LoginPage';
 import { RequireAuth } from './auth/RequireAuth';
@@ -19,6 +19,7 @@ import { LegalPage } from './pages/LegalPage';
 import { OverviewPage } from './pages/OverviewPage';
 import { TicketsPage } from './pages/TicketsPage';
 import { SecurityPage } from './pages/SecurityPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 export function App() {
   return (
@@ -48,8 +49,9 @@ export function App() {
         <Route path="/places" element={<PlacesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/legal" element={<LegalPage />} />
+        {/* An address that is no page says so, inside the frame (§311). */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

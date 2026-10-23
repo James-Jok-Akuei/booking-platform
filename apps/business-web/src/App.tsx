@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { LoginPage } from './auth/LoginPage';
 import { RequireAuth } from './auth/RequireAuth';
@@ -20,6 +20,7 @@ import { SupportPage } from './pages/SupportPage';
 import { MessagesPage } from './pages/MessagesPage';
 import { LegalPage } from './pages/LegalPage';
 import { OverviewPage } from './pages/OverviewPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { Welcome } from './onboarding/Welcome';
 import { Allowed } from './components/Allowed';
 
@@ -75,8 +76,9 @@ export function App() {
         />
         <Route path="/help" element={<SupportPage />} />
         <Route path="/legal" element={<LegalPage />} />
+        {/* An address that is no page says so, inside the frame (§311). */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

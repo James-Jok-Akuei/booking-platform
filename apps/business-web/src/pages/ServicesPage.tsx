@@ -48,6 +48,7 @@ import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { formatTime, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
+import { EmptyHints, EmptyState } from '../ui/EmptyState';
 
 type Editor = { mode: 'new' } | { mode: 'edit'; service: Service; focus?: 'photos' };
 
@@ -710,31 +711,35 @@ export function ServicesPage() {
       )}
 
       {services.data && services.data.length === 0 && (
-        <div className="sv-empty">
-          <span>
-            <Icon name="tag" size={30} />
-          </span>
-          {access.runsBusiness ? (
-            <>
-              <h2><Trans>Put your first service on sale</Trans></h2>
-              <p>
-                <Trans>
-                  A name, how long it takes, a price at each branch — and a photo or two. Customers can book
-                  it the moment it is posted.
-                </Trans>
-              </p>
-              <button type="button" className="primary" onClick={startNew}>
-                <Icon name="plus" size={18} stroke={2.4} />{' '}
-                <Trans>Add a service</Trans>
-              </button>
-            </>
-          ) : (
-            <>
-              <h2><Trans>Nothing on sale at your branches yet</Trans></h2>
-              <p><Trans>When the owner adds a service at your branch, it shows here.</Trans></p>
-            </>
-          )}
-        </div>
+        access.runsBusiness ? (
+          <EmptyState
+            framed
+            art="box"
+            title={t`Put your first service on sale`}
+            text={t`A name, how long it takes, a price at each branch — and a photo or two. Customers can book it the moment it is posted.`}
+            below={
+              <EmptyHints
+                items={[
+                  { icon: <Icon name="pin" size={16} />, text: t`Its own price at each branch` },
+                  { icon: <Icon name="image" size={16} />, text: t`Photos customers swipe through` },
+                  { icon: <Icon name="percent" size={16} />, text: t`A sale, whenever you want one` },
+                ]}
+              />
+            }
+          >
+            <button type="button" className="primary" onClick={startNew}>
+              <Icon name="plus" size={18} stroke={2.4} />
+              <Trans>Add a service</Trans>
+            </button>
+          </EmptyState>
+        ) : (
+          <EmptyState
+            framed
+            art="box"
+            title={t`Nothing on sale at your branches yet`}
+            text={t`When the owner adds a service at your branch, it shows here.`}
+          />
+        )
       )}
 
       {onSale.length > 0 && (

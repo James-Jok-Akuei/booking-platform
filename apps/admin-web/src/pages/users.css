@@ -135,10 +135,6 @@
 .us-skel div i:first-child { width: 28%; height: 14px; }
 .us-skel div i:last-child { width: 46%; }
 
-.us-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 52px 16px 44px; }
-.us-empty > span { width: 68px; height: 68px; display: grid; place-items: center; border-radius: 22px; background: var(--sunken); color: var(--muted); margin-bottom: 4px; }
-.us-empty strong { font-size: 15.5px; }
-.us-empty p { margin: 0; color: var(--muted); }
 
 .us-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 22px 10px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 .us-foot strong { color: var(--ink); }

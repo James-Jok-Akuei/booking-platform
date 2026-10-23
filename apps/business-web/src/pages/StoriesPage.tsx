@@ -10,6 +10,7 @@ import { ShopLogo } from '../ui/ShopLogo';
 import './stories.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
+import { EmptyState } from '../ui/EmptyState';
 
 const CAPTION_MAX = 150;
 /** Words to start from, for any kind of shop; a tap puts one in the box. */
@@ -144,13 +145,12 @@ export function StoriesPage() {
             </header>
             {stories.isLoading && <div className="skeleton sto-skeleton" />}
             {stories.data && live.length === 0 && (
-              <div className="sto-empty">
-                <span className="sto-empty-ring">
-                  <Icon name="stories" size={28} />
-                </span>
-                <strong><Trans>No story up right now</Trans></strong>
-                <p><Trans>A shop with a story gets a coral ring in the app — the first thing customers tap.</Trans></p>
-              </div>
+              <EmptyState
+                size="card"
+                art="photo"
+                title={t`No story up right now`}
+                text={t`A shop with a story gets a coral ring in the app — the first thing customers tap.`}
+              />
             )}
             <div className="sto-grid">
               {live.map((story, i) => (

@@ -188,10 +188,6 @@
 .rv-skel div i:nth-child(2) { width: 90%; }
 .rv-skel div i:nth-child(3) { width: 60%; }
 
-.rv-empty { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; padding: 48px 20px 44px; }
-.rv-empty > span { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 22px; background: #fff4d9; color: #c98a00; margin-bottom: 4px; }
-.rv-empty strong { font-size: 15.5px; }
-.rv-empty p { margin: 0; color: var(--muted); }
 
 .rv-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 22px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
 .rv-foot strong { color: var(--ink); }

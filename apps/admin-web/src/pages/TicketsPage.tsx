@@ -25,6 +25,7 @@ import { Icon, type IconName } from '../ui/Icon';
 import { ShopMark } from '../ui/ShopMark';
 import { LinkBookingPanel } from './TicketSupport';
 import './tickets.css';
+import { EmptyState } from '../ui/EmptyState';
 
 type Tab = TicketStatus | 'ALL' | 'MINE';
 
@@ -220,9 +221,12 @@ export function TicketsPage() {
           </ul>
 
           {list.data && rows.length === 0 && (
-            <p className="sp-none">
-              {q ? `Nothing found for “${q}”.` : tab === 'OPEN' ? 'No new tickets — all caught up.' : tab === 'MINE' ? 'Nothing is with you.' : 'Nothing here.'}
-            </p>
+            <EmptyState
+              size="card"
+              className="is-panel"
+              art={q ? 'search' : tab === 'OPEN' || tab === 'MINE' ? 'clear' : 'chat'}
+              title={q ? `Nothing found for “${q}”` : tab === 'OPEN' ? 'No new tickets — all caught up' : tab === 'MINE' ? 'Nothing is with you' : 'Nothing here'}
+            />
           )}
           {list.hasNextPage && (
             <button type="button" className="sp-more" onClick={() => void list.fetchNextPage()} disabled={list.isFetchingNextPage}>
@@ -235,17 +239,17 @@ export function TicketsPage() {
           {openId && !phone ? (
             <Conversation key={openId} id={openId} onBack={() => open(null)} />
           ) : (
-            <div className="sp-welcome">
-              <span>
-                <Icon name="help" size={34} />
-              </span>
-              <h2>
-                {counts.data && counts.data.OPEN > 0
+            <EmptyState
+              size="card"
+              className="sp-welcome"
+              art="chat"
+              title={
+                counts.data && counts.data.OPEN > 0
                   ? `${counts.data.OPEN} new ${counts.data.OPEN === 1 ? 'ticket is' : 'tickets are'} waiting`
-                  : 'Choose a ticket'}
-              </h2>
-              <p>Pick one on the left to read it, take it, and answer. Replies reach the reporter by email and in their app.</p>
-            </div>
+                  : 'Choose a ticket'
+              }
+              text="Pick one on the left to read it, take it, and answer. Replies reach the reporter by email and in their app."
+            />
           )}
         </div>
       </div>
