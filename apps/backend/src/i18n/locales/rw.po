@@ -26,15 +26,15 @@ msgstr "(igabanywa rya {off}%, cyari {was})"
 msgid "{browser} on {system, select, iPhone {an iPhone} iPad {an iPad} Chromebook {a Chromebook} other {{system}}}"
 msgstr "{browser} kuri {system, select, iPhone {iPhone} iPad {iPad} Chromebook {Chromebook} other {{system}}}"
 
-#: src/notifications/notification-templates.ts:223
+#: src/notifications/notification-templates.ts:227
 msgid "{businessName} cancelled your booking."
 msgstr "{businessName} yahagaritse gahunda yawe."
 
-#: src/notifications/notification-templates.ts:265
+#: src/notifications/notification-templates.ts:275
 msgid "{businessName} marked your booking as missed — you were expected at {clock}."
 msgstr "{businessName} yanditse ko gahunda yawe yabuze — wari utegerejwe saa {clock}."
 
-#: src/notifications/notification-templates.ts:331
+#: src/notifications/notification-templates.ts:341
 msgid "{businessName} sent you a message."
 msgstr "{businessName} yakoherereje ubutumwa."
 
@@ -46,8 +46,8 @@ msgstr "{count, plural, one {Ibisobanuro kuri serivisi #} other {Ibisobanuro kur
 msgid "{count, plural, one {Photos on # service} other {Photos on # services}}"
 msgstr "{count, plural, one {Amafoto kuri serivisi #} other {Amafoto kuri serivisi #}}"
 
-#: src/appointments/appointments.service.ts:1919
-#: src/notifications/notification-templates.ts:156
+#: src/appointments/appointments.service.ts:1964
+#: src/notifications/notification-templates.ts:160
 msgid "{day} at {time}"
 msgstr "{day} saa {time}"
 
@@ -75,23 +75,23 @@ msgstr "Ntibishoboka kuva kuri {from} ujya kuri {to}."
 msgid "{h} h {m} min"
 msgstr "{h} h {m} min"
 
-#: src/notifications/notification-templates.ts:79
+#: src/notifications/notification-templates.ts:83
 msgid "{inviter} invited you to join {businessName} as a manager on BwanguReservations."
 msgstr "{inviter} yagutumiye kwinjira muri {businessName} nk’umuyobozi kuri BwanguReservations."
 
-#: src/notifications/notification-templates.ts:81
+#: src/notifications/notification-templates.ts:85
 msgid "{inviter} invited you to join {businessName} as a team member on BwanguReservations."
 msgstr "{inviter} yagutumiye kwinjira muri {businessName} nk’umukozi kuri BwanguReservations."
 
-#: src/notifications/notification-templates.ts:83
+#: src/notifications/notification-templates.ts:87
 msgid "{inviter} invited you to join {businessName} as an administrator on BwanguReservations."
 msgstr "{inviter} yagutumiye kwinjira muri {businessName} nk’umuyobozi mukuru kuri BwanguReservations."
 
-#: src/notifications/notification-templates.ts:77
+#: src/notifications/notification-templates.ts:81
 msgid "{inviter} invited you to join {businessName} as an owner on BwanguReservations."
 msgstr "{inviter} yagutumiye kwinjira muri {businessName} nka nyir’iduka kuri BwanguReservations."
 
-#: src/notifications/notification-templates.ts:84
+#: src/notifications/notification-templates.ts:88
 msgid "{inviter} invited you to join {businessName} on BwanguReservations."
 msgstr "{inviter} yagutumiye kwinjira muri {businessName} kuri BwanguReservations."
 
@@ -139,7 +139,7 @@ msgstr "{onSale, plural, =0 {Ibyo abantu bo muri {place} barimo gufatira gahunda
 msgid "{onSale, plural, =0 {What people near {place} are booking this week.} one {What people near {place} are booking this week — one of them is on sale.} other {What people near {place} are booking this week — # of them are on sale.}}"
 msgstr "{onSale, plural, =0 {Ibyo abantu bo hafi ya {place} barimo gufatira gahunda muri iki cyumweru.} one {Ibyo abantu bo hafi ya {place} barimo gufatira gahunda muri iki cyumweru — kimwe muri byo kiri muri promosiyo.} other {Ibyo abantu bo hafi ya {place} barimo gufatira gahunda muri iki cyumweru — # muri byo biri muri promosiyo.}}"
 
-#: src/notifications/notification-templates.ts:386
+#: src/notifications/notification-templates.ts:396
 msgid "{rating, plural, one {A customer left a #-star review.} other {A customer left a #-star review.}}"
 msgstr "{rating, plural, one {Umukiriya yatanze igitekerezo cy’inyenyeri #.} other {Umukiriya yatanze igitekerezo cy’inyenyeri #.}}"
 
@@ -147,7 +147,7 @@ msgstr "{rating, plural, one {Umukiriya yatanze igitekerezo cy’inyenyeri #.} o
 msgid "{serviceName} in an hour"
 msgstr "{serviceName} hasigaye isaha imwe"
 
-#: src/appointments/appointments.service.ts:2204
+#: src/appointments/appointments.service.ts:2249
 msgid "{serviceName} on {when} was marked as missed, but the customer came. It now counts as done. Nothing changes in your money."
 msgstr "{serviceName} ({when}) yari yanditswe ko umukiriya ataje, ariko yaje. Ubu ibarwa nk’iyarangiye. Nta cyahindutse ku mafaranga yawe."
 
@@ -167,7 +167,7 @@ msgstr "{targetCurrency} ni ifaranga uru rubuga rukoresha mu ibaruramari ryarwo,
 msgid "{value0}: closeTime must be later than openTime. Overnight hours are not supported yet."
 msgstr "{value0}: closeTime igomba kuba nyuma ya openTime. Amasaha akomeza mu ijoro ntarashoboka."
 
-#: src/notifications/notification-templates.ts:306
+#: src/notifications/notification-templates.ts:316
 msgid "{weekday} at {clock}: {serviceName} at {businessName}"
 msgstr "{weekday} saa {clock}: {serviceName} kuri {businessName}"
 
@@ -527,24 +527,24 @@ msgstr "Umunsi ufunze ntushobora no kugira amasaha yihariye yo gufungura. Shyira
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: verificationCodeSentCount.
-#: src/appointments/appointments.service.ts:1242
+#: src/appointments/appointments.service.ts:1261
 msgid "A code has already been sent {verificationCodeSentCount} times for this appointment. Ask the business to verify you in person instead."
 msgstr "Kode imaze koherezwa inshuro {verificationCodeSentCount} kuri iyi gahunda. Ahubwo saba iduka kukwakira imbonankubone."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:2273
+#: src/appointments/appointments.service.ts:2328
 msgid "A code is only useful while the booking is still to come. This one is {status}."
 msgstr "Kode igira akamaro gusa iyo gahunda itaraba. Iyi iri kuri {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: wait.
-#: src/appointments/appointments.service.ts:1253
+#: src/appointments/appointments.service.ts:1272
 msgid "A code was just sent. Try again in {wait} second(s), and check your spam folder."
 msgstr "Kode imaze koherezwa. Ongera ugerageze nyuma y’amasegonda {wait}, kandi urebe mu bubiko bwa spam."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:2278
+#: src/appointments/appointments.service.ts:2333
 msgid "A code was sent less than a minute ago. Ask them to check their spam folder first."
 msgstr "Kode yoherejwe hatarashira umunota. Banza umusabe kureba mu bubiko bwa spam."
 
@@ -564,7 +564,7 @@ msgid "A company"
 msgstr "Sosiyete"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1833
+#: src/appointments/appointments.service.ts:1879
 msgid "A completed appointment cannot be reclassified as cancelled."
 msgstr "Gahunda yarangiye ntishobora kongera kwandikwa nk’iyahagaritswe."
 
@@ -608,19 +608,19 @@ msgstr "Gupfuka tatuwaje ishaje"
 msgid "A custom design"
 msgstr "Igishushanyo cyihariye"
 
-#: src/notifications/notification-templates.ts:178
+#: src/notifications/notification-templates.ts:182
 msgid "A customer just booked {serviceName} at {locationName}."
 msgstr "Umukiriya amaze gufata gahunda ya {serviceName} kuri {locationName}."
 
-#: src/notifications/notification-templates.ts:389
+#: src/notifications/notification-templates.ts:399
 msgid "A customer reviewed one of your branches."
 msgstr "Umukiriya yatanze igitekerezo ku rimwe mu mashami yawe."
 
-#: src/notifications/notification-templates.ts:323
+#: src/notifications/notification-templates.ts:333
 msgid "A customer wrote to {businessName}."
 msgstr "Umukiriya yandikiye {businessName}."
 
-#: src/notifications/notification-templates.ts:291
+#: src/notifications/notification-templates.ts:301
 msgid "A customer's deposit for this booking did not go through."
 msgstr "Ubwishyu bw’avansi y’umukiriya kuri iyi gahunda ntibwakunze."
 
@@ -632,7 +632,7 @@ msgstr "Gusohokana n’umukunzi"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:809
+#: src/appointments/appointments.service.ts:826
 msgid "A deposit can only be paid while an appointment is PENDING_PAYMENT. This one is {status}."
 msgstr "Avansi yishyurwa gusa iyo gahunda iri kuri PENDING_PAYMENT. Iyi iri kuri {status}."
 
@@ -691,7 +691,7 @@ msgstr "Umuvugizi w’umuryango mu gusaba"
 msgid "A few lines about what you do"
 msgstr "Amagambo make ku byo ukora"
 
-#: src/notifications/notification-templates.ts:559
+#: src/notifications/notification-templates.ts:569
 msgid "A few words about how it went help other people choose, and help the shop do even better. It takes a minute, in the app."
 msgstr "Amagambo make ku buryo byagenze afasha abandi guhitamo, kandi afasha iduka gukora neza kurushaho. Bimara umunota umwe, muri porogaramu."
 
@@ -844,6 +844,11 @@ msgstr "Kode nshya yo kugera"
 msgid "A new fitting"
 msgstr "Gushyiraho igikoresho gishya"
 
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1501
+msgid "A no-show can be marked only once the booking’s time has ended. Until then the customer may still come — check them in when they do."
+msgstr "Kutaza bishobora kwemezwa gusa igihe cya gahunda kimaze kurangira. Kugeza icyo gihe umukiriya ashobora kuza — umwakire naza."
+
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1086
 #: src/business/choice-suggestions.ts:1112
@@ -861,7 +866,7 @@ msgstr "Itangazo"
 msgid "A packed lunch"
 msgstr "Impamba ya saa sita"
 
-#: src/notifications/notification-templates.ts:578
+#: src/notifications/notification-templates.ts:588
 msgid "A payment could not reach your mobile money number."
 msgstr "Amafaranga ntiyashoboye kugera kuri nimero yawe ya Mobile Money."
 
@@ -870,7 +875,7 @@ msgid "A payment did not go through"
 msgstr "Ubwishyu ntibwakunze"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:818
+#: src/appointments/appointments.service.ts:835
 msgid "A payment for this appointment is already in progress. Approve the prompt on your phone, or wait for it to time out before trying again."
 msgstr "Ubwishyu bw’iyi gahunda burimo gukorwa. Emeza ubutumwa buri kuri telefoni yawe, cyangwa utegereze ko burangira mbere yo kongera kugerageza."
 
@@ -878,11 +883,11 @@ msgstr "Ubwishyu bw’iyi gahunda burimo gukorwa. Emeza ubutumwa buri kuri telef
 msgid "A payment is on its way"
 msgstr "Amafaranga ari mu nzira"
 
-#: src/notifications/notification-templates.ts:567
+#: src/notifications/notification-templates.ts:577
 msgid "A payment is on its way to your mobile money number."
 msgstr "Amafaranga ari mu nzira agana kuri nimero yawe ya Mobile Money."
 
-#: src/notifications/notification-templates.ts:576
+#: src/notifications/notification-templates.ts:586
 msgid "A payment to you did not go through"
 msgstr "Amafaranga yawe ntiyakugezeho"
 
@@ -911,6 +916,11 @@ msgstr "nimero ya telefoni"
 #: src/business/shop-advice.ts:112
 msgid "A phone number"
 msgstr "Nimero ya telefoni"
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/refunds/dto/refund-request.dto.ts:33
+msgid "A phone number is 9 to 15 digits."
+msgstr "Nimero ya telefoni igira imibare 9 kugeza kuri 15."
 
 #: src/business/shop-advice.ts:142
 msgid "A photo on every service"
@@ -978,7 +988,7 @@ msgid "A reason is required to move a business to {to}. The business is told wha
 msgstr "Impamvu irakenewe kugira ngo ubucuruzi bujyanwe kuri {to}. Ubucuruzi bubwirwa ibyo ivuga, kandi ntibwakora ku cyemezo butabwiwe."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1553
+#: src/appointments/appointments.service.ts:1580
 msgid "A reason is required when a business cancels an appointment."
 msgstr "Impamvu irakenewe iyo iduka rihagaritse gahunda."
 
@@ -1014,11 +1024,11 @@ msgstr "Igisubizo gishobora guhindurwa gusa mu minsi {REVIEW_EDIT_WINDOW_DAYS} n
 msgid "A review can only be edited within {REVIEW_EDIT_WINDOW_DAYS} days of posting."
 msgstr "Igitekerezo gishobora guhindurwa gusa mu minsi {REVIEW_EDIT_WINDOW_DAYS} nyuma yo gutangwa."
 
-#: src/notifications/notification-templates.ts:402
+#: src/notifications/notification-templates.ts:412
 msgid "A review was hidden"
 msgstr "Igitekerezo cyahishwe"
 
-#: src/notifications/notification-templates.ts:408
+#: src/notifications/notification-templates.ts:418
 msgid "A review was hidden by our team and is no longer public."
 msgstr "Itsinda ryacu ryahishe igitekerezo, ntikikigaragara ku bantu bose."
 
@@ -1474,7 +1484,7 @@ msgstr "Ingano"
 msgid "amount must be greater than zero."
 msgstr "Amafaranga agomba kurenga zeru."
 
-#: src/notifications/notification-templates.ts:60
+#: src/notifications/notification-templates.ts:64
 msgid "Amount: {amount}"
 msgstr "Amafaranga: {amount}"
 
@@ -1500,7 +1510,7 @@ msgstr "Apartema"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:1236
+#: src/appointments/appointments.service.ts:1255
 msgid "An arrival code is only useful while the appointment is live. This one is {status}."
 msgstr "Kode yo kugera igira akamaro gusa iyo gahunda igitegerejwe. Iyi iri kuri {status}."
 
@@ -1626,7 +1636,7 @@ msgid "Another way"
 msgstr "Ubundi buryo"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:679
+#: src/appointments/appointments.service.ts:696
 msgid "Answers that change the price or the time can’t be changed after booking. Message the shop if you need to."
 msgstr "Ibisubizo bihindura igiciro cyangwa igihe ntibishobora guhindurwa nyuma yo gufata gahunda. Andikira iduka nibiba ngombwa."
 
@@ -1815,7 +1825,7 @@ msgstr "Hari icyo tubanza gukuraho?"
 msgid "Anything we should know before you come?"
 msgstr "Hari icyo dukwiye kumenya mbere y’uko uza?"
 
-#: src/notifications/notification-templates.ts:234
+#: src/notifications/notification-templates.ts:240
 msgid "Anything you are owed is shown on the booking in the app."
 msgstr "Amafaranga yose ugomba gusubizwa agaragara kuri gahunda muri porogaramu."
 
@@ -1840,10 +1850,10 @@ msgid "Apartments & Short Stays"
 msgstr "Apartema n’amacumbi y’igihe gito"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1756
-#: src/appointments/appointments.service.ts:1824
-#: src/appointments/appointments.service.ts:1942
-#: src/appointments/appointments.service.ts:2649
+#: src/appointments/appointments.service.ts:1802
+#: src/appointments/appointments.service.ts:1870
+#: src/appointments/appointments.service.ts:1987
+#: src/appointments/appointments.service.ts:2704
 msgid "Appointment not found."
 msgstr "Gahunda ntiyabonetse."
 
@@ -1912,11 +1922,11 @@ msgstr "Imurikabikorwa ry’ubugeni"
 msgid "Art, Music & Culture"
 msgstr "Ubugeni, umuziki n’umuco"
 
-#: src/notifications/notification-templates.ts:231
-msgid "As agreed when you booked, a deposit is not refunded when you cancel."
-msgstr "Nk’uko wabyemeye ufata gahunda, avansi ntisubizwa iyo uhagaritse."
+#: src/notifications/notification-templates.ts:237
+msgid "As agreed when you booked, a deposit is not refunded when you cancel less than 24 hours before."
+msgstr "Nk’uko mwabyumvikanyeho igihe mufata gahunda, avansi ntisubizwa iyo uhagaritse habura amasaha ari munsi ya 24."
 
-#: src/notifications/notification-templates.ts:269
+#: src/notifications/notification-templates.ts:279
 msgid "As agreed when you booked, the deposit is not refunded for a missed booking. If you think this is a mistake, write to the shop from the booking in the app."
 msgstr "Nk’uko wabyemeye ufata gahunda, avansi ntisubizwa iyo utaje. Niba utekereza ko ari ikosa, andikira iduka uhereye kuri gahunda muri porogaramu."
 
@@ -2133,7 +2143,7 @@ msgid "Bikini"
 msgstr "Bikini"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/ledger/ledger.service.ts:399
+#: src/ledger/ledger.service.ts:424
 msgid "Billing adjustment not found."
 msgstr "Ihinduka ry’inyemezabwishyu ntiryabonetse."
 
@@ -2218,7 +2228,7 @@ msgstr "Gahunda"
 msgid "Bookings and payments"
 msgstr "Gahunda n’ubwishyu"
 
-#: src/notifications/notification-templates.ts:490
+#: src/notifications/notification-templates.ts:500
 msgid "Bookings customers have already made still stand, and you are expected to honour them. Nothing is written off — money owed to you is kept and paid once this is resolved. Write to us from Help to talk about it."
 msgstr "Gahunda abakiriya bamaze gufata ziracyariho, kandi ugomba kuzubahiriza. Nta kibura — amafaranga ugomba guhabwa arabikwa, ukayishyurwa iki kibazo nikimara gukemuka. Twandikire uhereye kuri Ubufasha kugira ngo tubiganireho."
 
@@ -2383,8 +2393,8 @@ msgstr "Gutuza uruhu"
 msgid "Cancelled"
 msgstr "Yahagaritswe"
 
-#: src/notifications/notification-templates.ts:214
-#: src/notifications/notification-templates.ts:238
+#: src/notifications/notification-templates.ts:218
+#: src/notifications/notification-templates.ts:244
 msgid "Cancelled: {serviceName}, {short}"
 msgstr "Yahagaritswe: {serviceName}, {short}"
 
@@ -2523,7 +2533,7 @@ msgstr "Urusenda"
 msgid "Chiropractic"
 msgstr "Kuvura umugongo n’ingingo"
 
-#: src/notifications/notification-templates.ts:591
+#: src/notifications/notification-templates.ts:601
 msgid "Choices changed: {serviceName}, {short}"
 msgstr "Amahitamo yahindutse: {serviceName}, {short}"
 
@@ -2737,7 +2747,7 @@ msgstr "Emeza ko ari wowe: {code}"
 msgid "Confirmed"
 msgstr "Byemejwe"
 
-#: src/notifications/notification-templates.ts:198
+#: src/notifications/notification-templates.ts:202
 msgid "Confirmed: {serviceName}, {short}"
 msgstr "Byemejwe: {serviceName}, {short}"
 
@@ -2778,7 +2788,7 @@ msgstr "Ikosora: {reason}"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: value0.
-#: src/appointments/appointments.service.ts:931
+#: src/appointments/appointments.service.ts:948
 msgid "Could not start the payment: {value0} You have not been charged. Please try again."
 msgstr "Ubwishyu ntibwashoboye gutangira: {value0} Nta mafaranga wakuweho. Ongera ugerageze."
 
@@ -2823,7 +2833,7 @@ msgstr "Abakiriya bashobora kongera kukubona no gufata gahunda iwawe."
 msgid "Customers cannot make new bookings while it is paused. Bookings already made still happen. You can open it again yourself in Your shop."
 msgstr "Abakiriya ntibashobora gufata gahunda nshya mu gihe rihagaritswe. Gahunda zamaze gufatwa ziracyakomeza. Ushobora kongera kurifungura ubwawe muri Iduka ryawe."
 
-#: src/notifications/notification-templates.ts:465
+#: src/notifications/notification-templates.ts:475
 msgid "Customers cannot see it yet. When you are ready, press \"Post my shop\" in your dashboard, and from then they can find your branches, see your times and book with you. Anything you would like to change first, you can change now."
 msgstr "Abakiriya ntibararibona. Nuba witeguye, kanda \"Shyira iduka ahagaragara\" muri porogaramu y’abacuruzi, maze guhera ubwo babone amashami yawe, barebe imyanya iboneka kandi bafate gahunda iwawe. Icyo wifuza guhindura mbere, ushobora kugihindura ubu."
 
@@ -2953,7 +2963,7 @@ msgstr "Ubuvuzi bw’amenyo"
 msgid "Deposit"
 msgstr "Avansi"
 
-#: src/notifications/notification-templates.ts:289
+#: src/notifications/notification-templates.ts:299
 msgid "Deposit not paid: {serviceName}, {short}"
 msgstr "Avansi ntiyishyuwe: {serviceName}, {short}"
 
@@ -2962,7 +2972,7 @@ msgstr "Avansi ntiyishyuwe: {serviceName}, {short}"
 msgid "Deposit paid"
 msgstr "Avansi yishyuwe"
 
-#: src/notifications/notification-templates.ts:59
+#: src/notifications/notification-templates.ts:63
 msgid "Deposit paid: {amount}"
 msgstr "Avansi yishyuwe: {amount}"
 
@@ -2976,7 +2986,7 @@ msgstr "Ijanisha ry’avansi rigomba kuba nibura {value0}% — amafaranga ya ser
 msgid "Deposit to pay"
 msgstr "Avansi yo kwishyura"
 
-#: src/notifications/notification-templates.ts:58
+#: src/notifications/notification-templates.ts:62
 msgid "Deposit: {amount}"
 msgstr "Avansi: {amount}"
 
@@ -3021,7 +3031,7 @@ msgstr "Igishushanyo"
 msgid "Device"
 msgstr "Igikoresho"
 
-#: src/notifications/notification-templates.ts:605
+#: src/notifications/notification-templates.ts:615
 msgid "Device: {device}"
 msgstr "Igikoresho: {device}"
 
@@ -3394,7 +3404,7 @@ msgstr "Ku nzara zose"
 msgid "Everyday"
 msgstr "Bya buri munsi"
 
-#: src/notifications/notification-templates.ts:478
+#: src/notifications/notification-templates.ts:488
 msgid "Everything you made is kept. Fix what the reason describes and send your shop back for review from your dashboard — or write to us from Help to talk it through."
 msgstr "Ibyo wakoze byose byabitswe. Kosora ibivugwa mu mpamvu, maze wongere wohereze iduka ryawe kugira ngo risuzumwe, uhereye muri porogaramu y’abacuruzi — cyangwa utwandikire unyuze mu Bufasha tubiganireho."
 
@@ -3405,7 +3415,7 @@ msgstr "Kwitegura ibizamini"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: INTERNAL_CURRENCY, providerCurrency.
-#: src/appointments/appointments.service.ts:838
+#: src/appointments/appointments.service.ts:855
 msgid "Exchange rate not configured. Deposit payments cannot be taken until an administrator sets the {INTERNAL_CURRENCY} to {providerCurrency} exchange rate."
 msgstr "Igipimo cy’ivunjisha ntikirashyirwaho. Ubwishyu bw’avansi ntibushobora kwakirwa kugeza ushinzwe urubuga ashyizeho igipimo cy’ivunjisha kuva kuri {INTERNAL_CURRENCY} ujya kuri {providerCurrency}."
 
@@ -3775,11 +3785,6 @@ msgid "Full valet"
 msgstr "Isuku yuzuye"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1565
-msgid "gatewayChargeMinor is required when a business cancels an appointment whose deposit was paid. It is the gateway''s charge on the refund, in minor units of the settlement currency, and it is borne by the business."
-msgstr "gatewayChargeMinor irakenewe iyo ubucuruzi buhagaritse gahunda yari yishyuriwe avansi. Ni amafaranga ikigo cy’ubwishyu gica ku isubizwa, mu duce duto tw’ifaranga ryo kwishyurana, kandi yishyurwa n’ubucuruzi."
-
-#. A refusal: the app shows it as the reason something did not work.
 #: src/appointments/dto/cancel-appointment.dto.ts:32
 #: src/appointments/dto/cancel-appointment.dto.ts:54
 #: src/support/support.dto.ts:32
@@ -3853,7 +3858,7 @@ msgstr "Intego"
 msgid "Gold"
 msgstr "Zahabu"
 
-#: src/notifications/notification-templates.ts:462
+#: src/notifications/notification-templates.ts:472
 msgid "Good news — your shop has been approved."
 msgstr "Inkuru nziza — iduka ryawe ryemejwe."
 
@@ -4323,7 +4328,7 @@ msgstr "Ubikeneye ryari?"
 msgid "How the business is going is for the owner and managers."
 msgstr "Uko ubucuruzi bwifashe bireba nyir’iduka n’abayobozi gusa."
 
-#: src/notifications/notification-templates.ts:556
+#: src/notifications/notification-templates.ts:566
 msgid "How was {serviceName} at {businessName}?"
 msgstr "{serviceName} kuri {businessName} byagenze bite?"
 
@@ -4463,7 +4468,7 @@ msgstr "Nzabikora ubwanjye"
 msgid "I’ll wait"
 msgstr "Nzategereza"
 
-#: src/notifications/notification-templates.ts:607
+#: src/notifications/notification-templates.ts:617
 msgid "If it was not you, open \"Where you are signed in\" in your account, sign that one out, and write to us from Help."
 msgstr "Niba atari wowe, fungura \"Aho winjiye\" muri konti yawe, usohore icyo gikoresho, maze utwandikire unyuze mu Bufasha."
 
@@ -4476,12 +4481,12 @@ msgstr "Niba hari ubwivumbure, bukomeye bute?"
 msgid "If you did not expect it, you can ignore it."
 msgstr "Niba utari ubyiteze, ushobora kubyirengagiza."
 
-#: src/notifications/notification-templates.ts:520
+#: src/notifications/notification-templates.ts:530
 msgid "If you ever lose that number, give a new one straight away — payments pause until the new one is checked, which is what keeps your money safe."
 msgstr "Nuramuka utakaje iyo nimero, tanga indi ako kanya — kwishyurwa birahagarara kugeza nimero nshya igenzuwe, kandi ibyo ni byo birinda amafaranga yawe."
 
-#: src/notifications/notification-templates.ts:410
-#: src/notifications/notification-templates.ts:419
+#: src/notifications/notification-templates.ts:420
+#: src/notifications/notification-templates.ts:429
 msgid "If you think this is a mistake, write to us from Help."
 msgstr "Niba utekereza ko ari ikosa, twandikire unyuze mu Bufasha."
 
@@ -4537,12 +4542,12 @@ msgstr "Harimo ingimbi n’abangavu"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: remaining.
-#: src/appointments/appointments.service.ts:1188
+#: src/appointments/appointments.service.ts:1207
 msgid "Incorrect verification code. {remaining} attempt(s) remaining."
 msgstr "Kode yo kwemeza si yo. Hasigaye inshuro {remaining} zo kugerageza."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1189
+#: src/appointments/appointments.service.ts:1208
 msgid "Incorrect verification code. No attempts remaining."
 msgstr "Kode yo kwemeza si yo. Nta nshuro yo kugerageza isigaye."
 
@@ -4960,9 +4965,9 @@ msgstr "locale igomba kuba imwe muri {value0}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #: src/analytics/analytics.service.ts:89
-#: src/appointments/appointments.service.ts:425
-#: src/appointments/appointments.service.ts:431
-#: src/appointments/appointments.service.ts:443
+#: src/appointments/appointments.service.ts:442
+#: src/appointments/appointments.service.ts:448
+#: src/appointments/appointments.service.ts:460
 msgid "Location not found."
 msgstr "Ishami ntiryabonetse."
 
@@ -5039,8 +5044,8 @@ msgstr "Manuweli cyangwa otomatike?"
 msgid "Marked as missed"
 msgstr "Yanditswe ko yabuze"
 
-#: src/notifications/notification-templates.ts:263
-#: src/notifications/notification-templates.ts:274
+#: src/notifications/notification-templates.ts:271
+#: src/notifications/notification-templates.ts:284
 msgid "Marked as missed: {serviceName}"
 msgstr "Yanditswe ko yabuze: {serviceName}"
 
@@ -5334,7 +5339,7 @@ msgid "msisdn must be in E.164 format — a leading +, a country code, then the 
 msgstr "msisdn igomba kwandikwa mu buryo bwa E.164 — + imbere, kode y’igihugu, hanyuma nimero isanzwe, urugero +250788123456."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:925
+#: src/appointments/appointments.service.ts:942
 msgid "MTN MoMo is not answering right now, so the payment could not start. You have NOT been charged, and your booking is still held for a few minutes — please try again shortly."
 msgstr "MTN MoMo ntiri gusubiza ubu, bityo ubwishyu ntibwashoboye gutangira. NTA mafaranga wakuweho, kandi gahunda yawe iracyakubikiwe iminota mike — ongera ugerageze mu kanya."
 
@@ -5459,7 +5464,7 @@ msgstr "Ntukagurishe impushya: RDB iziha ba nyiri pasiporo, ku mazina yabo."
 msgid "New booking"
 msgstr "Gahunda nshya"
 
-#: src/notifications/notification-templates.ts:176
+#: src/notifications/notification-templates.ts:180
 msgid "New booking: {serviceName}, {short}"
 msgstr "Gahunda nshya: {serviceName}, {short}"
 
@@ -5475,11 +5480,11 @@ msgstr "Ibishya n’inama zo kubona gahunda nyinshi. Ni bike gusa mu kwezi."
 msgid "New message"
 msgstr "Ubutumwa bushya"
 
-#: src/notifications/notification-templates.ts:329
+#: src/notifications/notification-templates.ts:339
 msgid "New message from {businessName}"
 msgstr "Ubutumwa bushya buvuye kuri {businessName}"
 
-#: src/notifications/notification-templates.ts:321
+#: src/notifications/notification-templates.ts:331
 msgid "New message from a customer"
 msgstr "Ubutumwa bushya bw’umukiriya"
 
@@ -5505,7 +5510,7 @@ msgstr "Igitekerezo gishya"
 msgid "New reviews of your branches, and reviews hidden by our team."
 msgstr "Ibitekerezo bishya ku mashami yawe, n’ibyo itsinda ryacu ryahishe."
 
-#: src/notifications/notification-templates.ts:602
+#: src/notifications/notification-templates.ts:612
 msgid "New sign-in on {device}"
 msgstr "Konti yawe yinjiwemo kuri {device}"
 
@@ -5554,7 +5559,7 @@ msgstr "Nta nzoga mu biryo"
 msgid "No chilli"
 msgstr "Nta rusenda"
 
-#: src/notifications/notification-templates.ts:233
+#: src/notifications/notification-templates.ts:239
 msgid "No deposit was taken. You can book again at any time."
 msgstr "Nta mafaranga y’avansi yakuweho. Ushobora kongera gufata gahunda igihe icyo ari cyo cyose."
 
@@ -5620,6 +5625,10 @@ msgstr "Oya, cyangwa simbizi neza"
 #: src/business/choice-suggestions.ts:279
 msgid "No, thank you"
 msgstr "Oya, murakoze"
+
+#: src/notifications/notification-templates.ts:274
+msgid "Nobody checked you in for your booking at {businessName} at {clock}, so it is now marked as missed."
+msgstr "Nta wakwakiriye kuri gahunda yawe kwa {businessName} saa {clock}, bityo ubu yanditswe nk’iyo utitabiriye."
 
 #. A refusal: the app shows it as the reason something did not work.
 #: src/shop-messages/shop-messages.service.ts:397
@@ -5691,11 +5700,11 @@ msgstr "Icyitonderwa: “{note}”"
 msgid "Nothing"
 msgstr "Ntacyo"
 
-#: src/notifications/notification-templates.ts:582
+#: src/notifications/notification-templates.ts:592
 msgid "Nothing is lost: the money is back in your balance and goes out with your next payment. If your number has changed, update it under Getting paid."
 msgstr "Nta kibuze: amafaranga yasubiye mu yo ugomba guhabwa, kandi azoherezwa hamwe n’ubwishyu bukurikiraho. Niba nimero yawe yarahindutse, uyivugurure muri Kwishyurwa."
 
-#: src/notifications/notification-templates.ts:530
+#: src/notifications/notification-templates.ts:540
 msgid "Nothing is written off — your money is kept. Give a corrected number under Getting paid to start again."
 msgstr "Nta kibura — amafaranga yawe arabikwa. Tanga nimero ikosoye muri Kwishyurwa kugira ngo byongere bitangire."
 
@@ -5761,7 +5770,7 @@ msgstr "Ari mu nzira akugana"
 msgid "On my own"
 msgstr "Njyenyine"
 
-#: src/notifications/notification-templates.ts:202
+#: src/notifications/notification-templates.ts:206
 msgid "On the day, the customer gives you a 6-digit arrival code. Enter it to check them in."
 msgstr "Ku munsi wa gahunda, umukiriya azaguha kode yo kugera y’imibare 6. Yandike kugira ngo umwakire."
 
@@ -5806,7 +5815,7 @@ msgstr "Rimwe muri ayo mashami ryarafunzwe cyangwa si iryawe."
 msgid "One of those kinds does not exist."
 msgstr "Bumwe muri ubwo bwoko ntibubaho."
 
-#: src/notifications/notification-templates.ts:415
+#: src/notifications/notification-templates.ts:425
 msgid "One of your stories was taken down"
 msgstr "Imwe mu nkuru zawe yakuweho"
 
@@ -5823,38 +5832,38 @@ msgstr "Ubwoko bwanditswe n’intoki bujya kuri \"{OTHER}\" gusa — {name} busa
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:1474
+#: src/appointments/appointments.service.ts:1493
 msgid "Only a BOOKED appointment can be marked as a no-show. This one is {status}."
 msgstr "Gahunda iri kuri BOOKED ni yo yonyine ishobora kwandikwa ko ntiyaje. Iyi iri kuri {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:1166
-#: src/appointments/appointments.service.ts:1340
+#: src/appointments/appointments.service.ts:1185
+#: src/appointments/appointments.service.ts:1359
 msgid "Only a BOOKED appointment can be verified. This one is {status}."
 msgstr "Gahunda iri kuri BOOKED ni yo yonyine ishobora kwemezwa. Iyi iri kuri {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:2148
+#: src/appointments/appointments.service.ts:2193
 msgid "Only a booking marked as missed can be put right this way. This one is {status}."
 msgstr "Gahunda yanditswe ko yabuze ni yo yonyine ikosorwa muri ubu buryo. Iyi iri kuri {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:2224
+#: src/appointments/appointments.service.ts:2270
 msgid "Only a booking still to come can be cancelled. This one is {status}."
 msgstr "Gahunda itaraba ni yo yonyine ishobora guhagarikwa. Iyi iri kuri {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:2007
+#: src/appointments/appointments.service.ts:2052
 msgid "Only a booking that is expected can be checked in. This one is {status}."
 msgstr "Umukiriya yakirwa gusa iyo gahunda ye itegerejwe. Iyi iri kuri {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:2090
+#: src/appointments/appointments.service.ts:2135
 msgid "Only a booking that is expected or in progress can be marked done. This one is {status}."
 msgstr "Gahunda itegerejwe cyangwa iri gukorwa ni yo yonyine ishobora kwemezwa ko yarangiye. Iyi iri kuri {status}."
 
@@ -5884,9 +5893,15 @@ msgstr "Kwishyurwa kuri PENDING ni ko konyine gushobora koherezwa. Uku kuri kuri
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:1531
+#: src/appointments/appointments.service.ts:1558
 msgid "Only a PENDING_PAYMENT or BOOKED appointment can be cancelled. This one is {status}."
 msgstr "Gahunda iri kuri PENDING_PAYMENT cyangwa BOOKED ni yo yonyine ishobora guhagarikwa. Iyi iri kuri {status}."
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
+#: src/refunds/refunds.service.ts:253
+msgid "Only a refund waiting or refused can be tried again. This one is {status}."
+msgstr "Gusa ubwishyu busubizwa butegereje cyangwa bwanzwe ni bwo bushobora kongera kugeragezwa. Ubu ni {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
@@ -5937,14 +5952,19 @@ msgstr "Ushinzwe urubuga ni we wenyine ushobora gusiba izina rigaragara."
 
 #. A refusal: the app shows it as the reason something did not work.
 #: src/business/business-moderation.service.ts:341
-#: src/ledger/ledger.service.ts:672
+#: src/ledger/ledger.service.ts:697
 #: src/payouts/payout-destinations.service.ts:537
 #: src/payouts/payouts.service.ts:1265
 msgid "Only an administrator can do that."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora kubikora."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1651
+#: src/refunds/refunds.service.ts:201
+msgid "Only an administrator can do this."
+msgstr "Ibi bikorwa n’umuyobozi gusa."
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1697
 msgid "Only an administrator can list appointments."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora kureba urutonde rwa gahunda."
 
@@ -5959,13 +5979,13 @@ msgid "Only an administrator can moderate reviews."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora kugenzura ibitekerezo."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1717
+#: src/appointments/appointments.service.ts:1763
 msgid "Only an administrator can read this appointment."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora gusoma iyi gahunda."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/appointments/appointments.service.ts:1441
+#: src/appointments/appointments.service.ts:1460
 msgid "Only an IN_PROGRESS appointment can be completed. This one is {status}."
 msgstr "Gahunda iri kuri IN_PROGRESS ni yo yonyine ishobora kwemezwa ko yarangiye. Iyi iri kuri {status}."
 
@@ -6011,7 +6031,7 @@ msgid "Only the business owner can set the payout destination."
 msgstr "Nyir’iduka ni we wenyine ushobora gushyiraho nimero yo kwishyurirwaho."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1547
+#: src/appointments/appointments.service.ts:1574
 msgid "Only the owner or a manager can cancel a booking — cancelling refunds the customer. Ask one of them."
 msgstr "Nyir’iduka cyangwa umuyobozi ni bo bonyine bashobora guhagarika gahunda — kuyihagarika bisubiza umukiriya amafaranga ye. Saba umwe muri bo."
 
@@ -6033,23 +6053,23 @@ msgstr "Fungura"
 msgid "Open {shop} in the app to book."
 msgstr "Fungura {shop} muri porogaramu kugira ngo ufate gahunda."
 
-#: src/notifications/notification-templates.ts:569
+#: src/notifications/notification-templates.ts:579
 msgid "Open Getting paid to see every booking it covers."
 msgstr "Fungura Kwishyurwa urebe gahunda zose aya mafaranga akubiyemo."
 
-#: src/notifications/notification-templates.ts:356
+#: src/notifications/notification-templates.ts:366
 msgid "Open Help to read it and reply."
 msgstr "Fungura Ubufasha ugisome kandi usubize."
 
-#: src/notifications/notification-templates.ts:377
+#: src/notifications/notification-templates.ts:387
 msgid "Open Help to see the whole conversation."
 msgstr "Fungura Ubufasha urebe ikiganiro cyose."
 
-#: src/notifications/notification-templates.ts:325
+#: src/notifications/notification-templates.ts:335
 msgid "Open Messages to read it and reply. More messages in this conversation will not email you again straight away."
 msgstr "Fungura Ubutumwa ubusome kandi usubize. Ubundi butumwa muri iki kiganiro ntibuzahita bukoherereza imeyili."
 
-#: src/notifications/notification-templates.ts:390
+#: src/notifications/notification-templates.ts:400
 msgid "Open Reviews to read it. You can post one public reply."
 msgstr "Fungura Ibitekerezo ugisome. Ushobora gushyiraho igisubizo kimwe kibonwa na bose."
 
@@ -6057,15 +6077,15 @@ msgstr "Fungura Ibitekerezo ugisome. Ushobora gushyiraho igisubizo kimwe kibonwa
 msgid "Open the app to book any of these — a deposit holds your time, and the rest is paid at the shop."
 msgstr "Fungura porogaramu ufate gahunda kuri kimwe muri ibi — avansi ikubikira umwanya, asigaye akishyurirwa ku iduka."
 
-#: src/notifications/notification-templates.ts:333
+#: src/notifications/notification-templates.ts:343
 msgid "Open the app to read it and reply. More messages in this conversation will not email you again straight away."
 msgstr "Fungura porogaramu ubusome kandi usubize. Ubundi butumwa muri iki kiganiro ntibuzahita bukoherereza imeyili."
 
-#: src/notifications/notification-templates.ts:595
+#: src/notifications/notification-templates.ts:605
 msgid "Open the booking to see what they would like now."
 msgstr "Fungura gahunda urebe icyo umukiriya yifuza ubu."
 
-#: src/notifications/notification-templates.ts:396
+#: src/notifications/notification-templates.ts:406
 msgid "Open the shop in the app to read their reply."
 msgstr "Fungura iduka muri porogaramu usome igisubizo cyaryo."
 
@@ -6107,27 +6127,27 @@ msgstr "Izindi ndimi"
 msgid "Our review team"
 msgstr "Itsinda ryacu rishinzwe isuzuma"
 
-#: src/notifications/notification-templates.ts:241
+#: src/notifications/notification-templates.ts:247
 msgid "Our support team cancelled this booking for the customer, as they asked."
 msgstr "Itsinda ryacu ry’ubufasha ryahagaritse iyi gahunda mu izina ry’umukiriya, nk’uko yabisabye."
 
-#: src/notifications/notification-templates.ts:243
+#: src/notifications/notification-templates.ts:249
 msgid "Our support team cancelled this booking on your shop's side."
 msgstr "Itsinda ryacu ry’ubufasha ryahagaritse iyi gahunda mu izina ry’iduka ryawe."
 
-#: src/notifications/notification-templates.ts:217
+#: src/notifications/notification-templates.ts:221
 msgid "Our support team cancelled your booking at {businessName}, as you asked."
 msgstr "Itsinda ryacu ry’ubufasha ryahagaritse gahunda yawe kuri {businessName}, nk’uko wabisabye."
 
-#: src/appointments/appointments.service.ts:2014
+#: src/appointments/appointments.service.ts:2059
 msgid "Our support team checked a customer in"
 msgstr "Itsinda ryacu ry’ubufasha ryakiriye umukiriya"
 
-#: src/appointments/appointments.service.ts:2024
+#: src/appointments/appointments.service.ts:2069
 msgid "Our support team checked you in at {shop} for {serviceName}."
 msgstr "Itsinda ryacu ry’ubufasha ryakwakiriye kuri {shop}, kuri {serviceName}."
 
-#: src/appointments/appointments.service.ts:2028
+#: src/appointments/appointments.service.ts:2073
 msgid "Our support team checked you in for {serviceName}."
 msgstr "Itsinda ryacu ry’ubufasha ryakwakiriye kuri {serviceName}."
 
@@ -6135,7 +6155,7 @@ msgstr "Itsinda ryacu ry’ubufasha ryakwakiriye kuri {serviceName}."
 msgid "Our support team closed your account, as asked. Your bookings and reviews stay with the shops they belong to, with your name removed. You can make a new account with this email at any time."
 msgstr "Itsinda ryacu ry’ubufasha ryafunze konti yawe, nk’uko wabisabye. Gahunda zawe n’ibitekerezo byawe bigumana n’amaduka bireba, izina ryawe ryakuweho. Ushobora gufungura konti nshya ukoresheje iyi imeyili igihe icyo ari cyo cyose."
 
-#: src/appointments/appointments.service.ts:2201
+#: src/appointments/appointments.service.ts:2246
 msgid "Our support team corrected a missed booking"
 msgstr "Itsinda ryacu ry’ubufasha ryakosoye gahunda yanditswe ko yabuze"
 
@@ -6147,7 +6167,7 @@ msgstr "Itsinda ryacu ry’ubufasha ryeguriye iduka {email}. Uracyari mu itsinda
 msgid "Our support team made you the owner. You can now change the team, the payout number and everything else. The old owner is still in the team as a manager — keep them or take them out under Team."
 msgstr "Itsinda ryacu ry’ubufasha ryakugize nyir’iduka. Ubu ushobora guhindura itsinda, nimero yo kwishyurirwaho n’ibindi byose. Nyir’iduka wa mbere aracyari mu itsinda nk’umuyobozi — mugumane cyangwa umukuremo muri Itsinda."
 
-#: src/appointments/appointments.service.ts:2123
+#: src/appointments/appointments.service.ts:2168
 msgid "Our support team marked a booking done"
 msgstr "Itsinda ryacu ry’ubufasha ryemeje ko gahunda yarangiye"
 
@@ -6175,23 +6195,23 @@ msgstr "Itsinda ryacu ry’ubufasha ryakuyeho ubutumire bwa {email}."
 msgid "Our support team took you out of the team, so you can no longer open this shop. If you think this is a mistake, ask the shop’s owner."
 msgstr "Itsinda ryacu ry’ubufasha ryagukuye mu itsinda, bityo ntushobora kongera gufungura iri duka. Niba utekereza ko ari ikosa, baza nyir’iduka."
 
-#: src/notifications/notification-templates.ts:407
+#: src/notifications/notification-templates.ts:417
 msgid "Our team hid a review of one of your branches. It is no longer public, and it no longer counts in your rating."
 msgstr "Itsinda ryacu ryahishe igitekerezo ku rimwe mu mashami yawe. Ntikikigaragara ku bantu bose, kandi ntikikibarwa mu manota yawe."
 
-#: src/notifications/notification-templates.ts:405
+#: src/notifications/notification-templates.ts:415
 msgid "Our team hid your review, so it is no longer public."
 msgstr "Itsinda ryacu ryahishe igitekerezo cyawe, bityo ntikikigaragara ku bantu bose."
 
-#: src/notifications/notification-templates.ts:426
+#: src/notifications/notification-templates.ts:436
 msgid "Our team removed the name shown beside your reviews, so they now show as \"Anonymous\"."
 msgstr "Itsinda ryacu ryakuyeho izina ryagaragaraga iruhande rw’ibitekerezo byawe, bityo ubu bigaragara nka \"Utazwi\"."
 
-#: src/notifications/notification-templates.ts:486
+#: src/notifications/notification-templates.ts:496
 msgid "Our team suspended your shop. While it lasts, new customers cannot find or book with you, and your payments are paused."
 msgstr "Itsinda ryacu ryahagaritse iduka ryawe by’agateganyo. Muri icyo gihe, abakiriya bashya ntibashobora kukubona cyangwa gufata gahunda iwawe, kandi kwishyurwa kwawe kurahagaze."
 
-#: src/notifications/notification-templates.ts:417
+#: src/notifications/notification-templates.ts:427
 msgid "Our team took down one of your stories, so customers no longer see it."
 msgstr "Itsinda ryacu ryakuyeho imwe mu nkuru zawe, bityo abakiriya ntibakiyibona."
 
@@ -6306,16 +6326,16 @@ msgstr "PAYE"
 msgid "Payment"
 msgstr "Ubwishyu"
 
-#: src/notifications/notification-templates.ts:281
+#: src/notifications/notification-templates.ts:291
 msgid "Payment did not go through: {serviceName}"
 msgstr "Ubwishyu ntibwakunze: {serviceName}"
 
-#: src/notifications/notification-templates.ts:565
+#: src/notifications/notification-templates.ts:575
 msgid "Payment sent: {amount}"
 msgstr "Amafaranga yoherejwe: {amount}"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:915
+#: src/appointments/appointments.service.ts:932
 msgid "Payments are temporarily unavailable. You have NOT been charged, and your booking is still held — please try again shortly. Our team has been notified."
 msgstr "Ubwishyu ntibuboneka by’agateganyo. NTA mafaranga wakuweho, kandi gahunda yawe iracyakubikiwe — ongera ugerageze mu kanya. Itsinda ryacu ryabimenyeshejwe."
 
@@ -6778,7 +6798,7 @@ msgstr "Biboneka mu masaha 24"
 msgid "Ready when I arrive"
 msgstr "Biteguye ningera"
 
-#: src/notifications/notification-templates.ts:170
+#: src/notifications/notification-templates.ts:174
 #: src/support/support-accounts.service.ts:42
 msgid "Reason: {reason}"
 msgstr "Impamvu: {reason}"
@@ -6809,7 +6829,7 @@ msgstr "Imyidagaduro"
 msgid "Referee"
 msgstr "Umusifuzi"
 
-#: src/notifications/notification-templates.ts:61
+#: src/notifications/notification-templates.ts:65
 msgid "Reference: {reference}"
 msgstr "Nimero iranga: {reference}"
 
@@ -6833,6 +6853,12 @@ msgstr "Token yo kuvugurura ntigikora."
 #: src/business/choice-suggestions.ts:338
 msgid "Refreshments"
 msgstr "Ibyo kurya no kunywa"
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/refunds/refunds.service.ts:251
+#: src/refunds/refunds.service.ts:267
+msgid "Refund not found."
+msgstr "Ubwishyu busubizwa ntibwabonetse."
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1204
@@ -7013,11 +7039,6 @@ msgid "Say any age limits in the service’s description."
 msgstr "Niba hari imyaka isabwa, yandike mu bisobanuro bya serivisi."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1845
-msgid "Say what the operator charges to send the refund back (gatewayChargeMinor) — the shop bears it."
-msgstr "Vuga amafaranga ikigo cy’ubwishyu gica ngo gisubize amafaranga (gatewayChargeMinor) — yishyurwa n’iduka."
-
-#. A refusal: the app shows it as the reason something did not work.
 #: src/support/support-log.service.ts:36
 msgid "Say why, in a few words. It is kept with what you did."
 msgstr "Vuga impamvu mu magambo make. Ibikwa hamwe n’ibyo wakoze."
@@ -7070,7 +7091,7 @@ msgstr "Reba ibitekerezo"
 msgid "See you on {weekday} at {clock}"
 msgstr "Tuzabonana {weekday} saa {clock}"
 
-#: src/notifications/notification-templates.ts:312
+#: src/notifications/notification-templates.ts:322
 msgid "See you on {weekday} at {clock}."
 msgstr "Tuzabonana {weekday} saa {clock}."
 
@@ -7082,7 +7103,7 @@ msgstr "Tuzabonana vuba"
 msgid "See you today at {clock}"
 msgstr "Tuzabonana uyu munsi saa {clock}"
 
-#: src/notifications/notification-templates.ts:309
+#: src/notifications/notification-templates.ts:319
 msgid "See you today at {clock}."
 msgstr "Tuzabonana uyu munsi saa {clock}."
 
@@ -7090,7 +7111,7 @@ msgstr "Tuzabonana uyu munsi saa {clock}."
 msgid "See you tomorrow at {clock}"
 msgstr "Tuzabonana ejo saa {clock}"
 
-#: src/notifications/notification-templates.ts:311
+#: src/notifications/notification-templates.ts:321
 msgid "See you tomorrow at {clock}."
 msgstr "Tuzabonana ejo saa {clock}."
 
@@ -7121,14 +7142,14 @@ msgid "Service"
 msgstr "Serivisi"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:411
+#: src/appointments/appointments.service.ts:428
 #: src/availability/availability.service.ts:324
 #: src/business/business-access.service.ts:139
 #: src/favourites/favourites.service.ts:167
 msgid "Service not found."
 msgstr "Serivisi ntiyabonetse."
 
-#: src/notifications/notification-templates.ts:55
+#: src/notifications/notification-templates.ts:59
 msgid "Service: {serviceName}"
 msgstr "Serivisi: {serviceName}"
 
@@ -7504,8 +7525,8 @@ msgid "Starter locs"
 msgstr "Gutangiza dreads"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:280
-#: src/appointments/appointments.service.ts:289
+#: src/appointments/appointments.service.ts:294
+#: src/appointments/appointments.service.ts:303
 msgid "startTime is not a valid date-time."
 msgstr "startTime si itariki n’isaha byemewe."
 
@@ -7591,8 +7612,8 @@ msgstr "Imiterere"
 msgid "Subject"
 msgstr "Isomo"
 
-#: src/notifications/notification-templates.ts:355
-#: src/notifications/notification-templates.ts:376
+#: src/notifications/notification-templates.ts:365
+#: src/notifications/notification-templates.ts:386
 msgid "Subject: {subject}"
 msgstr "Ingingo: {subject}"
 
@@ -7747,7 +7768,7 @@ msgstr "Kuri terase"
 msgid "Test day: the car and a warm-up"
 msgstr "Umunsi w’ikizamini: imodoka no kwimenyereza"
 
-#: src/notifications/notification-templates.ts:558
+#: src/notifications/notification-templates.ts:568
 msgid "Thank you for visiting {businessName}."
 msgstr "Urakoze gusura {businessName}."
 
@@ -7811,7 +7832,7 @@ msgid "That is not the code your app shows. Check the time on your phone is set 
 msgstr "Iyo si kode iri muri porogaramu yawe. Reba ko isaha ya telefoni yawe yishyiraho ubwayo, maze wandike kode iheruka."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:2047
+#: src/appointments/appointments.service.ts:2092
 msgid "That is not this booking''s code. Ask the customer to read it from their booking in the app — or check them in without it, saying how you know they came."
 msgstr "Iyo si kode y’iyi gahunda. Saba umukiriya ayisome kuri gahunda ye muri porogaramu — cyangwa umwakire nta kode, uvuge uko uzi ko yaje."
 
@@ -7835,12 +7856,12 @@ msgid "That service has no price at that branch. Add one before turning it on."
 msgstr "Iyo serivisi nta giciro ifite kuri iryo shami. Banza ushyireho igiciro mbere yo kuyifungura."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:459
+#: src/appointments/appointments.service.ts:476
 msgid "That service is no longer available."
 msgstr "Iyo serivisi ntikiboneka."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:452
+#: src/appointments/appointments.service.ts:469
 msgid "That service is not offered at this location."
 msgstr "Iyo serivisi ntitangirwa kuri iri shami."
 
@@ -7861,7 +7882,7 @@ msgstr "Ubwo bwoko si ubw’icyiciro wahisemo."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: localStart, locationId.
-#: src/appointments/appointments.service.ts:759
+#: src/appointments/appointments.service.ts:776
 msgid "That time is not available. Requested {localStart}; check GET /locations/{locationId}/availability for open slots."
 msgstr "Uwo mwanya ntuboneka. Wasabye {localStart}; reba GET /locations/{locationId}/availability ubone imyanya iboneka."
 
@@ -7900,29 +7921,29 @@ msgid "The BwanguReservations team"
 msgstr "Itsinda rya BwanguReservations"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:862
+#: src/appointments/appointments.service.ts:879
 msgid "The configured exchange rate converts this deposit to zero. Check the rate before taking payments."
 msgstr "Igipimo cy’ivunjisha cyashyizweho gihindura iyi avansi zeru. Banza ugenzure igipimo mbere yo kwakira ubwishyu."
 
-#: src/notifications/notification-templates.ts:245
+#: src/notifications/notification-templates.ts:251
 msgid "The customer cancelled this booking."
 msgstr "Umukiriya yahagaritse iyi gahunda."
 
-#: src/notifications/notification-templates.ts:593
+#: src/notifications/notification-templates.ts:603
 msgid "The customer changed their choices or their note for {serviceName}."
 msgstr "Umukiriya yahinduye amahitamo cyangwa icyo yanditse kuri {serviceName}."
 
-#: src/notifications/notification-templates.ts:255
+#: src/notifications/notification-templates.ts:263
 msgid "The customer gets their whole deposit back, and the mobile money charge for sending it back is yours."
 msgstr "Umukiriya asubizwa avansi ye yose, kandi amafaranga ya Mobile Money yo kuyimusubiza ni wowe uyishyura."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:2272
+#: src/appointments/appointments.service.ts:2327
 msgid "The customer is already checked in, so the code is spent."
 msgstr "Umukiriya yamaze kwakirwa, bityo kode yamaze gukoreshwa."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1839
+#: src/appointments/appointments.service.ts:1885
 msgid "The customer is already checked in. Mark it done, or answer the dispute another way."
 msgstr "Umukiriya yamaze kwakirwa. Emeza ko yarangiye, cyangwa ukemure iki kibazo mu bundi buryo."
 
@@ -7934,7 +7955,7 @@ msgstr "Umunsi ubanziriza gahunda, kugira ngo itagucika."
 msgid "The deposit did not go through"
 msgstr "Ubwishyu bw’avansi ntibwakunze"
 
-#: src/notifications/notification-templates.ts:200
+#: src/notifications/notification-templates.ts:204
 msgid "The deposit is paid, so this booking is confirmed."
 msgstr "Avansi yishyuwe, bityo iyi gahunda iremejwe."
 
@@ -7963,7 +7984,7 @@ msgstr "Umunsi wa nyuma wa promosiyo ntushobora kuba warashize."
 msgid "The maximum reporting range is {MAX_RANGE_DAYS} days. Requested {value1}."
 msgstr "Igihe kirekire cya raporo ni iminsi {MAX_RANGE_DAYS}. Wasabye {value1}."
 
-#: src/notifications/notification-templates.ts:424
+#: src/notifications/notification-templates.ts:434
 msgid "The name on your reviews was removed"
 msgstr "Izina riri ku bitekerezo byawe ryakuweho"
 
@@ -7982,23 +8003,23 @@ msgstr "Nyir’iduka ntashobora gukurwamo. Buri bucuruzi bugomba kugira nyir’i
 msgid "The owner cannot be removed. Hand the shop to someone else first."
 msgstr "Nyir’iduka ntashobora gukurwamo. Banza uhe iduka undi muntu."
 
-#: src/notifications/notification-templates.ts:89
+#: src/notifications/notification-templates.ts:93
 msgid "The owner invited you to join {businessName} as a manager on BwanguReservations."
 msgstr "Nyir’iduka yagutumiye kwinjira muri {businessName} nk’umuyobozi kuri BwanguReservations."
 
-#: src/notifications/notification-templates.ts:91
+#: src/notifications/notification-templates.ts:95
 msgid "The owner invited you to join {businessName} as a team member on BwanguReservations."
 msgstr "Nyir’iduka yagutumiye kwinjira muri {businessName} nk’umukozi kuri BwanguReservations."
 
-#: src/notifications/notification-templates.ts:93
+#: src/notifications/notification-templates.ts:97
 msgid "The owner invited you to join {businessName} as an administrator on BwanguReservations."
 msgstr "Nyir’iduka yagutumiye kwinjira muri {businessName} nk’umuyobozi mukuru kuri BwanguReservations."
 
-#: src/notifications/notification-templates.ts:87
+#: src/notifications/notification-templates.ts:91
 msgid "The owner invited you to join {businessName} as an owner on BwanguReservations."
 msgstr "Nyir’iduka yagutumiye kwinjira muri {businessName} nka nyir’iduka kuri BwanguReservations."
 
-#: src/notifications/notification-templates.ts:94
+#: src/notifications/notification-templates.ts:98
 msgid "The owner invited you to join {businessName} on BwanguReservations."
 msgstr "Nyir’iduka yagutumiye kwinjira muri {businessName} kuri BwanguReservations."
 
@@ -8038,15 +8059,15 @@ msgstr "Saloni: imisatsi y’ubukorano"
 msgid "The sauna"
 msgstr "Sawuna"
 
-#: src/notifications/notification-templates.ts:395
+#: src/notifications/notification-templates.ts:405
 msgid "The shop replied to your review"
 msgstr "Iduka ryasubije igitekerezo cyawe"
 
-#: src/notifications/notification-templates.ts:396
+#: src/notifications/notification-templates.ts:406
 msgid "The shop replied to your review."
 msgstr "Iduka ryasubije igitekerezo cyawe."
 
-#: src/notifications/notification-templates.ts:499
+#: src/notifications/notification-templates.ts:509
 msgid "The suspension has been lifted. Customers can find and book with you again, and money kept while you were suspended goes out with your next payment."
 msgstr "Ihagarikwa ryakuweho. Abakiriya bashobora kongera kukubona no gufata gahunda iwawe, kandi amafaranga yabitswe igihe wari uhagaritswe azoherezwa hamwe n’ubwishyu bwawe butaha."
 
@@ -8055,15 +8076,15 @@ msgstr "Ihagarikwa ryakuweho. Abakiriya bashobora kongera kukubona no gufata gah
 msgid "The tank or pump"
 msgstr "Ikigega cyangwa pompe"
 
-#: src/notifications/notification-templates.ts:251
+#: src/notifications/notification-templates.ts:257
 msgid "The time is free for someone else."
 msgstr "Uwo mwanya ubu uraboneka ku bandi."
 
-#: src/notifications/notification-templates.ts:292
+#: src/notifications/notification-templates.ts:302
 msgid "The time is held a little longer while they try again, then it is free."
 msgstr "Umwanya urabikwa akanya gato mu gihe umukiriya yongera kugerageza, hanyuma ukaboneka."
 
-#: src/notifications/notification-templates.ts:182
+#: src/notifications/notification-templates.ts:186
 msgid "The time is held while they pay the deposit, which usually takes a minute or two. We will tell you when it is paid; if it is not paid within 5 minutes, the time is free again."
 msgstr "Umwanya urabikwa mu gihe umukiriya yishyura avansi, ubusanzwe bimara umunota umwe cyangwa ibiri. Tuzakumenyesha iyo imaze kwishyurwa; niba itishyuwe mu minota 5, umwanya wongera kuboneka."
 
@@ -8103,13 +8124,18 @@ msgstr "Amategeko y’umuhanda"
 msgid "Therapy"
 msgstr "Isanamitima"
 
-#: src/notifications/notification-templates.ts:354
+#: src/notifications/notification-templates.ts:364
 msgid "There is a new reply to your question."
 msgstr "Hari igisubizo gishya ku kibazo cyawe."
 
-#: src/notifications/notification-templates.ts:371
+#: src/notifications/notification-templates.ts:381
 msgid "There is news on your question."
 msgstr "Hari amakuru mashya ku kibazo cyawe."
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/refunds/refunds.service.ts:256
+msgid "There is no number to send it to. Send it by hand and mark it sent."
+msgstr "Nta nimero yo kubwoherezaho ihari. Bwohereze n’intoki maze wemeze ko bwoherejwe."
 
 #. A refusal: the app shows it as the reason something did not work.
 #: src/users/users.controller.ts:66
@@ -8126,6 +8152,10 @@ msgstr "Nta nyandiko ihari yo gushyira ahagaragara."
 #: src/users/account.service.ts:306
 msgid "They are the only owner of {shop}. Make someone else an owner first, or it would be left with nobody who can change anything."
 msgstr "Uyu muntu ni we nyir’iduka wenyine wa {shop}. Banza ugire undi muntu nyir’iduka, bitabaye ibyo ryasigara nta muntu ushobora kugira icyo ahindura."
+
+#: src/notifications/notification-templates.ts:259
+msgid "They cancelled more than 24 hours before, so their deposit goes back to them and nothing is paid to you for this booking."
+msgstr "Bahagaritse habura amasaha arenga 24, bityo avansi yabo irabasubizwa kandi nta kintu wishyurwa kuri iyi gahunda."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: upcoming.
@@ -8153,8 +8183,8 @@ msgid "This account is closed."
 msgstr "Iyi konti irafunze."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:2563
-#: src/appointments/appointments.service.ts:2660
+#: src/appointments/appointments.service.ts:2618
+#: src/appointments/appointments.service.ts:2715
 #: src/business/business-access.service.ts:41
 #: src/payouts/payout-destinations.service.ts:511
 msgid "This account is not an active member of any business."
@@ -8166,22 +8196,22 @@ msgid "This account type cannot access chat threads."
 msgstr "Ubu bwoko bwa konti ntibwemerewe kugera ku biganiro."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:2572
+#: src/appointments/appointments.service.ts:2627
 msgid "This account type cannot list appointments."
 msgstr "Ubu bwoko bwa konti ntibwemerewe kureba urutonde rwa gahunda."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/ledger/ledger.service.ts:434
+#: src/ledger/ledger.service.ts:459
 msgid "This adjustment cannot be settled: the platform collects in a currency it has no exchange rate for, so there is no amount to send. Set the rate before executing adjustments."
 msgstr "Iri hinduka ntirishobora kwishyurwa: urubuga rwakira amafaranga mu ifaranga ridafitiwe igipimo cy’ivunjisha, bityo nta mafaranga yo kohereza ahari. Shyiraho igipimo mbere yo gukora amahinduka."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/ledger/ledger.service.ts:402
+#: src/ledger/ledger.service.ts:427
 msgid "This adjustment has already been executed. Record a new adjustment instead."
 msgstr "Iri hinduka ryamaze gukorwa. Ahubwo andika irindi hinduka rishya."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/ledger/ledger.service.ts:263
+#: src/ledger/ledger.service.ts:282
 msgid "This appointment has already been refunded."
 msgstr "Iyi gahunda yamaze gusubizwa amafaranga."
 
@@ -8191,48 +8221,48 @@ msgid "This appointment has already been reviewed."
 msgstr "Iyi gahunda yamaze gutangirwa igitekerezo."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1235
+#: src/appointments/appointments.service.ts:1254
 msgid "This appointment has already been verified, so its code is spent."
 msgstr "Iyi gahunda yamaze kwemezwa, bityo kode yayo yamaze gukoreshwa."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1170
+#: src/appointments/appointments.service.ts:1189
 msgid "This appointment has no verification code."
 msgstr "Iyi gahunda nta kode yo kwemeza ifite."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1440
+#: src/appointments/appointments.service.ts:1459
 msgid "This appointment has not been verified yet. Enter the customer’s verification code first — an appointment cannot be completed without it."
 msgstr "Iyi gahunda ntiremezwa. Banza wandike kode yo kwemeza y’umukiriya — gahunda ntishobora kwemezwa ko yarangiye idafite iyo kode."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1828
+#: src/appointments/appointments.service.ts:1874
 msgid "This appointment is already recorded as a business cancellation."
 msgstr "Iyi gahunda isanzwe yanditswe ko yahagaritswe n’iduka."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1473
+#: src/appointments/appointments.service.ts:1492
 msgid "This appointment was already verified, so it cannot be marked a no-show."
 msgstr "Iyi gahunda yamaze kwemezwa, bityo ntishobora kwandikwa ko ntiyaje."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:661
+#: src/appointments/appointments.service.ts:678
 msgid "This booking can no longer be changed."
 msgstr "Iyi gahunda ntigishobora guhindurwa."
 
-#: src/notifications/notification-templates.ts:250
+#: src/notifications/notification-templates.ts:256
 msgid "This booking has been cancelled."
 msgstr "Iyi gahunda yahagaritswe."
 
-#: src/notifications/notification-templates.ts:247
+#: src/notifications/notification-templates.ts:253
 msgid "This booking was cancelled by your shop."
 msgstr "Iyi gahunda yahagaritswe n’iduka ryawe."
 
-#: src/notifications/notification-templates.ts:249
+#: src/notifications/notification-templates.ts:255
 msgid "This booking was let go, because the deposit was not paid in time."
 msgstr "Iyi gahunda yarekuwe, kubera ko avansi itishyuwe ku gihe."
 
-#: src/notifications/notification-templates.ts:275
+#: src/notifications/notification-templates.ts:285
 msgid "This booking was marked as missed."
 msgstr "Iyi gahunda yanditswe ko yabuze."
 
@@ -8285,7 +8315,7 @@ msgid "This business is not paused."
 msgstr "Ubu bucuruzi ntibwahagaritswe by’agateganyo."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1840
+#: src/appointments/appointments.service.ts:1886
 msgid "This cancellation had no paid deposit, so there is nothing to give back."
 msgstr "Kuri iyi gahunda yahagaritswe nta avansi yari yishyuwe, bityo nta mafaranga yo gusubiza."
 
@@ -8393,6 +8423,16 @@ msgid "This reaches {value0} people. Type {people} to confirm."
 msgstr "Ibi bigera ku bantu {value0}. Andika {people} kugira ngo wemeze."
 
 #. A refusal: the app shows it as the reason something did not work.
+#: src/refunds/refunds.service.ts:268
+msgid "This refund is already sent."
+msgstr "Ubu bwishyu busubizwa bwamaze koherezwa."
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/refunds/refunds.service.ts:270
+msgid "This refund is with the operator now. Wait for its answer before sending it another way."
+msgstr "Ubu bwishyu buri kwa sosiyete y’itumanaho ubu. Tegereza igisubizo cyayo mbere yo kubwohereza mu bundi buryo."
+
+#. A refusal: the app shows it as the reason something did not work.
 #: src/reviews/reviews.service.ts:245
 msgid "This review already has a response. Edit it instead of posting a second one."
 msgstr "Iki gitekerezo gisanzwe gifite igisubizo. Hindura icyo gisubizo aho gushyiraho ikindi."
@@ -8419,12 +8459,12 @@ msgid "This service already has the maximum of {MAX_IMAGES_PER_SERVICE} photos. 
 msgstr "Iyi serivisi imaze kugira amafoto {MAX_IMAGES_PER_SERVICE}, ari yo ntarengwa. Siba imwe mbere yo gushyiraho indi."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:474
+#: src/appointments/appointments.service.ts:491
 msgid "This service no longer takes a note. Remove yours, and send it in a message after booking."
 msgstr "Ubu iyi serivisi ntiyemera ubutumwa bugufi. Kuramo ubwawe, ubwohereze mu kiganiro n’iduka nyuma yo gufata gahunda."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:705
+#: src/appointments/appointments.service.ts:722
 msgid "This service no longer takes a note. Send the shop a message instead."
 msgstr "Ubu iyi serivisi ntiyemera ubutumwa bugufi. Ahubwo andikira iduka."
 
@@ -8486,7 +8526,7 @@ msgstr "Igihe cyo kumenyana."
 msgid "Titanium"
 msgstr "Titaniyumu"
 
-#: src/notifications/notification-templates.ts:624
+#: src/notifications/notification-templates.ts:634
 msgid "To accept, sign in with this email address — that is all."
 msgstr "Kugira ngo wemere, injira ukoresheje iyi imeyili — ni ibyo gusa."
 
@@ -8500,11 +8540,11 @@ msgstr "to igomba kuba itariki n’isaha byanditse mu buryo bwa ISO-8601."
 msgid "To pay at the shop"
 msgstr "Uzishyura ku iduka"
 
-#: src/notifications/notification-templates.ts:303
+#: src/notifications/notification-templates.ts:313
 msgid "Today at {clock}: {serviceName} at {businessName}"
 msgstr "Uyu munsi saa {clock}: {serviceName} kuri {businessName}"
 
-#: src/notifications/notification-templates.ts:305
+#: src/notifications/notification-templates.ts:315
 msgid "Tomorrow at {clock}: {serviceName} at {businessName}"
 msgstr "Ejo saa {clock}: {serviceName} kuri {businessName}"
 
@@ -8517,7 +8557,7 @@ msgid "Too many codes requested. Wait a minute and try again."
 msgstr "Wasabye kode nyinshi. Tegereza umunota umwe wongere ugerageze."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:1174
+#: src/appointments/appointments.service.ts:1193
 msgid "Too many incorrect attempts. Contact support to verify this appointment."
 msgstr "Kode itari yo yanditswe inshuro nyinshi. Vugana n’ubufasha kugira ngo iyi gahunda igenzurwe."
 
@@ -8703,7 +8743,7 @@ msgstr "Kugeza kuri 5"
 msgid "Up to 5 kg"
 msgstr "Kugeza ku biro 5"
 
-#: src/notifications/notification-templates.ts:373
+#: src/notifications/notification-templates.ts:383
 msgid "Update on your question: {subject}"
 msgstr "Amakuru ku kibazo cyawe: {subject}"
 
@@ -8855,7 +8895,7 @@ msgstr "Kugenda ifashwe n’umugozi"
 msgid "Walking pace"
 msgstr "Umuvuduko wo kugenda"
 
-#: src/notifications/notification-templates.ts:606
+#: src/notifications/notification-templates.ts:616
 msgid "Was it you? Then there is nothing to do."
 msgstr "Ni wowe? Nta cyo ukeneye gukora."
 
@@ -8901,7 +8941,7 @@ msgstr "Ibishashara"
 msgid "Wax or polish"
 msgstr "Ibishashara cyangwa kurabagiza"
 
-#: src/notifications/notification-templates.ts:364
+#: src/notifications/notification-templates.ts:374
 msgid "We are looking into your question."
 msgstr "Turimo gusuzuma ikibazo cyawe."
 
@@ -8910,51 +8950,55 @@ msgstr "Turimo gusuzuma ikibazo cyawe."
 msgid "We bring our own"
 msgstr "Tuzana ibyacu"
 
-#: src/appointments/appointments.service.ts:1889
+#: src/appointments/appointments.service.ts:1932
 msgid "We cancelled this booking on the shop’s side. No deposit had been paid."
 msgstr "Twahagaritse iyi gahunda mu izina ry’iduka. Avansi ntiyari yishyuwe."
 
-#: src/appointments/appointments.service.ts:1888
+#: src/appointments/appointments.service.ts:1931
 msgid "We cancelled this booking on the shop’s side. The customer gets their whole deposit back."
 msgstr "Twahagaritse iyi gahunda mu izina ry’iduka. Umukiriya asubizwa avansi ye yose."
 
-#: src/appointments/appointments.service.ts:2249
+#: src/appointments/appointments.service.ts:2303
 msgid "We cancelled your booking, as you asked. As agreed when you booked, the deposit is not given back."
 msgstr "Twahagaritse gahunda yawe, nk’uko wabisabye. Nk’uko wabyemeye ufata gahunda, avansi ntisubizwa."
 
-#: src/appointments/appointments.service.ts:2250
+#: src/appointments/appointments.service.ts:2301
+msgid "We cancelled your booking, as you asked. It was more than 24 hours before, so your whole deposit comes back to you."
+msgstr "Twahagaritse gahunda yawe nk’uko wabisabye. Hari habura amasaha arenga 24, bityo avansi yawe yose irakugarukira."
+
+#: src/appointments/appointments.service.ts:2304
 msgid "We cancelled your booking, as you asked. No deposit had been paid."
 msgstr "Twahagaritse gahunda yawe, nk’uko wabisabye. Avansi ntiyari yishyuwe."
 
-#: src/appointments/appointments.service.ts:2017
+#: src/appointments/appointments.service.ts:2062
 msgid "We checked the customer in for {serviceName} on {when}, because it could not be done in the app. Mark it done when the service is finished, as usual."
 msgstr "Twakiriye umukiriya waje kuri {serviceName} ({when}), kuko bitashobokaga muri porogaramu. Nk’uko bisanzwe, emeza ko byarangiye serivisi nirangira."
 
-#: src/appointments/appointments.service.ts:2072
+#: src/appointments/appointments.service.ts:2117
 msgid "We checked the customer in for {serviceName}."
 msgstr "Twakiriye umukiriya waje kuri {serviceName}."
 
-#: src/notifications/notification-templates.ts:517
+#: src/notifications/notification-templates.ts:527
 msgid "We checked the number you gave, and your payments now go there. Anything kept while it was being checked goes out with your next payment."
 msgstr "Twagenzuye nimero watanze, kandi ubu amafaranga yawe ajya kuri yo. Ayari yarabitswe igihe yagenzurwaga azoherezwa hamwe n’ubwishyu bukurikira."
 
-#: src/appointments/appointments.service.ts:2329
+#: src/appointments/appointments.service.ts:2384
 msgid "We checked with MTN: the deposit did not go through. You can try paying again from the booking."
 msgstr "Twabajije MTN: avansi ntiyakunze. Ushobora kongera kugerageza kwishyura uhereye kuri gahunda."
 
-#: src/appointments/appointments.service.ts:2327
+#: src/appointments/appointments.service.ts:2382
 msgid "We checked with MTN: your deposit went through, and the booking is confirmed."
 msgstr "Twabajije MTN: avansi yawe yakunze, kandi gahunda yemejwe."
 
-#: src/appointments/appointments.service.ts:2174
+#: src/appointments/appointments.service.ts:2219
 msgid "We corrected {serviceName}: it was marked as missed, but the customer came. It now counts as done."
 msgstr "Twakosoye {serviceName}: yari yanditswe ko umukiriya ataje, ariko yaje. Ubu ibarwa nk’iyarangiye."
 
-#: src/notifications/notification-templates.ts:528
+#: src/notifications/notification-templates.ts:538
 msgid "We could not accept the number you gave, so your payments stay paused."
 msgstr "Ntitwashoboye kwemera nimero watanze, bityo kwishyurwa bikomeje guhagarikwa by’agateganyo."
 
-#: src/appointments/appointments.service.ts:2286
+#: src/appointments/appointments.service.ts:2341
 msgid "We emailed you a new arrival code. The old one no longer works."
 msgstr "Twakoherereje kode nshya yo kugera kuri imeyili. Iya kera ntigikora."
 
@@ -8962,15 +9006,15 @@ msgstr "Twakoherereje kode nshya yo kugera kuri imeyili. Iya kera ntigikora."
 msgid "We made {email} the owner of the shop. The old owner stays in the team as a manager."
 msgstr "Twagize {email} nyir’iduka. Nyir’iduka wa mbere aguma mu itsinda nk’umuyobozi."
 
-#: src/appointments/appointments.service.ts:2110
+#: src/appointments/appointments.service.ts:2155
 msgid "We marked {serviceName} as done. The shop is paid for it as usual."
 msgstr "Twanditse ko {serviceName} yarangiye. Iduka ryishyurwa nk’uko bisanzwe."
 
-#: src/appointments/appointments.service.ts:2126
+#: src/appointments/appointments.service.ts:2171
 msgid "We marked {serviceName} on {when} as done, because it could not be done in the app. Your share of the deposit is paid to you as usual."
 msgstr "Twanditse ko {serviceName} ({when}) yarangiye, kuko bitashobokaga muri porogaramu. Uhabwa umugabane wawe kuri avansi nk’uko bisanzwe."
 
-#: src/notifications/notification-templates.ts:366
+#: src/notifications/notification-templates.ts:376
 msgid "We marked your question as solved. If it is not, reply within 14 days and it opens again."
 msgstr "Twanditse ko ikibazo cyawe cyakemutse. Niba kitarakemuka, subiza mu minsi 14 maze cyongere gufungurwa."
 
@@ -8982,11 +9026,11 @@ msgstr "Twongeye gufungura iduka ryawe: abakiriya bashobora kongera gufata gahun
 msgid "We paused your shop: no new bookings until it is opened again. Bookings already made still happen."
 msgstr "Twahagaritse iduka ryawe by’agateganyo: nta gahunda nshya kugeza ryongeye gufungurwa. Gahunda zamaze gufatwa ziracyakomeza."
 
-#: src/notifications/notification-templates.ts:352
+#: src/notifications/notification-templates.ts:362
 msgid "We replied: {subject}"
 msgstr "Twagusubije: {subject}"
 
-#: src/notifications/notification-templates.ts:474
+#: src/notifications/notification-templates.ts:484
 msgid "We reviewed your shop and could not approve it yet."
 msgstr "Twasuzumye iduka ryawe, ariko ntitwashoboye kuryemeza ubu."
 
@@ -9228,12 +9272,12 @@ msgstr "Uzagera ryari?"
 msgid "When would you like them?"
 msgstr "Wifuza kubihabwa ryari?"
 
-#: src/notifications/notification-templates.ts:65
+#: src/notifications/notification-templates.ts:69
 msgid "When you arrive, give the shop your 6-digit arrival code. It is in the app, on the booking."
 msgstr "Nugerayo, ha iduka kode yawe yo kugera y’imibare 6. Iri muri porogaramu, kuri gahunda."
 
 #: src/mail/email-kit.ts:495
-#: src/notifications/notification-templates.ts:57
+#: src/notifications/notification-templates.ts:61
 msgid "When: {when}"
 msgstr "Igihe: {when}"
 
@@ -9282,7 +9326,7 @@ msgid "Where would you like to sit?"
 msgstr "Wifuza kwicara he?"
 
 #: src/mail/email-kit.ts:496
-#: src/notifications/notification-templates.ts:56
+#: src/notifications/notification-templates.ts:60
 msgid "Where: {locationName}"
 msgstr "Ahantu: {locationName}"
 
@@ -9585,7 +9629,7 @@ msgid "Wine"
 msgstr "Divayi"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:665
+#: src/appointments/appointments.service.ts:682
 msgid "Wishes can be changed until 2 hours before. Send the shop a message instead."
 msgstr "Ibyifuzo bishobora guhindurwa kugeza habura amasaha 2. Ahubwo andikira iduka."
 
@@ -9610,7 +9654,7 @@ msgid "With an engineer?"
 msgstr "Hamwe n’umutekinisiye w’amajwi?"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:505
+#: src/appointments/appointments.service.ts:522
 msgid "With these answers the price would be below nothing. Please pick other answers, or ask the shop."
 msgstr "Ukoresheje ibi bisubizo, igiciro cyajya munsi ya zeru. Hitamo ibindi bisubizo, cyangwa ubaze iduka."
 
@@ -9619,7 +9663,7 @@ msgid "without hours, nothing there can be booked"
 msgstr "hatariho amasaha, nta gahunda yahafatirwa"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/appointments/appointments.service.ts:2051
+#: src/appointments/appointments.service.ts:2096
 msgid "Without the code, say how you know the customer came — a sentence at least."
 msgstr "Nta kode, sobanura uko uzi ko umukiriya yaje — nibura interuro imwe."
 
@@ -9835,15 +9879,15 @@ msgstr "Uri nde"
 msgid "You are all set"
 msgstr "Byose biteguye"
 
-#: src/notifications/notification-templates.ts:190
+#: src/notifications/notification-templates.ts:194
 msgid "You are booked: {serviceName}, {short}"
 msgstr "Gahunda yawe yemejwe: {serviceName}, {short}"
 
-#: src/appointments/appointments.service.ts:2022
+#: src/appointments/appointments.service.ts:2067
 msgid "You are checked in"
 msgstr "Wakiriwe"
 
-#: src/notifications/notification-templates.ts:621
+#: src/notifications/notification-templates.ts:631
 msgid "You are invited to join {businessName}"
 msgstr "Watumiwe kwinjira muri {businessName}"
 
@@ -9877,7 +9921,7 @@ msgstr "Ni wowe nyir’iduka wenyine wa {shop}. Banza ugire undi muntu nyir’id
 msgid "You asked for a new arrival code, so any earlier one no longer works."
 msgstr "Wasabye kode nshya yo kugera, bityo iyabanje yose ntigikora."
 
-#: src/notifications/notification-templates.ts:428
+#: src/notifications/notification-templates.ts:438
 msgid "You can choose a new one the next time you write or edit a review."
 msgstr "Ushobora guhitamo izina rishya ubutaha nuramuka wanditse cyangwa uhinduye igitekerezo."
 
@@ -9891,7 +9935,11 @@ msgstr "Ushobora kwirengagiza iyi imeyili. Nta muntu ushobora kwinjira adafite k
 msgid "You can start at most {MAX_INQUIRY_THREADS_PER_DAY} new conversations per day. You can still reply in conversations you already have."
 msgstr "Ushobora gutangiza ibiganiro bishya bitarenze {MAX_INQUIRY_THREADS_PER_DAY} ku munsi. Uracyashobora gusubiza mu biganiro usanzwe ufite."
 
-#: src/notifications/notification-templates.ts:221
+#: src/notifications/notification-templates.ts:235
+msgid "You cancelled more than 24 hours before, so your whole deposit comes back to the number that paid it."
+msgstr "Wahagaritse habura amasaha arenga 24, bityo avansi yawe yose isubira kuri nimero yayishyuye."
+
+#: src/notifications/notification-templates.ts:225
 msgid "You cancelled your booking at {businessName}."
 msgstr "Wahagaritse gahunda yawe kuri {businessName}."
 
@@ -9956,7 +10004,7 @@ msgstr "Ufite gahunda {upcoming} zitaraba. Banza uzihagarike, cyangwa utegereze 
 msgid "You have a new booking"
 msgstr "Ufite gahunda nshya"
 
-#: src/notifications/notification-templates.ts:383
+#: src/notifications/notification-templates.ts:393
 msgid "You have a new review"
 msgstr "Ufite igitekerezo gishya"
 
@@ -9980,7 +10028,7 @@ msgstr "Konti yawe"
 msgid "Your account is closed"
 msgstr "Konti yawe yafunzwe"
 
-#: src/notifications/notification-templates.ts:604
+#: src/notifications/notification-templates.ts:614
 msgid "Your account was just signed in to on {device}."
 msgstr "Hari umaze kwinjira kuri konti yawe akoresheje {device}."
 
@@ -9997,15 +10045,15 @@ msgstr "Kode yawe yo kugera"
 msgid "Your booking"
 msgstr "Gahunda yawe"
 
-#: src/notifications/notification-templates.ts:226
+#: src/notifications/notification-templates.ts:230
 msgid "Your booking at {businessName} has been cancelled."
 msgstr "Gahunda yawe kuri {businessName} yahagaritswe."
 
-#: src/notifications/notification-templates.ts:219
+#: src/notifications/notification-templates.ts:223
 msgid "Your booking at {businessName} was cancelled on the shop's side by our support team."
 msgstr "Itsinda ryacu ry’ubufasha ryahagaritse gahunda yawe kuri {businessName} mu izina ry’iduka."
 
-#: src/notifications/notification-templates.ts:225
+#: src/notifications/notification-templates.ts:229
 msgid "Your booking at {businessName} was let go, because the deposit was not paid in time."
 msgstr "Gahunda yawe kuri {businessName} yavuyeho, kuko avansi itishyuwe ku gihe."
 
@@ -10017,9 +10065,14 @@ msgstr "Gahunda yawe kuri {shopName} — kode yo kugera {code}"
 msgid "Your booking is cancelled"
 msgstr "Gahunda yawe yahagaritswe"
 
-#: src/appointments/appointments.service.ts:2187
+#: src/appointments/appointments.service.ts:2232
 msgid "Your booking is corrected"
 msgstr "Gahunda yawe yakosowe"
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/appointments/appointments.service.ts:1592
+msgid "Your booking’s time has started, so it can no longer be cancelled. If you cannot come, write to the shop from the booking."
+msgstr "Igihe cya gahunda yawe cyatangiye, bityo ntigishobora guhagarikwa. Niba udashobora kuza, andikira iduka unyuze kuri gahunda."
 
 #: src/mail/mail.service.ts:371
 msgid "Your bookings are in the app, under Bookings."
@@ -10042,11 +10095,11 @@ msgstr "Nimero y’imashini yogosha, cyangwa uko wifuza kugaragara."
 msgid "Your code to confirm"
 msgstr "Kode yawe yo kwemeza"
 
-#: src/notifications/notification-templates.ts:283
+#: src/notifications/notification-templates.ts:293
 msgid "Your deposit for {serviceName} at {businessName} did not go through."
 msgstr "Avansi yawe ya {serviceName} kuri {businessName} ntiyakunze."
 
-#: src/notifications/notification-templates.ts:192
+#: src/notifications/notification-templates.ts:196
 msgid "Your deposit is paid and your booking at {businessName} is confirmed."
 msgstr "Avansi yawe yishyuwe, kandi gahunda yawe kuri {businessName} yemejwe."
 
@@ -10054,11 +10107,11 @@ msgstr "Avansi yawe yishyuwe, kandi gahunda yawe kuri {businessName} yemejwe."
 msgid "Your logo"
 msgstr "Ikirango cyawe"
 
-#: src/notifications/notification-templates.ts:515
+#: src/notifications/notification-templates.ts:525
 msgid "Your mobile money number is confirmed"
 msgstr "Nimero yawe ya Mobile Money yemejwe"
 
-#: src/notifications/notification-templates.ts:526
+#: src/notifications/notification-templates.ts:536
 msgid "Your mobile money number was not accepted"
 msgstr "Nimero yawe ya Mobile Money ntiyemewe"
 
@@ -10083,11 +10136,11 @@ msgstr "Ubwishyu bwawe ntibwakunze"
 msgid "Your private answers are with the shop — see them in the app."
 msgstr "Ibisubizo byawe by’ibanga byagejejwe ku iduka — ubirebe muri porogaramu."
 
-#: src/notifications/notification-templates.ts:368
+#: src/notifications/notification-templates.ts:378
 msgid "Your question is now closed."
 msgstr "Ikibazo cyawe cyafunzwe."
 
-#: src/notifications/notification-templates.ts:370
+#: src/notifications/notification-templates.ts:380
 msgid "Your question is open again, and we will reply soon."
 msgstr "Ikibazo cyawe cyongeye gufungurwa, kandi turagusubiza vuba."
 
@@ -10107,11 +10160,11 @@ msgstr "aderesi wabitse"
 msgid "your share of each deposit is paid to it"
 msgstr "umugabane wawe kuri buri avansi woherezwa kuri yo"
 
-#: src/notifications/notification-templates.ts:275
+#: src/notifications/notification-templates.ts:285
 msgid "Your share of the deposit is paid to you."
 msgstr "Uhabwa umugabane wawe kuri avansi."
 
-#: src/notifications/notification-templates.ts:253
+#: src/notifications/notification-templates.ts:261
 msgid "Your share of the deposit is still paid to you."
 msgstr "Uracyahabwa umugabane wawe kuri avansi."
 
@@ -10132,7 +10185,7 @@ msgstr "Iduka ryawe n’ubufasha"
 msgid "Your shop cannot be posted yet: it still needs {value0}, or customers would find nothing to book."
 msgstr "Iduka ryawe ntirirashobora gushyirwa ahagaragara: riracyakeneye {value0}, bitabaye ibyo abakiriya ntacyo babona cyo gufatira gahunda."
 
-#: src/notifications/notification-templates.ts:484
+#: src/notifications/notification-templates.ts:494
 msgid "Your shop has been suspended"
 msgstr "Iduka ryawe ryahagaritswe"
 
@@ -10156,11 +10209,11 @@ msgstr "Iduka ryawe ryamaze gushyirwa ahagaragara."
 msgid "Your shop is already waiting for review."
 msgstr "Iduka ryawe risanzwe ritegereje gusuzumwa."
 
-#: src/notifications/notification-templates.ts:460
+#: src/notifications/notification-templates.ts:470
 msgid "Your shop is approved"
 msgstr "Iduka ryawe ryemejwe"
 
-#: src/notifications/notification-templates.ts:496
+#: src/notifications/notification-templates.ts:506
 msgid "Your shop is back"
 msgstr "Iduka ryawe ryagarutse"
 
@@ -10175,7 +10228,7 @@ msgstr "Iduka ryawe ntiriraba ryiteguye gusuzumwa. Ibisigaye kongeraho: {value0}
 msgid "Your shop needs to be live on the app to write to its followers."
 msgstr "Iduka ryawe rigomba kubanza kujya ku murongo kugira ngo wandikire abagukurikira."
 
-#: src/notifications/notification-templates.ts:472
+#: src/notifications/notification-templates.ts:482
 msgid "Your shop was not approved yet"
 msgstr "Iduka ryawe ntiriremezwa"
 
@@ -10187,7 +10240,7 @@ msgstr "Kode yawe yo kwinjira: {code}"
 msgid "Your time is held"
 msgstr "Umwanya wawe urakubikiwe"
 
-#: src/notifications/notification-templates.ts:285
+#: src/notifications/notification-templates.ts:295
 msgid "Your time is held for a few more minutes — open the booking in the app and try again."
 msgstr "Umwanya wawe urakubikiwe indi minota mike — fungura gahunda muri porogaramu wongere ugerageze."
 
@@ -10196,14 +10249,14 @@ msgstr "Umwanya wawe urakubikiwe indi minota mike — fungura gahunda muri porog
 msgid "Your TIN"
 msgstr "TIN yawe"
 
-#: src/appointments/appointments.service.ts:2196
+#: src/appointments/appointments.service.ts:2241
 msgid "Your visit for {serviceName} was marked as missed, but you came. Our support team corrected it: it now counts as done, and you can leave a review."
 msgstr "Gahunda yawe ya {serviceName} yari yanditswe ko utaje, ariko waje. Itsinda ryacu ry’ubufasha ryayikosoye: ubu ibarwa nk’iyarangiye, kandi ushobora gutanga igitekerezo."
 
-#: src/appointments/appointments.service.ts:2191
+#: src/appointments/appointments.service.ts:2236
 msgid "Your visit to {shop} for {serviceName} was marked as missed, but you came. Our support team corrected it: it now counts as done, and you can leave a review."
 msgstr "Gahunda yawe ya {serviceName} kuri {shop} yari yanditswe ko utaje, ariko waje. Itsinda ryacu ry’ubufasha ryayikosoye: ubu ibarwa nk’iyarangiye, kandi ushobora gutanga igitekerezo."
 
-#: src/notifications/notification-templates.ts:229
+#: src/notifications/notification-templates.ts:233
 msgid "Your whole deposit comes back to you, the platform fee included."
 msgstr "Usubizwa avansi yawe yose, harimo n’amafaranga ya serivisi y’urubuga."

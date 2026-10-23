@@ -8,8 +8,8 @@ import { useInView } from './inView';
  * four columns: a fine orange line drawing, a bold two-line title, a few
  * plain words. Every word is true of the apps as they are: the shops are
  * checked before they are listed (§255), the deposit is part of the price
- * and comes back in full only when the SHOP cancels, the reminder comes the
- * day before.
+ * and comes back in full when the customer cancels at least 24 hours before
+ * or the SHOP cancels (§313), the reminder comes the day before.
  *
  * The drawings draw themselves in, one after another, the first time the
  * row is seen. The words are `<Trans>`, said in the language in use when drawn
@@ -76,8 +76,8 @@ const FEATURES: Array<{ title: ReactNode; text: ReactNode; art: ReactElement[] }
     ),
     text: (
       <Trans>
-        Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. If the shop has to cancel, you
-        get it all back.
+        Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. You get it all back if you cancel
+        at least 24 hours before, or if the shop has to cancel.
       </Trans>
     ),
     art: [

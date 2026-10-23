@@ -10904,6 +10904,251 @@
         ]
       }
     },
+    "/admin/refunds": {
+      "get": {
+        "operationId": "AdminRefundsController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PENDING",
+                "SENDING",
+                "SENT",
+                "FAILED"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "type": "number"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRefundPageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminRefunds"
+        ]
+      }
+    },
+    "/admin/refunds/{id}/retry": {
+      "post": {
+        "operationId": "AdminRefundsController_retry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundOutcomeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminRefunds"
+        ]
+      }
+    },
+    "/admin/refunds/{id}/mark-sent": {
+      "post": {
+        "operationId": "AdminRefundsController_markSent",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkRefundSentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundOutcomeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminRefunds"
+        ]
+      }
+    },
     "/business/today": {
       "get": {
         "operationId": "BusinessTodayController_get",
@@ -24645,6 +24890,49 @@
           "createdAt"
         ]
       },
+      "AppointmentRefundDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SENDING",
+              "SENT",
+              "FAILED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "SHOP_CANCELLED",
+              "CANCELLED_IN_TIME"
+            ]
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "sentAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "doneAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "reason",
+          "amountMinor",
+          "currency",
+          "sentAt",
+          "doneAt"
+        ]
+      },
       "AppointmentDto": {
         "type": "object",
         "properties": {
@@ -24835,6 +25123,16 @@
             "items": {
               "$ref": "#/components/schemas/AppointmentSupportStepDto"
             }
+          },
+          "refund": {
+            "nullable": true,
+            "description": "The deposit going back, when it does (§313).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentRefundDto"
+              }
+            ]
           }
         },
         "required": [
@@ -24878,7 +25176,8 @@
           "location",
           "service",
           "customer",
-          "supportActions"
+          "supportActions",
+          "refund"
         ]
       },
       "UpdateBookingChoicesDto": {
@@ -25123,6 +25422,16 @@
               "$ref": "#/components/schemas/AppointmentSupportStepDto"
             }
           },
+          "refund": {
+            "nullable": true,
+            "description": "The deposit going back, when it does (§313).",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppointmentRefundDto"
+              }
+            ]
+          },
           "verificationCode": {
             "type": "string",
             "nullable": true,
@@ -25180,6 +25489,7 @@
           "service",
           "customer",
           "supportActions",
+          "refund",
           "verificationCode",
           "review"
         ]
@@ -27293,6 +27603,227 @@
         "required": [
           "adjustment",
           "entry"
+        ]
+      },
+      "RefundCountsDto": {
+        "type": "object",
+        "properties": {
+          "PENDING": {
+            "type": "number"
+          },
+          "SENDING": {
+            "type": "number"
+          },
+          "SENT": {
+            "type": "number"
+          },
+          "FAILED": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "PENDING",
+          "SENDING",
+          "SENT",
+          "FAILED"
+        ]
+      },
+      "RefundAppointmentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "startTime": {
+            "type": "string"
+          },
+          "cancelledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "serviceName": {
+            "type": "string"
+          },
+          "customerEmail": {
+            "type": "string"
+          },
+          "branchName": {
+            "type": "string"
+          },
+          "businessId": {
+            "type": "string"
+          },
+          "businessName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "startTime",
+          "cancelledAt",
+          "serviceName",
+          "customerEmail",
+          "branchName",
+          "businessId",
+          "businessName"
+        ]
+      },
+      "AdminRefundDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "SHOP_CANCELLED",
+              "CANCELLED_IN_TIME"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "SENDING",
+              "SENT",
+              "FAILED"
+            ]
+          },
+          "amountMinor": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "nullable": true,
+            "description": "The number it goes to — null on bookings older than §313: find it, send by hand."
+          },
+          "provider": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "MTN_MOMO",
+              "AIRTEL_MONEY"
+            ]
+          },
+          "attempts": {
+            "type": "number"
+          },
+          "reference": {
+            "type": "string",
+            "nullable": true
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "sentAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "doneAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "appointment": {
+            "$ref": "#/components/schemas/RefundAppointmentDto"
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "status",
+          "amountMinor",
+          "currency",
+          "phoneNumber",
+          "provider",
+          "attempts",
+          "reference",
+          "failureReason",
+          "sentAt",
+          "doneAt",
+          "createdAt",
+          "appointment"
+        ]
+      },
+      "AdminRefundPageDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/RefundCountsDto"
+          },
+          "refunds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminRefundDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "limit",
+          "offset",
+          "counts",
+          "refunds"
+        ]
+      },
+      "RefundOutcomeDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "SENDING",
+              "SENT",
+              "FAILED"
+            ],
+            "type": "string"
+          },
+          "failureReason": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ]
+      },
+      "MarkRefundSentDto": {
+        "type": "object",
+        "properties": {
+          "reference": {
+            "type": "string",
+            "description": "The operator's reference for the transfer our team made — what reconciles it against the statement.",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "phoneNumber": {
+            "type": "string",
+            "description": "The number it went to, when it was not the one on record (an older booking, or one the customer gave).",
+            "pattern": "^\\+?[0-9 ]{9,16}$"
+          }
+        },
+        "required": [
+          "reference"
         ]
       },
       "TodayBranchDto": {

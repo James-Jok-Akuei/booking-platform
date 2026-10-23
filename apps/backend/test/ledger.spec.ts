@@ -210,7 +210,7 @@ describe('Ledger (§34)', () => {
     });
 
     it('cancelled by the CUSTOMER on a paid deposit: a week after the end time', async () => {
-      const a = await paidAppointment({ endsInDays: -3 });
+      const a = await paidAppointment({ endsInDays: 0.5 });
 
       await appointments.cancel(customer.userId, a.id);
 
@@ -261,7 +261,7 @@ describe('Ledger (§34)', () => {
     });
 
     it('is idempotent - resolving twice does not move the date', async () => {
-      const a = await paidAppointment({ endsInDays: -2 });
+      const a = await paidAppointment({ endsInDays: 0.5 });
       await appointments.cancel(customer.userId, a.id);
       const first = (await availableDates(a.id))[0]!.getTime();
 
@@ -333,7 +333,7 @@ describe('Ledger (§34)', () => {
     });
 
     it('does not rewrite availableAt on entries that already have one', async () => {
-      const a = await paidAppointment({ endsInDays: -2 });
+      const a = await paidAppointment({ endsInDays: 0.5 });
       await appointments.cancel(customer.userId, a.id);
       const before = (await entriesFor(a.id))[0].availableAt!.getTime();
 
@@ -348,11 +348,11 @@ describe('Ledger (§34)', () => {
 
     it('applies the OLD hold to what resolved before the change and the NEW hold after', async () => {
       await settings().setPayoutHoldDays(2, AS_ADMIN);
-      const early = await paidAppointment({ endsInDays: -4 });
+      const early = await paidAppointment({ endsInDays: 0.5 });
       await appointments.cancel(customer.userId, early.id);
 
       await settings().setPayoutHoldDays(10, AS_ADMIN);
-      const late = await paidAppointment({ endsInDays: -4 });
+      const late = await paidAppointment({ endsInDays: 0.5 });
       await appointments.cancel(customer.userId, late.id);
 
       const earlyAt = (await entriesFor(early.id))[0].availableAt!.getTime();
@@ -374,7 +374,7 @@ describe('Ledger (§34)', () => {
 
     it('accepts a zero hold - payable immediately', async () => {
       await settings().setPayoutHoldDays(0, AS_ADMIN);
-      const a = await paidAppointment({ endsInDays: -2 });
+      const a = await paidAppointment({ endsInDays: 0.5 });
       await appointments.cancel(customer.userId, a.id);
 
       const [entry] = await entriesFor(a.id);
@@ -745,7 +745,7 @@ describe('Ledger (§34)', () => {
     });
 
     it('and both do so in practice, not only in the source', async () => {
-      const paid = await paidAppointment();
+      const paid = await paidAppointment({ endsInDays: 0.5 });
       await appointments.cancel(customer.userId, paid.id);
       const byCustomer = await prisma.appointment.findUniqueOrThrow({
         where: { id: paid.id },

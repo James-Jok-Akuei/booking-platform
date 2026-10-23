@@ -71,6 +71,11 @@ export const APPOINTMENT_SELECT = {
     select: { id: true, name: true, durationMinutes: true, instructions: true },
   },
   customer: { select: { id: true, email: true } },
+  // The deposit going back, when it does (§313) — never the number it goes
+  // to: the shop reads this select too.
+  refund: {
+    select: { status: true, reason: true, amountMinor: true, currency: true, sentAt: true, doneAt: true },
+  },
   // What our support team did on this booking, and when — never who (§297).
   supportActions: {
     where: { kind: { in: SHOWN_ON_BOOKING } },

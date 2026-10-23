@@ -723,7 +723,10 @@ function Row({
     ...(a.status === 'BOOKED'
       ? [
           ...(canVerifyManually ? [{ label: t`Check in without a code`, icon: 'key' as const, onClick: () => actions.noCode(a) }] : []),
-          { label: t`Mark as no-show`, icon: 'userX' as const, onClick: () => actions.noShow(a) },
+          // Only once its time is over (§313): until then they may still come.
+          ...(new Date(a.endTime) <= now
+            ? [{ label: t`Mark as no-show`, icon: 'userX' as const, onClick: () => actions.noShow(a) }]
+            : []),
           ...(actions.cancel
             ? [{ label: t`Cancel booking`, icon: 'calendarX' as const, onClick: () => actions.cancel!(a), danger: true }]
             : []),
@@ -1251,6 +1254,14 @@ function AppointmentDetail({
                 </>
               )}
 
+              {d.status === 'BOOKED' && new Date(d.endTime).getTime() > Date.now() && (
+                <p className="ap-drawer-later">
+                  <Icon name="clock" size={14} />
+                  <span>
+                    {t`If they don’t come, you can mark a no-show from ${clock(d.endTime)}, when their time is over.`}
+                  </span>
+                </p>
+              )}
               {(d.status === 'BOOKED' || d.status === 'IN_PROGRESS') && (
                 <div className="ap-drawer-actions">
                   {d.status === 'BOOKED' && (
@@ -1260,9 +1271,12 @@ function AppointmentDetail({
                           <Trans>Cancel</Trans>
                         </button>
                       )}
-                      <button type="button" onClick={() => actions.noShow(d)}>
-                        <Trans>No-show</Trans>
-                      </button>
+                      {/* Only once its time is over (§313): a late customer may still come, in their slot. */}
+                      {new Date(d.endTime).getTime() <= Date.now() && (
+                        <button type="button" onClick={() => actions.noShow(d)}>
+                          <Trans>No-show</Trans>
+                        </button>
+                      )}
                       {canVerifyManually && (
                         <button
                           type="button"

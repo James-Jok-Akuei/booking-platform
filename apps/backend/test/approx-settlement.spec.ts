@@ -338,6 +338,11 @@ describe('Approximate local-currency figures (§39)', () => {
     it('a business transition response is USD only', async () => {
       await setRate();
       const a = await booked();
+      // Over, so it can be marked missed (§313).
+      await prisma.appointment.update({
+        where: { id: a.id },
+        data: { startTime: new Date(Date.now() - 2 * 3_600_000), endTime: new Date(Date.now() - 3_600_000) },
+      });
 
       const noShown: any = await appointments.noShow(business.userId, a.id);
 

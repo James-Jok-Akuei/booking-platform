@@ -288,6 +288,20 @@ enum MobileMoneyProvider {
   AIRTEL_MONEY
 }
 
+/// A deposit on its way back to the customer (§313).
+enum RefundStatus {
+  PENDING // owed; not yet with the operator
+  SENDING // handed to the operator, outcome not yet known
+  SENT // the operator confirmed it, or our team sent it by hand
+  FAILED // the operator could not send it: our team takes over
+}
+
+/// Why a deposit goes back (§313).
+enum RefundReason {
+  SHOP_CANCELLED // the shop cancelled, or support put the cancellation on the shop
+  CANCELLED_IN_TIME // the customer cancelled at least 24 hours before
+}
+
 enum PayoutDestinationStatus {
   UNVERIFIED // submitted, not yet checked. BLOCKS payouts (§48.3).
   VERIFIED // money may be sent here
@@ -1479,6 +1493,11 @@ model Appointment {
   /// honest — there was only one possible answer.
   paymentProvider MobileMoneyProvider?
 
+  /// The number the deposit was asked from (§313), digits only — where a
+  /// refund goes back to (Terms 6.6). Recorded with the reference, when the
+  /// payment starts; null on bookings paid before it was kept.
+  paymentPhoneNumber String?
+
   /// What was actually sent to the provider, and the rate used to get there.
   ///
   /// Kept ALONGSIDE the USD amounts rather than replacing them. Reconciliation
@@ -1654,6 +1673,8 @@ model Appointment {
   adjustments    BillingAdjustment[]
   review         Review?
   ledgerEntries  LedgerEntry[]
+  /// The deposit going back, when it does (§313).
+  refund         Refund?
 
   // Availability counts overlapping appointments at one location for one day.
   @@index([locationId, startTime])
@@ -1839,11 +1860,11 @@ model Announcement {
   businessId String?
   business   BusinessProfile?     @relation(fields: [businessId], references: [id], onDelete: SetNull)
 
-  title     String
-  body      String
+  title        String
+  body         String
   /// Where its button leads, inside the app it arrives in.
-  linkPath  String?
-  linkLabel String?
+  linkPath     String?
+  linkLabel    String?
   /// Its title, message and button words in the other languages (§308.4):
   /// { "rw": { "title": "…", "body": "…", "linkLabel": "…" }, "fr": … }.
   /// Each person gets theirs; a language not typed gets the English.
@@ -3002,4 +3023,47 @@ model SearchQuery {
   @@index([createdAt])
   @@index([districtId, createdAt])
   @@map("search_queries")
+}
+
+/// A deposit going back to the customer (§313): the money the ledger already
+/// gave back (DEPOSIT_REFUND), actually sent — to the number that paid, by the
+/// operator's transfer, or by our team by hand when it cannot be.
+model Refund {
+  id String @id @default(uuid())
+
+  appointmentId String      @unique
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+
+  reason RefundReason
+  status RefundStatus @default(PENDING)
+
+  /// Exactly what was paid, in the currency it was paid in.
+  amountMinor Int
+  currency    String
+
+  /// Where it goes: the number and the network the deposit came from. Null
+  /// when the booking is older than §313 — our team finds the number.
+  phoneNumber String?
+  provider    MobileMoneyProvider?
+
+  /// Tries with the operator; after three, it waits for a person.
+  attempts Int @default(0)
+
+  /// OUR id for the transfer, recorded before it is asked for (as payouts, §64).
+  providerReferenceId String? @unique
+  /// The operator's own reference, or the one our team typed.
+  reference           String?
+  failureReason       String?
+
+  sentAt       DateTime?
+  /// When it was confirmed as arrived.
+  doneAt       DateTime?
+  /// Who marked it sent by hand, when it was.
+  sentByUserId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@map("refunds")
 }

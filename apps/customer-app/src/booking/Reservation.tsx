@@ -23,6 +23,7 @@ import {
   type Bought,
 } from './format';
 import { BeforeYouCome } from './BeforeYouCome';
+import { canCancelNow, freeNow, freeUntil, missedByItself } from './cancelRules';
 import { BookedChoices } from './BookedChoices';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
@@ -97,7 +98,14 @@ export function Reservation({
   const status = BOOKING_STATUS[a.status];
   const paid = a.depositPaidAt !== null;
   const live = a.status === 'BOOKED' || a.status === 'IN_PROGRESS';
-  const canCancel = a.status === 'BOOKED' || a.status === 'PENDING_PAYMENT';
+  // Until the start (§313); free at least 24 hours before.
+  const canCancel = canCancelNow(a);
+  const free = freeNow(a);
+  const deadline = freeUntil(a).toISOString();
+  const deadlineWords = `${dayOf(deadline)}, ${timeOf(deadline)}`;
+  const deposit = format(a.depositAmountMinor, a.currency);
+  // Its time has begun and nobody has checked them in: it cannot be cancelled now.
+  const started = a.status === 'BOOKED' && !canCancel;
   const many = howMany(a);
   const balance = balanceMinor(a);
 
@@ -276,7 +284,7 @@ export function Reservation({
           </View>
           <Text style={styles.paidValue}>{format(a.depositAmountMinor, a.currency)}</Text>
         </View>
-        {balance !== null && a.status !== 'CANCELLED' && (
+        {balance !== null && a.status !== 'CANCELLED' && a.status !== 'NO_SHOW' && (
           <View style={styles.paidRow}>
             <Icon name="storefront-outline" size={19} color={theme.ink2} />
             <View style={styles.flex}>
@@ -291,7 +299,7 @@ export function Reservation({
         )}
       </FadeIn>
 
-      {/* THE RULES — or, once it is over, how it ended. */}
+      {/* THE RULES — or, once it is over, how it ended (§313). */}
       {a.status === 'CANCELLED' ? (
         <FadeIn delay={220} style={styles.card}>
           <Text style={type.heading}>
@@ -307,27 +315,64 @@ export function Reservation({
               <Trans>Because the shop cancelled, your deposit is refunded in full.</Trans>
             </Text>
           )}
-          {a.cancelledBy === 'CUSTOMER' && paid && (
-            <Text style={type.body}><Trans>The deposit is not refunded when you cancel.</Trans></Text>
+          {a.cancelledBy === 'CUSTOMER' && paid && a.refund && (
+            <Text style={type.body}>
+              <Trans>You cancelled more than 24 hours before, so your whole deposit is refunded.</Trans>
+            </Text>
           )}
+          {a.cancelledBy === 'CUSTOMER' && paid && !a.refund && (
+            <Text style={type.body}><Trans>You cancelled less than 24 hours before, so the deposit is not refunded.</Trans></Text>
+          )}
+          {a.refund && <RefundState refund={a.refund} format={format} />}
+        </FadeIn>
+      ) : a.status === 'NO_SHOW' ? (
+        <FadeIn delay={220} style={styles.card}>
+          <Text style={type.heading}><Trans>Marked as missed</Trans></Text>
+          <Text style={type.body}>
+            {missedByItself(a)
+              ? t`Nobody checked you in, so the booking was marked as missed a day after its time.`
+              : t`The shop marked this booking as missed: you were not checked in.`}
+            {paid ? ` ${t`The deposit is not refunded for a missed booking.`}` : ''}
+          </Text>
+          <Rule icon="chatbubble-ellipses-outline" text={t`Think this is a mistake? Write to the shop, or ask us for help.`} />
+          <View style={styles.twoButtons}>
+            <Button kind="ghost" compact icon="chatbubble-ellipses-outline" label={t`Message the shop`} onPress={onMessage} />
+            <Button kind="ghost" compact icon="help-buoy-outline" label={t`Get help`} onPress={onHelp} />
+          </View>
+        </FadeIn>
+      ) : canCancel ? (
+        <FadeIn delay={220} style={styles.card}>
+          <Text style={type.heading}><Trans>Cancelling</Trans></Text>
+          <Rule
+            icon="person-outline"
+            text={
+              !paid
+                ? t`Nothing has been paid, so cancelling costs nothing.`
+                : free
+                  ? t`Cancel before ${deadlineWords} and your whole deposit of ${deposit} comes back to you.`
+                  : t`It is less than 24 hours before, so if you cancel now your deposit of ${deposit} is not refunded.`
+            }
+          />
+          {paid && (
+            <Rule
+              icon="time-outline"
+              text={t`If you don’t come, the booking is marked as missed and the deposit is not refunded.`}
+            />
+          )}
+          <Rule
+            icon="storefront-outline"
+            text={t`If the shop cancels, you get your whole deposit back.`}
+          />
+          <Button kind="quietDanger" label={t`Cancel this reservation`} onPress={onCancel} />
         </FadeIn>
       ) : (
-        canCancel && (
+        started && (
           <FadeIn delay={220} style={styles.card}>
-            <Text style={type.heading}><Trans>Cancelling</Trans></Text>
-            <Rule
-              icon="person-outline"
-              text={
-                paid
-                  ? t`If you cancel, your deposit of ${format(a.depositAmountMinor, a.currency)} is not refunded. It is what holds the slot.`
-                  : t`Nothing has been paid, so cancelling costs nothing.`
-              }
-            />
-            <Rule
-              icon="storefront-outline"
-              text={t`If the shop cancels, you get your whole deposit back.`}
-            />
-            <Button kind="quietDanger" label={t`Cancel this reservation`} onPress={onCancel} />
+            <Text style={type.heading}><Trans>Running late, or can’t come?</Trans></Text>
+            <Text style={type.body}>
+              <Trans>Your time has started, so the booking can no longer be cancelled. Write to the shop — they can still check you in while your time is running.</Trans>
+            </Text>
+            <Button kind="ghost" compact icon="chatbubble-ellipses-outline" label={t`Message the shop`} onPress={onMessage} />
           </FadeIn>
         )
       )}
@@ -424,6 +469,33 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
   );
 }
 
+/** Where a refund has got to (§313): on its way, sent, or with our team. */
+function RefundState({
+  refund,
+  format,
+}: {
+  refund: NonNullable<Appointment['refund']>;
+  format: (minor: number | null | undefined, currency?: string) => string;
+}) {
+  const amount = format(refund.amountMinor, refund.currency);
+  const done = refund.status === 'SENT';
+  const when = refund.doneAt ?? refund.sentAt;
+  return (
+    <View style={[styles.refund, done && styles.refundDone]}>
+      <Icon name={done ? 'checkmark-circle' : 'time-outline'} size={18} color={done ? theme.ok : theme.ink2} />
+      <Text style={[type.body, styles.flex]}>
+        {done
+          ? when
+            ? t`${amount} sent back on ${dayOf(when)} to the number that paid.`
+            : t`${amount} sent back to the number that paid.`
+          : refund.status === 'FAILED'
+            ? t`${amount} is taking longer than usual to send — our team is sending it to you.`
+            : t`${amount} is on its way back to the number that paid.`}
+      </Text>
+    </View>
+  );
+}
+
 function Rule({ icon, text }: { icon: IconName; text: string }) {
   return (
     <View style={styles.rule}>
@@ -434,6 +506,17 @@ function Rule({ icon, text }: { icon: IconName; text: string }) {
 }
 
 const styles = StyleSheet.create({
+  refund: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 9,
+    backgroundColor: theme.sunken,
+    borderRadius: radius.md,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+  },
+  refundDone: { backgroundColor: theme.okSoft },
+  twoButtons: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   addWish: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   flex: { flex: 1 },
   off: { opacity: 0.45 },

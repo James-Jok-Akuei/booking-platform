@@ -231,8 +231,8 @@ msgid "Paid with MTN MoMo on your own phone. The rest you pay at the shop."
 msgstr "Paidshya withikimbi MTNmwandi MoMorwa on yourmbihoiki ownnya phonehoikize. Theugu resthomwako youugu payko at theugumbi shopko."
 
 #: src/Features.tsx:78
-msgid "Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. If the shop has to cancel, you get it all back."
-msgstr "Payiki partaba of theugumbi pricembiugumbi withikimbi MTNmwandi MoMorwa on yourmbihoiki ownnya phonehoikize, andmwa theugumbi resthomwako at theugumbi shopko. If theugumbi shopko hasshya to cancelhoze, youugu gethoze it allaba backmbi."
+msgid "Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. You get it all back if you cancel at least 24 hours before, or if the shop has to cancel."
+msgstr "Payiki partaba of theugumbi pricembiugumbi withikimbi MTNmwandi MoMorwa on yourmbihoiki ownnya phonehoikize, andmwa theugumbi resthomwako at theugumbi shopko. Youaba gethoze it allaba backmbi if youugu cancelhoze at leastmbi 24 hoursugu beforembiho, or if theugumbi shopko hasshya to cancelhoze."
 
 #: src/Footer.tsx:109
 msgid "Places to book"

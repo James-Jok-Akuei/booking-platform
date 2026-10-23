@@ -231,8 +231,8 @@ msgid "Paid with MTN MoMo on your own phone. The rest you pay at the shop."
 msgstr "Payé avec MTN MoMo sur votre propre téléphone. Vous payez le reste sur place."
 
 #: src/Features.tsx:78
-msgid "Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. If the shop has to cancel, you get it all back."
-msgstr "Payez une partie du prix avec MTN MoMo sur votre propre téléphone, et le reste sur place. Si l’établissement doit annuler, vous êtes entièrement remboursé."
+msgid "Pay part of the price with MTN MoMo on your own phone, and the rest at the shop. You get it all back if you cancel at least 24 hours before, or if the shop has to cancel."
+msgstr "Payez une partie du prix avec MTN MoMo sur votre téléphone, et le reste au commerce. Vous récupérez tout si vous annulez au moins 24 heures avant, ou si le commerce doit annuler."
 
 #: src/Footer.tsx:109
 msgid "Places to book"

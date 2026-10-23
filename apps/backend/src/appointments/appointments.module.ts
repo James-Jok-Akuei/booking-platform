@@ -13,13 +13,14 @@ import { BusinessModule } from '../business/business.module';
 import { MailModule } from '../mail/mail.module';
 import { ChatModule } from '../chat/chat.module';
 import { LedgerModule } from '../ledger/ledger.module';
+import { RefundsModule } from '../refunds/refunds.module';
 import { HealthChoices } from './health-choices';
 import { HealthChoicesSweep } from './health-choices.sweep';
 
 // AvailabilityModule for the booking-time slot re-check, BusinessModule for
 // BusinessRolesGuard, MailModule for the verification email.
 @Module({
-  imports: [AvailabilityModule, BusinessModule, MailModule, ChatModule, LedgerModule],
+  imports: [AvailabilityModule, BusinessModule, MailModule, ChatModule, LedgerModule, RefundsModule],
   controllers: [
     AppointmentsCustomerController,
     AppointmentsBusinessController,

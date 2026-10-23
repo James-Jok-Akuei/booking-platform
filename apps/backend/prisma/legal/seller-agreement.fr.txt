@@ -1,6 +1,6 @@
 CONTRAT COMMERÇANT
 
-Dernière mise à jour : 20 octobre 2026
+Dernière mise à jour : 23 octobre 2026
 
 Le présent Contrat commerçant est le contrat conclu entre votre entreprise et BwanguReservations (« nous », « la Plateforme ») lorsque votre entreprise prend des réservations par l’intermédiaire de BwanguReservations. Il s’applique à chaque entreprise présente sur la Plateforme, à toutes ses succursales et à toutes les personnes qui travaillent dans son compte.
 
@@ -75,7 +75,7 @@ BwanguReservations est une société immatriculée au Rwanda auprès de l’Offi
 
 5.4 Fin du service. Marquez chaque réservation comme terminée après le service. Une réservation dont l’arrivée a été enregistrée mais qui n’a pas été marquée comme terminée devient terminée d’elle-même 24 heures après sa fin.
 
-5.5 Clients qui ne viennent pas. Si un client ne vient pas, marquez la réservation comme « absent ». Une réservation pour laquelle personne n’a enregistré l’arrivée devient « absent » d’elle-même 24 heures après sa fin. Ne marquez une réservation comme « absent » que si le client n’est vraiment pas venu.
+5.5 Clients qui ne viennent pas. Si un client ne vient pas, marquez la réservation comme « absent » une fois son créneau terminé — pas avant : un client qui arrive en retard, pendant que son créneau dure encore, peut toujours être accueilli et servi. Une réservation pour laquelle personne n’a enregistré l’arrivée devient « absent » d’elle-même 24 heures après sa fin. Ne marquez une réservation comme « absent » que si le client n’est vraiment pas venu.
 
 5.6 Annulation par l’établissement. Vous pouvez annuler une réservation qui n’a pas commencé, mais vous devez donner un motif, et le client en est informé. N’annulez que si vous ne pouvez vraiment pas servir le client. Si vous savez que vous serez fermé, ajoutez une fermeture pour que personne ne puisse réserver ces créneaux. Des annulations fréquentes nuisent aux clients ; nous pouvons limiter ou suspendre un établissement qui annule souvent.
 
@@ -90,7 +90,7 @@ BwanguReservations est une société immatriculée au Rwanda auprès de l’Offi
 
 6.2 Nos frais de plateforme. Pour chaque réservation, nous retenons sur l’acompte des frais, qui correspondent à un pourcentage du prix de la réservation. Nos frais sont de 10 % du prix, sauf si nous vous indiquons autre chose dans l’application professionnelle. Les frais qui s’appliquent à une réservation sont ceux en vigueur au moment où elle a été faite. Si nous augmentons nos frais, nous vous en informons dans l’application professionnelle et par e-mail au moins 30 jours à l’avance, et les nouveaux frais ne s’appliquent qu’aux réservations faites après cette date. Nos frais incluent toute TVA qui s’y applique.
 
-6.3 Votre part. Votre part d’un acompte est l’acompte moins nos frais. Elle vous revient lorsque la réservation est terminée, marquée « absent » ou annulée par le client.
+6.3 Votre part. Votre part d’un acompte est l’acompte moins nos frais. Elle vous revient lorsque la réservation est terminée, marquée « absent » ou annulée par le client moins de 24 heures avant son heure. Un client qui annule au moins 24 heures avant récupère tout son acompte, et aucune part ne vous est versée pour cette réservation.
 
 6.4 Quand vous êtes payé. Une fois que votre part vous revient, elle est retenue pendant une courte période d’attente — actuellement 2 jours — afin qu’une arrivée enregistrée par erreur ou une réclamation puisse être corrigée, puis elle est versée sur votre numéro de versement lors de nos versements quotidiens. Nous pouvons modifier la période d’attente ; nous vous en informons dans l’application professionnelle avant qu’un changement ne s’applique.
 

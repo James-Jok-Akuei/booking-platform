@@ -44,7 +44,7 @@ export type Slide = {
 
 /** The two rules the banner teaches, each in one line (§225). */
 const LEARN_GIST: Record<string, string> = {
-  get cancel() { return t`Customer cancels: deposit kept · You cancel: full refund`; },
+  get cancel() { return t`Customer cancels 24 h ahead: refunded · Later: deposit kept · You cancel: full refund`; },
   get photos() { return t`Up to 11 per service · the first one is the cover`; },
 };
 

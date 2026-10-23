@@ -127,7 +127,8 @@ export function payment(a: Appointment, money: Money) {
       return { amount: money(a.businessAmountMinor, a.currency), unit: UNIT.yours, note: t`Deposit kept`, tone: 'muted', icon: 'wallet' as IconName };
     case 'CANCELLED':
       if (!paid) return { amount: '—', unit: '', note: t`No deposit`, tone: 'muted', icon: 'info' as IconName };
-      if (a.cancelledBy === 'BUSINESS')
+      // Refunded: by the shop, or a customer who cancelled 24 hours ahead (§313).
+      if (a.cancelledBy === 'BUSINESS' || a.refund)
         return { amount: '—', unit: '', note: t`Deposit refunded`, tone: 'muted', icon: 'refresh' as IconName };
       return { amount: money(a.businessAmountMinor, a.currency), unit: UNIT.yours, note: t`Deposit kept`, tone: 'muted', icon: 'wallet' as IconName };
   }
@@ -154,7 +155,14 @@ export function standing(a: Appointment, now: Date): { text: string; tone: strin
       return { text: a.noShowAt ? t`Marked ${clock(a.noShowAt)}` : t`Did not come`, tone: 'muted' };
     case 'CANCELLED':
       return {
-        text: a.cancelledBy === 'BUSINESS' ? t`By you` : a.cancelledBy === 'CUSTOMER' ? t`By the customer` : t`Not paid in time`,
+        text:
+          a.cancelledBy === 'BUSINESS'
+            ? t`By you`
+            : a.cancelledBy === 'CUSTOMER'
+              ? a.refund
+                ? t`By the customer, in time`
+                : t`By the customer`
+              : t`Not paid in time`,
         tone: 'muted',
       };
     case 'PENDING_PAYMENT':

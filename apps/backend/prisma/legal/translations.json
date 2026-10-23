@@ -7,9 +7,17 @@
     }
   },
   "terms-of-use": {
-    "translatedFrom": "a49c69bda99bd61c"
+    "translatedFrom": "ffebda5629cbca2c",
+    "changeNote": {
+      "rw": "Guhagarika ku buntu: hagarika habura nibura amasaha 24 maze usubizwe avansi yawe yose. Ushobora guhagarika kugeza igihe cya gahunda yawe gitangiye.",
+      "fr": "Annulation gratuite : annulez au moins 24 heures avant et récupérez tout votre acompte. Vous pouvez annuler jusqu’au début de votre réservation."
+    }
   },
   "seller-agreement": {
-    "translatedFrom": "ebe598285b2753f9"
+    "translatedFrom": "c44fad9fa535db0d",
+    "changeNote": {
+      "rw": "Umukiriya uhagaritse habura nibura amasaha 24 asubizwa avansi yose; kwandika ko umukiriya ntiyaje bikorwa gusa igihe cya gahunda kimaze kurangira.",
+      "fr": "Un client qui annule au moins 24 heures avant récupère tout son acompte ; une absence ne se marque qu’une fois le créneau terminé."
+    }
   }
 }

@@ -235,6 +235,25 @@ export class LedgerService {
     appointmentId: string,
     gatewayChargeMinor: number,
   ): Promise<void> {
+    return this.recordRefund(tx, appointmentId, gatewayChargeMinor);
+  }
+
+  /**
+   * A customer who cancelled at least 24 hours before (§313): the whole
+   * deposit back, the platform's fee with it, and nothing on the shop — it
+   * did nothing wrong, so the operator's charge for sending it back is not
+   * its to carry. The business lands at exactly zero for the booking.
+   */
+  async recordCustomerRefund(tx: Prisma.TransactionClient, appointmentId: string): Promise<void> {
+    return this.recordRefund(tx, appointmentId, null);
+  }
+
+  /** The refund entries; the gateway charge on the business only when it is the business's (null: not). */
+  private async recordRefund(
+    tx: Prisma.TransactionClient,
+    appointmentId: string,
+    gatewayChargeMinor: number | null,
+  ): Promise<void> {
     const appointment = await tx.appointment.findUniqueOrThrow({
       where: { id: appointmentId },
       select: {
@@ -295,7 +314,9 @@ export class LedgerService {
     // what the provider actually charged (§45.4). Its USD figure is a reporting
     // equivalent at the booking rate, not the authority.
     const rate = deposit?.bookingExchangeRate ?? null;
-    const gatewayChargeInternalMinor = rate
+    const gatewayChargeInternalMinor = gatewayChargeMinor === null
+      ? 0
+      : rate
       ? new Prisma.Decimal(gatewayChargeMinor)
           .div(rate)
           .toDecimalPlaces(0, Prisma.Decimal.ROUND_HALF_UP)
@@ -334,19 +355,22 @@ export class LedgerService {
           bookingExchangeRate: fee?.bookingExchangeRate ?? null,
           availableAt: now,
         },
-        {
-          businessId,
-          appointmentId,
-          type: LedgerEntryType.GATEWAY_FEE_DEBIT,
-          amountMinor: -gatewayChargeInternalMinor,
-          currency: appointment.currency,
-          settlementCurrency: deposit?.settlementCurrency ?? null,
-          settlementAmountMinor: deposit?.settlementCurrency
-            ? -gatewayChargeMinor
-            : null,
-          bookingExchangeRate: rate,
-          availableAt: now,
-        },
+        // The operator's charge, only when the business bears it (its own cancellation).
+        ...(gatewayChargeMinor === null
+          ? []
+          : [
+              {
+                businessId,
+                appointmentId,
+                type: LedgerEntryType.GATEWAY_FEE_DEBIT,
+                amountMinor: -gatewayChargeInternalMinor,
+                currency: appointment.currency,
+                settlementCurrency: deposit?.settlementCurrency ?? null,
+                settlementAmountMinor: deposit?.settlementCurrency ? -gatewayChargeMinor : null,
+                bookingExchangeRate: rate,
+                availableAt: now,
+              },
+            ]),
       ],
     });
 
@@ -361,8 +385,9 @@ export class LedgerService {
     this.logger.warn(
       `Ledger: appointment ${appointmentId} refunded in full ` +
         `(-${appointment.depositAmountMinor}c deposit, +${appointment.platformFeeAmountMinor}c fee back), ` +
-        `gateway charge ${gatewayChargeMinor} ${deposit?.settlementCurrency ?? 'minor units'} ` +
-        `borne by business ${businessId}.`,
+        (gatewayChargeMinor === null
+          ? `cancelled in time by the customer; no charge on business ${businessId}.`
+          : `gateway charge ${gatewayChargeMinor} ${deposit?.settlementCurrency ?? 'minor units'} borne by business ${businessId}.`),
     );
   }
 

@@ -8,7 +8,7 @@ import { t } from '@lingui/core/macro';
 /**
  * How paying works, said once (§182, §278): the three promises true of every
  * booking — paid on your own phone, confirmed the moment it is paid, all of it
- * back if the shop cancels.
+ * back if you cancel 24 hours ahead or the shop cancels (§313).
  *
  * They used to close the service page as a "Safe to book" card. That page is
  * for choosing, so they moved: each one is said where it matters at checkout
@@ -34,8 +34,8 @@ export function PayingPromises() {
         icon="refresh"
         color={theme.ask}
         tint={theme.askSoft}
-        title={t`Refunded if the shop cancels`}
-        text={t`Your whole deposit goes back to the number that paid. If you cancel, the shop keeps it.`}
+        title={t`Free to cancel up to 24 hours before`}
+        text={t`Cancel at least 24 hours before, or if the shop cancels, and your whole deposit goes back to the number that paid. Later, or if you don’t come, the shop keeps it.`}
       />
       <Pledge
         icon="storefront-outline"

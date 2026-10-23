@@ -163,9 +163,15 @@ describe('Appointment state machine (§16.1)', () => {
   });
 
   describe('NO_SHOW is reachable only from BOOKED', () => {
-    it('allows no-show from BOOKED and stamps noShowAt', async () => {
+    it('allows no-show from BOOKED once its time has ended, and stamps noShowAt', async () => {
       const a = await make(AppointmentStatus.BOOKED);
+      // Not before the end (§313): a customer may still come, late, in their slot.
+      await expect(appointments.noShow(business.userId, a.id)).rejects.toThrow(/only once the booking’s time has ended/);
 
+      await prisma.appointment.update({
+        where: { id: a.id },
+        data: { startTime: new Date(Date.now() - 2 * 3_600_000), endTime: new Date(Date.now() - 3_600_000) },
+      });
       const result = await appointments.noShow(business.userId, a.id);
 
       expect(result.status).toBe(AppointmentStatus.NO_SHOW);

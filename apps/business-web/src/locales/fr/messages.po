@@ -10,7 +10,7 @@ msgstr ""
 #. placeholder {0}: a.quantity
 #. placeholder {0}: appointment.quantity
 #. placeholder {0}: d.quantity
-#: src/pages/AppointmentsPage.tsx:1137
+#: src/pages/AppointmentsPage.tsx:1140
 #: src/pages/OverviewPage.tsx:571
 #: src/pages/OverviewPage.tsx:647
 msgid " · {0} people"
@@ -34,12 +34,12 @@ msgstr " · modifié"
 msgid " · must answer"
 msgstr " · réponse obligatoire"
 
-#: src/pages/AppointmentsPage.tsx:1171
+#: src/pages/AppointmentsPage.tsx:1174
 msgid " · not paid"
 msgstr " · non payé"
 
 #. placeholder {0}: when(d.depositPaidAt)
-#: src/pages/AppointmentsPage.tsx:1171
+#: src/pages/AppointmentsPage.tsx:1174
 msgid " · paid {0}"
 msgstr " · payé le {0}"
 
@@ -91,7 +91,7 @@ msgid "— Our review team"
 msgstr "— Notre équipe de vérification"
 
 #. placeholder {0}: d.choicesMinutes
-#: src/pages/AppointmentsPage.tsx:1189
+#: src/pages/AppointmentsPage.tsx:1192
 msgid "· +{0} min"
 msgstr "· +{0} min"
 
@@ -125,7 +125,7 @@ msgstr "« {title} » : les clients doivent y répondre, il faut donc propose
 msgid "“Make cover” picks the photo customers see on the service’s card in the app."
 msgstr "« Mettre en couverture » choisit la photo que les clients voient sur la fiche du service dans l’application."
 
-#: src/ads/guide.ts:179
+#: src/ads/guide.ts:182
 msgid "“People served at once” decides how many can book the same time."
 msgstr "« Personnes servies en même temps » détermine combien de clients peuvent réserver le même créneau."
 
@@ -359,7 +359,7 @@ msgstr "{0} · dernière activité {1}"
 #. placeholder {0}: b.customerEmail
 #. placeholder {1}: reservationNo(a.id)
 #. placeholder {1}: reservationNo(b.appointmentId)
-#: src/lib/bookingLook.tsx:187
+#: src/lib/bookingLook.tsx:195
 #: src/pages/calendar/AppointmentCalendar.tsx:1143
 #: src/pages/PayoutDetail.tsx:361
 msgid "{0} · No. {1}"
@@ -452,7 +452,7 @@ msgstr "{0} de retard"
 
 #. placeholder {0}: minutesBetween(a.startTime, a.endTime)
 #. placeholder {0}: service.durationMinutes
-#: src/pages/AppointmentsPage.tsx:746
+#: src/pages/AppointmentsPage.tsx:749
 #: src/pages/OverviewPage.tsx:560
 #: src/pages/ServicesPage.tsx:1039
 msgid "{0} min"
@@ -542,7 +542,7 @@ msgstr "{0} vous a écrit"
 #. placeholder {1}: a.service.name
 #. placeholder {2}: clock(a.startTime)
 #. placeholder {3}: look.label
-#: src/pages/AppointmentsPage.tsx:742
+#: src/pages/AppointmentsPage.tsx:745
 msgid "{0}, {1} at {2}, {3}. Open details."
 msgstr "{0}, {1} à {2}, {3}. Ouvrir les détails."
 
@@ -1153,7 +1153,7 @@ msgstr "1 dollar américain = {usd}"
 msgid "1–90% off · customers see a −% badge"
 msgstr "1–90 % de réduction · les clients voient un badge −%"
 
-#: src/ads/guide.ts:103
+#: src/ads/guide.ts:106
 msgid "1–90% off, until a day you choose or until you end it."
 msgstr "1–90 % de réduction, jusqu’au jour de votre choix ou jusqu’à ce que vous y mettiez fin."
 
@@ -1182,11 +1182,11 @@ msgstr "Une réservation pour 3 personnes prend 3 places. Quand toutes les place
 msgid "A booking is coming up. Ask for their 6-digit code when they arrive."
 msgstr "Une réservation approche. Demandez au client son code à 6 chiffres à son arrivée."
 
-#: src/pages/AppointmentsPage.tsx:933
+#: src/pages/AppointmentsPage.tsx:936
 msgid "A booking sits here while the customer approves their deposit on their phone."
 msgstr "Une réservation reste ici pendant que le client valide son acompte sur son téléphone."
 
-#: src/ads/guide.ts:66
+#: src/ads/guide.ts:69
 msgid "A booking you checked in but never marked done becomes “Done” by itself, 24 hours after its end."
 msgstr "Une réservation dont vous avez enregistré l’arrivée sans la marquer terminée passe d’elle-même à « Terminée », 24 heures après sa fin."
 
@@ -1194,7 +1194,7 @@ msgstr "Une réservation dont vous avez enregistré l’arrivée sans la marquer
 msgid "A branch and its hours"
 msgstr "Une succursale et ses horaires"
 
-#: src/ads/guide.ts:183
+#: src/ads/guide.ts:186
 msgid "A branch cannot be closed while it still has bookings to come."
 msgstr "Une succursale ne peut pas être fermée tant qu’elle a des réservations à venir."
 
@@ -1231,7 +1231,7 @@ msgstr "Une correction faite par notre équipe."
 msgid "A cover photo"
 msgstr "Une photo de couverture"
 
-#: src/ads/guide.ts:195
+#: src/ads/guide.ts:198
 msgid "A customer can message you before booking, and about any booking they have made."
 msgstr "Un client peut vous écrire avant de réserver, et au sujet de toute réservation qu’il a faite."
 
@@ -1255,9 +1255,17 @@ msgstr "Un client lit ceci avant de réserver. Dites ce que vous proposez et ce 
 msgid "A customer reviewed you. Your reply shows under it for everyone, and you can edit it for 7 days."
 msgstr "Un client vous a laissé un avis. Votre réponse s’affiche en dessous pour tous, et vous pouvez la modifier pendant 7 jours."
 
+#: src/ads/guide.ts:47
+msgid "A customer who cancels 24 hours ahead gets it back. Later, the deposit stays. If you cancel, they get it all back."
+msgstr "Un client qui annule 24 heures avant est remboursé. Plus tard, l’acompte reste. Si vous annulez, il récupère tout."
+
 #: src/ads/guide.ts:49
-msgid "A customer who cancels does not get their deposit back — that is what a deposit is for — and your share of it is still paid to you."
-msgstr "Un client qui annule ne récupère pas son acompte — c’est le principe d’un acompte — et votre part vous est quand même versée."
+msgid "A customer who cancels at least 24 hours before gets the whole deposit back, and nothing is paid to you for that booking — the time is free for someone else."
+msgstr "Un client qui annule au moins 24 heures avant récupère tout son acompte, et rien ne vous est versé pour cette réservation — le créneau est libre pour quelqu’un d’autre."
+
+#: src/ads/guide.ts:50
+msgid "A customer who cancels later than that does not get their deposit back — that is what a deposit is for — and your share of it is still paid to you."
+msgstr "Un client qui annule plus tard ne récupère pas son acompte — c’est à cela qu’il sert — et votre part vous est quand même versée."
 
 #: src/ads/slides.ts:285
 msgid "A customer wrote to you. A shop cannot start a conversation, so a quick reply is the chance to win the booking."
@@ -1304,7 +1312,7 @@ msgstr "Un gérant gère les succursales que vous choisissez — leurs réservat
 msgid "A name, how long it takes, a price at each branch — and a photo or two. Customers can book it the moment it is posted."
 msgstr "Un nom, une durée, un prix dans chaque succursale — et une photo ou deux. Les clients peuvent le réserver dès sa publication."
 
-#: src/ads/guide.ts:78
+#: src/ads/guide.ts:81
 msgid "A new booking holds its time while the customer approves the deposit on their phone."
 msgstr "Une nouvelle réservation bloque son créneau pendant que le client valide l’acompte sur son téléphone."
 
@@ -1312,7 +1320,7 @@ msgstr "Une nouvelle réservation bloque son créneau pendant que le client vali
 msgid "A new branch"
 msgstr "Une nouvelle succursale"
 
-#: src/ads/guide.ts:168
+#: src/ads/guide.ts:171
 msgid "A new branch starts closed and offers nothing. Set its hours and choose its services, and customers can book it."
 msgstr "Une nouvelle succursale démarre fermée et ne propose rien. Définissez ses horaires et choisissez ses services, et les clients pourront y réserver."
 
@@ -1413,7 +1421,7 @@ msgstr "Un service avec une photo est plus facile à choisir."
 msgid "a set time"
 msgstr "une durée fixe"
 
-#: src/ads/guide.ts:197
+#: src/ads/guide.ts:200
 msgid "A shop cannot start a conversation — so a quick reply is the one chance to win the booking."
 msgstr "Un établissement ne peut pas lancer une conversation — une réponse rapide est donc la seule chance de décrocher la réservation."
 
@@ -1503,7 +1511,7 @@ msgstr "Ajouter "
 msgid "Add {0}"
 msgstr "Ajouter {0}"
 
-#: src/ads/guide.ts:171
+#: src/ads/guide.ts:174
 #: src/ads/slides.ts:175
 #: src/components/NewBranchForm.tsx:241
 #: src/pages/HoursPage.tsx:88
@@ -1596,7 +1604,7 @@ msgstr "Ajoutez-en une — d’ici là, il n’y a rien à réserver pour un cli
 msgid "Add one in a tap, then set your prices. You can change any of the words."
 msgstr "Ajoutez-en une en un geste, puis fixez vos prix. Vous pouvez modifier tous les mots."
 
-#: src/ads/guide.ts:126
+#: src/ads/guide.ts:129
 #: src/onboarding/GoLiveCard.tsx:136
 #: src/pages/ProfilePage.tsx:719
 #: src/pages/ServicesPage.tsx:1786
@@ -1683,7 +1691,7 @@ msgstr "Annonces masquées jusqu’à votre prochaine connexion."
 msgid "After “{0}”"
 msgstr "Après « {0} »"
 
-#: src/ads/guide.ts:92
+#: src/ads/guide.ts:95
 msgid "After 5 wrong tries the code is locked."
 msgstr "Après 5 essais erronés, le code est bloqué."
 
@@ -1808,7 +1816,7 @@ msgstr "Autorisez les notifications pour ce site — l’icône du cadenas ou de
 msgid "Almost there"
 msgstr "Presque fini"
 
-#: src/pages/AppointmentsPage.tsx:1190
+#: src/pages/AppointmentsPage.tsx:1193
 msgid "Already in the full price below."
 msgstr "Déjà inclus dans le prix total ci-dessous."
 
@@ -1844,11 +1852,11 @@ msgstr "Un exemple de ce que voient les clients"
 msgid "An MTN MoMo number — your payments can be sent to it."
 msgstr "Un numéro MTN MoMo — vos paiements peuvent y être envoyés."
 
-#: src/ads/guide.ts:93
+#: src/ads/guide.ts:96
 msgid "An owner or manager can check someone in without the code by writing what the customer recalled. It is recorded against their name, and every administrator is told."
 msgstr "Un propriétaire ou un gérant peut enregistrer l’arrivée d’un client sans le code, en notant ce dont le client se souvenait. C’est enregistré à son nom, et chaque administrateur est prévenu."
 
-#: src/ads/guide.ts:76
+#: src/ads/guide.ts:79
 msgid "An unpaid booking holds the time for 5 minutes, then lets it go."
 msgstr "Une réservation non payée bloque le créneau 5 minutes, puis le libère."
 
@@ -1871,7 +1879,7 @@ msgstr "Anonyme"
 msgid "Another answer"
 msgstr "Autre réponse"
 
-#: src/ads/guide.ts:164
+#: src/ads/guide.ts:167
 msgid "Another shop in another street, district or town? Add it on Branches & hours with “Add a branch”. An owner or a manager can."
 msgstr "Un autre établissement dans une autre rue, un autre district ou une autre ville ? Ajoutez-le dans Succursales et horaires avec « Ajouter une succursale ». Un propriétaire ou un gérant peut le faire."
 
@@ -1938,7 +1946,7 @@ msgstr "Arrivé"
 
 #. placeholder {0}: clock(a.verifiedAt)
 #. placeholder {0}: when(payout.paidAt)
-#: src/lib/bookingLook.tsx:150
+#: src/lib/bookingLook.tsx:151
 #: src/pages/PayoutsPage.tsx:311
 msgid "Arrived {0}"
 msgstr "Arrivé {0}"
@@ -2066,7 +2074,7 @@ msgstr "Retour au code"
 msgid "Back to your day "
 msgstr "Retour à votre journée "
 
-#: src/pages/AppointmentsPage.tsx:869
+#: src/pages/AppointmentsPage.tsx:872
 msgid "Balance at the shop"
 msgstr "Reste sur place"
 
@@ -2134,7 +2142,7 @@ msgstr "Réserver chez "
 msgid "booked"
 msgstr "réservé"
 
-#: src/pages/AppointmentsPage.tsx:1039
+#: src/pages/AppointmentsPage.tsx:1042
 msgid "Booked"
 msgstr "Réservé"
 
@@ -2166,8 +2174,8 @@ msgstr "Réservation"
 msgid "BOOKING"
 msgstr "RÉSERVATION"
 
-#: src/pages/AppointmentsPage.tsx:1078
 #: src/pages/AppointmentsPage.tsx:1081
+#: src/pages/AppointmentsPage.tsx:1084
 msgid "Booking details"
 msgstr "Détails de la réservation"
 
@@ -2176,11 +2184,11 @@ msgid "Booking emails"
 msgstr "E-mails de réservation"
 
 #. placeholder {0}: reservationNo(d.id)
-#: src/pages/AppointmentsPage.tsx:1119
+#: src/pages/AppointmentsPage.tsx:1122
 msgid "Booking no. {0}"
 msgstr "Réservation nº {0}"
 
-#: src/pages/AppointmentsPage.tsx:753
+#: src/pages/AppointmentsPage.tsx:756
 msgid "Booking number — the customer sees the same one in their app"
 msgstr "Numéro de réservation — le client voit le même dans son application"
 
@@ -2206,7 +2214,7 @@ msgstr "Agenda"
 msgid "Bookings × rating decide where you appear"
 msgstr "Réservations × note décident de votre place"
 
-#: src/ads/guide.ts:108
+#: src/ads/guide.ts:111
 msgid "Bookings already made keep the price they were made at."
 msgstr "Les réservations déjà faites gardent le prix auquel elles ont été faites."
 
@@ -2232,11 +2240,11 @@ msgctxt "search words"
 msgid "bookings orders customers today check in verify code arrival redeem"
 msgstr "réservations commandes clients aujourd’hui arrivées enregistrer vérifier code arrivée valider"
 
-#: src/ads/guide.ts:75
+#: src/ads/guide.ts:78
 msgid "Bookings waiting for payment"
 msgstr "Réservations en attente de paiement"
 
-#: src/pages/AppointmentsPage.tsx:935
+#: src/pages/AppointmentsPage.tsx:938
 msgid "Bookings you mark done are kept here."
 msgstr "Les réservations que vous marquez terminées sont gardées ici."
 
@@ -2274,8 +2282,8 @@ msgstr "succursale"
 
 #: src/pages/AnalyticsPage.tsx:127
 #: src/pages/AppointmentsPage.tsx:427
-#: src/pages/AppointmentsPage.tsx:860
-#: src/pages/AppointmentsPage.tsx:1141
+#: src/pages/AppointmentsPage.tsx:863
+#: src/pages/AppointmentsPage.tsx:1144
 #: src/ui/BranchPills.tsx:24
 msgid "Branch"
 msgstr "Succursale"
@@ -2297,7 +2305,7 @@ msgstr "succursales"
 msgid "Branches"
 msgstr "Succursales"
 
-#: src/ads/guide.ts:185
+#: src/ads/guide.ts:188
 #: src/nav.ts:77
 #: src/pages/HoursPage.tsx:80
 msgid "Branches & hours"
@@ -2372,15 +2380,19 @@ msgstr "Bwangu<0>Reservations</0>"
 msgid "BwanguReservations · For businesses"
 msgstr "BwanguReservations · Pour les professionnels"
 
-#: src/lib/bookingLook.tsx:157
+#: src/lib/bookingLook.tsx:164
 msgid "By the customer"
 msgstr "Par le client"
+
+#: src/lib/bookingLook.tsx:163
+msgid "By the customer, in time"
+msgstr "Par le client, à temps"
 
 #: src/pages/AppQrPage.tsx:139
 msgid "By the till or the mirror"
 msgstr "Près de la caisse ou du miroir"
 
-#: src/lib/bookingLook.tsx:157
+#: src/lib/bookingLook.tsx:160
 msgid "By you"
 msgstr "Par vous"
 
@@ -2401,7 +2413,7 @@ msgid "Can’t find it? Paste a map link or use where you are"
 msgstr "Introuvable ? Collez un lien de carte ou utilisez votre position"
 
 #: src/components/NewBranchForm.tsx:247
-#: src/pages/AppointmentsPage.tsx:1260
+#: src/pages/AppointmentsPage.tsx:1263
 #: src/pages/HoursPage.tsx:634
 #: src/pages/PayoutsPage.tsx:477
 #: src/pages/ReviewsPage.tsx:598
@@ -2413,7 +2425,7 @@ msgstr "Introuvable ? Collez un lien de carte ou utilisez votre position"
 msgid "Cancel"
 msgstr "Annuler"
 
-#: src/pages/AppointmentsPage.tsx:728
+#: src/pages/AppointmentsPage.tsx:731
 msgid "Cancel booking"
 msgstr "Annuler la réservation"
 
@@ -2439,12 +2451,12 @@ msgstr "Annulations et remboursements"
 msgid "Cancelled"
 msgstr "Annulée"
 
-#: src/pages/AppointmentsPage.tsx:870
+#: src/pages/AppointmentsPage.tsx:873
 msgid "Cancelled by"
 msgstr "Annulée par"
 
 #. placeholder {0}: String(d.cancelledBy).toLowerCase()
-#: src/pages/AppointmentsPage.tsx:1047
+#: src/pages/AppointmentsPage.tsx:1050
 msgid "Cancelled by {0}"
 msgstr "Annulée par {0}"
 
@@ -2524,7 +2536,7 @@ msgstr "modifié depuis la réservation"
 msgid "Changing your number"
 msgstr "Modifier votre numéro"
 
-#: src/pages/AppointmentsPage.tsx:1243
+#: src/pages/AppointmentsPage.tsx:1246
 msgid "Charged by the operator"
 msgstr "Prélevé par l’opérateur"
 
@@ -2540,8 +2552,8 @@ msgstr "service le moins cher {0}"
 
 #: src/checkin/CheckIn.tsx:245
 #: src/checkin/CheckIn.tsx:346
-#: src/pages/AppointmentsPage.tsx:794
-#: src/pages/AppointmentsPage.tsx:1286
+#: src/pages/AppointmentsPage.tsx:797
+#: src/pages/AppointmentsPage.tsx:1292
 #: src/pages/calendar/AppointmentCalendar.tsx:1158
 #: src/pages/OverviewPage.tsx:581
 #: src/shell/Topbar.tsx:92
@@ -2575,7 +2587,7 @@ msgstr "Enregistrer l’arrivée sans code"
 msgid "Check in without the code"
 msgstr "Enregistrer l’arrivée sans le code"
 
-#: src/ads/guide.ts:95
+#: src/ads/guide.ts:98
 msgid "Check someone in"
 msgstr "Enregistrer une arrivée"
 
@@ -2591,7 +2603,7 @@ msgstr "Enregistrer son arrivée"
 msgid "Check your <0>inbox.</0>"
 msgstr "Consultez vos <0>e-mails.</0>"
 
-#: src/pages/AppointmentsPage.tsx:1092
+#: src/pages/AppointmentsPage.tsx:1095
 msgid "Check your connection and try again."
 msgstr "Vérifiez votre connexion et réessayez."
 
@@ -2614,11 +2626,11 @@ msgstr "Vérifié — vos versements arrivent ici"
 msgid "Checked in"
 msgstr "Arrivée enregistrée"
 
-#: src/ads/guide.ts:88
+#: src/ads/guide.ts:91
 msgid "Checking customers in"
 msgstr "Enregistrer les arrivées"
 
-#: src/pages/AppointmentsPage.tsx:968
+#: src/pages/AppointmentsPage.tsx:971
 msgid "Checking each customer in with their code"
 msgstr "L’accueil de chaque client avec son code"
 
@@ -2646,7 +2658,7 @@ msgstr "Choisissez une conversation"
 msgid "Choose a district"
 msgstr "Choisissez un district"
 
-#: src/ads/guide.ts:106
+#: src/ads/guide.ts:109
 msgid "Choose a last day (the whole day counts) or leave it to run until you end it."
 msgstr "Choisissez un dernier jour (toute la journée compte) ou laissez-la courir jusqu’à ce que vous y mettiez fin."
 
@@ -2806,7 +2818,7 @@ msgstr "Fermer ce jour"
 msgid "Close this notice"
 msgstr "Fermer ce message"
 
-#: src/pages/AppointmentsPage.tsx:1082
+#: src/pages/AppointmentsPage.tsx:1085
 #: src/pages/ServicesPage.tsx:918
 #: src/ui/Panel.tsx:48
 msgid "Close this panel"
@@ -2954,11 +2966,11 @@ msgid "cooking school"
 msgstr "école de cuisine"
 
 #: src/pages/AppointmentsPage.tsx:715
-#: src/pages/AppointmentsPage.tsx:1236
+#: src/pages/AppointmentsPage.tsx:1239
 msgid "Copied"
 msgstr "Copié"
 
-#: src/pages/AppointmentsPage.tsx:1236
+#: src/pages/AppointmentsPage.tsx:1239
 msgid "Copy"
 msgstr "Copier"
 
@@ -2971,7 +2983,7 @@ msgstr "Copier les horaires du {0} sur chaque jour ouvert"
 msgid "Copy No. {number}"
 msgstr "Copier le n° {number}"
 
-#: src/pages/AppointmentsPage.tsx:1233
+#: src/pages/AppointmentsPage.tsx:1236
 msgid "Copy the reference"
 msgstr "Copier la référence"
 
@@ -3029,14 +3041,14 @@ msgstr "studio créatif"
 msgid "Ctrl"
 msgstr "Ctrl"
 
-#: src/pages/AppointmentsPage.tsx:862
+#: src/pages/AppointmentsPage.tsx:865
 msgid "Currency"
 msgstr "Devise"
 
 #: src/pages/AppointmentsPage.tsx:475
 #: src/pages/AppointmentsPage.tsx:475
-#: src/pages/AppointmentsPage.tsx:857
-#: src/pages/AppointmentsPage.tsx:901
+#: src/pages/AppointmentsPage.tsx:860
+#: src/pages/AppointmentsPage.tsx:904
 #: src/pages/MessagesPage.tsx:314
 #: src/pages/MessagesPage.tsx:443
 #: src/pages/OverviewPage.tsx:709
@@ -3044,20 +3056,20 @@ msgstr "Devise"
 msgid "Customer"
 msgstr "Client"
 
-#: src/pages/AppointmentsPage.tsx:1041
+#: src/pages/AppointmentsPage.tsx:1044
 msgid "Customer arrived"
 msgstr "Client arrivé"
 
 #: src/ads/slides.ts:47
-msgid "Customer cancels: deposit kept · You cancel: full refund"
-msgstr "Le client annule : acompte conservé · Vous annulez : remboursement intégral"
+msgid "Customer cancels 24 h ahead: refunded · Later: deposit kept · You cancel: full refund"
+msgstr "Le client annule 24 h avant : remboursé · Plus tard : acompte gardé · Vous annulez : remboursement complet"
 
 #: src/nav.ts:93
 msgid "Customers"
 msgstr "Clients"
 
 #: src/checkin/CheckIn.tsx:290
-#: src/pages/AppointmentsPage.tsx:923
+#: src/pages/AppointmentsPage.tsx:926
 msgid "Customers appear here once they have booked and paid their deposit."
 msgstr "Les clients apparaissent ici une fois leur réservation faite et l’acompte payé."
 
@@ -3077,7 +3089,7 @@ msgstr "Les clients réservent et paient un acompte. Vous enregistrez leur arriv
 msgid "Customers book services — this is where it starts."
 msgstr "Les clients réservent des services — tout commence ici."
 
-#: src/pages/AppointmentsPage.tsx:961
+#: src/pages/AppointmentsPage.tsx:964
 msgid "Customers book you in the app. Show them your App QR code at the counter: they scan it, get the app, and can book you again."
 msgstr "Les clients vous réservent dans l’application. Montrez-leur votre code QR au comptoir : ils le scannent, obtiennent l’application et peuvent réserver à nouveau."
 
@@ -3089,9 +3101,13 @@ msgstr "Clients par jour"
 msgid "Customers can book this day as usual."
 msgstr "Les clients peuvent réserver ce jour comme d’habitude."
 
-#: src/pages/AppointmentsPage.tsx:962
+#: src/pages/AppointmentsPage.tsx:965
 msgid "Customers can book you once your shop is live. The Overview shows what is left to do."
 msgstr "Les clients pourront vous réserver une fois votre commerce en ligne. L’Aperçu indique ce qu’il reste à faire."
+
+#: src/ads/guide.ts:51
+msgid "Customers can cancel until their time starts. After that, not coming is a no-show."
+msgstr "Les clients peuvent annuler jusqu’au début de leur créneau. Après, ne pas venir est une absence."
 
 #: src/onboarding/GoLiveCard.tsx:498
 msgid "Customers can now find <0>{name}</0> and book. New bookings appear on this page and in Appointments, and we tell you each time."
@@ -3105,7 +3121,7 @@ msgstr "Les clients peuvent laisser un avis une fois la réservation marquée te
 msgid "Customers can write a note"
 msgstr "Les clients peuvent écrire une note"
 
-#: src/ads/guide.ts:193
+#: src/ads/guide.ts:196
 msgid "Customers can write before they book and about a booking."
 msgstr "Les clients peuvent vous écrire avant de réserver et à propos d’une réservation."
 
@@ -3212,11 +3228,11 @@ msgstr "Les clients paient une petite partie en réservant, le reste dans votre 
 msgid "Customers search by area, so this is how they find you."
 msgstr "Les clients cherchent par secteur : c’est ainsi qu’ils vous trouvent."
 
-#: src/ads/guide.ts:107
+#: src/ads/guide.ts:110
 msgid "Customers see a −% badge and the old price crossed out. The deposit is worked out on the discounted price."
 msgstr "Les clients voient un badge −% et l’ancien prix barré. L’acompte est calculé sur le prix réduit."
 
-#: src/ads/guide.ts:166
+#: src/ads/guide.ts:169
 msgid "Customers see each branch on its own: people nearby find the one closest to them, and each branch collects its own reviews and rating."
 msgstr "Les clients voient chaque succursale séparément : les gens à proximité trouvent la plus proche, et chaque succursale a ses propres avis et sa propre note."
 
@@ -3260,7 +3276,7 @@ msgstr "Les clients ne la voient plus immédiatement. Elle ne peut pas être ré
 msgid "Customers want to see the place they are walking into."
 msgstr "Les clients veulent voir l’endroit où ils vont entrer."
 
-#: src/ads/guide.ts:109
+#: src/ads/guide.ts:112
 msgid "Customers who asked for it get a Friday email of services near them, with discounts shown at their discounted price."
 msgstr "Les clients qui l’ont demandé reçoivent chaque vendredi un e-mail des services près de chez eux, les réductions affichées au prix réduit."
 
@@ -3276,7 +3292,7 @@ msgstr "La distance des clients est mesurée depuis ce repère. Collez le lien G
 msgid "Cut"
 msgstr "Coupe"
 
-#: src/pages/AppointmentsPage.tsx:854
+#: src/pages/AppointmentsPage.tsx:857
 msgid "Date"
 msgstr "Date"
 
@@ -3329,8 +3345,8 @@ msgctxt "after an amount: the money is the deposit"
 msgid "deposit"
 msgstr "acompte"
 
-#: src/pages/AppointmentsPage.tsx:864
-#: src/pages/AppointmentsPage.tsx:1167
+#: src/pages/AppointmentsPage.tsx:867
+#: src/pages/AppointmentsPage.tsx:1170
 msgid "Deposit"
 msgstr "Acompte"
 
@@ -3339,11 +3355,11 @@ msgid "Deposit %"
 msgstr "Acompte %"
 
 #: src/lib/bookingLook.tsx:127
-#: src/lib/bookingLook.tsx:132
+#: src/lib/bookingLook.tsx:133
 msgid "Deposit kept"
 msgstr "Acompte conservé"
 
-#: src/pages/AppointmentsPage.tsx:1040
+#: src/pages/AppointmentsPage.tsx:1043
 msgid "Deposit not paid"
 msgstr "Acompte non payé"
 
@@ -3351,17 +3367,17 @@ msgstr "Acompte non payé"
 #: src/checkin/CheckIn.tsx:445
 #: src/lib/bookingLook.tsx:114
 #: src/lib/bookingLook.tsx:122
-#: src/pages/AppointmentsPage.tsx:1040
+#: src/pages/AppointmentsPage.tsx:1043
 #: src/tour/steps.ts:58
 msgid "Deposit paid"
 msgstr "Acompte payé"
 
-#: src/pages/AppointmentsPage.tsx:865
+#: src/pages/AppointmentsPage.tsx:868
 msgid "Deposit paid on"
 msgstr "Acompte payé le"
 
-#: src/lib/bookingLook.tsx:131
-#: src/pages/AppointmentsPage.tsx:866
+#: src/lib/bookingLook.tsx:132
+#: src/pages/AppointmentsPage.tsx:869
 #: src/pages/PayoutDetail.tsx:22
 msgid "Deposit refunded"
 msgstr "Acompte remboursé"
@@ -3431,8 +3447,8 @@ msgstr "Détails pour notre équipe"
 msgid "Did not arrive"
 msgstr "Non reçu"
 
-#: src/lib/bookingLook.tsx:154
-#: src/pages/AppointmentsPage.tsx:1043
+#: src/lib/bookingLook.tsx:155
+#: src/pages/AppointmentsPage.tsx:1046
 msgid "Did not come"
 msgstr "Absent"
 
@@ -3470,7 +3486,7 @@ msgstr "Supprimer"
 msgid "Discount"
 msgstr "Réduction"
 
-#: src/ads/guide.ts:102
+#: src/ads/guide.ts:105
 msgid "Discounts"
 msgstr "Réductions"
 
@@ -3493,7 +3509,7 @@ msgstr "Toilettage de chien"
 #: src/onboarding/Welcome.tsx:221
 #: src/onboarding/Welcome.tsx:939
 #: src/pages/AppointmentsPage.tsx:76
-#: src/pages/AppointmentsPage.tsx:1042
+#: src/pages/AppointmentsPage.tsx:1045
 #: src/pages/OverviewPage.tsx:75
 #: src/pages/OverviewPage.tsx:592
 msgid "Done"
@@ -3712,11 +3728,11 @@ msgstr "ex. : Pose de panneaux solaires"
 msgid "e.g. Which cut would you like?"
 msgstr "ex. : Quelle coupe souhaitez-vous ?"
 
-#: src/ads/guide.ts:91
+#: src/ads/guide.ts:94
 msgid "Each booking has a 6-digit code — emailed to the customer and shown in their app. Ask for it when they arrive."
 msgstr "Chaque réservation a un code à 6 chiffres — envoyé par e-mail au client et affiché dans son application. Demandez-le à son arrivée."
 
-#: src/ads/guide.ts:165
+#: src/ads/guide.ts:168
 msgid "Each branch has its own address and map pin, opening hours, photos, closures and breaks, and how many people it serves at once."
 msgstr "Chaque succursale a sa propre adresse et son repère sur la carte, ses horaires d’ouverture, ses photos, ses fermetures et pauses, et le nombre de personnes qu’elle reçoit à la fois."
 
@@ -3724,7 +3740,7 @@ msgstr "Chaque succursale a sa propre adresse et son repère sur la carte, ses h
 msgid "Each branch has its own photos, because a customer wants to see the place they are actually walking into."
 msgstr "Chaque succursale a ses propres photos, car un client veut voir l’endroit où il va vraiment entrer."
 
-#: src/ads/guide.ts:181
+#: src/ads/guide.ts:184
 msgid "Each branch says how many people it serves at once. A booking for 3 takes 3 places; when every place is taken, the time shows as booked."
 msgstr "Chaque succursale indique combien de personnes elle reçoit à la fois. Une réservation pour 3 prend 3 places ; quand toutes les places sont prises, le créneau apparaît comme réservé."
 
@@ -3809,7 +3825,7 @@ msgstr "Adresse e-mail"
 msgid "Email, service, branch or No."
 msgstr "E-mail, service, succursale ou n°"
 
-#: src/pages/AppointmentsPage.tsx:856
+#: src/pages/AppointmentsPage.tsx:859
 msgid "End"
 msgstr "Fin"
 
@@ -3864,7 +3880,7 @@ msgstr "agence événementielle"
 msgid "Every booking"
 msgstr "Toutes les réservations"
 
-#: src/ads/guide.ts:89
+#: src/ads/guide.ts:92
 msgid "Every booking has a 6-digit code. The sixth digit checks them in."
 msgstr "Chaque réservation a un code à 6 chiffres. Le sixième chiffre enregistre l’arrivée."
 
@@ -3872,7 +3888,7 @@ msgstr "Chaque réservation a un code à 6 chiffres. Le sixième chiffre enregis
 msgid "Every booking has a 6-digit code. Type it in Check in when they arrive; the sixth digit does it."
 msgstr "Chaque réservation a un code à 6 chiffres. Saisissez-le dans Arrivées quand le client arrive ; le sixième chiffre s’en charge."
 
-#: src/pages/AppointmentsPage.tsx:936
+#: src/pages/AppointmentsPage.tsx:939
 msgid "Every booking, in every state, will be listed here."
 msgstr "Toutes les réservations, quel que soit leur état, apparaîtront ici."
 
@@ -3915,7 +3931,7 @@ msgstr "Toujours"
 msgid "Every visit can bring the next booking"
 msgstr "Chaque visite peut amener la suivante"
 
-#: src/ads/guide.ts:196
+#: src/ads/guide.ts:199
 msgid "Everyone on your team can reply; each reply shows who wrote it to your team, never to the customer."
 msgstr "Toute votre équipe peut répondre ; chaque réponse montre à votre équipe qui l’a écrite, jamais au client."
 
@@ -4045,14 +4061,14 @@ msgstr "Terminez la configuration de votre établissement"
 msgid "Finish your questions"
 msgstr "Terminez vos questions"
 
-#: src/lib/bookingLook.tsx:152
+#: src/lib/bookingLook.tsx:153
 #: src/pages/SupportPage.tsx:81
 #: src/pages/SupportPage.tsx:195
 msgid "Finished"
 msgstr "Terminé"
 
 #. placeholder {0}: clock(a.completedAt)
-#: src/lib/bookingLook.tsx:152
+#: src/lib/bookingLook.tsx:153
 msgid "Finished {0}"
 msgstr "Terminé {0}"
 
@@ -4263,8 +4279,8 @@ msgstr "Accueil"
 msgid "Full"
 msgstr "Complet"
 
-#: src/pages/AppointmentsPage.tsx:863
-#: src/pages/AppointmentsPage.tsx:1196
+#: src/pages/AppointmentsPage.tsx:866
+#: src/pages/AppointmentsPage.tsx:1199
 msgid "Full price"
 msgstr "Prix total"
 
@@ -4314,7 +4330,7 @@ msgstr "Être payé"
 msgid "Get the app"
 msgstr "Obtenir l’application"
 
-#: src/ads/guide.ts:133
+#: src/ads/guide.ts:136
 #: src/nav.ts:132
 #: src/onboarding/steps.ts:41
 #: src/pages/PayoutsPage.tsx:109
@@ -4337,7 +4353,7 @@ msgstr "Indiquez un prix dans une succursale pour voir le total complet."
 msgid "Give a price at a least one branch, or nobody can book it."
 msgstr "Indiquez un prix dans au moins une succursale, sinon personne ne peut le réserver."
 
-#: src/ads/guide.ts:105
+#: src/ads/guide.ts:108
 msgid "Give any service a discount from 1% to 90% off, at every branch at once."
 msgstr "Appliquez à n’importe quel service une réduction de 1 % à 90 %, dans toutes les succursales à la fois."
 
@@ -4366,7 +4382,7 @@ msgstr "Aller aux Rendez-vous"
 msgid "Go to my dashboard "
 msgstr "Aller à mon tableau de bord "
 
-#: src/pages/AppointmentsPage.tsx:988
+#: src/pages/AppointmentsPage.tsx:991
 #: src/pages/NotFoundPage.tsx:63
 #: src/ui/PageCrash.tsx:51
 msgid "Go to Overview"
@@ -4479,7 +4495,7 @@ msgstr "Safari en voiture d’une demi-journée"
 msgid "Have another shop? Add it as a branch"
 msgstr "Vous avez un autre établissement ? Ajoutez-le comme succursale"
 
-#: src/ads/guide.ts:162
+#: src/ads/guide.ts:165
 msgid "Have shops in different places? Add each one as a branch."
 msgstr "Vous avez des établissements à plusieurs endroits ? Ajoutez chacun comme succursale."
 
@@ -4725,15 +4741,16 @@ msgstr "Idée"
 msgid "Ideas, news and how it all works"
 msgstr "Idées, actualités et comment tout fonctionne"
 
-#: src/ads/guide.ts:47
-msgid "If the customer cancels, the deposit stays. If you cancel, they get it all back."
-msgstr "Si le client annule, l’acompte reste acquis. Si vous annulez, il lui est remboursé en entier."
+#. placeholder {0}: clock(d.endTime)
+#: src/pages/AppointmentsPage.tsx:1314
+msgid "If they don’t come, you can mark a no-show from {0}, when their time is over."
+msgstr "S’il ne vient pas, vous pourrez le marquer absent à partir de {0}, une fois son créneau terminé."
 
-#: src/ads/guide.ts:79
+#: src/ads/guide.ts:82
 msgid "If they have not paid within 5 minutes, it is cancelled by itself and the time is free again."
 msgstr "S’il n’a pas payé dans les 5 minutes, elle est annulée automatiquement et le créneau redevient libre."
 
-#: src/ads/guide.ts:50
+#: src/ads/guide.ts:52
 msgid "If you cancel, the customer gets the whole deposit back, the platform’s fee included, and the mobile money charge for sending it back is yours."
 msgstr "Si vous annulez, le client récupère tout son acompte, frais de plateforme compris, et les frais mobile money du remboursement sont à votre charge."
 
@@ -4741,7 +4758,7 @@ msgstr "Si vous annulez, le client récupère tout son acompte, frais de platefo
 msgid "If you file monthly, last month’s return and payment go to RRA."
 msgstr "Si vous déclarez chaque mois, la déclaration et le paiement du mois dernier vont à la RRA."
 
-#: src/ads/guide.ts:65
+#: src/ads/guide.ts:68
 msgid "If you forget, a booking nobody checked in becomes a no-show by itself 24 hours after its end."
 msgstr "Si vous oubliez, une réservation dont personne n’a enregistré l’arrivée passe automatiquement en « absent » 24 heures après sa fin."
 
@@ -4751,7 +4768,7 @@ msgstr "Si vous oubliez, une réservation dont personne n’a enregistré l’ar
 msgid "in {0}"
 msgstr "dans {0}"
 
-#: src/lib/bookingLook.tsx:144
+#: src/lib/bookingLook.tsx:145
 msgid "In {days} days"
 msgstr "Dans {days} jours"
 
@@ -4833,7 +4850,7 @@ msgstr "Repassage"
 msgid "It cannot be brought back."
 msgstr "Elle ne pourra pas être récupérée."
 
-#: src/lib/bookingLook.tsx:219
+#: src/lib/bookingLook.tsx:227
 msgid "It cannot be changed back. "
 msgstr "On ne peut pas revenir en arrière. "
 
@@ -4873,7 +4890,7 @@ msgstr "Il figure sur chacune de vos cartes que voient les clients."
 msgid "It stops taking bookings and customers will not find it. Nothing is deleted — past bookings, reviews and takings stay, and you can reopen it at any time."
 msgstr "Elle ne prend plus de réservations et les clients ne la trouveront plus. Rien n’est supprimé — les réservations passées, les avis et les recettes restent, et vous pouvez la rouvrir à tout moment."
 
-#: src/ads/guide.ts:137
+#: src/ads/guide.ts:140
 msgid "It waits a couple of days after the visit, then goes out in that night’s payment to your mobile money number."
 msgstr "Elle attend quelques jours après la visite, puis part dans le versement de cette nuit-là vers votre numéro Mobile Money."
 
@@ -5263,12 +5280,12 @@ msgstr "Tout marquer comme lu"
 msgid "Mark as a no-show?"
 msgstr "Marquer comme absent ?"
 
-#: src/pages/AppointmentsPage.tsx:726
+#: src/pages/AppointmentsPage.tsx:728
 msgid "Mark as no-show"
 msgstr "Marquer absent"
 
-#: src/pages/AppointmentsPage.tsx:799
-#: src/pages/AppointmentsPage.tsx:1299
+#: src/pages/AppointmentsPage.tsx:802
+#: src/pages/AppointmentsPage.tsx:1305
 #: src/pages/calendar/AppointmentCalendar.tsx:1164
 #: src/pages/OverviewPage.tsx:586
 msgid "Mark done"
@@ -5282,20 +5299,16 @@ msgstr "Marquez comme terminé à la fin"
 msgid "Mark no-show"
 msgstr "Marquer absent"
 
-#: src/ads/guide.ts:62
-msgid "Mark them as a no-show: the deposit is not refunded."
-msgstr "Marquez-le absent : l’acompte n’est pas remboursé."
-
 #: src/pages/OverviewPage.tsx:325
 msgid "Mark them done when finished"
 msgstr "Marquez-les terminés à la fin"
 
-#: src/lib/bookingLook.tsx:206
+#: src/lib/bookingLook.tsx:214
 msgid "Mark this booking as done?"
 msgstr "Marquer cette réservation comme terminée ?"
 
 #. placeholder {0}: clock(a.noShowAt)
-#: src/lib/bookingLook.tsx:154
+#: src/lib/bookingLook.tsx:155
 msgid "Marked {0}"
 msgstr "Signalé à {0}"
 
@@ -5334,7 +5347,7 @@ msgstr "Message <0>{0}/{BODY_MAX}</0>"
 msgid "Message the shop"
 msgstr "Écrire à l’établissement"
 
-#: src/ads/guide.ts:192
+#: src/ads/guide.ts:195
 #: src/nav.ts:97
 #: src/pages/MessagesPage.tsx:111
 #: src/shell/MobileNav.tsx:44
@@ -5366,7 +5379,7 @@ msgstr "Mobile money"
 msgid "Mobile money number"
 msgstr "Numéro Mobile Money"
 
-#: src/pages/AppointmentsPage.tsx:1218
+#: src/pages/AppointmentsPage.tsx:1221
 msgid "Mobile money reference<0>The payment's own number at the mobile money operator — quote it if a customer says the money left their phone.</0>"
 msgstr "Référence Mobile Money<0>Le numéro du paiement chez l’opérateur Mobile Money — citez-le si un client dit que l’argent a quitté son téléphone.</0>"
 
@@ -5384,7 +5397,7 @@ msgstr "Du lundi au samedi"
 
 #: src/nav.ts:128
 #: src/pages/AnalyticsPage.tsx:376
-#: src/pages/AppointmentsPage.tsx:1164
+#: src/pages/AppointmentsPage.tsx:1167
 #: src/pages/OverviewPage.tsx:876
 msgid "Money"
 msgstr "Argent"
@@ -5415,7 +5428,7 @@ msgstr "D’autres succursales et photos se trouvent dans <0>Succursales et hora
 msgid "More for “{title}”"
 msgstr "Plus d’options pour « {title} »"
 
-#: src/pages/AppointmentsPage.tsx:812
+#: src/pages/AppointmentsPage.tsx:815
 msgid "More for this booking"
 msgstr "Plus d’options pour cette réservation"
 
@@ -5431,7 +5444,7 @@ msgstr "Plus d’options"
 msgid "More services"
 msgstr "Plus de services"
 
-#: src/ads/guide.ts:161
+#: src/ads/guide.ts:164
 msgid "More than one shop"
 msgstr "Plusieurs établissements"
 
@@ -5642,7 +5655,7 @@ msgstr "Aucune réservation le {0}."
 msgid "No bookings with the statuses shown — turn more on above."
 msgstr "Aucune réservation avec les statuts affichés — activez-en d’autres ci-dessus."
 
-#: src/pages/AppointmentsPage.tsx:936
+#: src/pages/AppointmentsPage.tsx:939
 msgid "No bookings yet"
 msgstr "Aucune réservation pour l’instant"
 
@@ -5667,7 +5680,7 @@ msgid "No category chosen"
 msgstr "Aucune catégorie choisie"
 
 #: src/checkin/CheckIn.tsx:359
-#: src/pages/AppointmentsPage.tsx:1274
+#: src/pages/AppointmentsPage.tsx:1280
 msgid "No code?"
 msgstr "Pas de code ?"
 
@@ -5751,12 +5764,12 @@ msgid "No title yet"
 msgstr "Pas encore de titre"
 
 #: src/lib/bookingLook.tsx:31
-#: src/pages/AppointmentsPage.tsx:1264
+#: src/pages/AppointmentsPage.tsx:1269
 #: src/pages/OverviewPage.tsx:79
 msgid "No-show"
 msgstr "Absent"
 
-#: src/pages/AppointmentsPage.tsx:753
+#: src/pages/AppointmentsPage.tsx:756
 msgid "No. {number}"
 msgstr "N° {number}"
 
@@ -5802,7 +5815,7 @@ msgid "Nobody in the chair"
 msgstr "Aucun client en ce moment"
 
 #: src/checkin/CheckIn.tsx:286
-#: src/pages/AppointmentsPage.tsx:922
+#: src/pages/AppointmentsPage.tsx:925
 msgid "Nobody is expected"
 msgstr "Personne n’est attendu"
 
@@ -5810,7 +5823,7 @@ msgstr "Personne n’est attendu"
 msgid "Nobody is expected yet — new bookings appear here as they come in."
 msgstr "Personne n’est encore attendu — les nouvelles réservations s’affichent ici dès qu’elles arrivent."
 
-#: src/pages/AppointmentsPage.tsx:927
+#: src/pages/AppointmentsPage.tsx:930
 msgid "Nobody is with you"
 msgstr "Personne n’est avec vous"
 
@@ -5834,7 +5847,11 @@ msgstr "Indisponible"
 msgid "Not available now — switch on to offer it"
 msgstr "Indisponible pour le moment — activez pour le proposer"
 
-#: src/lib/bookingLook.tsx:141
+#: src/ads/guide.ts:67
+msgid "Not before: a customer who arrives late, while their time is still running, can still be checked in and served."
+msgstr "Pas avant : un client qui arrive en retard, pendant que son créneau dure encore, peut toujours être accueilli et servi."
+
+#: src/lib/bookingLook.tsx:142
 msgid "Not checked in"
 msgstr "Arrivée non enregistrée"
 
@@ -5862,12 +5879,12 @@ msgstr "non proposé"
 msgid "Not on sale<0>{0}</0>"
 msgstr "Non proposés<0>{0}</0>"
 
-#: src/pages/AppointmentsPage.tsx:895
+#: src/pages/AppointmentsPage.tsx:898
 msgid "Not paid"
 msgstr "Non payé"
 
-#: src/lib/bookingLook.tsx:157
-#: src/pages/AppointmentsPage.tsx:901
+#: src/lib/bookingLook.tsx:165
+#: src/pages/AppointmentsPage.tsx:904
 msgid "Not paid in time"
 msgstr "Non payé à temps"
 
@@ -5895,7 +5912,7 @@ msgstr "Non enregistré — nouvelle tentative"
 msgid "Not sent. Try again."
 msgstr "Non envoyé. Réessayez."
 
-#: src/lib/bookingLook.tsx:225
+#: src/lib/bookingLook.tsx:233
 #: src/onboarding/usePostShop.tsx:40
 #: src/pages/AppointmentsPage.tsx:313
 #: src/pages/PayoutDetail.tsx:185
@@ -5934,7 +5951,7 @@ msgstr "Rien de changé — et fermé d’habitude"
 msgid "Nothing chosen yet."
 msgstr "Rien n’est encore choisi."
 
-#: src/pages/AppointmentsPage.tsx:935
+#: src/pages/AppointmentsPage.tsx:938
 msgid "Nothing finished yet"
 msgstr "Rien de terminé pour l’instant"
 
@@ -5963,7 +5980,7 @@ msgstr "Rien n’est encore réservable ici."
 msgid "Nothing left to collect"
 msgstr "Plus rien à encaisser"
 
-#: src/pages/AppointmentsPage.tsx:941
+#: src/pages/AppointmentsPage.tsx:944
 #: src/pages/MessagesPage.tsx:215
 #: src/pages/ReviewsPage.tsx:277
 msgid "Nothing matches"
@@ -6002,7 +6019,7 @@ msgstr "Rien à répondre"
 msgid "Nothing unread — all caught up."
 msgstr "Rien de non lu — vous êtes à jour."
 
-#: src/pages/AppointmentsPage.tsx:932
+#: src/pages/AppointmentsPage.tsx:935
 msgid "Nothing waiting for payment"
 msgstr "Aucun paiement en attente"
 
@@ -6120,6 +6137,14 @@ msgstr "En statut WhatsApp ou sur Instagram"
 msgid "Once customers book, this page shows how many came, the money they brought and how they rated you — week by week."
 msgstr "Dès que des clients réservent, cette page montre combien sont venus, l’argent apporté et leurs notes — semaine après semaine."
 
+#: src/ads/guide.ts:66
+msgid "Once the booking’s time is over, press “No-show” on it. The deposit is not refunded, the customer is told, and your share of it is paid to you."
+msgstr "Une fois le créneau terminé, appuyez sur « Absent ». L’acompte n’est pas remboursé, le client est prévenu, et votre part vous est versée."
+
+#: src/ads/guide.ts:64
+msgid "Once their time is over, mark them as a no-show: the deposit is not refunded."
+msgstr "Une fois son créneau terminé, marquez-le absent : l’acompte n’est pas remboursé."
+
 #: src/onboarding/Welcome.tsx:330
 msgid "Once your shop is posted"
 msgstr "Dès que votre établissement est publié"
@@ -6168,7 +6193,7 @@ msgstr "Un ou plusieurs"
 msgid "One summary at 7:00"
 msgstr "Un seul résumé à 7:00"
 
-#: src/ads/guide.ts:169
+#: src/ads/guide.ts:172
 msgid "One team, one payout number and one money page cover every branch."
 msgstr "Une seule équipe, un seul numéro de versement et une seule page d’argent pour toutes les succursales."
 
@@ -6181,15 +6206,15 @@ msgstr "Cours d’une heure"
 msgid "One-hour session"
 msgstr "Séance d’une heure"
 
-#: src/ads/guide.ts:52
+#: src/ads/guide.ts:54
 msgid "Only a booking that has not started can be cancelled — not one you have checked in."
 msgstr "Seule une réservation pas encore commencée peut être annulée — pas une dont vous avez enregistré l’arrivée."
 
-#: src/ads/guide.ts:150
+#: src/ads/guide.ts:153
 msgid "Only a customer whose booking is done can review it."
 msgstr "Seul un client dont la réservation est terminée peut laisser un avis."
 
-#: src/ads/guide.ts:148
+#: src/ads/guide.ts:151
 msgid "Only customers who came can review. Good ratings move you up."
 msgstr "Seuls les clients venus peuvent laisser un avis. De bonnes notes vous font monter."
 
@@ -6197,7 +6222,7 @@ msgstr "Seuls les clients venus peuvent laisser un avis. De bonnes notes vous fo
 msgid "Only here."
 msgstr "Seulement ici."
 
-#: src/ads/guide.ts:80
+#: src/ads/guide.ts:83
 msgid "Only paid bookings appear under “Expected”."
 msgstr "Seules les réservations payées apparaissent sous « Attendus »."
 
@@ -6322,7 +6347,7 @@ msgstr "Ouvrez-le pour voir les détails."
 msgid "Open late tonight"
 msgstr "Ouvert tard ce soir"
 
-#: src/ads/guide.ts:199
+#: src/ads/guide.ts:202
 msgid "Open messages"
 msgstr "Ouvrir les messages"
 
@@ -6478,39 +6503,39 @@ msgstr "Nos conseils avant de publier"
 msgid "Our customer app lets you book any shop on the platform — sign up there with your personal email. It is coming to the app stores."
 msgstr "Notre application client vous permet de réserver dans n’importe quel établissement de la plateforme — créez-y un compte avec votre e-mail personnel. Elle arrive bientôt dans les boutiques d’applications."
 
-#: src/pages/AppointmentsPage.tsx:1000
+#: src/pages/AppointmentsPage.tsx:1003
 msgid "Our support team cancelled it for the customer"
 msgstr "Notre équipe d’assistance l’a annulée pour le client"
 
-#: src/pages/AppointmentsPage.tsx:1001
+#: src/pages/AppointmentsPage.tsx:1004
 msgid "Our support team cancelled it on your side"
 msgstr "Notre équipe d’assistance l’a annulée de votre côté"
 
-#: src/pages/AppointmentsPage.tsx:999
+#: src/pages/AppointmentsPage.tsx:1002
 msgid "Our support team changed “did not come” to done"
 msgstr "Notre équipe d’assistance a changé « absent » en terminé"
 
-#: src/pages/AppointmentsPage.tsx:997
+#: src/pages/AppointmentsPage.tsx:1000
 msgid "Our support team checked them in"
 msgstr "Notre équipe d’assistance a enregistré son arrivée"
 
-#: src/pages/AppointmentsPage.tsx:1055
+#: src/pages/AppointmentsPage.tsx:1058
 msgid "Our support team helped"
 msgstr "Notre équipe d’assistance vous a aidé"
 
-#: src/pages/AppointmentsPage.tsx:998
+#: src/pages/AppointmentsPage.tsx:1001
 msgid "Our support team marked it done"
 msgstr "Notre équipe d’assistance l’a marquée terminée"
 
-#: src/pages/AppointmentsPage.tsx:1004
+#: src/pages/AppointmentsPage.tsx:1007
 msgid "Our support team read the private answers, to help"
 msgstr "Notre équipe d’assistance a lu les réponses privées, pour aider"
 
-#: src/pages/AppointmentsPage.tsx:1003
+#: src/pages/AppointmentsPage.tsx:1006
 msgid "Our support team read your conversation"
 msgstr "Notre équipe d’assistance a lu votre conversation"
 
-#: src/pages/AppointmentsPage.tsx:1002
+#: src/pages/AppointmentsPage.tsx:1005
 msgid "Our support team sent the customer a new code"
 msgstr "Notre équipe d’assistance a envoyé un nouveau code au client"
 
@@ -6603,7 +6628,7 @@ msgstr "Mettre l’établissement en pause ?"
 msgid "Paused"
 msgstr "En pause"
 
-#: src/ads/guide.ts:182
+#: src/ads/guide.ts:185
 msgid "Pausing the shop hides every branch and stops new bookings. Bookings you already have still happen."
 msgstr "Mettre l’établissement en pause masque toutes les succursales et arrête les nouvelles réservations. Celles que vous avez déjà ont toujours lieu."
 
@@ -6616,7 +6641,7 @@ msgstr "Mise en pause…"
 msgid "pay {0} now"
 msgstr "payez {0} maintenant"
 
-#: src/lib/bookingLook.tsx:161
+#: src/lib/bookingLook.tsx:169
 msgid "Paying on their phone"
 msgstr "Paiement en cours sur son téléphone"
 
@@ -6634,7 +6659,7 @@ msgstr "Versement {0}"
 msgid "Payment to you"
 msgstr "Votre versement"
 
-#: src/pages/AppointmentsPage.tsx:1213
+#: src/pages/AppointmentsPage.tsx:1216
 msgid "Payment trail"
 msgstr "Historique du paiement"
 
@@ -6642,7 +6667,7 @@ msgstr "Historique du paiement"
 msgid "Payments"
 msgstr "Versements"
 
-#: src/ads/guide.ts:138
+#: src/ads/guide.ts:141
 msgid "Payments need a confirmed number. Changing it pauses them until our team confirms the new one — nothing you earned is lost."
 msgstr "Les versements demandent un numéro confirmé. Le changer les met en pause jusqu’à ce que notre équipe confirme le nouveau — rien de ce que vous avez gagné n’est perdu."
 
@@ -6685,7 +6710,7 @@ msgid "Pending"
 msgstr "En attente"
 
 #: src/nav.ts:154
-#: src/pages/AppointmentsPage.tsx:859
+#: src/pages/AppointmentsPage.tsx:862
 #: src/pages/StaffPage.tsx:116
 #: src/shell/Topbar.tsx:125
 msgid "People"
@@ -6735,7 +6760,7 @@ msgstr "Les modifications des photos ne sont pas encore enregistrées — les cl
 msgid "photo studio"
 msgstr "studio photo"
 
-#: src/ads/guide.ts:124
+#: src/ads/guide.ts:127
 msgid "Photograph the place too: customers want to see where they are walking into."
 msgstr "Photographiez aussi les lieux : les clients veulent voir où ils vont entrer."
 
@@ -6770,7 +6795,7 @@ msgstr "Photos de {0}"
 msgid "Photos on every service"
 msgstr "Photos sur chaque service"
 
-#: src/ads/guide.ts:118
+#: src/ads/guide.ts:121
 msgid "Photos that get booked"
 msgstr "Des photos qui font réserver"
 
@@ -6803,12 +6828,12 @@ msgstr "Choisissez votre semaine habituelle. Les pauses déjeuner et les jours p
 msgid "Pitch for one hour"
 msgstr "Terrain pour une heure"
 
-#: src/ads/guide.ts:178
+#: src/ads/guide.ts:181
 msgid "Places, pausing and closing"
 msgstr "Lieux, pause et fermeture"
 
-#: src/pages/AppointmentsPage.tsx:868
-#: src/pages/AppointmentsPage.tsx:1180
+#: src/pages/AppointmentsPage.tsx:871
+#: src/pages/AppointmentsPage.tsx:1183
 #: src/pages/PayoutDetail.tsx:232
 msgid "Platform fee"
 msgstr "Frais de plateforme"
@@ -6893,10 +6918,6 @@ msgstr "cabinet"
 #: src/pages/PayoutDetail.tsx:162
 msgid "Preparing…"
 msgstr "Préparation…"
-
-#: src/ads/guide.ts:64
-msgid "Press “No-show” on the booking. The deposit is not refunded, the customer is told, and your share of it is paid to you."
-msgstr "Appuyez sur « Absent » dans la réservation. L’acompte n’est pas remboursé, le client est prévenu et votre part vous est versée."
 
 #. placeholder {0}: isMac ? '⌘' : 'Ctrl'
 #: src/ads/tips.ts:9
@@ -7085,7 +7106,7 @@ msgid "Ranked the way the customer app ranks them: bookings, weighted by rating.
 msgstr "Classés comme dans l’application client : les réservations, pondérées par la note. Comparez les vôtres dans <0>Services</0>."
 
 #. placeholder {0}: d.exchangeRateUsed
-#: src/pages/AppointmentsPage.tsx:1246
+#: src/pages/AppointmentsPage.tsx:1249
 msgid "rate used {0}"
 msgstr "taux appliqué {0}"
 
@@ -7161,7 +7182,7 @@ msgid "Ready-made for {kindName}"
 msgstr "Questions prêtes pour {kindName}"
 
 #: src/pages/AppointmentsPage.tsx:332
-#: src/pages/AppointmentsPage.tsx:871
+#: src/pages/AppointmentsPage.tsx:874
 msgid "Reason"
 msgstr "Motif"
 
@@ -7299,11 +7320,11 @@ msgstr "Répondre"
 msgid "Reply now"
 msgstr "Répondre maintenant"
 
-#: src/ads/guide.ts:154
+#: src/ads/guide.ts:157
 msgid "Reply to reviews"
 msgstr "Répondre aux avis"
 
-#: src/pages/AppointmentsPage.tsx:853
+#: src/pages/AppointmentsPage.tsx:856
 msgid "Reservation no."
 msgstr "N° de réservation"
 
@@ -7325,7 +7346,7 @@ msgstr "Avis"
 msgid "Reviews ({reviewTotal})"
 msgstr "Avis ({reviewTotal})"
 
-#: src/ads/guide.ts:147
+#: src/ads/guide.ts:150
 msgid "Reviews and ranking"
 msgstr "Avis et classement"
 
@@ -7446,7 +7467,7 @@ msgid "Saving draft…"
 msgstr "Enregistrement du brouillon…"
 
 #: src/components/LegalGate.tsx:113
-#: src/pages/AppointmentsPage.tsx:799
+#: src/pages/AppointmentsPage.tsx:802
 #: src/pages/ClosuresPage.tsx:626
 #: src/pages/HoursPage.tsx:510
 #: src/pages/HoursPage.tsx:584
@@ -7576,13 +7597,13 @@ msgstr "Voir les tendances"
 msgid "See what we said, fix it, and send your shop back."
 msgstr "Lisez nos remarques, corrigez, puis renvoyez votre établissement."
 
-#: src/ads/guide.ts:54
-#: src/ads/guide.ts:68
+#: src/ads/guide.ts:56
+#: src/ads/guide.ts:71
 #: src/ads/slides.ts:265
 msgid "See your bookings"
 msgstr "Voir vos réservations"
 
-#: src/ads/guide.ts:140
+#: src/ads/guide.ts:143
 #: src/ads/slides.ts:81
 #: src/ads/slides.ts:268
 msgid "See your money"
@@ -7597,7 +7618,7 @@ msgid "See your services"
 msgstr "Voir vos services"
 
 #: src/ads/slides.ts:269
-#: src/pages/AppointmentsPage.tsx:982
+#: src/pages/AppointmentsPage.tsx:985
 #: src/pages/MessagesPage.tsx:138
 msgid "See your shopfront"
 msgstr "Voir votre vitrine"
@@ -7705,8 +7726,8 @@ msgstr "Envoyé le {sentOn}. En attente de la confirmation de MTN MoMo — cela 
 #: src/checkin/CheckIn.tsx:435
 #: src/pages/AppointmentsPage.tsx:476
 #: src/pages/AppointmentsPage.tsx:476
-#: src/pages/AppointmentsPage.tsx:858
-#: src/pages/AppointmentsPage.tsx:1134
+#: src/pages/AppointmentsPage.tsx:861
+#: src/pages/AppointmentsPage.tsx:1137
 msgid "Service"
 msgstr "Service"
 
@@ -7767,7 +7788,7 @@ msgstr "Cirage de chaussures"
 
 #: src/onboarding/Welcome.tsx:511
 #: src/onboarding/Welcome.tsx:782
-#: src/pages/AppointmentsPage.tsx:901
+#: src/pages/AppointmentsPage.tsx:904
 msgid "Shop"
 msgstr "Établissement"
 
@@ -7859,11 +7880,11 @@ msgid "Show more ({0} of {payoutTotal})"
 msgstr "Afficher plus ({0} sur {payoutTotal})"
 
 #: src/pages/AnalyticsPage.tsx:174
-#: src/pages/AppointmentsPage.tsx:978
+#: src/pages/AppointmentsPage.tsx:981
 msgid "Show the App QR code"
 msgstr "Montrer le code QR"
 
-#: src/ads/guide.ts:123
+#: src/ads/guide.ts:126
 msgid "Show the real result, in daylight or good light, sharp and filling the frame — and no writing over the picture."
 msgstr "Montrez le vrai résultat, à la lumière du jour ou sous un bon éclairage, net et remplissant le cadre — et sans texte sur l’image."
 
@@ -8095,11 +8116,11 @@ msgstr "Les employés tiennent l’accueil dans les succursales que vous choisis
 msgid "Standard ticket"
 msgstr "Billet standard"
 
-#: src/pages/AppointmentsPage.tsx:855
+#: src/pages/AppointmentsPage.tsx:858
 msgid "Start"
 msgstr "Début"
 
-#: src/ads/guide.ts:111
+#: src/ads/guide.ts:114
 #: src/ads/slides.ts:217
 msgid "Start a discount"
 msgstr "Lancer une réduction"
@@ -8142,7 +8163,7 @@ msgstr "commencé par {0}"
 
 #: src/pages/AppointmentsPage.tsx:479
 #: src/pages/AppointmentsPage.tsx:479
-#: src/pages/AppointmentsPage.tsx:861
+#: src/pages/AppointmentsPage.tsx:864
 msgid "Status"
 msgstr "Statut"
 
@@ -8190,7 +8211,7 @@ msgid "Still to choose: one in {0}."
 msgstr "Reste à choisir : un type dans {0}."
 
 #. placeholder {0}: money(due, a.currency)
-#: src/lib/bookingLook.tsx:215
+#: src/lib/bookingLook.tsx:223
 msgid "Still to collect at the shop: <0>{0}</0>"
 msgstr "Reste à encaisser sur place : <0>{0}</0>"
 
@@ -8562,7 +8583,7 @@ msgstr "Les réponses"
 msgid "The app ranks shops by their bookings, weighted by their rating. Good reviews and a full page move you up."
 msgstr "L’application classe les établissements selon leurs réservations, pondérées par leur note. De bons avis et une page complète vous font monter."
 
-#: src/ads/guide.ts:152
+#: src/ads/guide.ts:155
 msgid "The app shows popular shops first: bookings, weighted by rating."
 msgstr "L’application montre d’abord les établissements populaires : réservations, pondérées par la note."
 
@@ -8574,7 +8595,7 @@ msgstr "Le solde et les versements sont visibles par le propriétaire, et par le
 msgid "The bell tells you when one arrives"
 msgstr "La cloche vous prévient à chaque arrivée"
 
-#: src/pages/AppointmentsPage.tsx:1113
+#: src/pages/AppointmentsPage.tsx:1116
 msgid "The booking's number — the customer sees the same one in their app and on their receipt. Click to copy."
 msgstr "Le numéro de la réservation — le client voit le même dans son application et sur son reçu. Cliquez pour copier."
 
@@ -8606,7 +8627,7 @@ msgstr "Le code s’affichera ici une fois l’application client disponible sur
 msgid "The code could not be sent. Check your connection."
 msgstr "Le code n’a pas pu être envoyé. Vérifiez votre connexion."
 
-#: src/ads/guide.ts:122
+#: src/ads/guide.ts:125
 msgid "The cover is the photo on the service’s card in the app. Choose it with “Make cover”."
 msgstr "La couverture est la photo sur la carte du service dans l’application. Choisissez-la avec « Mettre en couverture »."
 
@@ -8618,7 +8639,7 @@ msgstr "la photo de couverture n’a pas été changée"
 msgid "The customer app’s checkout: the time chosen and the deposit paid by mobile money."
 msgstr "Le paiement dans l’application client : le créneau choisi et l’acompte payé par mobile money."
 
-#: src/lib/bookingLook.tsx:220
+#: src/lib/bookingLook.tsx:228
 msgid "The customer can then rate the visit."
 msgstr "Le client pourra ensuite noter la visite."
 
@@ -8634,7 +8655,7 @@ msgstr "Lendemain du Jour de l’An"
 msgid "The day you picked"
 msgstr "Le jour choisi"
 
-#: src/lib/bookingLook.tsx:220
+#: src/lib/bookingLook.tsx:228
 msgid "The deposit becomes yours to be paid out, and the customer can rate the visit."
 msgstr "L’acompte vous revient et vous sera versé, et le client peut noter la visite."
 
@@ -8646,7 +8667,7 @@ msgstr "L’acompte n’est pas remboursé, et votre part vous est versée."
 msgid "The deposit is paid. They read out their 6-digit code when they arrive — the sixth digit checks them in."
 msgstr "L’acompte est payé. À son arrivée, le client lit son code à 6 chiffres — le sixième chiffre enregistre son arrivée."
 
-#: src/pages/AppointmentsPage.tsx:969
+#: src/pages/AppointmentsPage.tsx:972
 msgid "The deposit paid, and what is left to pay you"
 msgstr "L’acompte payé, et ce qu’il reste à vous payer"
 
@@ -8655,7 +8676,7 @@ msgstr "L’acompte payé, et ce qu’il reste à vous payer"
 msgid "The final price is agreed at the shop"
 msgstr "Le prix final est convenu sur place"
 
-#: src/ads/guide.ts:119
+#: src/ads/guide.ts:122
 msgid "The first photo is the cover customers scroll past. Make it your best."
 msgstr "La première photo est la couverture que les clients voient en faisant défiler. Choisissez votre meilleure."
 
@@ -8777,7 +8798,7 @@ msgstr "La question que voient les clients"
 msgid "The real page from the app, with what you have typed. Scroll it, and try the tabs."
 msgstr "La vraie page de l’application, avec ce que vous avez saisi. Faites-la défiler, et essayez les onglets."
 
-#: src/pages/AppointmentsPage.tsx:1199
+#: src/pages/AppointmentsPage.tsx:1202
 msgid "The rest is paid to you directly, not through us."
 msgstr "Le reste vous est payé directement, sans passer par nous."
 
@@ -8826,7 +8847,7 @@ msgstr "Tout l’établissement"
 msgid "The whole week is saved together"
 msgstr "Toute la semaine est enregistrée d’un coup"
 
-#: src/pages/AppointmentsPage.tsx:1185
+#: src/pages/AppointmentsPage.tsx:1188
 msgid "Their choices"
 msgstr "Leurs choix"
 
@@ -8939,7 +8960,7 @@ msgstr "Ceci demande un code PIN ou un mot de passe. Ne le demandez jamais : le
 msgid "This asks for an ID, passport or insurance number. Please don’t ask it: the seller rules forbid it. If you must see an ID, look at it at the counter."
 msgstr "Ceci demande un numéro d’identité, de passeport ou d’assurance. Ne le demandez pas : les règles des commerçants l’interdisent. S’il faut voir une pièce d’identité, regardez-la au comptoir."
 
-#: src/pages/AppointmentsPage.tsx:1091
+#: src/pages/AppointmentsPage.tsx:1094
 msgid "This booking could not be opened"
 msgstr "Impossible d’ouvrir cette réservation"
 
@@ -9096,7 +9117,7 @@ msgstr "À venir aujourd’hui"
 msgid "To pay at the shop"
 msgstr "À payer sur place"
 
-#: src/pages/AppointmentsPage.tsx:1205
+#: src/pages/AppointmentsPage.tsx:1208
 msgid "To pay you at the shop"
 msgstr "À vous payer sur place"
 
@@ -9138,7 +9159,7 @@ msgstr "Aujourd’hui {0} – {1}"
 msgid "Today’s schedule"
 msgstr "Programme du jour"
 
-#: src/lib/bookingLook.tsx:144
+#: src/lib/bookingLook.tsx:145
 #: src/lib/time.ts:37
 msgid "Tomorrow"
 msgstr "Demain"
@@ -9203,7 +9224,7 @@ msgstr "Essayez comme un client"
 msgid "Try other words, or another filter."
 msgstr "Essayez d’autres mots, ou un autre filtre."
 
-#: src/pages/AppointmentsPage.tsx:942
+#: src/pages/AppointmentsPage.tsx:945
 msgid "Try part of the email, the service, the branch — or the reservation number, like 3F2A-1C9B."
 msgstr "Essayez une partie de l’e-mail, le service, la succursale — ou le numéro de réservation, comme 3F2A-1C9B."
 
@@ -9375,7 +9396,7 @@ msgstr "jusqu’à +{mostPrice}"
 msgid "Up to 11 per service · the first one is the cover"
 msgstr "Jusqu’à 11 par service · la première est la couverture"
 
-#: src/ads/guide.ts:121
+#: src/ads/guide.ts:124
 msgid "Up to 11 photos per service and 30 per branch — JPEG, PNG or WebP, up to 15 MB each."
 msgstr "Jusqu’à 11 photos par service et 30 par succursale — JPEG, PNG ou WebP, 15 Mo maximum chacune."
 
@@ -9482,7 +9503,7 @@ msgstr "clinique vétérinaire"
 msgid "view"
 msgstr "vue"
 
-#: src/pages/AppointmentsPage.tsx:809
+#: src/pages/AppointmentsPage.tsx:812
 msgid "View "
 msgstr "Voir "
 
@@ -9539,7 +9560,7 @@ msgstr "par rapport aux 7 jours précédents"
 msgid "W{0}"
 msgstr "S{0}"
 
-#: src/pages/AppointmentsPage.tsx:805
+#: src/pages/AppointmentsPage.tsx:808
 msgid "Waiting"
 msgstr "En attente"
 
@@ -9555,7 +9576,7 @@ msgstr "En attente de vérification"
 msgid "Waiting for support"
 msgstr "En attente de l’assistance"
 
-#: src/pages/AppointmentsPage.tsx:1056
+#: src/pages/AppointmentsPage.tsx:1059
 msgid "Waiting for them to arrive"
 msgstr "En attente de son arrivée"
 
@@ -9766,7 +9787,7 @@ msgstr "Que demandez-vous aux clients ?"
 msgid "What each role can do"
 msgstr "Ce que chaque rôle peut faire"
 
-#: src/pages/AppointmentsPage.tsx:1150
+#: src/pages/AppointmentsPage.tsx:1153
 msgid "What happened"
 msgstr "Ce qui s’est passé"
 
@@ -9916,7 +9937,7 @@ msgstr "Quand un client pose une question, elle arrive ici."
 msgid "When a customer books, they pay a deposit from their phone — the percentage you set on each service."
 msgstr "Quand un client réserve, il paie un acompte depuis son téléphone — le pourcentage que vous fixez pour chaque service."
 
-#: src/ads/guide.ts:61
+#: src/ads/guide.ts:63
 msgid "When a customer does not come"
 msgstr "Quand un client ne vient pas"
 
@@ -9952,7 +9973,7 @@ msgstr "Quand la poser"
 msgid "When to ask this question"
 msgstr "Quand poser cette question"
 
-#: src/pages/AppointmentsPage.tsx:928
+#: src/pages/AppointmentsPage.tsx:931
 msgid "When you check a customer in, they wait here until you mark them done."
 msgstr "Quand vous enregistrez l’arrivée d’un client, il attend ici jusqu’à ce que vous le marquiez terminé."
 
@@ -10087,7 +10108,7 @@ msgstr "Qui vient aujourd’hui, ce que vous avez gagné, et ce qui vous attend.
 msgid "Who is coming, and checking them in"
 msgstr "Qui vient, et l’enregistrement des arrivées"
 
-#: src/pages/AppointmentsPage.tsx:967
+#: src/pages/AppointmentsPage.tsx:970
 msgid "Who is coming, and when — as a list or on a calendar"
 msgstr "Qui vient, et quand — en liste ou sur un calendrier"
 
@@ -10115,12 +10136,12 @@ msgstr "Pourquoi <0>facultatif — les clients ne le voient pas</0>"
 msgid "Will you open? Close the day or set its hours."
 msgstr "Serez-vous ouvert ? Fermez la journée ou fixez ses horaires."
 
-#: src/lib/bookingLook.tsx:150
+#: src/lib/bookingLook.tsx:151
 msgid "With you"
 msgstr "Avec vous"
 
 #: src/pages/AppointmentsPage.tsx:624
-#: src/pages/AppointmentsPage.tsx:1057
+#: src/pages/AppointmentsPage.tsx:1060
 #: src/pages/OverviewPage.tsx:322
 msgid "With you now"
 msgstr "Avec vous en ce moment"
@@ -10179,12 +10200,12 @@ msgstr "Écrivez aux clients qui suivent votre établissement"
 msgid "Write to your followers"
 msgstr "Écrire à vos abonnés"
 
-#: src/pages/AppointmentsPage.tsx:896
+#: src/pages/AppointmentsPage.tsx:899
 #: src/ui/Dialog.tsx:144
 msgid "Yes"
 msgstr "Oui"
 
-#: src/lib/bookingLook.tsx:224
+#: src/lib/bookingLook.tsx:232
 msgid "Yes, mark done"
 msgstr "Oui, marquer terminé"
 
@@ -10250,7 +10271,7 @@ msgstr "Vous pouvez le désactiver quand vous voulez."
 msgid "You get"
 msgstr "Vous recevez"
 
-#: src/ads/guide.ts:151
+#: src/ads/guide.ts:154
 msgid "You get one reply per review, and can edit it for 7 days. Both are public."
 msgstr "Vous avez droit à une réponse par avis, modifiable pendant 7 jours. Les deux sont publics."
 
@@ -10276,7 +10297,7 @@ msgstr "Vous ne nous avez encore rien demandé"
 msgid "You have replied to {0} of {1}. Every reader sees your reply."
 msgstr "Vous avez répondu à {0} sur {1}. Chaque lecteur voit votre réponse."
 
-#: src/ads/guide.ts:51
+#: src/ads/guide.ts:53
 msgid "You must give a reason when you cancel. The customer is told it."
 msgstr "Vous devez donner une raison quand vous annulez. Le client en est informé."
 
@@ -10386,7 +10407,7 @@ msgstr "Votre journée en un coup d’œil"
 msgid "Your description shows here. Say what you offer and why you are worth the trip."
 msgstr "Votre description s’affiche ici. Dites ce que vous proposez et pourquoi vous valez le déplacement."
 
-#: src/pages/AppointmentsPage.tsx:958
+#: src/pages/AppointmentsPage.tsx:961
 msgid "Your first booking will appear here"
 msgstr "Votre première réservation apparaîtra ici"
 
@@ -10515,12 +10536,12 @@ msgstr "Votre réponse apparaît sous l’avis pour tous ceux qui le lisent — 
 msgid "Your reply, under each review"
 msgstr "Votre réponse, sous chaque avis"
 
-#: src/ads/guide.ts:167
+#: src/ads/guide.ts:170
 msgid "Your services are shared. On Services, choose which branches offer each one, at each branch’s own price."
 msgstr "Vos services sont partagés. Dans Services, choisissez quelles succursales proposent chacun, au prix propre à chaque succursale."
 
-#: src/pages/AppointmentsPage.tsx:867
-#: src/pages/AppointmentsPage.tsx:1176
+#: src/pages/AppointmentsPage.tsx:870
+#: src/pages/AppointmentsPage.tsx:1179
 msgid "Your share"
 msgstr "Votre part"
 
@@ -10536,7 +10557,7 @@ msgstr "Votre part est gardée jusqu’à l’ajout d’un numéro"
 msgid "Your share is sent to this number"
 msgstr "Votre part est envoyée à ce numéro"
 
-#: src/ads/guide.ts:136
+#: src/ads/guide.ts:139
 msgid "Your share of a deposit becomes yours when the booking is done, marked a no-show, or cancelled by the customer."
 msgstr "Votre part d’un acompte vous revient quand la réservation est terminée, marquée « absent », ou annulée par le client."
 
@@ -10564,7 +10585,7 @@ msgstr "Votre part de chaque acompte est gardée jusqu’à ce qu’il y ait un 
 msgid "Your share of every deposit, sent to your mobile money."
 msgstr "Votre part de chaque acompte, envoyée sur votre mobile money."
 
-#: src/ads/guide.ts:134
+#: src/ads/guide.ts:137
 msgid "Your share waits a short while after each visit, then goes to your mobile money."
 msgstr "Votre part attend un peu après chaque visite, puis part sur votre mobile money."
 

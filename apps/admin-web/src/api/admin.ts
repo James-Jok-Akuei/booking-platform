@@ -800,3 +800,18 @@ export type NotificationSettings = components['schemas']['NotificationSettingsDt
 export const getNotificationSettings = () => api<NotificationSettings>('/notifications/settings');
 export const updateNotificationSettings = (change: components['schemas']['UpdateNotificationSettingsDto']) =>
   api<NotificationSettings>('/notifications/settings', { method: 'PATCH', body: change });
+
+// ---------------------------------------------------------------------------
+// Refunds (§313): deposits going back to customers
+// ---------------------------------------------------------------------------
+
+export type AdminRefund = components['schemas']['AdminRefundDto'];
+export type AdminRefundPage = components['schemas']['AdminRefundPageDto'];
+
+export const listRefunds = (params: { status?: AdminRefund['status']; limit?: number; offset?: number } = {}) =>
+  api<AdminRefundPage>('/admin/refunds', { query: params });
+
+export const retryRefund = (id: string) => api<{ id: string; status: string }>(`/admin/refunds/${id}/retry`, { method: 'POST' });
+
+export const markRefundSent = (id: string, body: { reference: string; phoneNumber?: string }) =>
+  api<{ id: string; status: string }>(`/admin/refunds/${id}/mark-sent`, { method: 'POST', body });

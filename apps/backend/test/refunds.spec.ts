@@ -81,7 +81,8 @@ describe('Refunds and adjustments (§36)', () => {
   const AS_ADMIN = () => asUser(admin.userId, 'ADMIN');
 
   /** A booked appointment whose deposit has been confirmed. */
-  const paidAppointment = async () => {
+  /** Paid, and — unless said — over: a day ago. A customer cancels only before the start (§313). */
+  const paidAppointment = async (startsIn = -DAY - 3_600_000) => {
     const a = await createAppointment(prisma, {
       business,
       customerId: customer.userId,
@@ -93,8 +94,8 @@ describe('Refunds and adjustments (§36)', () => {
       data: {
         paymentProviderReferenceId: reference,
         paymentInitiatedAt: new Date(),
-        startTime: new Date(Date.now() - DAY - 3_600_000),
-        endTime: new Date(Date.now() - DAY),
+        startTime: new Date(Date.now() + startsIn),
+        endTime: new Date(Date.now() + startsIn + 3_600_000),
       },
     });
     await appointments.applyPaymentResult(a.id, reference, 'SUCCESSFUL');
@@ -218,17 +219,17 @@ describe('Refunds and adjustments (§36)', () => {
       expect(summary.payoutsCreated).toBe(0);
     });
 
-    it('requires the gateway charge, and refuses to guess it', async () => {
+    it('takes the shop’s own cancellation without a charge, and owes the refund (§313)', async () => {
+      // The shop's app never sent one, so every paid cancellation from it was
+      // refused. The operator's charge is added later, once the statement shows it.
       const a = await paidAppointment();
 
-      await expect(
-        appointments.cancel(business.userId, a.id, { reason: 'Closed.' }),
-      ).rejects.toThrow(/gatewayChargeMinor is required/);
+      await appointments.cancel(business.userId, a.id, { reason: 'Closed.' });
 
-      // Nothing was written: the appointment is still BOOKED and unrefunded.
-      const after = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id } });
-      expect(after.status).toBe(AppointmentStatus.BOOKED);
-      expect(await entriesFor(a.id)).toHaveLength(2);
+      const after = await prisma.appointment.findUniqueOrThrow({ where: { id: a.id }, include: { refund: true } });
+      expect(after.status).toBe(AppointmentStatus.CANCELLED);
+      expect(after.refund).toMatchObject({ reason: 'SHOP_CANCELLED', status: 'PENDING', amountMinor: a.providerAmountMinor ?? a.depositAmountMinor });
+      expect(await netFor(a.id)).toBe(0);
     });
 
     it('does not require it when the deposit was never paid', async () => {
@@ -263,8 +264,8 @@ describe('Refunds and adjustments (§36)', () => {
   });
 
   describe('a customer cancellation and a no-show append nothing', () => {
-    it('customer cancellation: the existing entries are all there is', async () => {
-      const a = await paidAppointment();
+    it('customer cancellation less than 24 hours before: the existing entries are all there is', async () => {
+      const a = await paidAppointment(2 * 3_600_000);
 
       await appointments.cancel(customer.userId, a.id);
 
@@ -293,7 +294,7 @@ describe('Refunds and adjustments (§36)', () => {
     });
 
     it('neither produces a gateway debit', async () => {
-      const a = await paidAppointment();
+      const a = await paidAppointment(2 * 3_600_000);
       await appointments.cancel(customer.userId, a.id);
 
       const b = await paidAppointment();
@@ -306,6 +307,47 @@ describe('Refunds and adjustments (§36)', () => {
     });
   });
 
+  describe('a customer who cancels 24 hours ahead gets it all back (§313)', () => {
+    it('reverses the deposit and the fee, puts no charge on the shop, and owes the refund', async () => {
+      const a = await paidAppointment(3 * DAY);
+
+      await appointments.cancel(customer.userId, a.id);
+
+      const entries = await entriesFor(a.id);
+      expect(entries.map((e) => e.type).sort()).toEqual(
+        [
+          LedgerEntryType.DEPOSIT_RECEIVED,
+          LedgerEntryType.DEPOSIT_REFUND,
+          LedgerEntryType.PLATFORM_FEE,
+          LedgerEntryType.PLATFORM_FEE_REVERSAL,
+        ].sort(),
+      );
+      expect(await netFor(a.id)).toBe(0);
+      const refund = await prisma.refund.findUniqueOrThrow({ where: { appointmentId: a.id } });
+      expect(refund).toMatchObject({ reason: 'CANCELLED_IN_TIME', status: 'PENDING' });
+    });
+
+    it('23 hours ahead is too late: nothing comes back, and the shop is paid', async () => {
+      const a = await paidAppointment(23 * 3_600_000);
+      await appointments.cancel(customer.userId, a.id);
+      expect(await entriesFor(a.id)).toHaveLength(2);
+      expect(await prisma.refund.count({ where: { appointmentId: a.id } })).toBe(0);
+    });
+
+    it('once the time has started, the customer cannot cancel', async () => {
+      const a = await paidAppointment(-10 * 60_000);
+      await expect(appointments.cancel(customer.userId, a.id)).rejects.toThrow(/time has started/);
+    });
+
+    it('putting an in-time cancellation on the shop does not refund it twice', async () => {
+      const a = await paidAppointment(3 * DAY);
+      await appointments.cancel(customer.userId, a.id);
+      await appointments.reclassifyAsBusinessCancellation(AS_ADMIN(), a.id, { reason: 'It was really the shop.' });
+      expect(await prisma.ledgerEntry.count({ where: { appointmentId: a.id, type: LedgerEntryType.DEPOSIT_REFUND } })).toBe(1);
+      expect(await prisma.refund.count({ where: { appointmentId: a.id } })).toBe(1);
+    });
+  });
+
   describe('the admin dispute path runs the same refund, not a second one', () => {
     it('produces identical ledger entries to a self-service cancellation', async () => {
       const selfService = await paidAppointment();
@@ -314,7 +356,7 @@ describe('Refunds and adjustments (§36)', () => {
         gatewayChargeMinor: 32_500,
       });
 
-      const disputed = await paidAppointment();
+      const disputed = await paidAppointment(2 * 3_600_000);
       await appointments.cancel(customer.userId, disputed.id);
       const ticket = await prisma.ticket.create({
         data: {
@@ -341,7 +383,7 @@ describe('Refunds and adjustments (§36)', () => {
     });
 
     it('records BUSINESS as responsible and the ADMIN as the actor', async () => {
-      const a = await paidAppointment();
+      const a = await paidAppointment(2 * 3_600_000);
       await appointments.cancel(customer.userId, a.id);
 
       await appointments.reclassifyAsBusinessCancellation(AS_ADMIN(), a.id, {

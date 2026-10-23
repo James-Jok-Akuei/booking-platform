@@ -1,6 +1,6 @@
 TERMS OF USE
 
-Last updated: 12 October 2026
+Last updated: 23 October 2026
 
 These Terms of Use are the agreement between you and BwanguReservations ("we", "us", "the Platform") when you use the BwanguReservations mobile app and related services. Please read them before you book. By creating an account or making a booking you agree to them.
 
@@ -50,7 +50,7 @@ Each business on the Platform is reviewed before it is listed, and its name and 
 
 4.4 The arrival code. Give your code to the business when you arrive. It is how the business confirms that you came. Do not share it with anyone before your visit.
 
-4.5 Being on time. Please arrive on time. If you are late, the business may shorten your service or treat the booking as missed.
+4.5 Being on time. Please arrive on time. If you are late, the business may shorten your service; if you have not arrived by the end of your booking’s time, it may mark the booking as missed.
 
 4.6 Bookings for several people or items. Where you book for more than one, the price is the price for one multiplied by how many. The app shows how long the whole booking takes.
 
@@ -76,7 +76,7 @@ Each business on the Platform is reviewed before it is listed, and its name and 
 
 6.1 If the business cancels. You get your whole deposit back.
 
-6.2 If you cancel, or do not come. The deposit is not refunded. The deposit is what holds the time for you and stops the business giving it to someone else.
+6.2 If you cancel, or do not come. If you cancel at least 24 hours before your booking’s time, you get your whole deposit back. If you cancel later than that, or do not come, the deposit is not refunded: it is what holds the time for you and stops the business giving it to someone else. You can cancel until your booking’s time starts; after that, a booking you do not come to is marked as missed.
 
 6.3 Before you pay. If you cancel before paying the deposit, nothing is charged.
 

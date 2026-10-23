@@ -16,6 +16,10 @@ export interface AppointmentContext {
   reason?: string;
   /** Whether the deposit was ever paid; left out where it does not matter. */
   depositPaid?: boolean;
+  /** Whether the deposit goes back to the customer (§313). */
+  refunded?: boolean;
+  /** A missed booking marked by the platform, a day after its end, not by the shop (§313). */
+  automatic?: boolean;
   /**
    * Sent with an approval (§303): the shop as it is, the items chosen, and the
    * reviewer's own note — written out in each reader's language (§308).
@@ -227,8 +231,10 @@ export function renderNotification(
             `\n\n${details([booking, reasonLine(why)])}\n\n` +
             (by === 'business'
               ? say(l, 'Your whole deposit comes back to you, the platform fee included.')
-              : by === 'customer'
-                ? say(l, 'As agreed when you booked, a deposit is not refunded when you cancel.')
+              : by === 'customer' && ctx.refunded
+                ? say(l, 'You cancelled more than 24 hours before, so your whole deposit comes back to the number that paid it.')
+                : by === 'customer'
+                ? say(l, 'As agreed when you booked, a deposit is not refunded when you cancel less than 24 hours before.')
                 : by === 'unpaid' || by === 'nothing-paid'
                   ? say(l, 'No deposit was taken. You can book again at any time.')
                   : say(l, 'Anything you are owed is shown on the booking in the app.')),
@@ -249,7 +255,9 @@ export function renderNotification(
                     ? say(l, 'This booking was let go, because the deposit was not paid in time.')
                     : say(l, 'This booking has been cancelled.')) +
           ` ${say(l, 'The time is free for someone else.')}\n\n${details([booking, reasonLine(why)])}` +
-          (by === 'customer'
+          (by === 'customer' && ctx.refunded
+            ? `\n\n${say(l, 'They cancelled more than 24 hours before, so their deposit goes back to them and nothing is paid to you for this booking.')}`
+            : by === 'customer'
             ? `\n\n${say(l, 'Your share of the deposit is still paid to you.')}`
             : by === 'business'
               ? `\n\n${say(l, 'The customer gets their whole deposit back, and the mobile money charge for sending it back is yours.')}`
@@ -262,7 +270,9 @@ export function renderNotification(
         return {
           subject: say(l, 'Marked as missed: {serviceName}', { serviceName }),
           body:
-            `${say(l, '{businessName} marked your booking as missed — you were expected at {clock}.', { businessName, clock })}\n\n` +
+            (ctx.automatic
+              ? `${say(l, 'Nobody checked you in for your booking at {businessName} at {clock}, so it is now marked as missed.', { businessName, clock })}\n\n`
+              : `${say(l, '{businessName} marked your booking as missed — you were expected at {clock}.', { businessName, clock })}\n\n`) +
             `${booking}\n\n` +
             say(
               l,

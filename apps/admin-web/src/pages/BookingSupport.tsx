@@ -304,15 +304,30 @@ export function BookingActPanel({
           consequences={[
             {
               mark: face,
-              text: a.depositPaid ? (
+              // The same rule as their own cancelling (§313): 24 hours ahead, it all goes back.
+              text: !a.depositPaid ? (
+                <>No deposit was paid, so no money moves.</>
+              ) : new Date(a.startTime).getTime() - Date.now() >= 24 * 3_600_000 ? (
                 <>
-                  <strong>{customer}</strong>’s deposit, <b>{deposit}</b>, is not given back — as when they cancel themselves.
+                  <strong>{customer}</strong>’s deposit, <b>{deposit}</b>, goes back to them — it is more than 24 hours before, as when they cancel
+                  themselves.
                 </>
               ) : (
-                <>No deposit was paid, so no money moves.</>
+                <>
+                  <strong>{customer}</strong>’s deposit, <b>{deposit}</b>, is not given back — it is less than 24 hours before, as when they cancel
+                  themselves.
+                </>
               ),
             },
-            { mark: shopFace, text: <><strong>{shop}</strong> keeps its share, and the time opens for others to book.</> },
+            {
+              mark: shopFace,
+              text:
+                a.depositPaid && new Date(a.startTime).getTime() - Date.now() >= 24 * 3_600_000 ? (
+                  <><strong>{shop}</strong> is paid nothing for it, and the time opens for others to book.</>
+                ) : (
+                  <><strong>{shop}</strong> keeps its share, and the time opens for others to book.</>
+                ),
+            },
             { mark: 'mail', text: 'Both are told it was cancelled by our support team, for the customer.' },
           ]}
           placeholder="The customer called: they are ill, and their app would not open."
@@ -380,7 +395,10 @@ export function BookingActPanel({
                   <b>{money.code || a.currency}</b>
                   <input value={charge} onChange={(event) => setCharge(event.target.value)} inputMode="decimal" aria-label="The operator's charge" />
                 </div>
-                <small>From the operator’s statement. Write 0 if there was none — a guess here is carried by the shop.</small>
+                <small>
+                  Usually not known yet: the refund goes out by itself after this (§313). Leave 0, and add the operator’s charge later as an
+                  adjustment if the statement shows one — a guess here is carried by the shop.
+                </small>
               </label>
             ) : undefined
           }

@@ -2389,6 +2389,54 @@ export interface paths {
         patch: operations["AdminLedgerController_execute"];
         trace?: never;
     };
+    "/admin/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminRefundsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/refunds/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminRefundsController_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/refunds/{id}/mark-sent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AdminRefundsController_markSent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/business/today": {
         parameters: {
             query?: never;
@@ -5751,6 +5799,16 @@ export interface components {
             kind: "CHECK_IN" | "COMPLETE" | "FIX_NO_SHOW" | "CANCEL_FOR_CUSTOMER" | "CANCEL_FOR_SHOP" | "RESEND_CODE" | "CHECK_PAYMENT" | "READ_MESSAGES" | "PAUSE_SHOP" | "RESUME_SHOP" | "REVOKE_INVITATION" | "RESEND_INVITATION" | "REMOVE_MEMBER" | "TRANSFER_OWNERSHIP" | "SIGN_OUT_EVERYWHERE" | "STOP_MARKETING" | "CLOSE_ACCOUNT" | "LINK_TICKET" | "READ_HEALTH_CHOICES";
             createdAt: string;
         };
+        AppointmentRefundDto: {
+            /** @enum {string} */
+            status: "PENDING" | "SENDING" | "SENT" | "FAILED";
+            /** @enum {string} */
+            reason: "SHOP_CANCELLED" | "CANCELLED_IN_TIME";
+            amountMinor: number;
+            currency: string;
+            sentAt: string | null;
+            doneAt: string | null;
+        };
         AppointmentDto: {
             /**
              * @description What the customer picked (§300), in the order the shop asks: question,
@@ -5833,6 +5891,8 @@ export interface components {
             customer: components["schemas"]["AppointmentCustomerDto"];
             /** @description What our support team did on this booking, and when (§297). */
             supportActions: components["schemas"]["AppointmentSupportStepDto"][];
+            /** @description The deposit going back, when it does (§313). */
+            refund: components["schemas"]["AppointmentRefundDto"] | null;
         };
         UpdateBookingChoicesDto: {
             /**
@@ -5933,6 +5993,8 @@ export interface components {
             customer: components["schemas"]["AppointmentCustomerDto"];
             /** @description What our support team did on this booking, and when (§297). */
             supportActions: components["schemas"]["AppointmentSupportStepDto"][];
+            /** @description The deposit going back, when it does (§313). */
+            refund: components["schemas"]["AppointmentRefundDto"] | null;
             /**
              * @description Shown while it can still be used, null once it cannot (§54.2). A spent code
              *     is not a secret, but it is not information either — rendering it beside a
@@ -6586,6 +6648,61 @@ export interface components {
         ExecutedAdjustmentDto: {
             adjustment: components["schemas"]["SettledAdjustmentDto"];
             entry: components["schemas"]["LedgerEntryDto"];
+        };
+        RefundCountsDto: {
+            PENDING: number;
+            SENDING: number;
+            SENT: number;
+            FAILED: number;
+        };
+        RefundAppointmentDto: {
+            id: string;
+            startTime: string;
+            cancelledAt: string | null;
+            serviceName: string;
+            customerEmail: string;
+            branchName: string;
+            businessId: string;
+            businessName: string;
+        };
+        AdminRefundDto: {
+            id: string;
+            /** @enum {string} */
+            reason: "SHOP_CANCELLED" | "CANCELLED_IN_TIME";
+            /** @enum {string} */
+            status: "PENDING" | "SENDING" | "SENT" | "FAILED";
+            amountMinor: number;
+            currency: string;
+            /** @description The number it goes to — null on bookings older than §313: find it, send by hand. */
+            phoneNumber: string | null;
+            /** @enum {string|null} */
+            provider: "MTN_MOMO" | "AIRTEL_MONEY" | null;
+            attempts: number;
+            reference: string | null;
+            failureReason: string | null;
+            sentAt: string | null;
+            doneAt: string | null;
+            createdAt: string;
+            appointment: components["schemas"]["RefundAppointmentDto"];
+        };
+        AdminRefundPageDto: {
+            total: number;
+            limit: number;
+            offset: number;
+            counts: components["schemas"]["RefundCountsDto"];
+            refunds: components["schemas"]["AdminRefundDto"][];
+        };
+        RefundOutcomeDto: {
+            id: string;
+            /** @enum {string} */
+            status: "PENDING" | "SENDING" | "SENT" | "FAILED";
+            failureReason?: string | null;
+        };
+        MarkRefundSentDto: {
+            /** @description The operator's reference for the transfer our team made — what reconciles it against the statement. */
+            reference: string;
+            /** @description The number it went to, when it was not the one on record (an older booking, or one the customer gave). */
+            phoneNumber?: string;
         };
         TodayBranchDto: {
             id: string;
@@ -16929,6 +17046,183 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExecutedAdjustmentDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminRefundsController_list: {
+        parameters: {
+            query?: {
+                status?: "PENDING" | "SENDING" | "SENT" | "FAILED";
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminRefundPageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminRefundsController_retry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundOutcomeDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminRefundsController_markSent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkRefundSentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundOutcomeDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

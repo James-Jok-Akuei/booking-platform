@@ -1,6 +1,6 @@
 CONDITIONS D’UTILISATION
 
-Dernière mise à jour : 12 octobre 2026
+Dernière mise à jour : 23 octobre 2026
 
 Les présentes Conditions d’utilisation constituent l’accord entre vous et BwanguReservations (« nous », « la Plateforme ») lorsque vous utilisez l’application mobile BwanguReservations et les services associés. Veuillez les lire avant de réserver. En créant un compte ou en effectuant une réservation, vous les acceptez.
 
@@ -50,7 +50,7 @@ Chaque établissement est vérifié avant d’apparaître sur la Plateforme, et 
 
 4.4 Le code d’arrivée. Donnez votre code à l’établissement à votre arrivée. C’est ainsi que l’établissement confirme votre venue. Ne le communiquez à personne avant votre visite.
 
-4.5 Ponctualité. Veuillez arriver à l’heure. Si vous êtes en retard, l’établissement peut écourter votre service ou considérer la réservation comme manquée.
+4.5 Ponctualité. Veuillez arriver à l’heure. Si vous êtes en retard, l’établissement peut écourter votre service ; si vous n’êtes pas arrivé à la fin du créneau de votre réservation, il peut la marquer comme manquée.
 
 4.6 Réservations pour plusieurs personnes ou articles. Lorsque vous réservez pour plus d’une personne ou d’un article, le prix est le prix pour une unité multiplié par le nombre choisi. L’application indique la durée de l’ensemble de la réservation.
 
@@ -76,7 +76,7 @@ Chaque établissement est vérifié avant d’apparaître sur la Plateforme, et 
 
 6.1 Si l’établissement annule. Vous récupérez la totalité de votre acompte.
 
-6.2 Si vous annulez, ou si vous ne venez pas. L’acompte n’est pas remboursé. C’est l’acompte qui retient le créneau pour vous et qui empêche l’établissement de le donner à quelqu’un d’autre.
+6.2 Si vous annulez, ou si vous ne venez pas. Si vous annulez au moins 24 heures avant l’heure de votre réservation, vous récupérez la totalité de votre acompte. Si vous annulez plus tard, ou si vous ne venez pas, l’acompte n’est pas remboursé : c’est lui qui retient le créneau pour vous et qui empêche l’établissement de le donner à quelqu’un d’autre. Vous pouvez annuler jusqu’au début du créneau ; ensuite, une réservation à laquelle vous ne venez pas est marquée comme manquée.
 
 6.3 Avant de payer. Si vous annulez avant de payer l’acompte, aucun montant n’est prélevé.
 

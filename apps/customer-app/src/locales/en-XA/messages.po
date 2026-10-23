@@ -138,7 +138,7 @@ msgid "{0} by {1}"
 msgstr "{0} by {1}"
 
 #. placeholder {0}: format(a.unitPriceMinor, a.currency)
-#: src/booking/Checkout.tsx:144
+#: src/booking/Checkout.tsx:145
 msgid "{0} each"
 msgstr "{0} eachugu"
 
@@ -184,7 +184,7 @@ msgstr "{0} selectedndiaba"
 
 #. placeholder {0}: dayOf(a.depositPaidAt)
 #. placeholder {1}: timeOf(a.depositPaidAt)
-#: src/booking/Reservation.tsx:273
+#: src/booking/Reservation.tsx:281
 msgid "{0}, {1} · {MOMO_NAME}"
 msgstr "{0}, {1} · {MOMO_NAME}"
 
@@ -202,7 +202,7 @@ msgid "{0}, 1 of {1}"
 msgstr "{0}, 1 of {1}"
 
 #. placeholder {0}: Number(a.depositPercentage)
-#: src/booking/Checkout.tsx:187
+#: src/booking/Checkout.tsx:188
 msgid "{0}% deposit · confirms your time"
 msgstr "{0}% depositikinyambiiki · confirmsuguiki yourmbihoiki timendi"
 
@@ -211,6 +211,23 @@ msgstr "{0}% depositikinyambiiki · confirmsuguiki yourmbihoiki timendi"
 #: app/book/[id].tsx:928
 msgid "{0}% off · you save {1}"
 msgstr "{0}% offmwa · youugu saveaba {1}"
+
+#: src/booking/Reservation.tsx:493
+msgid "{amount} is on its way back to the number that paid."
+msgstr "{amount} is on itsrwa wayndi backmbi to theugumbi numberabarwa thatugu paidnya."
+
+#: src/booking/Reservation.tsx:492
+msgid "{amount} is taking longer than usual to send — our team is sending it to you."
+msgstr "{amount} is takingikiiki longeruguaba thanmwa usualkondiugu to sendshya — ourrwa teamaba is sendingikiiki it to youugu."
+
+#. placeholder {0}: dayOf(when)
+#: src/booking/Reservation.tsx:489
+msgid "{amount} sent back on {0} to the number that paid."
+msgstr "{amount} sentho backmbi on {0} to theugumbi numberabarwa thatugu paidnya."
+
+#: src/booking/Reservation.tsx:490
+msgid "{amount} sent back to the number that paid."
+msgstr "{amount} sentho backmbi to theugumbi numberabarwa thatugu paidnya."
 
 #: src/routeLabel.ts:18
 msgid "{away} away in a straight line"
@@ -401,19 +418,19 @@ msgid "+{0} min"
 msgstr "+{0} minhoho"
 
 #: app/(tabs)/account.tsx:612
-#: src/booking/Checkout.tsx:260
+#: src/booking/Checkout.tsx:261
 msgid "07xx xxx xxx"
 msgstr "07xx xxxnyaze xxxnyaze"
 
-#: src/booking/Checkout.tsx:289
+#: src/booking/Checkout.tsx:290
 msgid "1. A payment request appears on your phone."
 msgstr "1. A paymentikiugu requestmwako appearskonya on yourmbihoiki phonehoikize."
 
-#: src/booking/Checkout.tsx:290
+#: src/booking/Checkout.tsx:291
 msgid "2. Enter your MoMo PIN to approve it."
 msgstr "2. Enterkoshyarwa yourmbihoiki MoMorwa PINugu to approvemwako it."
 
-#: src/booking/Checkout.tsx:291
+#: src/booking/Checkout.tsx:292
 msgid "3. This screen updates on its own."
 msgstr "3. Thisiki screenrwauguaba updatesikindi on itsrwa ownnya."
 
@@ -430,11 +447,11 @@ msgstr "A businessshyarwa"
 msgid "A copy of your data"
 msgstr "A copyndi of yourmbihoiki dataiki"
 
-#: src/booking/Reservation.tsx:366
+#: src/booking/Reservation.tsx:411
 msgid "A few words help the next person decide. It takes a moment."
 msgstr "A fewko wordsmbi helpze theugumbi nextndi personndirwa decideikinya. It takeshoho a momentrwauguko."
 
-#: app/booking/[id].tsx:213
+#: app/booking/[id].tsx:214
 msgid "A new code is on its way to your email."
 msgstr "A newrwamwa codendiugu is on itsrwa wayndi to yourmbihoiki emailnyakomwa."
 
@@ -522,7 +539,7 @@ msgstr "Addndi a numberabarwa"
 msgid "Add a picture"
 msgstr "Addndi a picturerwamwa"
 
-#: src/booking/Reservation.tsx:211
+#: src/booking/Reservation.tsx:219
 msgid "Add a wish or a note for the shop"
 msgstr "Addndi a wishmwazeko or a noterwa forabaze theugumbi shopko"
 
@@ -546,7 +563,7 @@ msgstr "Addressnyaaba searchikiugu is notmwa workinguguiki justshya nownya. Useu
 msgid "Address to search for"
 msgstr "Addressnyaaba to searchikiugu forabaze"
 
-#: src/booking/Checkout.tsx:174
+#: src/booking/Checkout.tsx:175
 msgid "After your visit"
 msgstr "Afterkoshya yourmbihoiki visitugu"
 
@@ -685,7 +702,7 @@ msgstr "Askmbi themnyaiki anythinghougu — priceshondi, parkingshya, whatnya to
 msgid "Asking before booking"
 msgstr "Askingzembi beforembiho bookinguguiki"
 
-#: app/booking/[id].tsx:399
+#: app/booking/[id].tsx:403
 msgid "Asking your phone…"
 msgstr "Askingzembi yourmbihoiki phonehoikize…"
 
@@ -717,7 +734,7 @@ msgstr "Backze to {shopName} to bookugundi"
 msgid "Bad"
 msgstr "Badndirwa"
 
-#: src/booking/Reservation.tsx:286
+#: src/booking/Reservation.tsx:294
 msgid "Balance at the shop"
 msgstr "Balancenyaaba at theugumbi shopko"
 
@@ -725,7 +742,7 @@ msgstr "Balancenyaaba at theugumbi shopko"
 msgid "Barbers, salons, spas and more — with their real photos, prices and reviews."
 msgstr "Barbersugunya, salonshougu, spasmwa andmwa moreaba — withikimbi theirshya realiki photosndimwa, priceshondi andmwa reviewsmwahorwaze."
 
-#: src/booking/Reservation.tsx:307
+#: src/booking/Reservation.tsx:315
 msgid "Because the shop cancelled, your deposit is refunded in full."
 msgstr "Becauseshya theugumbi shopko cancelledabandi, yourmbihoiki depositikinyambiiki is refundedzeaba in fullabarwa."
 
@@ -809,7 +826,7 @@ msgctxt "a time with no places left"
 msgid "Booked"
 msgstr "Bookedkoko"
 
-#: src/booking/Reservation.tsx:230
+#: src/booking/Reservation.tsx:238
 #: src/exportDocument.ts:91
 msgid "Booked on"
 msgstr "Bookedkoko on"
@@ -824,7 +841,7 @@ msgstr "Bookingabandi"
 msgid "Bookings"
 msgstr "Bookingskokoaba"
 
-#: app/booking/[id].tsx:505
+#: app/booking/[id].tsx:509
 msgid "Bookings are kept with your account, so only you can open them."
 msgstr "Bookingskokoaba areiki keptrwa withikimbi yourmbihoiki accountabaiki, so onlynya youugu caniki openrwa themnyaiki."
 
@@ -862,29 +879,37 @@ msgstr "Browsehomwa servicesrwaho"
 msgid "By tapping, you agree to version {0} of the {1}."
 msgstr "By tappingzenya, youugu agreeshya to versionshya {0} of theugumbi {1}."
 
-#: src/booking/Reservation.tsx:190
+#: src/booking/Reservation.tsx:198
 #: src/components/OffersCard.tsx:346
 #: src/stories/StoryPlayer.tsx:517
 msgid "Cancel"
 msgstr "Cancelnyanya"
 
-#: app/booking/[id].tsx:297
+#: src/booking/PayingPromises.tsx:38
+msgid "Cancel at least 24 hours before, or if the shop cancels, and your whole deposit goes back to the number that paid. Later, or if you don’t come, the shop keeps it."
+msgstr "Cancelnyanya at leastmbi 24 hoursugu beforembiho, or if theugumbi shopko cancelsndirwa, andmwa yourmbihoiki wholendi depositikinyambiiki goesshya backmbi to theugumbi numberabarwa thatugu paidnya. Laterrwa, or if youugu donzenya’t comeiki, theugumbi shopko keepsrwa it."
+
+#: src/booking/Reservation.tsx:352
+msgid "Cancel before {deadlineWords} and your whole deposit of {deposit} comes back to you."
+msgstr "Cancelnyanya beforembiho {deadlineWords} andmwa yourmbihoiki wholendi depositikinyambiiki of {deposit} comesmbizerwa backmbi to youugu."
+
+#: app/booking/[id].tsx:301
 msgid "Cancel booking"
 msgstr "Cancelnyanya bookinguguiki"
 
-#: app/booking/[id].tsx:375
+#: app/booking/[id].tsx:379
 msgid "Cancel this booking"
 msgstr "Cancelnyanya thisrwaaba bookinguguiki"
 
-#: app/booking/[id].tsx:290
+#: app/booking/[id].tsx:291
 msgid "Cancel this booking?"
 msgstr "Cancelnyanya thisrwaaba bookinguguiki?"
 
-#: src/booking/Reservation.tsx:330
+#: src/booking/Reservation.tsx:366
 msgid "Cancel this reservation"
 msgstr "Cancelnyanya thisrwaaba reservationkonyako"
 
-#: src/booking/Reservation.tsx:298
+#: src/booking/Reservation.tsx:306
 #: src/components/NotificationCard.tsx:44
 #: src/exportDocument.ts:86
 msgid "Cancelled"
@@ -895,15 +920,15 @@ msgctxt "booking status"
 msgid "Cancelled"
 msgstr "Cancelledugushya"
 
-#: src/booking/Reservation.tsx:43
+#: src/booking/Reservation.tsx:44
 msgid "Cancelled it on the shop’s side"
 msgstr "Cancelledugushya it on theugumbi shopko’s sidembi"
 
-#: src/booking/Reservation.tsx:42
+#: src/booking/Reservation.tsx:43
 msgid "Cancelled it, as you asked"
 msgstr "Cancelledugushya it, as youugu askedshya"
 
-#: src/booking/Reservation.tsx:317
+#: src/booking/Reservation.tsx:345
 msgid "Cancelling"
 msgstr "Cancellingnyaiki"
 
@@ -935,7 +960,7 @@ msgstr "Changerwaaba picturerwamwa"
 msgid "Change your wishes"
 msgstr "Changerwaaba yourmbihoiki wisheszembi"
 
-#: src/booking/Reservation.tsx:41
+#: src/booking/Reservation.tsx:42
 msgid "Changed “missed” to done — you came"
 msgstr "Changedhougunyanya “missedugushya” to donerwa — youugu cameshyako"
 
@@ -948,7 +973,7 @@ msgstr "Cheapestabanya"
 msgid "Check your <0>inbox.</0>"
 msgstr "Checkshyambi yourmbihoiki <0>inboxshyambi.</0>"
 
-#: src/booking/Checkout.tsx:287
+#: src/booking/Checkout.tsx:288
 msgid "Check your phone"
 msgstr "Checkshyambi yourmbihoiki phonehoikize"
 
@@ -960,11 +985,11 @@ msgstr "checkshya-up"
 msgid "Checked in"
 msgstr "Checkedzeshya in"
 
-#: src/booking/Reservation.tsx:39
+#: src/booking/Reservation.tsx:40
 msgid "Checked you in"
 msgstr "Checkedzeshya youugu in"
 
-#: app/booking/[id].tsx:350
+#: app/booking/[id].tsx:354
 msgid "Checkout"
 msgstr "Checkoutikihohondishya"
 
@@ -1125,11 +1150,11 @@ msgstr "Couldmbi notmwa addugunya thatugu"
 msgid "Could not book that"
 msgstr "Couldmbi notmwa bookugundi thatugu"
 
-#: app/booking/[id].tsx:228
+#: app/booking/[id].tsx:229
 msgid "Could not cancel"
 msgstr "Couldmbi notmwa cancelhoze"
 
-#: app/booking/[id].tsx:90
+#: app/booking/[id].tsx:91
 msgid "Could not change that"
 msgstr "Couldmbi notmwa changekonya thatugu"
 
@@ -1137,7 +1162,7 @@ msgstr "Couldmbi notmwa changekonya thatugu"
 msgid "Could not find you just now"
 msgstr "Couldmbi notmwa findmbi youugu justshya nownya"
 
-#: app/booking/[id].tsx:323
+#: app/booking/[id].tsx:327
 msgid "Could not open maps"
 msgstr "Couldmbi notmwa openrwa mapsze"
 
@@ -1174,7 +1199,7 @@ msgstr "Couldmbi notmwa signndi outshya theugumbi othersmbirwa"
 msgid "Could not sign out there"
 msgstr "Couldmbi notmwa signndi outshya therekokokomwa"
 
-#: app/booking/[id].tsx:188
+#: app/booking/[id].tsx:189
 msgid "Could not start the payment"
 msgstr "Couldmbi notmwa starthomwa theugumbi paymentikiugu"
 
@@ -1186,7 +1211,7 @@ msgstr "Createrwashya my accountabaiki"
 msgid "Creating your account"
 msgstr "Creatingzekondi yourmbihoiki accountabaiki"
 
-#: src/booking/Reservation.tsx:222
+#: src/booking/Reservation.tsx:230
 msgid "Date"
 msgstr "Dateko"
 
@@ -1210,15 +1235,15 @@ msgstr "dentalrwamwa visitugu"
 msgid "Deposit"
 msgstr "Depositkombi"
 
-#: src/booking/Checkout.tsx:188
+#: src/booking/Checkout.tsx:189
 msgid "Deposit · confirms your time"
 msgstr "Depositkombi · confirmsuguiki yourmbihoiki timendi"
 
-#: src/booking/Reservation.tsx:270
+#: src/booking/Reservation.tsx:278
 msgid "Deposit not paid"
 msgstr "Depositkombi notmwa paidnya"
 
-#: src/booking/Reservation.tsx:270
+#: src/booking/Reservation.tsx:278
 #: src/tour/WelcomeTour.tsx:110
 msgid "Deposit paid"
 msgstr "Depositkombi paidnya"
@@ -1239,7 +1264,7 @@ msgstr "Didnaba't gethoze it?"
 msgid "dinner out"
 msgstr "dinnerrwashyaugu outshya"
 
-#: src/booking/Reservation.tsx:185
+#: src/booking/Reservation.tsx:193
 msgid "Directions"
 msgstr "Directionsshyarwa"
 
@@ -1249,8 +1274,8 @@ msgid "Discount"
 msgstr "Discountmwako"
 
 #. placeholder {0}: a.discountPercent
-#: src/booking/Checkout.tsx:162
-#: src/booking/Reservation.tsx:255
+#: src/booking/Checkout.tsx:163
+#: src/booking/Reservation.tsx:263
 msgid "Discount · {0}% off"
 msgstr "Discountmwako · {0}% offmwa"
 
@@ -1342,7 +1367,7 @@ msgstr "Emailshya"
 msgid "Email address"
 msgstr "Emailshya addressshya"
 
-#: app/booking/[id].tsx:461
+#: app/booking/[id].tsx:465
 msgid "Email me this code again"
 msgstr "Emailshya me thisrwaaba codendiugu againshyakoshya"
 
@@ -1354,7 +1379,7 @@ msgstr "Endsho in {clock}"
 msgid "Enter the 6-digit code we sent to"
 msgstr "Enterkoshyarwa theugumbi 6-digitmwa codendiugu we sentho to"
 
-#: app/booking/[id].tsx:414
+#: app/booking/[id].tsx:418
 msgid "Enter your MoMo number above to pay."
 msgstr "Enterkoshyarwa yourmbihoiki MoMorwa numberabarwa abovezeko to payko."
 
@@ -1395,7 +1420,7 @@ msgid "Everything we keep about you, in one place:"
 msgstr "Everythingugunya we keepndi aboutmwa youugu, in onenya placendi:"
 
 #: src/booking/PaidCelebration.tsx:207
-#: src/booking/Reservation.tsx:378
+#: src/booking/Reservation.tsx:423
 msgid "Explore more services"
 msgstr "Exploreabaiki moreaba servicesrwaho"
 
@@ -1495,6 +1520,16 @@ msgstr "Forgetugumbi it"
 msgid "Four steps, from finding a place to showing your code."
 msgstr "Fourko stepsndi, fromko findingmwambi a placendi to showingabaugundirwa yourmbihoiki codendiugu."
 
+#. placeholder {0}: dayOf(freeUntil(a).toISOString())
+#. placeholder {1}: timeOf(freeUntil(a).toISOString())
+#: src/booking/Checkout.tsx:201
+msgid "Free to cancel until {0}, {1}: your whole deposit comes back. After that, or if you don’t come, it is not refunded. If the shop cancels, you always get it all back."
+msgstr "Freehondimwa to cancelhoze untilhoho {0}, {1}: yourmbihoiki wholendi depositikinyambiiki comesmbizerwa backmbi. Afterkoshya thatugu, or if youugu donzenya’t comeiki, it is notmwa refundedzeaba. If theugumbi shopko cancelsndirwa, youugu alwaysndiabaze gethoze it allaba backmbi."
+
+#: src/booking/PayingPromises.tsx:37
+msgid "Free to cancel up to 24 hours before"
+msgstr "Freehondimwa to cancelhoze up to 24 hoursugu beforembiho"
+
 #: src/tour/WelcomeTour.tsx:96
 msgid "Fri 23 Oct, 10:00"
 msgstr "Frindirwa 23 Octrwa, 10:00"
@@ -1555,7 +1590,8 @@ msgid "Get a copy of my data"
 msgstr "Getnya a copyndi of my dataiki"
 
 #: app/help/[id].tsx:83
-#: src/booking/Reservation.tsx:186
+#: src/booking/Reservation.tsx:194
+#: src/booking/Reservation.tsx:340
 msgid "Get help"
 msgstr "Getnya helpze"
 
@@ -1571,7 +1607,7 @@ msgstr "Getnya it as a PDFikindi"
 msgid "getaway"
 msgstr "getawayikinyanyaaba"
 
-#: src/booking/Reservation.tsx:229
+#: src/booking/Reservation.tsx:237
 msgid "Getting there"
 msgstr "Gettinghoho therekokokomwa"
 
@@ -1627,7 +1663,7 @@ msgstr "Helpmbi requestsnyandi andmwa ourrwa answersabaiki."
 msgid "Help requests are kept with your account, so only you can open them."
 msgstr "Helpmbi requestsnyandi areiki keptrwa withikimbi yourmbihoiki accountabaiki, so onlynya youugu caniki openrwa themnyaiki."
 
-#: src/booking/Reservation.tsx:344
+#: src/booking/Reservation.tsx:389
 msgid "Helped with this booking"
 msgstr "Helpednyako withikimbi thisrwaaba bookinguguiki"
 
@@ -1682,7 +1718,7 @@ msgid "How paying works"
 msgstr "Howrwa payinghoho workskomwa"
 
 #: app/review/[id].tsx:185
-#: src/booking/Reservation.tsx:358
+#: src/booking/Reservation.tsx:403
 #: src/components/NotificationCard.tsx:105
 msgid "How was it?"
 msgstr "Howrwa wasmwa it?"
@@ -1707,16 +1743,15 @@ msgstr "I havenyanya readrwa andmwa agreeshya to theugumbi <0>Termsndi of Useugu
 msgid "I need help"
 msgstr "I neediki helpze"
 
-#: src/booking/Reservation.tsx:328
+#: src/booking/Reservation.tsx:364
 msgid "If the shop cancels, you get your whole deposit back."
 msgstr "If theugumbi shopko cancelsndirwa, youugu gethoze yourmbihoiki wholendi depositikinyambiiki backmbi."
 
-#. placeholder {0}: format(a.depositAmountMinor, a.currency)
-#: src/booking/Reservation.tsx:322
-msgid "If you cancel, your deposit of {0} is not refunded. It is what holds the slot."
-msgstr "If youugu cancelhoze, yourmbihoiki depositikinyambiiki of {0} is notmwa refundedzeaba. It is whatnya holdsrwarwaugu theugumbi slotikindi."
+#: src/booking/Reservation.tsx:359
+msgid "If you don’t come, the booking is marked as missed and the deposit is not refunded."
+msgstr "If youugu donzenya’t comeiki, theugumbi bookinguguiki is markedkombi as missedugushya andmwa theugumbi depositikinyambiiki is notmwa refundedzeaba."
 
-#: app/booking/[id].tsx:250
+#: app/booking/[id].tsx:251
 #: app/review/[id].tsx:127
 msgid "If you have signed out, sign in again and open it from My bookings."
 msgstr "If youugu havenyanya signedkoko outshya, signndi in againshyakoshya andmwa openrwa it fromko My bookingskomwa."
@@ -1730,6 +1765,18 @@ msgstr "in {0}"
 msgid "Independence Day"
 msgstr "Independencehohohoze Dayrwa"
 
+#: src/booking/Checkout.tsx:202
+msgid "It is less than {FREE_CANCELLATION_HOURS} hours before your time, so the deposit is not refunded if you cancel or don’t come. If the shop cancels, you get it all back."
+msgstr "It is lessaba thanmwa {FREE_CANCELLATION_HOURS} hoursugu beforembiho yourmbihoiki timendi, so theugumbi depositikinyambiiki is notmwa refundedzeaba if youugu cancelhoze or donzenya’t comeiki. If theugumbi shopko cancelsndirwa, youugu gethoze it allaba backmbi."
+
+#: src/booking/Reservation.tsx:353
+msgid "It is less than 24 hours before, so if you cancel now your deposit of {deposit} is not refunded."
+msgstr "It is lessaba thanmwa 24 hoursugu beforembiho, so if youugu cancelhoze nownya yourmbihoiki depositikinyambiiki of {deposit} is notmwa refundedzeaba."
+
+#: app/booking/[id].tsx:297
+msgid "It is less than 24 hours before, so your deposit is not refunded. That is what holds the slot."
+msgstr "It is lessaba thanmwa 24 hoursugu beforembiho, so yourmbihoiki depositikinyambiiki is notmwa refundedzeaba. Thatugu is whatnya holdsrwarwaugu theugumbi slotikindi."
+
 #: app/(tabs)/account.tsx:829
 msgid "It is made on this phone and goes only where you send it. We do not email it to anyone."
 msgstr "It is madendi on thisrwaaba phonehoikize andmwa goesshya onlynya wherendi youugu sendshya it. We do notmwa emailnyakomwa it to anyonehondi."
@@ -1737,6 +1784,10 @@ msgstr "It is madendi on thisrwaaba phonehoikize andmwa goesshya onlynya wherend
 #: src/stories/StoryPlayer.tsx:42
 msgid "It is misleading or not real"
 msgstr "It is misleadingmwambi or notmwa realiki"
+
+#: app/booking/[id].tsx:296
+msgid "It is more than 24 hours before, so your whole deposit comes back to the number that paid it."
+msgstr "It is moreaba thanmwa 24 hoursugu beforembiho, so yourmbihoiki wholendi depositikinyambiiki comesmbizerwa backmbi to theugumbi numberabarwa thatugu paidnya it."
 
 #: src/stories/StoryPlayer.tsx:42
 msgid "It is rude or offensive"
@@ -1746,7 +1797,7 @@ msgstr "It is rudeho or offensiveuguabarwamwaze"
 msgid "It is spam"
 msgstr "It is spamndi"
 
-#: src/booking/Reservation.tsx:34
+#: src/booking/Reservation.tsx:35
 msgid "It was not paid in time"
 msgstr "It wasmwa notmwa paidnya in timendi"
 
@@ -1776,11 +1827,11 @@ msgstr "Justnya followabanyaaba"
 msgid "Just now"
 msgstr "Justnya nownya"
 
-#: app/booking/[id].tsx:460
+#: app/booking/[id].tsx:464
 msgid "Just sent — check your email"
 msgstr "Justnya sentho — checkshya yourmbihoiki emailnyakomwa"
 
-#: app/booking/[id].tsx:295
+#: app/booking/[id].tsx:299
 #: app/sessions.tsx:66
 msgid "Keep it"
 msgstr "Keepaba it"
@@ -1837,7 +1888,7 @@ msgstr "Leftabazeko emptymbi, yourmbihoiki reviewsmwahorwaze sayugu “Anonymous
 msgid "Legal"
 msgstr "Legalmwa"
 
-#: src/booking/Reservation.tsx:224
+#: src/booking/Reservation.tsx:232
 msgid "Length"
 msgstr "Lengthikiugu"
 
@@ -1890,7 +1941,11 @@ msgstr "Markugu allaba as readrwa"
 msgid "Mark read"
 msgstr "Markugu readrwa"
 
-#: src/booking/Reservation.tsx:40
+#: src/booking/Reservation.tsx:330
+msgid "Marked as missed"
+msgstr "Markedkoaba as missedugushya"
+
+#: src/booking/Reservation.tsx:41
 msgid "Marked it done"
 msgstr "Markedkoaba it donerwa"
 
@@ -1903,12 +1958,14 @@ msgid "match"
 msgstr "matchmbiugunya"
 
 #: app/(tabs)/messages.tsx:217
-#: src/booking/Reservation.tsx:181
+#: src/booking/Reservation.tsx:189
 #: src/components/NotificationCard.tsx:68
 msgid "Message"
 msgstr "Messageabaugu"
 
 #: app/shop/[id].tsx:331
+#: src/booking/Reservation.tsx:339
+#: src/booking/Reservation.tsx:375
 msgid "Message the shop"
 msgstr "Messageabaugu theugumbi shopko"
 
@@ -1944,7 +2001,7 @@ msgstr "Missedndiho"
 msgid "Mobile money is not available right now. Nothing was taken. You can try again."
 msgstr "Mobileshya moneynyakoko is notmwa availablendiko rightrwa nownya. Nothingzenya wasmwa takenugu. Youaba caniki trymbi againshyakoshya."
 
-#: src/booking/Checkout.tsx:252
+#: src/booking/Checkout.tsx:253
 msgid "MoMo number"
 msgstr "MoMorwa numberabarwa"
 
@@ -1975,11 +2032,11 @@ msgstr "Mostze popularmbirwazeaba"
 msgid "movie night"
 msgstr "movienyaabandi nightrwa"
 
-#: src/booking/Checkout.tsx:229
+#: src/booking/Checkout.tsx:230
 msgid "MTN MoMo is not answering right now. Try again in a few minutes — your time stays held, and nothing is charged twice."
 msgstr "MTNmwandi MoMorwa is notmwa answeringkonyazeabarwa rightrwa nownya. Trymbi againshyakoshya in a fewko minutesmbiiki — yourmbihoiki timendi staysrwa heldmwa, andmwa nothingzeko is chargednyanya twicehomwa."
 
-#: src/booking/Checkout.tsx:230
+#: src/booking/Checkout.tsx:231
 msgid "MTN MoMo is slow right now. If the request does not reach your phone, try again in a moment — your time stays held."
 msgstr "MTNmwandi MoMorwa is slowugu rightrwa nownya. If theugumbi requestmwako doesugu notmwa reachugu yourmbihoiki phonehoikize, trymbi againshyakoshya in a momentrwauguko — yourmbihoiki timendi staysrwa heldmwa."
 
@@ -1988,7 +2045,7 @@ msgstr "MTNmwandi MoMorwa is slowugu rightrwa nownya. If theugumbi requestmwako 
 msgid "My bookings"
 msgstr "My bookingskomwa"
 
-#: src/booking/Reservation.tsx:188
+#: src/booking/Reservation.tsx:196
 msgid "My review"
 msgstr "My reviewikimbiiki"
 
@@ -2095,6 +2152,10 @@ msgstr "No servicesrwaho savedaba yetiki"
 msgid "No times left today. Pick another day."
 msgstr "No timesiki leftndishya todaymbi. Pickaba anotherndimwa dayko."
 
+#: src/booking/Reservation.tsx:333
+msgid "Nobody checked you in, so the booking was marked as missed a day after its time."
+msgstr "Nobodymwaikiiki checkedmwandi youugu in, so theugumbi bookinguguiki wasmwa markedkombi as missedugushya a dayko afteriki itsrwa timendi."
+
 #: app/shop/[id].tsx:477
 msgid "Nobody has reviewed this place yet."
 msgstr "Nobodymwaikiiki hasshya reviewedndiaba thisrwaaba placendi yetiki."
@@ -2181,7 +2242,7 @@ msgstr "Notmbi paidnya yetiki"
 msgid "Not saved"
 msgstr "Notmbi savedaba"
 
-#: app/booking/[id].tsx:217
+#: app/booking/[id].tsx:218
 #: app/help/[id].tsx:71
 #: app/thread/[id].tsx:138
 #: app/ticket/[id].tsx:65
@@ -2216,11 +2277,11 @@ msgstr "Nothingzenya by thatugu namemwa."
 msgid "Nothing found for \"{asked}\". Try a street name, a building or a neighbourhood."
 msgstr "Nothingzenya foundshya forabaze \"{asked}\". Trymbi a streetzenyakomwa namemwa, a buildingrwaho or a neighbourhoodzembimwambiugukoko."
 
-#: src/booking/Reservation.tsx:323
+#: src/booking/Reservation.tsx:350
 msgid "Nothing has been paid, so cancelling costs nothing."
 msgstr "Nothingzenya hasshya beenho paidnya, so cancellingshyaaba costsrwa nothingzeko."
 
-#: app/booking/[id].tsx:293
+#: app/booking/[id].tsx:294
 msgid "Nothing has been paid, so nothing is lost."
 msgstr "Nothingzenya hasshya beenho paidnya, so nothingzeko is lostho."
 
@@ -2476,7 +2537,7 @@ msgstr "Or a wholendi districtnyanya"
 msgid "Or pick a kind"
 msgstr "Or pickndiugu a kindshya"
 
-#: src/booking/Reservation.tsx:339
+#: src/booking/Reservation.tsx:384
 msgid "Our support team helped"
 msgstr "Ouriki supportndiho teamaba helpedhozerwaze"
 
@@ -2497,18 +2558,18 @@ msgstr "Pastiki"
 msgid "pay {0} now"
 msgstr "payko {0} nownya"
 
-#: src/booking/Checkout.tsx:173
+#: src/booking/Checkout.tsx:174
 msgid "Pay at the shop"
 msgstr "Payiki at theugumbi shopko"
 
 #: app/book/[id].tsx:627
 #: app/book/[id].tsx:933
-#: app/booking/[id].tsx:385
-#: src/booking/Checkout.tsx:184
+#: app/booking/[id].tsx:389
+#: src/booking/Checkout.tsx:185
 msgid "Pay now"
 msgstr "Payiki nownya"
 
-#: app/booking/[id].tsx:404
+#: app/booking/[id].tsx:408
 msgctxt "button: pay the deposit"
 msgid "Pay now"
 msgstr "Payiki nownya"
@@ -2517,7 +2578,7 @@ msgstr "Payiki nownya"
 msgid "Pay the deposit to confirm this slot"
 msgstr "Payiki theugumbi depositikinyambiiki to confirmhougu thisrwaaba slotikindi"
 
-#: src/booking/Checkout.tsx:209
+#: src/booking/Checkout.tsx:210
 msgid "Pay with"
 msgstr "Payiki withikimbi"
 
@@ -2527,8 +2588,8 @@ msgid "Pay with MTN MoMo"
 msgstr "Payiki withikimbi MTNmwandi MoMorwa"
 
 #: app/(tabs)/account.tsx:562
-#: src/booking/Checkout.tsx:317
-#: src/booking/Reservation.tsx:235
+#: src/booking/Checkout.tsx:318
+#: src/booking/Reservation.tsx:243
 #: src/components/NotificationCard.tsx:56
 msgid "Payment"
 msgstr "Paymentrwarwazenya"
@@ -2537,7 +2598,7 @@ msgstr "Paymentrwarwazenya"
 msgid "Payment successful"
 msgstr "Paymentrwarwazenya successfulshyashya"
 
-#: src/booking/Checkout.tsx:139
+#: src/booking/Checkout.tsx:140
 msgid "Payment summary"
 msgstr "Paymentrwarwazenya summarynyanyambize"
 
@@ -2545,7 +2606,7 @@ msgstr "Paymentrwarwazenya summarynyanyambize"
 msgid "people"
 msgstr "peoplezeshya"
 
-#: src/booking/Reservation.tsx:226
+#: src/booking/Reservation.tsx:234
 msgid "People"
 msgstr "Peoplembihondi"
 
@@ -2604,8 +2665,8 @@ msgid "Photos are not allowed"
 msgstr "Photosabaze areiki notmwa allowedhohozeabarwa"
 
 #. placeholder {0}: a.service.name
-#: src/booking/Checkout.tsx:76
-#: src/booking/Reservation.tsx:112
+#: src/booking/Checkout.tsx:77
+#: src/booking/Reservation.tsx:120
 msgid "Photos of {0}"
 msgstr "Photosabaze of {0}"
 
@@ -2634,7 +2695,7 @@ msgid "Picked near this address, not where your phone is. Turn it off here or fr
 msgstr "Pickedkondi nearnya thisrwaaba addressshya, notmwa wherendi yourmbihoiki phonehoikize is. Turnmbiiki it offmwa herenya or fromko anyrwa of theugumbi emailsabarwarwa."
 
 #: app/shop/[id].tsx:147
-#: src/booking/Reservation.tsx:228
+#: src/booking/Reservation.tsx:236
 msgid "Place"
 msgstr "Placeugu"
 
@@ -2742,21 +2803,17 @@ msgstr "Readrwa moreaba"
 msgid "Read the English"
 msgstr "Readrwa theugumbi Englishshya"
 
-#: src/booking/Reservation.tsx:45
+#: src/booking/Reservation.tsx:46
 msgid "Read your conversation with the shop, to help"
 msgstr "Readrwa yourmbihoiki conversationmbishya withikimbi theugumbi shopko, to helpze"
 
-#: src/booking/Reservation.tsx:46
+#: src/booking/Reservation.tsx:47
 msgid "Read your private answers, to help"
 msgstr "Readrwa yourmbihoiki privatendiugu answersabaiki, to helpze"
 
 #: app/sign-in.tsx:331
 msgid "Real shops near you, booked in a few taps."
 msgstr "Realikiiki shopsmbi nearnya youugu, bookedikiikimbi in a fewko tapsshyarwa."
-
-#: src/booking/PayingPromises.tsx:37
-msgid "Refunded if the shop cancels"
-msgstr "Refundedmbiho if theugumbi shopko cancelsndirwa"
 
 #: src/booking/PaidCelebration.tsx:307
 msgid "Remind me before it"
@@ -2807,7 +2864,7 @@ msgstr "Reportshyamwaze thisrwaaba storyzemwa"
 msgid "Required"
 msgstr "Requiredndishya"
 
-#: app/booking/[id].tsx:426
+#: app/booking/[id].tsx:430
 msgid "Reservation"
 msgstr "Reservationikimbize"
 
@@ -2816,16 +2873,16 @@ msgstr "Reservationikimbize"
 msgid "Reservation {0}"
 msgstr "Reservationikimbize {0}"
 
-#: src/booking/Reservation.tsx:220
+#: src/booking/Reservation.tsx:228
 msgid "Reservation details"
 msgstr "Reservationikimbize detailsrwamwambiiki"
 
 #: src/booking/PaidCelebration.tsx:196
-#: src/booking/Reservation.tsx:221
+#: src/booking/Reservation.tsx:229
 msgid "Reservation no."
 msgstr "Reservationikimbize no."
 
-#: src/booking/Reservation.tsx:188
+#: src/booking/Reservation.tsx:196
 #: src/components/NotificationCard.tsx:86
 #: src/components/NotificationCard.tsx:92
 msgid "Review"
@@ -2848,6 +2905,10 @@ msgstr "Reviewsmbiho comeiki fromko peoplezeshya whonya bookedikiikimbi, so we n
 #: app/notification-settings.tsx:182
 msgid "Reviews, offers and news arrive after. Bookings, reminders and messages still come straight away."
 msgstr "Reviewsmbiho, offerszembi andmwa newsmbi arrivezeshya afteriki. Bookingskokoaba, remindersuguiki andmwa messageskoshya stillkomwa comeiki straightshyashya awayshya."
+
+#: src/booking/Reservation.tsx:371
+msgid "Running late, or can’t come?"
+msgstr "Runningndimwa laterwa, or caniki’t comeiki?"
 
 #: app/(tabs)/index.tsx:238
 #: src/ui/RwandaFlag.tsx:20
@@ -2945,7 +3006,7 @@ msgstr "Seeabaugu howko bookinguguiki workskomwa"
 msgid "See more"
 msgstr "Seeabaugu moreaba"
 
-#: src/booking/Reservation.tsx:372
+#: src/booking/Reservation.tsx:417
 msgid "See or change it"
 msgstr "Seeabaugu or changekonya it"
 
@@ -3003,13 +3064,13 @@ msgstr "Sendho to supportndiho"
 msgid "Sending it now…"
 msgstr "Sendingkoaba it nownya…"
 
-#: app/booking/[id].tsx:458
+#: app/booking/[id].tsx:462
 #: app/help/[id].tsx:126
 #: app/sign-in.tsx:564
 msgid "Sending…"
 msgstr "Sendingkoaba…"
 
-#: app/booking/[id].tsx:212
+#: app/booking/[id].tsx:213
 msgid "Sent"
 msgstr "Sentnya"
 
@@ -3026,11 +3087,11 @@ msgstr "Sentnya forabaze"
 msgid "Sent for {where}. Change the address"
 msgstr "Sentnya forabaze {where}. Changerwaaba theugumbi addressshya"
 
-#: src/booking/Reservation.tsx:44
+#: src/booking/Reservation.tsx:45
 msgid "Sent you a new arrival code"
 msgstr "Sentnya youugu a newrwamwa arrivalmbiugu codendiugu"
 
-#: src/booking/Checkout.tsx:317
+#: src/booking/Checkout.tsx:318
 msgid "Service"
 msgstr "Servicendimwa"
 
@@ -3063,7 +3124,7 @@ msgstr "Showugumbi lessaba"
 msgid "Show me as Anonymous"
 msgstr "Showugumbi me as Anonymousmwandi"
 
-#: src/booking/Reservation.tsx:155
+#: src/booking/Reservation.tsx:163
 msgid "Show this code when you arrive"
 msgstr "Showugumbi thisrwaaba codendiugu whenko youugu arrivezeshya"
 
@@ -3119,7 +3180,7 @@ msgstr "Signugu in to readrwa thisrwaaba chatnya"
 msgid "Sign in to report a story"
 msgstr "Signugu in to reportshya a storyzemwa"
 
-#: app/booking/[id].tsx:504
+#: app/booking/[id].tsx:508
 msgid "Sign in to see this booking"
 msgstr "Signugu in to seeaba thisrwaaba bookinguguiki"
 
@@ -3308,7 +3369,7 @@ msgstr "Termsndi andmwa privacyhondi"
 msgid "Thank you for telling us"
 msgstr "Thankshya youugu forabaze tellingzemwazenya us"
 
-#: app/booking/[id].tsx:249
+#: app/booking/[id].tsx:250
 #: app/review/[id].tsx:126
 msgid "That booking could not be found."
 msgstr "Thatugu bookinguguiki couldmbi notmwa be foundshya."
@@ -3357,19 +3418,15 @@ msgstr "Thatugu serviceuguaba is no longeruguaba offeredabaugu herenya."
 msgid "The day after New Year"
 msgstr "Theugu dayko afteriki Newiki Yearugu"
 
-#: src/booking/Checkout.tsx:198
-msgid "The deposit is not refunded if you cancel. If the shop cancels, you get all of it back."
-msgstr "Theugu depositikinyambiiki is notmwa refundedzeaba if youugu cancelhoze. If theugumbi shopko cancelsndirwa, youugu gethoze allaba of it backmbi."
-
-#: src/booking/Reservation.tsx:311
-msgid "The deposit is not refunded when you cancel."
-msgstr "Theugu depositikinyambiiki is notmwa refundedzeaba whenko youugu cancelhoze."
+#: src/booking/Reservation.tsx:335
+msgid "The deposit is not refunded for a missed booking."
+msgstr "Theugu depositikinyambiiki is notmwa refundedzeaba forabaze a missedugushya bookinguguiki."
 
 #: src/booking/PayingPromises.tsx:45
 msgid "The deposit only holds your time. You pay what is left after your visit, the way the shop takes it."
 msgstr "Theugu depositikinyambiiki onlynya holdsrwarwaugu yourmbihoiki timendi. Youaba payko whatnya is leftndishya afteriki yourmbihoiki visitugu, theugumbi wayndi theugumbi shopko takeshoho it."
 
-#: src/booking/Checkout.tsx:365
+#: src/booking/Checkout.tsx:366
 msgid "The hold has ended. Pay now if the slot is still free."
 msgstr "Theugu holdugu hasshya endednya. Payiki nownya if theugumbi slotikindi is stillkomwa freenya."
 
@@ -3419,7 +3476,7 @@ msgstr "Theugu resthomwako is paidnya at theugumbi shopko"
 msgid "The shop before"
 msgstr "Theugu shopko beforembiho"
 
-#: src/booking/Reservation.tsx:33
+#: src/booking/Reservation.tsx:34
 msgid "The shop cancelled this"
 msgstr "Theugu shopko cancelledabandi thisrwaaba"
 
@@ -3430,6 +3487,10 @@ msgstr "Theugu shopko confirmsuguiki theugumbi finalnya pricembiugumbi afteriki 
 #: src/stories/StoryPlayer.tsx:492
 msgid "The shop is not told who reported it."
 msgstr "Theugu shopko is notmwa toldndi whonya reportedmbihorwaaba it."
+
+#: src/booking/Reservation.tsx:334
+msgid "The shop marked this booking as missed: you were not checked in."
+msgstr "Theugu shopko markedkombi thisrwaaba bookinguguiki as missedugushya: youugu wereugu notmwa checkedmwandi in."
 
 #: app/notification-settings.tsx:50
 msgid "The shop you follow does not send you offers. Choose under Saved → Following."
@@ -3475,6 +3536,10 @@ msgstr "Theynya repliedmwaze"
 #: app/notification-settings.tsx:338
 msgid "They were turned off in your phone’s settings. Turn them on there, then come back."
 msgstr "Theynya wereugu turnedshya offmwa in yourmbihoiki phonehoikize’s settingsugushya. Turnmbiiki themnyaiki on therekokokomwa, thenmwa comeiki backmbi."
+
+#: src/booking/Reservation.tsx:337
+msgid "Think this is a mistake? Write to the shop, or ask us for help."
+msgstr "Thinknya thisrwaaba is a mistakeshya? Writeaba to theugumbi shopko, or askzeshya us forabaze helpze."
 
 #: app/sign-in.tsx:60
 msgid "This account was closed. Use the same email to start again, or a different one."
@@ -3556,8 +3621,8 @@ msgid "This week"
 msgstr "Thisiki weekrwa"
 
 #: app/book/[id].tsx:778
-#: src/booking/Checkout.tsx:317
-#: src/booking/Reservation.tsx:223
+#: src/booking/Checkout.tsx:318
+#: src/booking/Reservation.tsx:231
 msgid "Time"
 msgstr "Timendi"
 
@@ -3570,7 +3635,7 @@ msgstr "Timesiki areiki localugu to theugumbi shopko ({0})."
 msgid "To come"
 msgstr "To comeiki"
 
-#: src/booking/Reservation.tsx:286
+#: src/booking/Reservation.tsx:294
 msgid "To pay at the shop"
 msgstr "To payko at theugumbi shopko"
 
@@ -3611,8 +3676,8 @@ msgstr "Topugu ratediki: {0} at {1}, ratediki {avg}."
 
 #: app/book/[id].tsx:924
 #: app/book/[id].tsx:951
-#: src/booking/Checkout.tsx:169
-#: src/booking/Reservation.tsx:260
+#: src/booking/Checkout.tsx:170
+#: src/booking/Reservation.tsx:268
 msgid "Total"
 msgstr "Totalikinyako"
 
@@ -3637,7 +3702,7 @@ msgstr "Trymbi a shopko's namemwa, or a wordrwa fromko theugumbi messageugumbi."
 msgid "Try a shorter word, or clear the search to see everything."
 msgstr "Trymbi a shorterzeko wordrwa, or clearmwa theugumbi searchikiugu to seeaba everythinguguabaikiikimbi."
 
-#: app/booking/[id].tsx:403
+#: app/booking/[id].tsx:407
 #: src/components/NearMeCard.tsx:24
 #: src/components/NearMeCard.tsx:34
 msgid "Try again"
@@ -3812,12 +3877,12 @@ msgstr "Viewaba theirshya shopko"
 msgid "Visit"
 msgstr "Visitabazembi"
 
-#: app/booking/[id].tsx:401
+#: app/booking/[id].tsx:405
 msgid "Waiting for approval…"
 msgstr "Waitingndiaba forabaze approvalzeshya…"
 
 #. placeholder {0}: format(a.listPriceMinor, a.currency)
-#: src/booking/Checkout.tsx:163
+#: src/booking/Checkout.tsx:164
 msgid "Was {0}"
 msgstr "Wasmbi {0}"
 
@@ -3983,7 +4048,7 @@ msgstr "Writeaba a messageugumbi"
 #: app/review/[id].tsx:123
 #: app/review/[id].tsx:138
 #: app/review/[id].tsx:163
-#: src/booking/Reservation.tsx:372
+#: src/booking/Reservation.tsx:417
 msgid "Write a review"
 msgstr "Writeaba a reviewikimbiiki"
 
@@ -4024,7 +4089,7 @@ msgstr "Youaba agreedrwarwa to versionshya {0}. Thisiki is versionshya {1}."
 msgid "You agreed to version {0}. This one is newer."
 msgstr "Youaba agreedrwarwa to versionshya {0}. Thisiki onenya is newermwa."
 
-#: src/booking/Checkout.tsx:215
+#: src/booking/Checkout.tsx:216
 msgid "You approve it on your own phone"
 msgstr "Youaba approvemwako it on yourmbihoiki ownnya phonehoikize"
 
@@ -4032,7 +4097,7 @@ msgstr "Youaba approvemwako it on yourmbihoiki ownnya phonehoikize"
 msgid "You approve the deposit on your own phone. This app never asks for your PIN."
 msgstr "Youaba approvemwako theugumbi depositikinyambiiki on yourmbihoiki ownnya phonehoikize. Thisiki appaba neverkoshya asksho forabaze yourmbihoiki PINugu."
 
-#: app/booking/[id].tsx:413
+#: app/booking/[id].tsx:417
 msgid "You approve the payment with your MoMo PIN, on your phone."
 msgstr "Youaba approvemwako theugumbi paymentikiugu withikimbi yourmbihoiki MoMorwa PINugu, on yourmbihoiki phonehoikize."
 
@@ -4048,7 +4113,15 @@ msgstr "Youaba areiki shownmbishya as Anonymousmwandi nownya."
 msgid "You can change this for {REVIEW_EDIT_WINDOW_DAYS} days after posting."
 msgstr "Youaba caniki changekonya thisrwaaba forabaze {REVIEW_EDIT_WINDOW_DAYS} daysmbi afteriki postingikindi."
 
-#: src/booking/Reservation.tsx:32
+#: src/booking/Reservation.tsx:324
+msgid "You cancelled less than 24 hours before, so the deposit is not refunded."
+msgstr "Youaba cancelledabandi lessaba thanmwa 24 hoursugu beforembiho, so theugumbi depositikinyambiiki is notmwa refundedzeaba."
+
+#: src/booking/Reservation.tsx:320
+msgid "You cancelled more than 24 hours before, so your whole deposit is refunded."
+msgstr "Youaba cancelledabandi moreaba thanmwa 24 hoursugu beforembiho, so yourmbihoiki wholendi depositikinyambiiki is refundedzeaba."
+
+#: src/booking/Reservation.tsx:33
 msgid "You cancelled this"
 msgstr "Youaba cancelledabandi thisrwaaba"
 
@@ -4116,8 +4189,8 @@ msgid "Your account, bookings, reviews, messages and questions to us — to read
 msgstr "Yourmwa accountabaiki, bookingskomwa, reviewsmwahorwaze, messageskoshya andmwa questionsmwaze to us — to readrwa, printaba or keepndi."
 
 #: app/book/[id].tsx:902
-#: app/booking/[id].tsx:234
-#: app/booking/[id].tsx:246
+#: app/booking/[id].tsx:235
+#: app/booking/[id].tsx:247
 msgid "Your booking"
 msgstr "Yourmwa bookinguguiki"
 
@@ -4153,10 +4226,6 @@ msgstr "Yourmwa dataiki"
 msgid "Your data is in {uri}. This device cannot open a share sheet."
 msgstr "Yourmwa dataiki is in {uri}. Thisiki devicenyaze cannotmwako openrwa a shareaba sheetugu."
 
-#: app/booking/[id].tsx:292
-msgid "Your deposit is not refunded when you cancel. That is what holds the slot."
-msgstr "Yourmwa depositikinyambiiki is notmwa refundedzeaba whenko youugu cancelhoze. Thatugu is whatnya holdsrwarwaugu theugumbi slotikindi."
-
 #: src/exportDocument.ts:52
 msgid "Your district"
 msgstr "Yourmwa districtnyanya"
@@ -4182,7 +4251,7 @@ msgstr "Yourmwa phonehoikize couldmbi notmwa gethoze a positionmwaiki. Trymbi ag
 msgid "Your phone has location turned off for this app. Turn it on in Settings to see the nearest places first. Everything else works without it."
 msgstr "Yourmwa phonehoikize hasshya locationzenya turnedshya offmwa forabaze thisrwaaba appaba. Turnmbiiki it on in Settingsabanyakoshya to seeaba theugumbi nearestikiho placeskonya firstkondi. Everythingugunya elseaba workskomwa withoutnyako it."
 
-#: src/booking/Checkout.tsx:276
+#: src/booking/Checkout.tsx:277
 msgid "Your PIN goes only into your phone. This app never asks for it."
 msgstr "Yourmwa PINugu goesshya onlynya intoshya yourmbihoiki phonehoikize. Thisiki appaba neverkoshya asksho forabaze it."
 
@@ -4200,7 +4269,7 @@ msgid "Your requests about this booking"
 msgstr "Yourmwa requestsnyandi aboutmwa thisrwaaba bookinguguiki"
 
 #: app/review/[id].tsx:163
-#: src/booking/Reservation.tsx:358
+#: src/booking/Reservation.tsx:403
 msgid "Your review"
 msgstr "Yourmwa reviewikimbiiki"
 
@@ -4213,7 +4282,7 @@ msgstr "Yourmwa reviewsmwahorwaze"
 msgid "Your saved address"
 msgstr "Yourmwa savedaba addressshya"
 
-#: src/booking/Checkout.tsx:365
+#: src/booking/Checkout.tsx:366
 msgid "Your slot is held for"
 msgstr "Yourmwa slotikindi is heldmwa forabaze"
 
@@ -4221,9 +4290,9 @@ msgstr "Yourmwa slotikindi is heldmwa forabaze"
 msgid "Your support requests"
 msgstr "Yourmwa supportndiho requestsnyandi"
 
-#: src/booking/PayingPromises.tsx:38
-msgid "Your whole deposit goes back to the number that paid. If you cancel, the shop keeps it."
-msgstr "Yourmwa wholendi depositikinyambiiki goesshya backmbi to theugumbi numberabarwa thatugu paidnya. If youugu cancelhoze, theugumbi shopko keepsrwa it."
+#: src/booking/Reservation.tsx:373
+msgid "Your time has started, so the booking can no longer be cancelled. Write to the shop — they can still check you in while your time is running."
+msgstr "Yourmwa timendi hasshya startedmbiho, so theugumbi bookinguguiki caniki no longeruguaba be cancelledabandi. Writeaba to theugumbi shopko — theynya caniki stillkomwa checkshya youugu in whilembi yourmbihoiki timendi is runningabaikiikimbi."
 
 #: src/tour/WelcomeTour.tsx:97
 msgid "Yours to choose"

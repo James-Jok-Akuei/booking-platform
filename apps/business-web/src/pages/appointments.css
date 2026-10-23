@@ -471,3 +471,7 @@ html:lang(rw) .ap-today-text em, html:lang(fr) .ap-today-text em { min-height: c
 /* Long words (§308): a heading that cannot fit its column ends in "…" with
    its full words on hover, never running into the next one. */
 .ap-cols > * { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* When No-show becomes possible (§313). */
+.ap-drawer-later { display: flex; align-items: flex-start; gap: 7px; margin: 10px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+.ap-drawer-later > svg { flex: none; margin-top: 2px; }

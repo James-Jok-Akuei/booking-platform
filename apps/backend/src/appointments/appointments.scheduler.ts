@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { AppointmentStatus } from '@prisma/client';
+import { AppointmentStatus, NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { LedgerService } from '../ledger/ledger.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -98,6 +98,9 @@ export class AppointmentsScheduler {
       if (to === AppointmentStatus.COMPLETED) {
         await askHowItWent(this.prisma, this.notifications, appointment.id);
       }
+      // A missed booking is said to the customer, as the shop's own marking is (§313):
+      // a deposit kept is never a silent charge they discover later.
+      if (to === AppointmentStatus.NO_SHOW) await this.tellMissed(appointment.id);
       this.logger.log(
         `Auto-transition: appointment ${appointment.id} (location ${appointment.locationId}) ` +
           `${from} -> ${to}; ended ${appointment.endTime.toISOString()}, ` +
@@ -106,5 +109,35 @@ export class AppointmentsScheduler {
     }
 
     return due.length;
+  }
+
+  private async tellMissed(appointmentId: string) {
+    if (!this.notifications) return;
+    const a = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      select: {
+        customerId: true,
+        startTime: true,
+        depositAmountMinor: true,
+        currency: true,
+        service: { select: { name: true } },
+        location: { select: { name: true, business: { select: { name: true } } } },
+      },
+    });
+    if (!a) return;
+    await this.notifications.notify({
+      recipientId: a.customerId,
+      type: NotificationType.APPOINTMENT_NO_SHOW,
+      appointmentId,
+      context: {
+        serviceName: a.service.name,
+        locationName: a.location.name,
+        businessName: a.location.business.name ?? 'the business',
+        startTime: a.startTime,
+        depositAmountMinor: a.depositAmountMinor,
+        currency: a.currency,
+        automatic: true,
+      },
+    });
   }
 }

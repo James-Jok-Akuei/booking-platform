@@ -9,6 +9,10 @@ import {
   heldTotals,
   listAdjustments,
   listLedgerEntries,
+  listRefunds,
+  markRefundSent,
+  retryRefund,
+  type AdminRefund,
   type AdminLedgerEntry,
   type BillingAdjustment,
   type LedgerEntryType,
@@ -22,7 +26,7 @@ import { ShopMark } from '../ui/ShopMark';
 import './ledger.css';
 import { EmptyState } from '../ui/EmptyState';
 
-type Tab = 'adjustments' | 'ledger';
+type Tab = 'adjustments' | 'ledger' | 'refunds';
 type State = 'outstanding' | 'executed' | 'all';
 type Period = 'any' | 'today' | '7d' | '30d';
 
@@ -70,7 +74,14 @@ const periodFrom = (p: Period) => {
  */
 export function LedgerPage() {
   const [params, setParams] = useSearchParams();
-  const tab: Tab = params.get('tab') === 'ledger' ? 'ledger' : 'adjustments';
+  const tab: Tab = params.get('tab') === 'ledger' ? 'ledger' : params.get('tab') === 'refunds' ? 'refunds' : 'adjustments';
+  // Refunds a person must send (§313): refused three times, or with no number on record.
+  const refundsNeed = useQuery({
+    queryKey: ['refunds', 'counts'],
+    queryFn: () => listRefunds({ limit: 100 }),
+    select: (page) => page.refunds.filter(needsAPerson).length,
+    refetchInterval: 60_000,
+  });
   const outstanding = useQuery({
     queryKey: ['adjustments', 'count'],
     queryFn: () => listAdjustments({ state: 'outstanding', limit: 1 }),
@@ -120,10 +131,23 @@ export function LedgerPage() {
           Ledger
           {entries.data !== undefined && <span>{entries.data.toLocaleString()} entries</span>}
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'refunds'}
+          className={tab === 'refunds' ? 'is-on' : ''}
+          onClick={() => setParams({ tab: 'refunds' }, { replace: true })}
+        >
+          <Icon name="refresh" size={16} />
+          Refunds
+          {refundsNeed.data !== undefined && (
+            <span className={refundsNeed.data > 0 ? 'is-hot' : ''}>{refundsNeed.data > 0 ? `${refundsNeed.data} need you` : 'all moving'}</span>
+          )}
+        </button>
         </div>
       </div>
 
-      {tab === 'adjustments' ? <Adjustments /> : <Ledger />}
+      {tab === 'adjustments' ? <Adjustments /> : tab === 'refunds' ? <Refunds /> : <Ledger />}
     </section>
   );
 }
@@ -210,6 +234,193 @@ function Reconciliation() {
           <Icon name="refresh" size={14} className={check.isFetching ? 'lg-spin' : undefined} /> {check.isFetching ? 'Asking…' : 'Ask again'}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** A refund the operator could not send, or one with nowhere to send it: a person sends it. */
+const needsAPerson = (r: AdminRefund) => r.status === 'FAILED' || (r.status === 'PENDING' && !r.phoneNumber);
+
+type RefundView = 'person' | 'moving' | 'sent' | 'all';
+
+const REFUND_REASON: Record<AdminRefund['reason'], string> = {
+  SHOP_CANCELLED: 'The shop cancelled',
+  CANCELLED_IN_TIME: 'Cancelled 24 h ahead',
+};
+
+/**
+ * Deposits going back to customers (§313). Sent by the operator on their own,
+ * to the number that paid; three refusals, or no number on record (a booking
+ * paid before numbers were kept), and it is ours to send — from the operator's
+ * portal, then marked here with its reference.
+ */
+function Refunds() {
+  const money = useMoney();
+  const queryClient = useQueryClient();
+  const [view, setView] = useState<RefundView>('person');
+  const list = useQuery({ queryKey: ['refunds', 'all'], queryFn: () => listRefunds({ limit: 100 }), refetchInterval: 30_000 });
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: ['refunds'] });
+
+  const retry = useMutation({ mutationFn: (id: string) => retryRefund(id), onSuccess: refresh });
+  const mark = useMutation({
+    mutationFn: (input: { id: string; reference: string; phoneNumber?: string }) =>
+      markRefundSent(input.id, { reference: input.reference, ...(input.phoneNumber ? { phoneNumber: input.phoneNumber } : {}) }),
+    onSuccess: refresh,
+  });
+
+  const markByHand = async (row: AdminRefund) => {
+    const amount = money.format(row.amountMinor, row.currency);
+    let phoneNumber: string | undefined;
+    if (!row.phoneNumber) {
+      const number = await promptDialog({
+        title: 'Which number did you send it to?',
+        body: (
+          <p>
+            This booking was paid before numbers were kept. Ask <strong>{row.appointment.customerEmail}</strong> for their MoMo number, send{' '}
+            <strong>{amount}</strong>, then write the number here.
+          </p>
+        ),
+        label: 'Their MoMo number',
+        placeholder: '0788 123 456',
+        minLength: 9,
+        tone: 'info',
+        icon: 'phone',
+        confirmLabel: 'Next',
+        cancelLabel: 'Not now',
+      });
+      if (number === null) return;
+      phoneNumber = number.trim();
+    }
+    const reference = await promptDialog({
+      title: `Mark ${amount} as sent?`,
+      body: (
+        <p>
+          Only once the money has left — from the operator’s portal, to {phoneNumber ?? row.phoneNumber}. The customer sees it as sent.
+        </p>
+      ),
+      label: 'The operator’s reference for the transfer',
+      placeholder: 'e.g. 1234567890',
+      minLength: 3,
+      tone: 'warn',
+      icon: 'banknote',
+      confirmLabel: 'Mark sent',
+      cancelLabel: 'Not now',
+    });
+    if (reference === null) return;
+    mark.mutate({ id: row.id, reference: reference.trim(), phoneNumber });
+  };
+
+  const rows = list.data?.refunds ?? [];
+  const counts = {
+    person: rows.filter(needsAPerson).length,
+    moving: rows.filter((r) => !needsAPerson(r) && (r.status === 'PENDING' || r.status === 'SENDING')).length,
+    sent: rows.filter((r) => r.status === 'SENT').length,
+    all: rows.length,
+  };
+  const shown = rows.filter((r) =>
+    view === 'person'
+      ? needsAPerson(r)
+      : view === 'moving'
+        ? !needsAPerson(r) && (r.status === 'PENDING' || r.status === 'SENDING')
+        : view === 'sent'
+          ? r.status === 'SENT'
+          : true,
+  );
+  const failure = (retry.error ?? mark.error) as unknown;
+
+  return (
+    <div className="lg-card">
+      <div className="lg-card-top">
+        <div className="lg-seg" role="tablist" aria-label="Show">
+          {(
+            [
+              ['person', 'Need you', counts.person],
+              ['moving', 'On their way', counts.moving],
+              ['sent', 'Sent', counts.sent],
+              ['all', 'All', counts.all],
+            ] as Array<[RefundView, string, number]>
+          ).map(([value, label, count]) => (
+            <button key={value} type="button" role="tab" aria-selected={view === value} className={view === value ? 'is-on' : ''} onClick={() => setView(value)}>
+              {label}
+              <span className={value === 'person' && count > 0 ? 'is-hot' : ''}>{count}</span>
+            </button>
+          ))}
+        </div>
+        <p className="lg-hint">
+          A deposit goes back when the shop cancels, or when the customer cancels at least 24 hours before. The operator sends it by itself; these are
+          the ones it could not.
+        </p>
+      </div>
+
+      {failure !== null && failure !== undefined && (
+        <p className="error lg-error" role="alert">
+          <Icon name="alert" size={15} />
+          {failure instanceof ApiError ? failure.message : 'That did not work.'}
+        </p>
+      )}
+
+      {list.isLoading && <div className="skeleton lg-skel" />}
+      {list.data && shown.length === 0 && (
+        <EmptyState
+          size="card"
+          className="is-list"
+          art={view === 'person' ? 'clear' : 'bank'}
+          title={view === 'person' ? 'Nothing for you to send' : 'No refunds here'}
+          text={view === 'person' ? 'Every refund is with the operator, or already sent.' : 'Refunds appear here when a deposit is given back.'}
+        />
+      )}
+
+      <ul className="lg-adjs">
+        {shown.map((row) => (
+          <li key={row.id} className={row.status === 'SENT' ? 'is-done' : 'is-waiting'}>
+            <div className="lg-adj-who">
+              <ShopMark name={row.appointment.businessName} logoUrl={null} size={40} />
+              <span>
+                <strong>{row.appointment.customerEmail}</strong>
+                <em>
+                  {REFUND_REASON[row.reason]} · {row.appointment.serviceName} at {row.appointment.businessName}
+                </em>
+              </span>
+            </div>
+            <div className="lg-adj-why">
+              <p>{row.phoneNumber ? `To ${row.phoneNumber}` : 'No number on record — ask the customer'}</p>
+              <span>
+                Owed {ago(row.createdAt)}
+                {row.attempts > 0 && ` · ${row.attempts} ${row.attempts === 1 ? 'try' : 'tries'}`}
+                {row.failureReason && row.status !== 'SENT' && ` · “${row.failureReason}”`}
+              </span>
+            </div>
+            <div className="lg-adj-amount">
+              <strong className="is-neg">{money.format(row.amountMinor, row.currency)}</strong>
+              <span>back to the customer</span>
+            </div>
+            <div className="lg-adj-state">
+              {row.status === 'SENT' ? (
+                <>
+                  <span className="pill resolved">Sent</span>
+                  <span>
+                    {row.doneAt ? stamp(row.doneAt) : ''}
+                    {row.reference ? ` · ${row.reference}` : ''}
+                  </span>
+                </>
+              ) : row.status === 'SENDING' ? (
+                <span className="pill pending">With the operator</span>
+              ) : (
+                <>
+                  {row.phoneNumber && (
+                    <button type="button" disabled={retry.isPending} onClick={() => retry.mutate(row.id)}>
+                      <Icon name="refresh" size={15} /> Try again
+                    </button>
+                  )}
+                  <button type="button" className="primary" disabled={mark.isPending} onClick={() => void markByHand(row)}>
+                    <Icon name="banknote" size={15} /> Sent by hand
+                  </button>
+                </>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

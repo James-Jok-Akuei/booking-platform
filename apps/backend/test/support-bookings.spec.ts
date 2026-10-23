@@ -182,16 +182,13 @@ describe('Support on a booking (§297)', () => {
 
   it('cancels on the shop side only where the rule allows — with the refund when paid', async () => {
     const live = await paidBooking();
-    await expect(
-      appointments.reclassifyAsBusinessCancellation(admin(), live.id, { reason: 'Shop closed for a funeral' }),
-    ).rejects.toThrow(/gatewayChargeMinor/);
-    await appointments.reclassifyAsBusinessCancellation(admin(), live.id, {
-      reason: 'Shop closed for a funeral',
-      gatewayChargeMinor: 100,
-    });
+    // No figure is needed now (§313): the operator's charge is added once the statement shows it.
+    await appointments.reclassifyAsBusinessCancellation(admin(), live.id, { reason: 'Shop closed for a funeral' });
     expect(
       await prisma.ledgerEntry.count({ where: { appointmentId: live.id, type: LedgerEntryType.DEPOSIT_REFUND } }),
     ).toBe(1);
+    // …and the deposit is owed back, to be sent (§313).
+    expect(await prisma.refund.findUnique({ where: { appointmentId: live.id } })).toMatchObject({ reason: 'SHOP_CANCELLED' });
 
     const started = await paidBooking(AppointmentStatus.IN_PROGRESS);
     await expect(

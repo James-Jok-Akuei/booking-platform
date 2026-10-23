@@ -48,6 +48,7 @@ import { requireSignIn } from '../../src/components/SignInWall';
 import { showDialog, showProblem } from '../../src/ui/Dialog';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
+import { freeNow } from '../../src/booking/cancelRules';
 
 /**
  * One booking: pay the deposit, then show the arrival code.
@@ -288,9 +289,12 @@ function Booking() {
       tone: 'danger',
       icon: 'close',
       title: t`Cancel this booking?`,
-      message: paid
-        ? t`Your deposit is not refunded when you cancel. That is what holds the slot.`
-        : t`Nothing has been paid, so nothing is lost.`,
+      // What happens to the money, said before the press (§313).
+      message: !paid
+        ? t`Nothing has been paid, so nothing is lost.`
+        : a && freeNow(a)
+          ? t`It is more than 24 hours before, so your whole deposit comes back to the number that paid it.`
+          : t`It is less than 24 hours before, so your deposit is not refunded. That is what holds the slot.`,
       actions: [
         { label: t`Keep it`, role: 'cancel' },
         {

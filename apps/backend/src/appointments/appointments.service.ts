@@ -15,6 +15,7 @@ import {
   Prisma,
   MobileMoneyProvider,
   NotificationCategory,
+  RefundReason,
   SupportActionKind,
   UserRole,
   VerificationMethod,
@@ -29,6 +30,7 @@ import {
 } from './appointment-select';
 import { HealthChoices } from './health-choices';
 import { MomoHealthService } from '../payments/momo-health.service';
+import { RefundsService } from '../refunds/refunds.service';
 import { CHOICE_GROUPS_SELECT } from '../business/dto/service-choices.dto';
 import {
   CHOICES_EDITABLE_UNTIL_MINUTES,
@@ -112,6 +114,17 @@ export const RESEND_COOLDOWN_MS = 60_000;
  * manual path (§54.3).
  */
 export const MAX_VERIFICATION_CODE_SENDS = 5;
+
+/**
+ * A customer who cancels at least this long before the start gets the whole
+ * deposit back (§313); later, or not coming, it is not refunded (Terms 6.2).
+ * The apps keep a copy of the number to say the deadline; this one decides.
+ */
+export const FREE_CANCELLATION_HOURS = 24;
+
+/** Whether a customer cancelling at `now` is in time for the deposit to come back (§313). */
+export const cancelledInTime = (startTime: Date, now = new Date()) =>
+  startTime.getTime() - now.getTime() >= FREE_CANCELLATION_HOURS * 3_600_000;
 
 
 
@@ -255,6 +268,7 @@ export class AppointmentsService {
     private readonly support: SupportLogService,
     private readonly health: HealthChoices,
     private readonly momo: MomoHealthService,
+    private readonly refunds: RefundsService,
   ) {}
 
   /**
@@ -318,6 +332,7 @@ export class AppointmentsService {
         depositAmountMinor: true,
         currency: true,
         depositPaidAt: true,
+        refund: { select: { id: true } },
         service: { select: { name: true } },
         location: {
           select: { id: true, name: true, businessId: true, business: { select: { name: true } } },
@@ -340,6 +355,8 @@ export class AppointmentsService {
         // Whether any money changed hands: a booking cancelled before its
         // deposit was paid has nothing to refund or keep (§292).
         depositPaid: Boolean(appointment.depositPaidAt),
+        // Whether the deposit goes back (§313): said in each side's message.
+        refunded: Boolean(appointment.refund),
       },
     };
   }
@@ -940,6 +957,8 @@ export class AppointmentsService {
         // operator is unknown cannot be polled, so the two are one fact (§57.2).
         paymentProvider: provider.key,
         paymentProviderReferenceId: result.providerReferenceId,
+        // Where a refund goes back to, if one is ever owed (§313).
+        paymentPhoneNumber: phoneNumber.replace(/\D/g, ''),
         paymentInitiatedAt: new Date(),
         // Recorded alongside the USD amounts, never instead of them: a
         // provider statement that disagrees with our ledger can only be
@@ -1474,6 +1493,14 @@ export class AppointmentsService {
           : `Only a BOOKED appointment can be marked as a no-show. This one is ${appointment.status}.`,
       );
     }
+    // Not before its time is over (§313): a customer may arrive late, in the
+    // middle of their slot, and be served. A no-show marked early took a
+    // deposit for a visit that could still have happened.
+    if (appointment.endTime.getTime() > Date.now()) {
+      throw new BadRequestException(
+        'A no-show can be marked only once the booking’s time has ended. Until then the customer may still come — check them in when they do.',
+      );
+    }
 
     this.logger.log(`Appointment ${appointmentId} -> NO_SHOW.`);
 
@@ -1554,19 +1581,31 @@ export class AppointmentsService {
       );
     }
 
-    // A business cancelling a PAID appointment owes a refund, and the gateway's
-    // charge on that refund is theirs to bear (§25). It has to be supplied:
-    // nothing in the integration reports it, and guessing it from a percentage
-    // would put a figure in the ledger the provider's statement disagrees with.
-    const owesRefund =
-      cancelledBy === CancelledBy.BUSINESS && appointment.depositPaidAt !== null;
-    if (owesRefund && dto.gatewayChargeMinor === undefined) {
+    // A customer cancels until the start (§313). After it, not coming is a
+    // missed booking — the money is the same, and the record stays true.
+    if (
+      cancelledBy === CancelledBy.CUSTOMER &&
+      appointment.status === AppointmentStatus.BOOKED &&
+      appointment.startTime.getTime() <= Date.now()
+    ) {
       throw new BadRequestException(
-        'gatewayChargeMinor is required when a business cancels an appointment ' +
-          'whose deposit was paid. It is the gateway\'s charge on the refund, in ' +
-          'minor units of the settlement currency, and it is borne by the business.',
+        'Your booking’s time has started, so it can no longer be cancelled. If you cannot come, write to the shop from the booking.',
       );
     }
+
+    // A business cancelling a PAID appointment owes a refund, and the gateway's
+    // charge on that refund is theirs to bear (§25). ~~It has to be supplied~~
+    // — the shop's own app never could, so every paid cancellation from it
+    // was refused (§313). Now: whatever the shop's team typed, or nothing; the
+    // operator's real charge, once the refund is sent and the statement shows
+    // it, is added by our team as an adjustment.
+    const owesRefund =
+      cancelledBy === CancelledBy.BUSINESS && appointment.depositPaidAt !== null;
+    // A customer who cancels at least 24 hours before gets it all back (§313).
+    const inTime =
+      cancelledBy === CancelledBy.CUSTOMER &&
+      appointment.depositPaidAt !== null &&
+      cancelledInTime(appointment.startTime);
 
     this.logger.log(
       `Appointment ${appointmentId} -> CANCELLED by ${cancelledBy} (user ${userId}).`,
@@ -1591,8 +1630,12 @@ export class AppointmentsService {
         await this.ledger.recordBusinessCancellationRefund(
           tx,
           appointmentId,
-          dto.gatewayChargeMinor!,
+          dto.gatewayChargeMinor ?? 0,
         );
+        await this.refunds.owe(tx, appointmentId, RefundReason.SHOP_CANCELLED);
+      } else if (inTime) {
+        await this.ledger.recordCustomerRefund(tx, appointmentId);
+        await this.refunds.owe(tx, appointmentId, RefundReason.CANCELLED_IN_TIME);
       } else {
         // A CUSTOMER cancellation releases the existing entries: the deposit is
         // not refunded (§2), so the business keeps its share. An unpaid business
@@ -1601,6 +1644,9 @@ export class AppointmentsService {
       }
       return row;
     });
+
+    // On its way at once, not at the next minute's run (§313).
+    if (owesRefund || inTime) void this.refunds.sendDue().catch(() => undefined);
 
     // Read back from the row rather than recomputed, so the sentence the
     // customer is sent and the value the refund module will read can never
@@ -1840,11 +1886,6 @@ export class AppointmentsService {
           : 'This cancellation had no paid deposit, so there is nothing to give back.',
       );
     }
-    if (appointment.depositPaidAt && dto.gatewayChargeMinor === undefined) {
-      throw new BadRequestException(
-        "Say what the operator charges to send the refund back (gatewayChargeMinor) — the shop bears it.",
-      );
-    }
 
     const wasLive =
       appointment.status === AppointmentStatus.PENDING_PAYMENT || appointment.status === AppointmentStatus.BOOKED;
@@ -1866,11 +1907,13 @@ export class AppointmentsService {
       });
 
       if (appointment.depositPaidAt) {
-        await this.ledger.recordBusinessCancellationRefund(
-          tx,
-          appointmentId,
-          dto.gatewayChargeMinor!,
-        );
+        // A customer's in-time cancellation already gave it back (§313): it
+        // is now the shop's, and the shop carries the operator's charge.
+        const refunded = await tx.refund.findUnique({ where: { appointmentId }, select: { id: true } });
+        if (!refunded) {
+          await this.ledger.recordBusinessCancellationRefund(tx, appointmentId, dto.gatewayChargeMinor ?? 0);
+          await this.refunds.owe(tx, appointmentId, RefundReason.SHOP_CANCELLED);
+        }
       } else {
         await this.ledger.releaseOnResolution(tx, appointmentId);
       }
@@ -1892,6 +1935,8 @@ export class AppointmentsService {
       );
       return row;
     });
+
+    if (appointment.depositPaidAt) void this.refunds.sendDue().catch(() => undefined);
 
     this.logger.warn(
       `Appointment ${appointmentId} reclassified as a BUSINESS cancellation by admin ` +
@@ -2213,8 +2258,9 @@ export class AppointmentsService {
 
   /**
    * Cancels for a customer who asked us to (§297) — their app would not let
-   * them. A customer's cancellation in every way: the deposit is not given
-   * back (§2), and the shop keeps its share.
+   * them. A customer's cancellation in every way: at least 24 hours before,
+   * the deposit goes back (§313); later, it is not given back (§2), and the
+   * shop keeps its share.
    */
   async supportCancelForCustomer(actor: SupportActor, appointmentId: string, dto: SupportReasonDto) {
     this.support.check(actor, dto);
@@ -2223,6 +2269,7 @@ export class AppointmentsService {
     if (!supportOptions(appointment).cancelForCustomer) {
       throw new BadRequestException(`Only a booking still to come can be cancelled. This one is ${appointment.status}.`);
     }
+    const inTime = appointment.depositPaidAt !== null && cancelledInTime(appointment.startTime);
     const updated = await this.prisma.$transaction(async (tx) => {
       const row = await tx.appointment.update({
         where: { id: appointmentId },
@@ -2236,7 +2283,12 @@ export class AppointmentsService {
         },
         select: APPOINTMENT_SELECT,
       });
-      await this.ledger.releaseOnResolution(tx, appointmentId);
+      if (inTime) {
+        await this.ledger.recordCustomerRefund(tx, appointmentId);
+        await this.refunds.owe(tx, appointmentId, RefundReason.CANCELLED_IN_TIME);
+      } else {
+        await this.ledger.releaseOnResolution(tx, appointmentId);
+      }
       await this.support.record(
         actor,
         {
@@ -2245,14 +2297,17 @@ export class AppointmentsService {
           appointmentId,
           ticketId: ticket?.id,
           ticketNote: (l) =>
-            appointment.depositPaidAt
-              ? say(l, 'We cancelled your booking, as you asked. As agreed when you booked, the deposit is not given back.')
-              : say(l, 'We cancelled your booking, as you asked. No deposit had been paid.'),
+            inTime
+              ? say(l, 'We cancelled your booking, as you asked. It was more than 24 hours before, so your whole deposit comes back to you.')
+              : appointment.depositPaidAt
+                ? say(l, 'We cancelled your booking, as you asked. As agreed when you booked, the deposit is not given back.')
+                : say(l, 'We cancelled your booking, as you asked. No deposit had been paid.'),
         },
         tx,
       );
       return row;
     });
+    if (inTime) void this.refunds.sendDue().catch(() => undefined);
     await this.notifyBothParties(appointmentId, NotificationType.APPOINTMENT_CANCELLED, 'Cancelled by support for the customer.');
     return updated;
   }
@@ -2682,8 +2737,10 @@ export class AppointmentsService {
         id: true,
         status: true,
         customerId: true,
-        // Needed by cancel(): whether a refund is owed turns on it.
+        // Needed by cancel(): whether a refund is owed turns on it, and on how
+        // long before the start a customer cancels (§313).
         depositPaidAt: true,
+        startTime: true,
         locationId: true,
         location: { select: { businessId: true } },
       },

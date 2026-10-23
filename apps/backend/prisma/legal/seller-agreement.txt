@@ -1,6 +1,6 @@
 SELLER AGREEMENT
 
-Last updated: 20 October 2026
+Last updated: 23 October 2026
 
 This Seller Agreement is the agreement between your business and BwanguReservations ("we", "us", "the Platform") when your business takes bookings through BwanguReservations. It applies to every business that is listed on the Platform, to all of its branches, and to everyone who works in its account.
 
@@ -75,7 +75,7 @@ BwanguReservations is a company registered in Rwanda with the Rwanda Development
 
 5.4 Finishing. Mark each booking done after the service. A booking that was checked in but not marked done becomes done by itself 24 hours after its end.
 
-5.5 Customers who do not come. If a customer does not come, mark the booking as a no-show. A booking that nobody checked in becomes a no-show by itself 24 hours after its end. Mark a no-show only when the customer really did not come.
+5.5 Customers who do not come. If a customer does not come, mark the booking as a no-show once its time has ended — not before: a customer who arrives late, while their time is still running, can still be checked in and served. A booking that nobody checked in becomes a no-show by itself 24 hours after its end. Mark a no-show only when the customer really did not come.
 
 5.6 Cancelling as a business. You may cancel a booking that has not started, but you must give a reason, and the customer is told it. Cancel only when you truly cannot serve the customer. If you know you will be closed, add a closure so that nobody can book those times. Frequent cancellations harm customers; we may limit or suspend a business that cancels often.
 
@@ -90,7 +90,7 @@ BwanguReservations is a company registered in Rwanda with the Rwanda Development
 
 6.2 Our fee. For each booking we keep a fee, which is a percentage of the booking's price, out of the deposit. Our fee is 10% of the price unless we tell you otherwise in the business app. The fee that applies to a booking is the one in force when it was made. If we raise our fee, we tell you in the business app and by email at least 30 days before, and the new fee applies only to bookings made after that date. Our fee includes any VAT that applies to it.
 
-6.3 Your share. Your share of a deposit is the deposit less our fee. It becomes yours when the booking is done, marked a no-show, or cancelled by the customer.
+6.3 Your share. Your share of a deposit is the deposit less our fee. It becomes yours when the booking is done, marked a no-show, or cancelled by the customer less than 24 hours before its time. A customer who cancels at least 24 hours before gets the whole deposit back, and no share is paid to you for that booking.
 
 6.4 When you are paid. Once your share is yours, it is held for a short waiting period — currently 2 days — so that a mistaken check-in or a complaint can be put right, and then paid in our daily payout run to your payout number. We may change the waiting period; we tell you in the business app before a change applies.
 

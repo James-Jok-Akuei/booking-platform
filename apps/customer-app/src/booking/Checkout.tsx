@@ -12,10 +12,11 @@ import { MomoLogo, MOMO_NAME } from '../ui/Momo';
 import { Pulse } from '../ui/Motion';
 import { PressableScale } from '../ui/PressableScale';
 import { useRwandaToday } from '../today';
-import { balanceMinor, dayOf, howMany, minutesOf, timeRange, type Bought } from './format';
+import { balanceMinor, dayOf, howMany, minutesOf, timeOf, timeRange, type Bought } from './format';
 import { BookedChoices } from './BookedChoices';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
+import { FREE_CANCELLATION_HOURS, freeUntil } from './cancelRules';
 
 /** How long the server holds an unpaid slot (`PENDING_PAYMENT_TTL_MS`). */
 const HOLD_MS = 5 * 60 * 1000;
@@ -191,14 +192,14 @@ export function Checkout({
           <Text style={styles.dueValue}>{format(a.depositAmountMinor, a.currency)}</Text>
         </View>
 
-        {/* Said HERE, before the money moves, not discovered on cancelling. */}
+        {/* Said HERE, before the money moves, not discovered on cancelling (§313):
+            the deadline for this booking, missing it, and the shop's side. */}
         <View style={styles.policy}>
           <Icon name="information-circle-outline" size={16} color={theme.ink2} />
           <Text style={styles.policyText}>
-            <Trans>
-              The deposit is not refunded if you cancel. If the shop cancels, you get all of it
-              back.
-            </Trans>
+            {Date.now() <= freeUntil(a).getTime()
+              ? t`Free to cancel until ${dayOf(freeUntil(a).toISOString())}, ${timeOf(freeUntil(a).toISOString())}: your whole deposit comes back. After that, or if you don’t come, it is not refunded. If the shop cancels, you always get it all back.`
+              : t`It is less than ${FREE_CANCELLATION_HOURS} hours before your time, so the deposit is not refunded if you cancel or don’t come. If the shop cancels, you get it all back.`}
           </Text>
         </View>
       </FadeIn>

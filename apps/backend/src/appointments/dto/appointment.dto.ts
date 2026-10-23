@@ -1,6 +1,8 @@
 import {
   AppointmentStatus,
   CancelledBy,
+  RefundReason,
+  RefundStatus,
   LedgerEntryType,
   MobileMoneyProvider,
   Prisma,
@@ -86,6 +88,16 @@ export class AppointmentChoiceDto {
   priceMinor!: number;
   /** What it added to the booking's length. */
   extraMinutes!: number;
+}
+
+/** The deposit going back to the customer (§313): where it has got to, never the number. */
+export class AppointmentRefundDto {
+  status!: RefundStatus;
+  reason!: RefundReason;
+  amountMinor!: number;
+  currency!: string;
+  sentAt!: string | null;
+  doneAt!: string | null;
 }
 
 /** The customer's own review of this visit, when they left one (§111). */
@@ -193,6 +205,9 @@ export class AppointmentDto implements AppointmentPayload {
 
   /** What our support team did on this booking, and when (§297). */
   supportActions!: AppointmentSupportStepDto[];
+
+  /** The deposit going back, when it does (§313). */
+  refund!: AppointmentRefundDto | null;
 }
 
 /**

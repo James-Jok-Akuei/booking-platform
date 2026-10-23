@@ -2870,8 +2870,10 @@ what happens when a booking falls through:
 - **Business cancels** → the customer is refunded **in full**, including the
   platform fee taken at booking. The payment gateway's own charge (1–2%) on that
   refund is borne by the **business**.
-- **Customer cancels, or no-shows** → **no refund at all.** Nothing reverses.
-  This is §2's non-refundable deposit, unchanged.
+- ~~**Customer cancels, or no-shows** → **no refund at all.** Nothing reverses.
+  This is §2's non-refundable deposit, unchanged.~~ Superseded by §313: a
+  customer who cancels at least 24 hours before gets the whole deposit back;
+  later, or not coming, nothing reverses.
 
 The asymmetry is the point: the deposit exists to make a customer's commitment
 real, so it cannot survive the business being the one to break it.
@@ -3937,7 +3939,7 @@ with it.
 Refunding twice is refused: the method looks for an existing `DEPOSIT_REFUND` on
 the appointment and throws.
 
-### 36.2 The gateway charge is supplied, never derived
+### 36.2 The gateway charge is supplied, never derived (~~required at cancelling~~ — §313: the shop's app never sent it, so every paid cancellation from it was refused; it is now optional, 0 when not known, added later as an adjustment)
 
 **The integration does not expose it.** `checkPaymentStatus` parses exactly two
 fields off MTN's response — `status` and `reason` — and neither
@@ -20362,3 +20364,74 @@ kept the safety ones and dropped the medical ones.
   test results, medicines and ID, passport or insurance numbers; religion,
   ethnicity, politics and PINs are in the app's warning but not yet in the
   agreement — one for the lawyer's next review.
+
+## 313. Cancelling and no-shows, untangled — free cancellation up to 24 hours before, refunds actually sent (2026-10-23)
+
+The user asked how the two apps handle cancellations and no-shows ("seems like
+there is a mix up") and when a no-show happens. Reading the code found:
+
+1. **No-show could be pressed on any paid booking, even next week's**, right
+   beside Cancel — so a shop meaning to cancel could take the deposit instead.
+2. **Staff could not cancel, but could press No-show at any time** — a way
+   round the rule that a shop cancelling refunds the customer.
+3. **Customers could cancel after their time had passed**, turning a missed
+   booking into "You cancelled".
+4. **The customer app never said that not coming loses the deposit**, and a
+   missed booking showed no explanation; **the automatic no-show told nobody**.
+5. **A shop cancelling a paid booking from its own app was always refused**:
+   the server demanded the operator's charge (`gatewayChargeMinor`, §36.2),
+   which the app never sent.
+6. **Refunds were written in the ledger but never sent** to the customer:
+   only payouts went out through the operator.
+
+The user's decisions: a no-show only **after the booking's end time** ("users
+may arrive in the middle of service time"); a customer's cancellation **free
+if made at least 24 hours before** (a new money rule).
+
+- **The rules** (server, `appointments.service.ts`):
+  - **No-show** only from BOOKED and only once `endTime` has passed; the
+    automatic one stays at end + 24 h, and now tells the customer.
+  - **A customer cancels until the start time.** At least
+    `FREE_CANCELLATION_HOURS` (24) before: the whole deposit back, the
+    platform fee with it (`recordCustomerRefund`), and nothing on the shop —
+    no share, no operator charge. Later: as before, the deposit stays and the
+    shop's share is paid. A booking made for today can never be cancelled for
+    free.
+  - **A shop cancels** as before (owner/manager, a reason, full refund, the
+    operator's charge the shop's) — the charge is now optional, 0 until the
+    statement shows it.
+  - **Support** cancelling for a customer follows the same 24-hour rule;
+    putting a customer's in-time cancellation on the shop does not refund it
+    twice.
+- **Refunds sent** (`src/refunds/`): the deposit's number is now kept when the
+  payment starts (`paymentPhoneNumber`); a `Refund` row is written in the
+  cancellation's own transaction (exactly what was paid, in that currency, to
+  that number) and sent through the operator's transfer like payouts (§64) —
+  claimed first so it never goes twice, our reference written before the
+  call, checked every minute. Three refusals, or no number (bookings paid
+  before this), and it waits for our team: the console's Money → Refunds
+  ("Need you", "On their way", "Sent"), with Try again and Sent by hand (the
+  operator's reference, and the number when there was none).
+- **What each side reads**:
+  - Customer app: at checkout, the deadline for this booking ("Free to cancel
+    until …"; under 24 hours, that it is not refunded); on the booking, the
+    rules with the deadline, "If you don't come, it is marked as missed";
+    after the start, "Running late, or can't come? Write to the shop"; a
+    cancelled booking says whether it is refunded and where the refund has got
+    to; a missed one says who marked it, that the deposit stays, and offers
+    Message the shop / Get help; "How paying works" says the 24-hour rule.
+  - Business app: No-show appears only after the end time, with a line
+    saying from when; "By the customer, in time" and "Deposit refunded" on
+    such bookings; the guide's two topics rewritten.
+  - Messages: each cancellation says whether the deposit comes back; the
+    automatic no-show is said to the customer.
+  - Website: "You get it all back if you cancel at least 24 hours before, or
+    if the shop has to cancel."
+- **Legal**: Terms 4.5 and 6.2 and Seller Agreement 5.5 and 6.3 rewritten in
+  English, Kinyarwanda and French and published locally (Terms v9, Seller
+  Agreement v5) — everyone is asked to accept them. For the lawyer: the free
+  cancellation also answers part of §141.2's question about the seven-day
+  right to cancel.
+- **Not changed**: unpaid holds still lapse after 5 minutes; a checked-in
+  booking cannot be cancelled or marked missed; reviews, payouts and the
+  payout hold work as before.
