@@ -21,8 +21,12 @@ export class TodayRateDto {
 }
 
 export class TodayItemDto {
-  /** momo · kwibuka · umuganda · holiday · searches · rain · tax · rates · news */
+  /** momo · kwibuka · umuganda · holiday · papers · searches · rain · tax · rates · news */
   kind!: string;
+
+  /** papers (§314): which paper, and what is wrong — missing · refused · expired · expiring; `date` is when it runs out. */
+  paper?: string;
+  state?: string;
 
   /** momo: how mobile money is doing — "slow" or "down". */
   momo?: string;

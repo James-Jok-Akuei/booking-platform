@@ -2,9 +2,11 @@ import { BadRequestException, Injectable, Logger, OnModuleInit } from '@nestjs/c
 import { ConfigService } from '@nestjs/config';
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
+import { ServiceUnavailableException } from '@nestjs/common';
 import * as crypto from 'crypto';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -65,6 +67,10 @@ export const TICKET_MIME_TYPES = [
 export const TICKET_EXTENSIONS_LABEL =
   'images (incl. HEIC), PDF, Word, Excel, CSV and text files';
 
+/** A business paper (§314): a scan or a photo of it. */
+export const DOCUMENT_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'] as const;
+export const DOCUMENT_EXTENSIONS_LABEL = 'PDF, JPG, PNG or WebP';
+
 const EXTENSION_BY_MIME: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -83,6 +89,8 @@ const EXTENSION_BY_MIME: Record<string, string> = {
 };
 
 const LOCAL_UPLOAD_DIR = 'uploads';
+/** Private files (§314): not under `uploads`, which the app serves to anyone. */
+const LOCAL_PRIVATE_DIR = 'private-uploads';
 
 /**
  * Every picture is saved again before it is stored, without what it hid
@@ -143,6 +151,8 @@ export class StorageService implements OnModuleInit {
   private readonly driver: 'r2' | 'local';
   private readonly s3?: S3Client;
   private readonly bucket?: string;
+  /** A second bucket with NO public access, for business papers (§314). */
+  private readonly privateBucket?: string;
   private readonly publicUrl: string;
 
   constructor(private readonly config: ConfigService) {
@@ -151,6 +161,7 @@ export class StorageService implements OnModuleInit {
     const secretAccessKey = this.env('R2_SECRET_ACCESS_KEY');
     const bucket = this.env('R2_BUCKET_NAME');
     const publicUrl = this.env('R2_PUBLIC_URL');
+    this.privateBucket = this.env('R2_PRIVATE_BUCKET_NAME');
 
     const r2Configured = Boolean(
       accountId && accessKeyId && secretAccessKey && bucket && publicUrl,
@@ -229,6 +240,62 @@ export class StorageService implements OnModuleInit {
     }
 
     return `${this.publicUrl}/${key}`;
+  }
+
+  // ---------- Private files (§314) ----------
+
+  /**
+   * Whether private files can be kept here. On R2 that needs a bucket of its
+   * own with no public access — a paper must never be reachable by a link.
+   */
+  privateStorageReady(): boolean {
+    return this.driver === 'local' || Boolean(this.privateBucket);
+  }
+
+  /**
+   * Stores a file nobody can reach by a link, and returns its KEY — never a
+   * URL. It is read back only through `readPrivate`, by routes that check
+   * who is asking. Images lose their hidden details as every upload does.
+   */
+  async uploadPrivate(buffer: Buffer, mimeType: string, keyPrefix: string): Promise<string> {
+    if (!this.privateStorageReady()) {
+      throw new ServiceUnavailableException(
+        'Private file storage is not set up (R2_PRIVATE_BUCKET_NAME), so business papers cannot be kept. Our team has been told.',
+      );
+    }
+    const extension = EXTENSION_BY_MIME[mimeType] ?? 'bin';
+    const key = `${keyPrefix}/${crypto.randomUUID()}.${extension}`;
+    buffer = await cleanImage(buffer, mimeType);
+    if (this.driver === 'r2') {
+      await this.s3!.send(new PutObjectCommand({ Bucket: this.privateBucket, Key: key, Body: buffer, ContentType: mimeType }));
+    } else {
+      const destination = path.join(process.cwd(), LOCAL_PRIVATE_DIR, key);
+      await fs.mkdir(path.dirname(destination), { recursive: true });
+      await fs.writeFile(destination, buffer);
+    }
+    return key;
+  }
+
+  /** The bytes of a private file, for a route that has checked who is asking. */
+  async readPrivate(key: string): Promise<Buffer> {
+    if (this.driver === 'r2') {
+      const object = await this.s3!.send(new GetObjectCommand({ Bucket: this.privateBucket, Key: key }));
+      return Buffer.from(await object.Body!.transformToByteArray());
+    }
+    return fs.readFile(path.join(process.cwd(), LOCAL_PRIVATE_DIR, key));
+  }
+
+  /** Best-effort, like `remove`: the row is the record; a leftover file is a cleanup job. */
+  async removePrivate(key: string): Promise<void> {
+    try {
+      if (this.driver === 'r2') {
+        await this.s3!.send(new DeleteObjectCommand({ Bucket: this.privateBucket, Key: key }));
+      } else {
+        await fs.unlink(path.join(process.cwd(), LOCAL_PRIVATE_DIR, key));
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to delete private object "${key}": ${error instanceof Error ? error.message : error}`);
+    }
   }
 
   /**

@@ -212,6 +212,7 @@ export function categoryOf(type: T, audience: Audience): C {
       case T.BUSINESS_KIND_WRITTEN:
       case T.PAYOUT_DESTINATION_SUBMITTED:
       case T.APPOINTMENT_MANUALLY_VERIFIED:
+      case T.BUSINESS_DOCUMENT_SUBMITTED:
         return C.ADMIN_QUEUE;
       default:
         return C.ACCOUNT;
@@ -327,6 +328,11 @@ export function linkFor(type: T, audience: Audience, ref: NotificationRef): stri
         return '/profile';
       case T.BUSINESS_INVITATION:
         return '/people';
+      // The shop's papers (§314).
+      case T.BUSINESS_DOCUMENT_VERIFIED:
+      case T.BUSINESS_DOCUMENT_REFUSED:
+      case T.BUSINESS_DOCUMENT_EXPIRING:
+        return '/papers';
       case T.PAYOUT_DESTINATION_VERIFIED:
       case T.PAYOUT_DESTINATION_REJECTED:
       case T.PAYOUT_SENT:
@@ -345,6 +351,7 @@ export function linkFor(type: T, audience: Audience, ref: NotificationRef): stri
       return ref.ticketReference ? `/tickets?ref=${encodeURIComponent(ref.ticketReference)}` : '/tickets';
     case T.BUSINESS_SUBMITTED:
     case T.BUSINESS_KIND_WRITTEN:
+    case T.BUSINESS_DOCUMENT_SUBMITTED:
       return '/businesses';
     case T.PAYOUT_DESTINATION_SUBMITTED:
       return '/payout-destinations';

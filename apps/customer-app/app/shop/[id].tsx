@@ -219,6 +219,8 @@ export default function Shop() {
                 ) : (
                   <Pill label={t`Closed`} tone="neutral" />
                 )}
+                {/* Our team checked its registration papers (§314). */}
+                {s.business.registeredBusiness && <Pill label={t`Registered business`} tone="ok" icon="shield-checkmark" />}
                 {/* Every kind of place it is, the main one first (§265). */}
                 {/* An "Other" reads as what the shop wrote; one it left blank is not shown (§267). */}
                 {(s.business.kinds.length

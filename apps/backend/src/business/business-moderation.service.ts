@@ -19,6 +19,7 @@ import { ADMIN_BUSINESS_SELECT } from './dto/admin-business-response.dto';
 import { NotificationsService } from '../notifications/notifications.service';
 import { findBusinessTransition } from './business-status';
 import { GO_LIVE_WORDS, READINESS_SELECT, goLiveGaps, listInWords, readinessView } from './readiness';
+import { DocumentsService } from './documents.service';
 import { adviceItems, adviceToSend, type AdviceItem, type AdviceShop } from './shop-advice';
 import { ListBusinessesDto } from './dto/list-businesses.dto';
 
@@ -44,6 +45,7 @@ export class BusinessModerationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly documents: DocumentsService,
   ) {}
 
   async list(actor: { role: UserRole | string }, query: ListBusinessesDto) {
@@ -149,7 +151,9 @@ export class BusinessModerationService {
       where: { id: businessId },
       select: READINESS_SELECT,
     });
-    return { ...business, readiness: readinessView(shop) };
+    // Its papers (§314), for the review: never the file's key — the file has its own route.
+    const documents = (await this.documents.list(businessId)).documents;
+    return { ...business, documents, readiness: readinessView(shop) };
   }
 
   /**

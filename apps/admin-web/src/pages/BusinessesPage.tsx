@@ -12,6 +12,12 @@ import {
   type AdminBusiness,
   type AdminBusinessDetail,
   type BusinessStatus,
+  openBusinessDocument,
+  refuseDocument,
+  verifyDocument,
+  type AdminDocument,
+  type AdminDocumentKind,
+  type AdminPaperRule,
 } from '../api/admin';
 import { Avatar } from '../ui/Avatar';
 import { confirmDialog, promptDialog } from '../ui/Dialog';
@@ -406,6 +412,11 @@ function Row({
               <Icon name="refresh" size={13} /> Sent back after a rejection
             </span>
           )}
+          {business._count.documents > 0 && (
+            <span className="bz-row-back">
+              <Icon name="legal" size={13} /> {business._count.documents === 1 ? 'A paper to check' : `${business._count.documents} papers to check`}
+            </span>
+          )}
           <span className={`pill ${look.cls}`}>{look.label}</span>
         </span>
       </button>
@@ -457,6 +468,7 @@ const CHECK_WORDS: Record<ReadinessKey, { label: string; hint: string }> = {
   branch: { label: 'A branch on the map, with its district', hint: 'Customers nearby find it by its pin and its area.' },
   hours: { label: 'Opening hours', hint: 'No time can be booked without them.' },
   service: { label: 'A service offered at an open branch', hint: 'Otherwise there is nothing to book.' },
+  papers: { label: 'Its business papers', hint: 'Optional: a checked RDB certificate, TIN or trading licence earns the “Registered business” mark.' },
   logo: { label: 'A logo', hint: 'Customers see initials until there is one.' },
   payout: { label: 'A payout number', hint: 'They can take bookings without one; they cannot be paid.' },
 };
@@ -467,6 +479,7 @@ const GATE_WORDS: Partial<Record<ReadinessKey, string>> = {
   branch: 'an open branch',
   hours: 'opening hours at a branch',
   service: 'a service offered at an open branch',
+  papers: 'its licence, checked under Business papers',
 };
 
 const inWords = (words: string[]) =>
@@ -493,6 +506,21 @@ function checksOf(b: AdminBusinessDetail): Check[] {
     payout.ok = destination.status === 'VERIFIED';
     payout.label = destination.status === 'VERIFIED' ? 'A checked payout number' : 'A payout number, not yet checked';
     payout.hint = 'Check it under Payout numbers before money is owed.';
+  }
+  // Papers (§314): for a licensed trade the licence is a gate, and "done" means checked by us.
+  const papers = items.find((i) => i.key === 'papers');
+  if (papers) {
+    const rules = b.readiness.papers;
+    const waiting = b.documents.some((d) => d.status === 'SUBMITTED');
+    if (rules.length) {
+      papers.ok = rules.every((r) => r.state === 'checked');
+      papers.label = papers.ok ? 'Its licence, checked' : waiting ? 'Its licence, uploaded — not checked yet' : 'Its licence';
+      papers.hint = waiting ? 'Open it under Business papers below and check it.' : 'A licensed trade cannot go live without it.';
+    } else {
+      papers.ok = isRegistered(b.documents);
+      papers.label = papers.ok ? 'Registered — papers checked' : waiting ? 'Registration papers uploaded — not checked yet' : 'Its business papers';
+      if (waiting) papers.hint = 'Check them under Business papers below; a checked one gives the shop the “Registered business” mark.';
+    }
   }
   items.push({
     key: 'description',
@@ -782,11 +810,168 @@ function ReviewPanel({
             </Section>
           </div>
 
+          <PapersSection business={b} />
+
           {/* Support acting for the shop (§297). */}
           <ShopSupportSection businessId={b.id} onAct={setAct} onClose={onClose} />
         </div>
       )}
     </Panel>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Business papers (§314)
+
+const PAPER_NAME: Record<AdminDocumentKind, string> = {
+  RDB_CERTIFICATE: 'RDB registration certificate',
+  TIN_CERTIFICATE: 'Taxpayer registration (TIN)',
+  TRADING_LICENCE: 'Trading licence',
+  HEALTH_FACILITY_LICENCE: 'Health facility licence',
+  PROFESSIONAL_LICENCE: 'Professional licence',
+  FDA_LICENCE: 'Rwanda FDA licence',
+  TOURISM_LICENCE: 'Tourism operating licence',
+  BAR_MEMBERSHIP: 'Bar practising certificate',
+  OTHER: 'Another paper',
+};
+
+const RULE_NAME: Record<AdminPaperRule['key'], string> = {
+  health: 'Health licence',
+  veterinary: 'Veterinary licence',
+  tourism: 'Tourism licence',
+  legal: 'Practising certificate',
+};
+
+/** The papers that earn the mark: checked, and not run out. */
+const REGISTRATION: AdminDocumentKind[] = ['RDB_CERTIFICATE', 'TIN_CERTIFICATE', 'TRADING_LICENCE'];
+const isRegistered = (docs: AdminDocument[]) => docs.some((d) => REGISTRATION.includes(d.kind) && d.status === 'VERIFIED' && !d.expired);
+
+/** A date a paper carries (no time of day): the day it names, wherever the reader is. */
+const onDay = (iso: string) => day(`${iso.slice(0, 10)}T12:00:00`);
+
+const sizeWords = (bytes: number) => (bytes >= 1_048_576 ? `${(bytes / 1_048_576).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
+
+const paperLook = (doc: AdminDocument): { cls: string; label: string } =>
+  doc.status === 'REPLACED'
+    ? { cls: 'superseded', label: 'Replaced' }
+    : doc.expired
+      ? { cls: 'rejected', label: 'Run out' }
+      : doc.status === 'VERIFIED'
+        ? { cls: 'verified', label: 'Checked' }
+        : doc.status === 'REFUSED'
+          ? { cls: 'rejected', label: 'Refused' }
+          : { cls: 'pending', label: 'To check' };
+
+/**
+ * The papers a shop sent (§314): open each, then check it or refuse it with a
+ * reason. A checked registration paper gives the shop the "Registered
+ * business" mark customers see; a licensed trade's licence is what its
+ * approval waits on.
+ */
+function PapersSection({ business: b }: { business: AdminBusinessDetail }) {
+  const queryClient = useQueryClient();
+  const [problem, setProblem] = useState<string | null>(null);
+  const refresh = () =>
+    Promise.all([queryClient.invalidateQueries({ queryKey: ['business', b.id] }), queryClient.invalidateQueries({ queryKey: ['businesses'] })]);
+  const failed = (error: unknown) => setProblem(error instanceof ApiError ? error.message : 'That did not work. Try again.');
+  const verify = useMutation({ mutationFn: (id: string) => verifyDocument(b.id, id), onSuccess: refresh, onError: failed });
+  const refuse = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => refuseDocument(b.id, id, reason),
+    onSuccess: refresh,
+    onError: failed,
+  });
+  const busy = verify.isPending || refuse.isPending;
+
+  const askRefuse = async (doc: AdminDocument) => {
+    const reason = await promptDialog({
+      title: `Refuse this ${(doc.kind === 'OTHER' && doc.label) || PAPER_NAME[doc.kind].toLowerCase()}?`,
+      body: <p>The shop is told the reason and can upload a clear copy.</p>,
+      tone: 'danger',
+      confirmLabel: 'Refuse it',
+      placeholder: 'e.g. The photo is blurred — the number cannot be read',
+      minLength: 3,
+      minMessage: 'A reason of at least 3 characters.',
+    });
+    if (reason !== null) refuse.mutate({ id: doc.id, reason: reason.trim() });
+  };
+
+  const rules = b.readiness.papers;
+  const registered = isRegistered(b.documents);
+  const docs = [...b.documents].sort((x, y) => (x.status === 'SUBMITTED' ? 0 : 1) - (y.status === 'SUBMITTED' ? 0 : 1));
+
+  return (
+    <Section icon="legal" title={`Business papers · ${b.documents.length}`}>
+      <div className="bz-papers-marks">
+        <span className={`pill ${registered ? 'verified' : 'unverified'}`}>
+          <Icon name={registered ? 'checkCircle' : 'shield'} size={13} />
+          {registered ? 'Registered business — customers see the mark' : 'No checked registration — no mark yet'}
+        </span>
+        {rules.map((r) => (
+          <span key={r.key} className={`pill ${r.state === 'checked' ? 'verified' : r.state === 'waiting' ? 'pending' : 'rejected'}`}>
+            {RULE_NAME[r.key]}: {r.state === 'checked' ? 'checked' : r.state === 'waiting' ? 'to check' : 'missing'}
+          </span>
+        ))}
+      </div>
+      {docs.length === 0 ? (
+        <p className="muted">
+          None uploaded. {rules.length ? 'This kind of shop cannot go live without its licence.' : 'Optional for this kind of shop.'}
+        </p>
+      ) : (
+        <ul className="bz-papers">
+          {docs.map((doc) => {
+            const look = paperLook(doc);
+            return (
+              <li key={doc.id} className={`is-${look.cls}`}>
+                <span className="bz-paper-icon">
+                  <Icon name={doc.mimeType === 'application/pdf' ? 'legal' : 'image'} size={18} />
+                </span>
+                <span className="bz-paper-text">
+                  <strong>
+                    {doc.kind === 'OTHER' && doc.label ? doc.label : PAPER_NAME[doc.kind]}
+                    <span className={`pill ${look.cls}`}>{look.label}</span>
+                  </strong>
+                  <em>
+                    {[
+                      doc.number ? `No. ${doc.number}` : null,
+                      doc.expiresAt ? (doc.expired ? `ran out ${onDay(doc.expiresAt)}` : `valid until ${onDay(doc.expiresAt)}`) : null,
+                      `uploaded ${day(doc.createdAt)}`,
+                      doc.fileName,
+                      sizeWords(doc.sizeBytes),
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </em>
+                  {doc.status === 'REFUSED' && doc.refusalReason && <em className="bz-paper-why">Refused: {doc.refusalReason}</em>}
+                  {doc.status === 'VERIFIED' && doc.checkedAt && <em>Checked {day(doc.checkedAt)}</em>}
+                </span>
+                <span className="bz-paper-actions">
+                  <button type="button" onClick={() => openBusinessDocument(b.id, doc).catch(failed)}>
+                    <Icon name="external" size={15} />
+                    Open
+                  </button>
+                  {doc.status === 'SUBMITTED' && (
+                    <>
+                      <button type="button" className="danger" disabled={busy} onClick={() => void askRefuse(doc)}>
+                        Refuse
+                      </button>
+                      <button type="button" className="primary" disabled={busy} onClick={() => verify.mutate(doc.id)}>
+                        <Icon name="check" size={15} stroke={2.4} />
+                        Mark as checked
+                      </button>
+                    </>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {problem && (
+        <p className="error" role="alert">
+          {problem}
+        </p>
+      )}
+    </Section>
   );
 }
 

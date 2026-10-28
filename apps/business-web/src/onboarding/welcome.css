@@ -850,3 +850,26 @@
 .wz .wz-later:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); border-color: rgba(255, 255, 255, 0.4); color: #fff; }
 .wz :is(.wz-link, .wz-inline):hover:not(:disabled) { background: none; border-color: transparent; }
 .wz-writein { animation: rise-in 320ms var(--ease) both; }
+
+/* ---- Business papers (§314): which registration paper, then its slot ---- */
+
+.wz-papers { display: flex; flex-direction: column; gap: 10px; }
+.wz-papers .pp-slot { box-shadow: none; }
+.wz-papers-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.wz-papers-pick button {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--panel);
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.wz-papers-pick button.is-have { color: var(--ok-deep); border-color: rgba(11, 125, 66, 0.3); }
+.wz-papers-pick button.is-on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.wz-papers-pick button.is-on svg { color: #fff; }
+.wz-quiet svg { vertical-align: -2px; color: var(--muted); }

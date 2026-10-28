@@ -1,5 +1,6 @@
-import { BusinessStatus, PayoutDestinationStatus, Prisma } from '@prisma/client';
+import { BusinessDocumentStatus, BusinessStatus, PayoutDestinationStatus, Prisma } from '@prisma/client';
 import { adviceItems, readApprovalAdvice } from './shop-advice';
+import { hasRegistration, requiredPapers, ruleState, type PaperRule, type RuleState } from './document-rules';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 import { msg } from '../i18n/say';
 
@@ -63,11 +64,23 @@ export const READINESS_SELECT = {
     select: { id: true },
     take: 1,
   },
+  // Its kinds, by name, for which papers it must hold; and the papers it has (§314).
+  kinds: { select: { category: { select: { name: true } }, subcategory: { select: { name: true } } } },
+  documents: {
+    where: { status: { in: [BusinessDocumentStatus.SUBMITTED, BusinessDocumentStatus.VERIFIED] } },
+    select: { kind: true, status: true, expiresAt: true },
+  },
 } satisfies Prisma.BusinessProfileSelect;
 
 export type ReadinessShop = Prisma.BusinessProfileGetPayload<{ select: typeof READINESS_SELECT }>;
 
-export type ReadinessKey = 'name' | 'type' | 'phone' | 'branch' | 'hours' | 'service' | 'logo' | 'payout';
+export type ReadinessKey = 'name' | 'type' | 'phone' | 'branch' | 'hours' | 'service' | 'papers' | 'logo' | 'payout';
+
+/** Where the shop stands on each licence its kind must hold (§314). */
+export type PaperRuleView = PaperRule & { state: RuleState };
+
+export const paperRules = (shop: Pick<ReadinessShop, 'kinds' | 'documents'>): PaperRuleView[] =>
+  requiredPapers(shop.kinds).map((rule) => ({ ...rule, state: ruleState(rule, shop.documents) }));
 
 export interface ReadinessItem {
   key: ReadinessKey;
@@ -83,6 +96,7 @@ export function readinessItems(shop: ReadinessShop): ReadinessItem[] {
   );
   const open = shop.locations.filter((l) => l.hours.length > 0);
   const openIds = new Set(open.map((l) => l.id));
+  const rules = paperRules(shop);
   return [
     { key: 'name', required: true, done: Boolean(shop.name?.trim()) },
     { key: 'type', required: true, done: shop.subcategoryId !== null },
@@ -93,6 +107,13 @@ export function readinessItems(shop: ReadinessShop): ReadinessItem[] {
       key: 'service',
       required: true,
       done: shop.services.some((s) => s.locations.some((o) => openIds.has(o.locationId))),
+    },
+    // Papers (§314): a licensed trade must upload its licence before it can be
+    // reviewed; any other shop may upload its registration, for the mark.
+    {
+      key: 'papers',
+      required: rules.length > 0,
+      done: rules.length > 0 ? rules.every((rule) => rule.state !== 'missing') : hasRegistration(shop.documents),
     },
     { key: 'logo', required: false, done: Boolean(shop.logoUrl) },
     { key: 'payout', required: false, done: shop.payoutDestinations.length > 0 },
@@ -111,6 +132,7 @@ export const READINESS_WORDS: Record<ReadinessKey, string> = {
   branch: msg('a branch with its address, map pin and district'),
   hours: msg('opening hours'),
   service: msg('a service to book'),
+  papers: msg('its business papers'),
   logo: msg('a logo'),
   payout: msg('a payout number'),
 };
@@ -121,6 +143,7 @@ export const GO_LIVE_WORDS: Record<ReadinessKey, string> = {
   branch: msg('an open branch'),
   hours: msg('opening hours at a branch'),
   service: msg('a service offered at an open branch'),
+  papers: msg('its licence, checked by our team'),
 };
 
 export const listInWords = (keys: ReadinessKey[], dictionary: Record<ReadinessKey, string> = READINESS_WORDS) => {
@@ -139,6 +162,8 @@ export function goLiveGaps(shop: ReadinessShop): ReadinessKey[] {
   const open = new Set(shop.locations.filter((l) => l.hours.length > 0).map((l) => l.id));
   if (shop.locations.length > 0 && open.size === 0) gaps.push('hours');
   if (!shop.services.some((s) => s.locations.some((o) => open.has(o.locationId)))) gaps.push('service');
+  // A licensed trade goes live only once our team has checked its licence (§314).
+  if (paperRules(shop).some((rule) => rule.state !== 'checked')) gaps.push('papers');
   return gaps;
 }
 
@@ -169,6 +194,8 @@ export function readinessView(shop: ReadinessShop, locale: Locale = DEFAULT_LOCA
     canSubmit: canSubmit(shop),
     goLiveGaps: goLiveGaps(shop),
     canPublish: canPublish(shop),
+    // The licences this kind of shop must hold, and where it stands (§314).
+    papers: paperRules(shop),
     // What would make it easier to book (§303), and what we advised on approval.
     advice: adviceItems(shop, locale),
     approvalAdvice: readApprovalAdvice(shop.approvalAdvice),

@@ -292,6 +292,9 @@ const MEANING: Record<string, string> = {
   get BUSINESS_SUSPENDED() { return t`Open it to read the reason.`; },
   get PAYOUT_DESTINATION_VERIFIED() { return t`Your share of deposits can now be paid to it in the daily payout run.`; },
   get PAYOUT_DESTINATION_REJECTED() { return t`Open it to read the reason, then add a number again.`; },
+  get BUSINESS_DOCUMENT_VERIFIED() { return t`Our team checked one of your business papers and it is in order.`; },
+  get BUSINESS_DOCUMENT_REFUSED() { return t`Open it to read why, then upload a clearer copy under Business papers.`; },
+  get BUSINESS_DOCUMENT_EXPIRING() { return t`A paper runs out soon, or has. Renew it and upload the new one under Business papers.`; },
   get TICKET_MESSAGE() { return t`There is a reply to your help request.`; },
   get TICKET_STATUS_CHANGED() { return t`Your help request has moved on.`; },
 };

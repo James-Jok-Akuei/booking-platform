@@ -413,6 +413,33 @@ export async function download(path: string, filename: string): Promise<void> {
   URL.revokeObjectURL(url);
 }
 
+/**
+ * Opens a private file in a new tab (§314) — a business paper, which no plain
+ * link can reach. The tab is opened at once, while the click still counts,
+ * and shown the file when it arrives; a browser that blocked the tab gets
+ * the file as a download instead.
+ */
+export async function openFile(path: string, filename: string): Promise<void> {
+  const tab = window.open('', '_blank');
+  const response = await fetch(`${BASE_URL}${path}`, {
+    headers: tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {},
+  });
+  if (!response.ok) {
+    tab?.close();
+    throw new ApiError(response.status, `Could not open ${filename}.`);
+  }
+  const url = URL.createObjectURL(await response.blob());
+  if (tab) {
+    tab.location.href = url;
+  } else {
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+  }
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
 // ---------------------------------------------------------------------------
 // Confirm it is you (§279)
 // ---------------------------------------------------------------------------

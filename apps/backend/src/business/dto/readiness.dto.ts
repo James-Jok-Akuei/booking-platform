@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BusinessStatus } from '@prisma/client';
 import { ADVICE_KEYS, type AdviceKey } from '../shop-advice';
+import { PaperRuleDto } from './documents.dto';
 
-const KEYS = ['name', 'type', 'phone', 'branch', 'hours', 'service', 'logo', 'payout'] as const;
+const KEYS = ['name', 'type', 'phone', 'branch', 'hours', 'service', 'papers', 'logo', 'payout'] as const;
 
 /** One thing a shop needs, and whether it has it (§255). */
 export class ReadinessItemDto {
@@ -58,6 +59,8 @@ export class BusinessReadinessDto {
   goLiveGaps!: Array<(typeof KEYS)[number]>;
   /** Approved, not yet posted, and still bookable — "Post my shop" can be pressed. */
   canPublish!: boolean;
+  /** The licences this kind of shop must hold (§314), and where it stands on each; empty for most shops. */
+  papers!: PaperRuleDto[];
   /** What would make it easier to book, done or not (§303). */
   advice!: AdviceItemDto[];
   /** What we advised on approval; null when nothing was. */

@@ -26,28 +26,28 @@ msgstr "(-{off} %, au lieu de {was})"
 msgid "{browser} on {system, select, iPhone {an iPhone} iPad {an iPad} Chromebook {a Chromebook} other {{system}}}"
 msgstr "{browser} sur {system, select, iPhone {un iPhone} iPad {un iPad} Chromebook {un Chromebook} other {{system}}}"
 
-#: src/notifications/notification-templates.ts:227
+#: src/notifications/notification-templates.ts:234
 msgid "{businessName} cancelled your booking."
 msgstr "{businessName} a annulé votre réservation."
 
-#: src/notifications/notification-templates.ts:275
+#: src/notifications/notification-templates.ts:282
 msgid "{businessName} marked your booking as missed — you were expected at {clock}."
 msgstr "{businessName} a marqué votre réservation comme manquée — on vous attendait à {clock}."
 
-#: src/notifications/notification-templates.ts:341
+#: src/notifications/notification-templates.ts:348
 msgid "{businessName} sent you a message."
 msgstr "{businessName} vous a envoyé un message."
 
-#: src/business/shop-advice.ts:149
+#: src/business/shop-advice.ts:154
 msgid "{count, plural, one {A description on # service} other {A description on # services}}"
 msgstr "{count, plural, one {Une description pour # service} other {Une description pour # services}}"
 
-#: src/business/shop-advice.ts:141
+#: src/business/shop-advice.ts:146
 msgid "{count, plural, one {Photos on # service} other {Photos on # services}}"
 msgstr "{count, plural, one {Des photos pour # service} other {Des photos pour # services}}"
 
 #: src/appointments/appointments.service.ts:1964
-#: src/notifications/notification-templates.ts:160
+#: src/notifications/notification-templates.ts:167
 msgid "{day} at {time}"
 msgstr "{day} à {time}"
 
@@ -75,23 +75,23 @@ msgstr "Le passage de {from} à {to} n’est pas possible."
 msgid "{h} h {m} min"
 msgstr "{h} h {m} min"
 
-#: src/notifications/notification-templates.ts:83
+#: src/notifications/notification-templates.ts:90
 msgid "{inviter} invited you to join {businessName} as a manager on BwanguReservations."
 msgstr "{inviter} vous invite à rejoindre {businessName} en tant que gérant sur BwanguReservations."
 
-#: src/notifications/notification-templates.ts:85
+#: src/notifications/notification-templates.ts:92
 msgid "{inviter} invited you to join {businessName} as a team member on BwanguReservations."
 msgstr "{inviter} vous invite à rejoindre {businessName} en tant que membre de l’équipe sur BwanguReservations."
 
-#: src/notifications/notification-templates.ts:87
+#: src/notifications/notification-templates.ts:94
 msgid "{inviter} invited you to join {businessName} as an administrator on BwanguReservations."
 msgstr "{inviter} vous invite à rejoindre {businessName} en tant qu’administrateur sur BwanguReservations."
 
-#: src/notifications/notification-templates.ts:81
+#: src/notifications/notification-templates.ts:88
 msgid "{inviter} invited you to join {businessName} as an owner on BwanguReservations."
 msgstr "{inviter} vous invite à rejoindre {businessName} en tant que propriétaire sur BwanguReservations."
 
-#: src/notifications/notification-templates.ts:88
+#: src/notifications/notification-templates.ts:95
 msgid "{inviter} invited you to join {businessName} on BwanguReservations."
 msgstr "{inviter} vous invite à rejoindre {businessName} sur BwanguReservations."
 
@@ -117,7 +117,7 @@ msgstr "{m} min"
 msgid "{minutes, plural, one {It works for # minute, and only once.} other {It works for # minutes, and only once.}}"
 msgstr "{minutes, plural, one {Il est valable # minute, une seule fois.} other {Il est valable # minutes, une seule fois.}}"
 
-#: src/notifications/notification-email.ts:265
+#: src/notifications/notification-email.ts:269
 msgid "{n, plural, one {# booking update since yesterday} other {# booking updates since yesterday}}"
 msgstr "{n, plural, one {# mise à jour de réservation depuis hier} other {# mises à jour de réservations depuis hier}}"
 
@@ -139,7 +139,7 @@ msgstr "{onSale, plural, =0 {Ce que les gens à {place} réservent cette semaine
 msgid "{onSale, plural, =0 {What people near {place} are booking this week.} one {What people near {place} are booking this week — one of them is on sale.} other {What people near {place} are booking this week — # of them are on sale.}}"
 msgstr "{onSale, plural, =0 {Ce que les gens près de {place} réservent cette semaine.} one {Ce que les gens près de {place} réservent cette semaine — l’un d’eux est en promo.} other {Ce que les gens près de {place} réservent cette semaine — # d’entre eux sont en promo.}}"
 
-#: src/notifications/notification-templates.ts:396
+#: src/notifications/notification-templates.ts:403
 msgid "{rating, plural, one {A customer left a #-star review.} other {A customer left a #-star review.}}"
 msgstr "{rating, plural, one {Un client a laissé un avis # étoile.} other {Un client a laissé un avis # étoiles.}}"
 
@@ -151,7 +151,7 @@ msgstr "{serviceName} dans une heure"
 msgid "{serviceName} on {when} was marked as missed, but the customer came. It now counts as done. Nothing changes in your money."
 msgstr "Le rendez-vous {serviceName} du {when} avait été marqué comme manqué, mais le client est venu. Il compte désormais comme effectué. Cela ne change rien à votre argent."
 
-#: src/business/shop-advice.ts:73
+#: src/business/shop-advice.ts:78
 msgid "{some} and {last}"
 msgstr "{some} et {last}"
 
@@ -167,7 +167,7 @@ msgstr "{targetCurrency} est l’unité de compte interne de cette plateforme :
 msgid "{value0}: closeTime must be later than openTime. Overnight hours are not supported yet."
 msgstr "{value0} : closeTime doit être après openTime. Les horaires de nuit ne sont pas encore pris en charge."
 
-#: src/notifications/notification-templates.ts:316
+#: src/notifications/notification-templates.ts:323
 msgid "{weekday} at {clock}: {serviceName} at {businessName}"
 msgstr "{weekday} à {clock} : {serviceName} chez {businessName}"
 
@@ -432,7 +432,7 @@ msgstr "Un peu de tout"
 msgid "A blocked drain or toilet"
 msgstr "Une canalisation ou des WC bouchés"
 
-#: src/notifications/notification-email.ts:132
+#: src/notifications/notification-email.ts:136
 msgid "A booking changed"
 msgstr "Une réservation a changé"
 
@@ -455,7 +455,7 @@ msgstr "Une consultation d’orthodontie"
 msgid "A branch is listed twice."
 msgstr "Une succursale figure deux fois."
 
-#: src/business/readiness.ts:111
+#: src/business/readiness.ts:132
 msgid "a branch with its address, map pin and district"
 msgstr "une succursale avec son adresse, son repère sur la carte et son district"
 
@@ -470,7 +470,7 @@ msgstr "Une odeur de brûlé ou des étincelles"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status, to.
-#: src/business/business-moderation.service.ts:215
+#: src/business/business-moderation.service.ts:219
 msgid "A business cannot move from {status} to {to}."
 msgstr "Une entreprise ne peut pas passer de {status} à {to}."
 
@@ -499,6 +499,10 @@ msgstr "Un chat"
 #: src/business/choice-suggestions.ts:1428
 msgid "A ceremony outfit"
 msgstr "Une tenue de cérémonie"
+
+#: src/business/shop-advice.ts:168
+msgid "a checked registration earns the “Registered business” mark customers trust"
+msgstr "une immatriculation vérifiée vaut la mention « Entreprise enregistrée » qui inspire confiance aux clients"
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:942
@@ -594,7 +598,7 @@ msgstr "Une base en tresses collées"
 msgid "A couple"
 msgstr "Un couple"
 
-#: src/business/shop-advice.ts:96
+#: src/business/shop-advice.ts:101
 msgid "A cover photo"
 msgstr "Une photo de couverture"
 
@@ -608,19 +612,19 @@ msgstr "Un recouvrement"
 msgid "A custom design"
 msgstr "Un dessin sur mesure"
 
-#: src/notifications/notification-templates.ts:182
+#: src/notifications/notification-templates.ts:189
 msgid "A customer just booked {serviceName} at {locationName}."
 msgstr "Un client vient de réserver {serviceName} à {locationName}."
 
-#: src/notifications/notification-templates.ts:399
+#: src/notifications/notification-templates.ts:406
 msgid "A customer reviewed one of your branches."
 msgstr "Un client a laissé un avis sur l’une de vos succursales."
 
-#: src/notifications/notification-templates.ts:333
+#: src/notifications/notification-templates.ts:340
 msgid "A customer wrote to {businessName}."
 msgstr "Un client a écrit à {businessName}."
 
-#: src/notifications/notification-templates.ts:301
+#: src/notifications/notification-templates.ts:308
 msgid "A customer's deposit for this booking did not go through."
 msgstr "L’acompte d’un client pour cette réservation n’est pas passé."
 
@@ -636,7 +640,7 @@ msgstr "Un tête-à-tête"
 msgid "A deposit can only be paid while an appointment is PENDING_PAYMENT. This one is {status}."
 msgstr "Un acompte ne peut être payé que si le rendez-vous est PENDING_PAYMENT. Celui-ci est {status}."
 
-#: src/business/shop-advice.ts:150
+#: src/business/shop-advice.ts:155
 msgid "A description on every service"
 msgstr "Une description pour chaque service"
 
@@ -687,11 +691,11 @@ msgstr "Une famille"
 msgid "A family spokesperson for the gusaba"
 msgstr "Un porte-parole de la famille pour le gusaba"
 
-#: src/business/shop-advice.ts:103
+#: src/business/shop-advice.ts:108
 msgid "A few lines about what you do"
 msgstr "Quelques lignes sur ce que vous faites"
 
-#: src/notifications/notification-templates.ts:569
+#: src/notifications/notification-templates.ts:576
 msgid "A few words about how it went help other people choose, and help the shop do even better. It takes a minute, in the app."
 msgstr "Quelques mots sur votre visite aident les autres à choisir, et l’établissement à faire encore mieux. Cela prend une minute, dans l’application."
 
@@ -797,7 +801,7 @@ msgstr "Un peu"
 msgid "A locker"
 msgstr "Un casier"
 
-#: src/business/readiness.ts:114
+#: src/business/readiness.ts:136
 msgid "a logo"
 msgstr "un logo"
 
@@ -816,7 +820,7 @@ msgstr "Un maquilleur"
 msgid "A man"
 msgstr "Un homme"
 
-#: src/business/shop-advice.ts:133
+#: src/business/shop-advice.ts:138
 msgid "A map pin and district for {branches}"
 msgstr "Un repère sur la carte et un district pour {branches}"
 
@@ -856,7 +860,7 @@ msgid "A noise"
 msgstr "Un bruit"
 
 #: src/mail/mail.service.ts:108
-#: src/notifications/notification-email.ts:318
+#: src/notifications/notification-email.ts:322
 msgid "A notice"
 msgstr "Une notification"
 
@@ -866,11 +870,11 @@ msgstr "Une notification"
 msgid "A packed lunch"
 msgstr "Un panier-repas"
 
-#: src/notifications/notification-templates.ts:588
+#: src/notifications/notification-templates.ts:595
 msgid "A payment could not reach your mobile money number."
 msgstr "Un paiement n’a pas pu arriver sur votre numéro Mobile Money."
 
-#: src/notifications/notification-email.ts:117
+#: src/notifications/notification-email.ts:121
 msgid "A payment did not go through"
 msgstr "Un paiement n’est pas passé"
 
@@ -879,23 +883,23 @@ msgstr "Un paiement n’est pas passé"
 msgid "A payment for this appointment is already in progress. Approve the prompt on your phone, or wait for it to time out before trying again."
 msgstr "Un paiement pour ce rendez-vous est déjà en cours. Validez la demande sur votre téléphone, ou attendez qu’elle expire avant de réessayer."
 
-#: src/notifications/notification-email.ts:111
+#: src/notifications/notification-email.ts:115
 msgid "A payment is on its way"
 msgstr "Un paiement est en route"
 
-#: src/notifications/notification-templates.ts:577
+#: src/notifications/notification-templates.ts:584
 msgid "A payment is on its way to your mobile money number."
 msgstr "Un paiement est en route vers votre numéro Mobile Money."
 
-#: src/notifications/notification-templates.ts:586
+#: src/notifications/notification-templates.ts:593
 msgid "A payment to you did not go through"
 msgstr "Un paiement vers vous n’a pas abouti"
 
-#: src/business/readiness.ts:115
+#: src/business/readiness.ts:137
 msgid "a payout number"
 msgstr "un numéro de versement"
 
-#: src/business/shop-advice.ts:156
+#: src/business/shop-advice.ts:161
 msgid "A payout number"
 msgstr "Un numéro de versement"
 
@@ -909,11 +913,11 @@ msgstr "Un téléphone"
 msgid "A phone call"
 msgstr "Un appel téléphonique"
 
-#: src/business/readiness.ts:110
+#: src/business/readiness.ts:131
 msgid "a phone number"
 msgstr "un numéro de téléphone"
 
-#: src/business/shop-advice.ts:112
+#: src/business/shop-advice.ts:117
 msgid "A phone number"
 msgstr "Un numéro de téléphone"
 
@@ -922,7 +926,7 @@ msgstr "Un numéro de téléphone"
 msgid "A phone number is 9 to 15 digits."
 msgstr "Un numéro de téléphone compte de 9 à 15 chiffres."
 
-#: src/business/shop-advice.ts:142
+#: src/business/shop-advice.ts:147
 msgid "A photo on every service"
 msgstr "Une photo pour chaque service"
 
@@ -983,7 +987,7 @@ msgstr "Un vaccin contre la rage ces 12 derniers mois ?"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: to.
-#: src/business/business-moderation.service.ts:259
+#: src/business/business-moderation.service.ts:263
 msgid "A reason is required to move a business to {to}. The business is told what it says, and cannot act on a decision it has not been given."
 msgstr "Une raison est requise pour passer une entreprise à {to}. L’entreprise reçoit ce qu’elle dit, et ne peut pas agir sur une décision qu’on ne lui a pas donnée."
 
@@ -1024,11 +1028,11 @@ msgstr "Une réponse ne peut être modifiée que dans les {REVIEW_EDIT_WINDOW_DA
 msgid "A review can only be edited within {REVIEW_EDIT_WINDOW_DAYS} days of posting."
 msgstr "Un avis ne peut être modifié que dans les {REVIEW_EDIT_WINDOW_DAYS} jours suivant sa publication."
 
-#: src/notifications/notification-templates.ts:412
+#: src/notifications/notification-templates.ts:419
 msgid "A review was hidden"
 msgstr "Un avis a été masqué"
 
-#: src/notifications/notification-templates.ts:418
+#: src/notifications/notification-templates.ts:425
 msgid "A review was hidden by our team and is no longer public."
 msgstr "Un avis a été masqué par notre équipe et n’est plus public."
 
@@ -1064,15 +1068,15 @@ msgstr "Un second photographe"
 msgid "A service can ask up to {groups} questions."
 msgstr "Un service peut poser jusqu’à {groups} questions."
 
-#: src/business/readiness.ts:123
+#: src/business/readiness.ts:145
 msgid "a service offered at an open branch"
 msgstr "un service proposé dans une succursale ouverte"
 
-#: src/business/readiness.ts:113
+#: src/business/readiness.ts:134
 msgid "a service to book"
 msgstr "un service à réserver"
 
-#: src/business/shop-advice.ts:143
+#: src/business/shop-advice.ts:148
 msgid "a service with a photo is easier to choose"
 msgstr "un service avec une photo est plus facile à choisir"
 
@@ -1484,7 +1488,7 @@ msgstr "Quantité"
 msgid "amount must be greater than zero."
 msgstr "Le montant doit être supérieur à zéro."
 
-#: src/notifications/notification-templates.ts:64
+#: src/notifications/notification-templates.ts:71
 msgid "Amount: {amount}"
 msgstr "Montant : {amount}"
 
@@ -1561,7 +1565,7 @@ msgstr "Un problème aux yeux"
 msgid "An eye test"
 msgstr "Un examen de la vue"
 
-#: src/notifications/notification-email.ts:121
+#: src/notifications/notification-email.ts:125
 msgid "An invitation"
 msgstr "Une invitation"
 
@@ -1574,7 +1578,7 @@ msgstr "Une invitation est déjà en attente pour cette adresse e-mail."
 msgid "An invitation was taken back"
 msgstr "Une invitation a été retirée"
 
-#: src/business/readiness.ts:121
+#: src/business/readiness.ts:143
 msgid "an open branch"
 msgstr "une succursale ouverte"
 
@@ -1614,6 +1618,10 @@ msgstr "Une autre allergie"
 #: src/business/choice-suggestions.ts:1845
 msgid "Another language"
 msgstr "Une autre langue"
+
+#: src/business/document-rules.ts:26
+msgid "Another paper"
+msgstr "Un autre document"
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1299
@@ -1825,7 +1833,7 @@ msgstr "Quelque chose à retirer d’abord ?"
 msgid "Anything we should know before you come?"
 msgstr "Quelque chose à savoir avant votre venue ?"
 
-#: src/notifications/notification-templates.ts:240
+#: src/notifications/notification-templates.ts:247
 msgid "Anything you are owed is shown on the booking in the app."
 msgstr "Ce qui vous est dû apparaît sur la réservation, dans l’application."
 
@@ -1922,11 +1930,11 @@ msgstr "Expositions d’art"
 msgid "Art, Music & Culture"
 msgstr "Art, musique et culture"
 
-#: src/notifications/notification-templates.ts:237
+#: src/notifications/notification-templates.ts:244
 msgid "As agreed when you booked, a deposit is not refunded when you cancel less than 24 hours before."
 msgstr "Comme convenu lors de la réservation, l’acompte n’est pas remboursé si vous annulez moins de 24 heures avant."
 
-#: src/notifications/notification-templates.ts:279
+#: src/notifications/notification-templates.ts:286
 msgid "As agreed when you booked, the deposit is not refunded for a missed booking. If you think this is a mistake, write to the shop from the booking in the app."
 msgstr "Comme convenu lors de la réservation, l’acompte n’est pas remboursé pour un rendez-vous manqué. Si vous pensez que c’est une erreur, écrivez à l’établissement depuis la réservation dans l’application."
 
@@ -1981,6 +1989,11 @@ msgstr "Au point de départ"
 #: src/business/choice-suggestions.ts:1919
 msgid "At your place"
 msgstr "Chez vous"
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/documents.service.ts:76
+msgid "Attach the paper as a PDF or a photo (JPG, PNG or WebP)."
+msgstr "Joignez le document en PDF ou en photo (JPG, PNG ou WebP)."
 
 #. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
 #: prisma/seed.ts:47
@@ -2045,6 +2058,10 @@ msgstr "Relevés bancaires"
 #: src/business/choice-suggestions.ts:453
 msgid "Banquet"
 msgstr "Banquet"
+
+#: src/business/document-rules.ts:25
+msgid "Bar Association practising certificate"
+msgstr "Certificat d’exercice du Barreau"
 
 #. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
 #: prisma/seed.ts:59
@@ -2228,7 +2245,7 @@ msgstr "Réservations"
 msgid "Bookings and payments"
 msgstr "Réservations et paiements"
 
-#: src/notifications/notification-templates.ts:500
+#: src/notifications/notification-templates.ts:507
 msgid "Bookings customers have already made still stand, and you are expected to honour them. Nothing is written off — money owed to you is kept and paid once this is resolved. Write to us from Help to talk about it."
 msgstr "Les réservations déjà faites par les clients restent valables, et vous devez les honorer. Rien n’est perdu — l’argent qui vous est dû est conservé et vous sera versé une fois la situation réglée. Écrivez-nous depuis Aide pour en parler."
 
@@ -2355,12 +2372,22 @@ msgid "Business meal"
 msgstr "Repas d’affaires"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/business/business-moderation.service.ts:146
-#: src/business/business-moderation.service.ts:210
+#: src/business/business-moderation.service.ts:148
+#: src/business/business-moderation.service.ts:214
 #: src/business/business-profile.service.ts:46
 #: src/business/business-profile.service.ts:64
 msgid "Business not found."
 msgstr "Entreprise introuvable."
+
+#: src/notifications/notification-templates.ts:44
+msgid "business paper"
+msgstr "document d’entreprise"
+
+#: src/notifications/notification-email.ts:108
+#: src/notifications/notification-email.ts:109
+#: src/notifications/notification-email.ts:110
+msgid "Business papers"
+msgstr "Documents de l’entreprise"
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:620
@@ -2393,8 +2420,8 @@ msgstr "Apaiser"
 msgid "Cancelled"
 msgstr "Annulée"
 
-#: src/notifications/notification-templates.ts:218
-#: src/notifications/notification-templates.ts:244
+#: src/notifications/notification-templates.ts:225
+#: src/notifications/notification-templates.ts:251
 msgid "Cancelled: {serviceName}, {short}"
 msgstr "Annulation : {serviceName}, {short}"
 
@@ -2499,7 +2526,7 @@ msgstr "Chaises"
 msgid "Change the address in the app, under Account."
 msgstr "Modifiez l’adresse dans l’application, sous Compte."
 
-#: src/notifications/notification-email.ts:297
+#: src/notifications/notification-email.ts:301
 #: src/notifications/notifications.service.ts:544
 msgid "Change what we send"
 msgstr "Modifier ce que nous envoyons"
@@ -2533,7 +2560,7 @@ msgstr "Piment"
 msgid "Chiropractic"
 msgstr "Chiropraxie"
 
-#: src/notifications/notification-templates.ts:601
+#: src/notifications/notification-templates.ts:608
 msgid "Choices changed: {serviceName}, {short}"
 msgstr "Choix modifiés : {serviceName}, {short}"
 
@@ -2747,7 +2774,7 @@ msgstr "Confirmez que c’est vous : {code}"
 msgid "Confirmed"
 msgstr "Confirmée"
 
-#: src/notifications/notification-templates.ts:202
+#: src/notifications/notification-templates.ts:209
 msgid "Confirmed: {serviceName}, {short}"
 msgstr "Confirmée : {serviceName}, {short}"
 
@@ -2833,7 +2860,7 @@ msgstr "Les clients peuvent de nouveau vous trouver et réserver chez vous."
 msgid "Customers cannot make new bookings while it is paused. Bookings already made still happen. You can open it again yourself in Your shop."
 msgstr "Les clients ne peuvent pas faire de nouvelles réservations pendant la pause. Les réservations déjà faites sont maintenues. Vous pouvez le rouvrir vous-même dans Votre établissement."
 
-#: src/notifications/notification-templates.ts:475
+#: src/notifications/notification-templates.ts:482
 msgid "Customers cannot see it yet. When you are ready, press \"Post my shop\" in your dashboard, and from then they can find your branches, see your times and book with you. Anything you would like to change first, you can change now."
 msgstr "Les clients ne le voient pas encore. Dès que vous le souhaitez, appuyez sur « Publier mon établissement » dans votre tableau de bord : ils pourront alors trouver vos succursales, voir vos créneaux et réserver chez vous. Ce que vous voulez modifier avant, vous pouvez le modifier dès maintenant."
 
@@ -2842,11 +2869,11 @@ msgstr "Les clients ne le voient pas encore. Dès que vous le souhaitez, appuyez
 msgid "Customers put their flight number in the note."
 msgstr "Les clients indiquent leur numéro de vol dans la note."
 
-#: src/business/shop-advice.ts:104
+#: src/business/shop-advice.ts:109
 msgid "customers read them before they book"
 msgstr "les clients les lisent avant de réserver"
 
-#: src/business/shop-advice.ts:119
+#: src/business/shop-advice.ts:124
 msgid "customers want to see the place they are walking into"
 msgstr "les clients veulent voir le lieu avant d’y entrer"
 
@@ -2963,7 +2990,7 @@ msgstr "Soins dentaires"
 msgid "Deposit"
 msgstr "Acompte"
 
-#: src/notifications/notification-templates.ts:299
+#: src/notifications/notification-templates.ts:306
 msgid "Deposit not paid: {serviceName}, {short}"
 msgstr "Acompte non payé : {serviceName}, {short}"
 
@@ -2972,7 +2999,7 @@ msgstr "Acompte non payé : {serviceName}, {short}"
 msgid "Deposit paid"
 msgstr "Acompte payé"
 
-#: src/notifications/notification-templates.ts:63
+#: src/notifications/notification-templates.ts:70
 msgid "Deposit paid: {amount}"
 msgstr "Acompte payé : {amount}"
 
@@ -2986,7 +3013,7 @@ msgstr "Le pourcentage d’acompte doit être d’au moins {value0} % — les f
 msgid "Deposit to pay"
 msgstr "Acompte à payer"
 
-#: src/notifications/notification-templates.ts:62
+#: src/notifications/notification-templates.ts:69
 msgid "Deposit: {amount}"
 msgstr "Acompte : {amount}"
 
@@ -3031,11 +3058,11 @@ msgstr "Design"
 msgid "Device"
 msgstr "Appareil"
 
-#: src/notifications/notification-templates.ts:615
+#: src/notifications/notification-templates.ts:670
 msgid "Device: {device}"
 msgstr "Appareil : {device}"
 
-#: src/notifications/notification-email.ts:375
+#: src/notifications/notification-email.ts:379
 msgid "Did not arrive"
 msgstr "Non reçu"
 
@@ -3241,7 +3268,7 @@ msgstr "Entrée en double pour {value0}. Envoyez une ligne par jour."
 msgid "durationMinutes must be between 1 and {MINUTES_PER_DAY}."
 msgstr "durationMinutes doit être compris entre 1 et {MINUTES_PER_DAY}."
 
-#: src/notifications/notification-email.ts:271
+#: src/notifications/notification-email.ts:275
 msgid "Each one is in your notifications, and all of them under Appointments."
 msgstr "Chacune figure dans vos notifications, et toutes dans Réservations."
 
@@ -3390,7 +3417,7 @@ msgstr "Type d’événement"
 msgid "Events, Tickets & Movies"
 msgstr "Événements, billets et cinéma"
 
-#: src/business/shop-advice.ts:134
+#: src/business/shop-advice.ts:139
 msgid "Every branch on the map"
 msgstr "Toutes les succursales sur la carte"
 
@@ -3404,7 +3431,7 @@ msgstr "Tous les ongles"
 msgid "Everyday"
 msgstr "Au quotidien"
 
-#: src/notifications/notification-templates.ts:488
+#: src/notifications/notification-templates.ts:495
 msgid "Everything you made is kept. Fix what the reason describes and send your shop back for review from your dashboard — or write to us from Help to talk it through."
 msgstr "Tout ce que vous avez créé est conservé. Corrigez ce que décrit le motif et renvoyez votre établissement en vérification depuis votre tableau de bord — ou écrivez-nous depuis Aide pour en parler."
 
@@ -3446,6 +3473,11 @@ msgstr "Expérience"
 #: src/business/choice-suggestions.ts:1655
 msgid "Experienced"
 msgstr "Expérimenté"
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/dto/documents.dto.ts:24
+msgid "expiresAt is a day, YYYY-MM-DD."
+msgstr "expiresAt est un jour, AAAA-MM-JJ."
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1760
@@ -3713,11 +3745,11 @@ msgstr "Français"
 msgid "Friendly"
 msgstr "Sociable"
 
-#: src/notifications/notification-email.ts:404
+#: src/notifications/notification-email.ts:408
 msgid "From {shop}"
 msgstr "De la part de {shop}"
 
-#: src/notifications/notification-email.ts:127
+#: src/notifications/notification-email.ts:131
 msgid "From a shop you follow"
 msgstr "D’un établissement que vous suivez"
 
@@ -3742,15 +3774,15 @@ msgstr "from doit être une date et heure au format ISO-8601."
 msgid "from must be earlier than to."
 msgstr "from doit être antérieur à to."
 
-#: src/notifications/notification-email.ts:124
+#: src/notifications/notification-email.ts:128
 msgid "From our support team"
 msgstr "De la part de notre équipe d’assistance"
 
-#: src/notifications/notification-email.ts:122
+#: src/notifications/notification-email.ts:126
 msgid "From our team"
 msgstr "De la part de notre équipe"
 
-#: src/notifications/notification-email.ts:406
+#: src/notifications/notification-email.ts:410
 msgid "From the BwanguReservations team"
 msgstr "De la part de l’équipe BwanguReservations"
 
@@ -3813,8 +3845,8 @@ msgstr "Itinéraire"
 
 #: src/notifications/notification-email.ts:105
 #: src/notifications/notification-email.ts:106
-#: src/notifications/notification-email.ts:110
-#: src/notifications/notification-email.ts:116
+#: src/notifications/notification-email.ts:114
+#: src/notifications/notification-email.ts:120
 msgid "Getting paid"
 msgstr "Versements"
 
@@ -3827,7 +3859,7 @@ msgstr "Géant, plus de 45 kg"
 msgid "Give it to the shop when you arrive — they need it to start your appointment. Do not share it before."
 msgstr "Donnez-le à l’établissement à votre arrivée — il en a besoin pour commencer votre rendez-vous. Ne le partagez pas avant."
 
-#: src/notifications/notification-email.ts:385
+#: src/notifications/notification-email.ts:389
 msgid "Give it to the shop when you arrive. Do not share it before."
 msgstr "Donnez-le à l’établissement à votre arrivée. Ne le partagez pas avant."
 
@@ -3858,7 +3890,7 @@ msgstr "Objectif"
 msgid "Gold"
 msgstr "Or"
 
-#: src/notifications/notification-templates.ts:472
+#: src/notifications/notification-templates.ts:479
 msgid "Good news — your shop has been approved."
 msgstr "Bonne nouvelle — votre établissement a été approuvé."
 
@@ -4031,6 +4063,10 @@ msgstr "Tête"
 msgid "Health & Medical"
 msgstr "Santé et médecine"
 
+#: src/business/document-rules.ts:21
+msgid "Health facility licence"
+msgstr "Licence d’établissement de santé"
+
 #: src/notifications/notification-email.ts:96
 #: src/notifications/notification-email.ts:97
 msgid "Help"
@@ -4041,11 +4077,11 @@ msgstr "Aide"
 msgid "Help with"
 msgstr "Aide demandée"
 
-#: src/notifications/notification-email.ts:270
+#: src/notifications/notification-email.ts:274
 msgid "Here is what happened with your bookings."
 msgstr "Voici ce qui s’est passé avec vos réservations."
 
-#: src/notifications/notification-email.ts:283
+#: src/notifications/notification-email.ts:287
 msgid "Here is what happened with your bookings. Each one is also in your notifications."
 msgstr "Voici ce qui s’est passé avec vos réservations. Chacune figure aussi dans vos notifications."
 
@@ -4138,11 +4174,11 @@ msgstr "Quelle taille de tresses souhaitez-vous ?"
 msgid "How big?"
 msgstr "Quelle taille ?"
 
-#: src/business/shop-advice.ts:110
+#: src/business/shop-advice.ts:115
 msgid "how customers find you when they browse"
 msgstr "comment les clients vous trouvent en parcourant l’application"
 
-#: src/business/shop-advice.ts:135
+#: src/business/shop-advice.ts:140
 msgid "how customers nearby find you"
 msgstr "comment les clients à proximité vous trouvent"
 
@@ -4328,7 +4364,7 @@ msgstr "Pour quand en avez-vous besoin ?"
 msgid "How the business is going is for the owner and managers."
 msgstr "Les résultats de l’entreprise sont réservés au propriétaire et aux gérants."
 
-#: src/notifications/notification-templates.ts:566
+#: src/notifications/notification-templates.ts:573
 msgid "How was {serviceName} at {businessName}?"
 msgstr "Comment était {serviceName} chez {businessName} ?"
 
@@ -4468,7 +4504,7 @@ msgstr "Je m’en occupe moi-même"
 msgid "I’ll wait"
 msgstr "J’attends sur place"
 
-#: src/notifications/notification-templates.ts:617
+#: src/notifications/notification-templates.ts:672
 msgid "If it was not you, open \"Where you are signed in\" in your account, sign that one out, and write to us from Help."
 msgstr "Si ce n’était pas vous, ouvrez « Où vous êtes connecté » dans votre compte, déconnectez cet appareil et écrivez-nous depuis Aide."
 
@@ -4481,12 +4517,12 @@ msgstr "En cas d’allergie, quelle est sa gravité ?"
 msgid "If you did not expect it, you can ignore it."
 msgstr "Si vous ne vous y attendiez pas, vous pouvez l’ignorer."
 
-#: src/notifications/notification-templates.ts:530
+#: src/notifications/notification-templates.ts:537
 msgid "If you ever lose that number, give a new one straight away — payments pause until the new one is checked, which is what keeps your money safe."
 msgstr "Si vous perdez ce numéro, donnez-en un nouveau tout de suite — les versements sont suspendus jusqu’à sa vérification, et c’est ce qui protège votre argent."
 
-#: src/notifications/notification-templates.ts:420
-#: src/notifications/notification-templates.ts:429
+#: src/notifications/notification-templates.ts:427
+#: src/notifications/notification-templates.ts:436
 msgid "If you think this is a mistake, write to us from Help."
 msgstr "Si vous pensez qu’il s’agit d’une erreur, écrivez-nous depuis Aide."
 
@@ -4692,7 +4728,7 @@ msgstr "Elle a été envoyée ; elle ne peut plus être modifiée."
 msgid "It may be old or cut short. Change what we send in the app, under Notifications."
 msgstr "Il est peut-être ancien ou incomplet. Modifiez ce que nous vous envoyons dans l’application, sous Notifications."
 
-#: src/business/shop-advice.ts:99
+#: src/business/shop-advice.ts:104
 msgid "it sits on every card customers see of you"
 msgstr "il apparaît sur chaque carte où les clients vous voient"
 
@@ -4706,7 +4742,15 @@ msgstr "Vêtement"
 msgid "Items"
 msgstr "Articles"
 
-#: src/business/readiness.ts:108
+#: src/business/readiness.ts:135
+msgid "its business papers"
+msgstr "ses documents d’entreprise"
+
+#: src/business/readiness.ts:146
+msgid "its licence, checked by our team"
+msgstr "sa licence, vérifiée par notre équipe"
+
+#: src/business/readiness.ts:129
 msgid "its name"
 msgstr "son nom"
 
@@ -4834,7 +4878,7 @@ msgid "Lashes"
 msgstr "Cils"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/discovery/discovery.service.ts:807
+#: src/discovery/discovery.service.ts:836
 msgid "lat and lng must be supplied together."
 msgstr "lat et lng doivent être fournis ensemble."
 
@@ -5044,8 +5088,8 @@ msgstr "Manuelle ou automatique ?"
 msgid "Marked as missed"
 msgstr "Marquée comme manquée"
 
-#: src/notifications/notification-templates.ts:271
-#: src/notifications/notification-templates.ts:284
+#: src/notifications/notification-templates.ts:278
+#: src/notifications/notification-templates.ts:291
 msgid "Marked as missed: {serviceName}"
 msgstr "Marquée comme manquée : {serviceName}"
 
@@ -5464,7 +5508,7 @@ msgstr "Ne vendez jamais de permis : RDB les délivre au nom de chaque titulair
 msgid "New booking"
 msgstr "Nouvelle réservation"
 
-#: src/notifications/notification-templates.ts:180
+#: src/notifications/notification-templates.ts:187
 msgid "New booking: {serviceName}, {short}"
 msgstr "Nouvelle réservation : {serviceName}, {short}"
 
@@ -5480,11 +5524,11 @@ msgstr "Nouveautés et idées pour obtenir plus de réservations. Quelques-unes 
 msgid "New message"
 msgstr "Nouveau message"
 
-#: src/notifications/notification-templates.ts:339
+#: src/notifications/notification-templates.ts:346
 msgid "New message from {businessName}"
 msgstr "Nouveau message de {businessName}"
 
-#: src/notifications/notification-templates.ts:331
+#: src/notifications/notification-templates.ts:338
 msgid "New message from a customer"
 msgstr "Nouveau message d’un client"
 
@@ -5510,7 +5554,7 @@ msgstr "Nouvel avis"
 msgid "New reviews of your branches, and reviews hidden by our team."
 msgstr "Nouveaux avis sur vos succursales, et avis masqués par notre équipe."
 
-#: src/notifications/notification-templates.ts:612
+#: src/notifications/notification-templates.ts:667
 msgid "New sign-in on {device}"
 msgstr "Nouvelle connexion sur {device}"
 
@@ -5519,7 +5563,7 @@ msgstr "Nouvelle connexion sur {device}"
 msgid "New wiring or a fitting"
 msgstr "Nouveau câblage ou une installation"
 
-#: src/notifications/notification-email.ts:133
+#: src/notifications/notification-email.ts:137
 msgid "New wishes for a booking"
 msgstr "Nouveaux souhaits pour une réservation"
 
@@ -5559,7 +5603,7 @@ msgstr "Pas d’alcool dans les plats"
 msgid "No chilli"
 msgstr "Sans piment"
 
-#: src/notifications/notification-templates.ts:239
+#: src/notifications/notification-templates.ts:246
 msgid "No deposit was taken. You can book again at any time."
 msgstr "Aucun acompte n’a été prélevé. Vous pouvez réserver de nouveau à tout moment."
 
@@ -5626,7 +5670,7 @@ msgstr "Non, ou je ne sais pas"
 msgid "No, thank you"
 msgstr "Non, merci"
 
-#: src/notifications/notification-templates.ts:274
+#: src/notifications/notification-templates.ts:281
 msgid "Nobody checked you in for your booking at {businessName} at {clock}, so it is now marked as missed."
 msgstr "Personne ne vous a accueilli pour votre rendez-vous chez {businessName} à {clock} : il est donc marqué comme manqué."
 
@@ -5659,6 +5703,11 @@ msgstr "Aucun de ceux-ci"
 #: src/business/choice-suggestions.ts:842
 msgid "Nose"
 msgstr "Nez"
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/documents.service.ts:217
+msgid "Not found."
+msgstr "Introuvable."
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1324
@@ -5700,11 +5749,11 @@ msgstr "Note : « {note} »"
 msgid "Nothing"
 msgstr "Rien"
 
-#: src/notifications/notification-templates.ts:592
+#: src/notifications/notification-templates.ts:599
 msgid "Nothing is lost: the money is back in your balance and goes out with your next payment. If your number has changed, update it under Getting paid."
 msgstr "Rien n’est perdu : l’argent est revenu sur votre solde et partira avec votre prochain versement. Si votre numéro a changé, mettez-le à jour dans Versements."
 
-#: src/notifications/notification-templates.ts:540
+#: src/notifications/notification-templates.ts:547
 msgid "Nothing is written off — your money is kept. Give a corrected number under Getting paid to start again."
 msgstr "Rien n’est perdu — votre argent est conservé. Indiquez un numéro corrigé dans Versements pour reprendre."
 
@@ -5761,7 +5810,7 @@ msgstr "Allergie aux huiles ou aux noix"
 msgid "Old school"
 msgstr "Old school"
 
-#: src/notifications/notification-email.ts:375
+#: src/notifications/notification-email.ts:379
 msgid "On its way to you"
 msgstr "En route vers vous"
 
@@ -5770,7 +5819,7 @@ msgstr "En route vers vous"
 msgid "On my own"
 msgstr "En visite libre"
 
-#: src/notifications/notification-templates.ts:206
+#: src/notifications/notification-templates.ts:213
 msgid "On the day, the customer gives you a 6-digit arrival code. Enter it to check them in."
 msgstr "Le jour venu, le client vous donne un code d’arrivée à 6 chiffres. Saisissez-le pour enregistrer son arrivée."
 
@@ -5815,7 +5864,7 @@ msgstr "L’une de ces succursales est fermée ou ne vous appartient pas."
 msgid "One of those kinds does not exist."
 msgstr "L’un de ces types n’existe pas."
 
-#: src/notifications/notification-templates.ts:425
+#: src/notifications/notification-templates.ts:432
 msgid "One of your stories was taken down"
 msgstr "L’une de vos stories a été retirée"
 
@@ -5875,6 +5924,12 @@ msgstr "Seul un rendez-vous terminé peut recevoir un avis. Celui-ci est {status
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
+#: src/business/documents.service.ts:244
+msgid "Only a paper waiting to be checked can be decided. This one is {status}."
+msgstr "Seul un document en attente de vérification peut être tranché. Celui-ci est {status}."
+
+#. A refusal: the app shows it as the reason something did not work.
+#. The names in {braces} are filled in by the server: status.
 #: src/payouts/payouts.service.ts:490
 msgid "Only a PENDING payout can be marked failed. This one is {status}."
 msgstr "Seul un versement PENDING peut être marqué comme échoué. Celui-ci est {status}."
@@ -5911,7 +5966,7 @@ msgstr "Seul un ticket RESOLVED peut être rouvert. Celui-ci est {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/business/business-moderation.service.ts:223
+#: src/business/business-moderation.service.ts:227
 msgid "Only a SUSPENDED business can be reinstated. This one is {status}."
 msgstr "Seule une entreprise SUSPENDED peut être rétablie. Celle-ci est {status}."
 
@@ -5951,7 +6006,7 @@ msgid "Only an administrator can clear a display name."
 msgstr "Seul un administrateur peut effacer un nom affiché."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/business/business-moderation.service.ts:341
+#: src/business/business-moderation.service.ts:345
 #: src/ledger/ledger.service.ts:697
 #: src/payouts/payout-destinations.service.ts:537
 #: src/payouts/payouts.service.ts:1265
@@ -6049,27 +6104,27 @@ msgstr "Seul l’administrateur principal peut confier un établissement à un n
 msgid "Open"
 msgstr "Ouvrir"
 
-#: src/notifications/notification-email.ts:391
+#: src/notifications/notification-email.ts:395
 msgid "Open {shop} in the app to book."
 msgstr "Ouvrez {shop} dans l’application pour réserver."
 
-#: src/notifications/notification-templates.ts:579
+#: src/notifications/notification-templates.ts:586
 msgid "Open Getting paid to see every booking it covers."
 msgstr "Ouvrez Versements pour voir toutes les réservations qu’il couvre."
 
-#: src/notifications/notification-templates.ts:366
+#: src/notifications/notification-templates.ts:373
 msgid "Open Help to read it and reply."
 msgstr "Ouvrez Aide pour la lire et répondre."
 
-#: src/notifications/notification-templates.ts:387
+#: src/notifications/notification-templates.ts:394
 msgid "Open Help to see the whole conversation."
 msgstr "Ouvrez Aide pour voir toute la conversation."
 
-#: src/notifications/notification-templates.ts:335
+#: src/notifications/notification-templates.ts:342
 msgid "Open Messages to read it and reply. More messages in this conversation will not email you again straight away."
 msgstr "Ouvrez Messages pour le lire et répondre. Les prochains messages de cette conversation ne vous enverront pas d’e-mail tout de suite."
 
-#: src/notifications/notification-templates.ts:400
+#: src/notifications/notification-templates.ts:407
 msgid "Open Reviews to read it. You can post one public reply."
 msgstr "Ouvrez Avis pour le lire. Vous pouvez publier une réponse publique."
 
@@ -6077,31 +6132,31 @@ msgstr "Ouvrez Avis pour le lire. Vous pouvez publier une réponse publique."
 msgid "Open the app to book any of these — a deposit holds your time, and the rest is paid at the shop."
 msgstr "Ouvrez l’application pour réserver l’un d’eux — un acompte retient votre créneau, et le reste est payé sur place."
 
-#: src/notifications/notification-templates.ts:343
+#: src/notifications/notification-templates.ts:350
 msgid "Open the app to read it and reply. More messages in this conversation will not email you again straight away."
 msgstr "Ouvrez l’application pour le lire et répondre. Les prochains messages de cette conversation ne vous enverront pas d’e-mail tout de suite."
 
-#: src/notifications/notification-templates.ts:605
+#: src/notifications/notification-templates.ts:612
 msgid "Open the booking to see what they would like now."
 msgstr "Ouvrez la réservation pour voir ce que le client souhaite maintenant."
 
-#: src/notifications/notification-templates.ts:406
+#: src/notifications/notification-templates.ts:413
 msgid "Open the shop in the app to read their reply."
 msgstr "Ouvrez l’établissement dans l’application pour lire sa réponse."
 
-#: src/business/readiness.ts:112
+#: src/business/readiness.ts:133
 msgid "opening hours"
 msgstr "des horaires d’ouverture"
 
-#: src/business/shop-advice.ts:125
+#: src/business/shop-advice.ts:130
 msgid "Opening hours at {branches}"
 msgstr "Horaires d’ouverture pour {branches}"
 
-#: src/business/readiness.ts:122
+#: src/business/readiness.ts:144
 msgid "opening hours at a branch"
 msgstr "des horaires d’ouverture dans une succursale"
 
-#: src/business/shop-advice.ts:126
+#: src/business/shop-advice.ts:131
 msgid "Opening hours at every branch"
 msgstr "Horaires d’ouverture de chaque succursale"
 
@@ -6123,19 +6178,19 @@ msgstr "Autre"
 msgid "Other languages"
 msgstr "Autres langues"
 
-#: src/notifications/notification-email.ts:367
+#: src/notifications/notification-email.ts:371
 msgid "Our review team"
 msgstr "Notre équipe de vérification"
 
-#: src/notifications/notification-templates.ts:247
+#: src/notifications/notification-templates.ts:254
 msgid "Our support team cancelled this booking for the customer, as they asked."
 msgstr "Notre équipe d’assistance a annulé cette réservation pour le client, à sa demande."
 
-#: src/notifications/notification-templates.ts:249
+#: src/notifications/notification-templates.ts:256
 msgid "Our support team cancelled this booking on your shop's side."
 msgstr "Notre équipe d’assistance a annulé cette réservation du côté de votre établissement."
 
-#: src/notifications/notification-templates.ts:221
+#: src/notifications/notification-templates.ts:228
 msgid "Our support team cancelled your booking at {businessName}, as you asked."
 msgstr "Notre équipe d’assistance a annulé votre réservation chez {businessName}, à votre demande."
 
@@ -6195,23 +6250,23 @@ msgstr "Notre équipe d’assistance a retiré l’invitation de {email}."
 msgid "Our support team took you out of the team, so you can no longer open this shop. If you think this is a mistake, ask the shop’s owner."
 msgstr "Notre équipe d’assistance vous a retiré de l’équipe : vous ne pouvez plus ouvrir cet établissement. Si vous pensez qu’il s’agit d’une erreur, adressez-vous au propriétaire de l’établissement."
 
-#: src/notifications/notification-templates.ts:417
+#: src/notifications/notification-templates.ts:424
 msgid "Our team hid a review of one of your branches. It is no longer public, and it no longer counts in your rating."
 msgstr "Notre équipe a masqué un avis sur l’une de vos succursales. Il n’est plus public et ne compte plus dans votre note."
 
-#: src/notifications/notification-templates.ts:415
+#: src/notifications/notification-templates.ts:422
 msgid "Our team hid your review, so it is no longer public."
 msgstr "Notre équipe a masqué votre avis : il n’est plus public."
 
-#: src/notifications/notification-templates.ts:436
+#: src/notifications/notification-templates.ts:443
 msgid "Our team removed the name shown beside your reviews, so they now show as \"Anonymous\"."
 msgstr "Notre équipe a retiré le nom affiché à côté de vos avis : ils apparaissent désormais comme « Anonyme »."
 
-#: src/notifications/notification-templates.ts:496
+#: src/notifications/notification-templates.ts:503
 msgid "Our team suspended your shop. While it lasts, new customers cannot find or book with you, and your payments are paused."
 msgstr "Notre équipe a suspendu votre établissement. Pendant ce temps, les nouveaux clients ne peuvent ni vous trouver ni réserver chez vous, et vos versements sont suspendus."
 
-#: src/notifications/notification-templates.ts:427
+#: src/notifications/notification-templates.ts:434
 msgid "Our team took down one of your stories, so customers no longer see it."
 msgstr "Notre équipe a retiré l’une de vos stories : les clients ne la voient plus."
 
@@ -6277,6 +6332,17 @@ msgstr "Peinture et décoration"
 msgid "Pairs"
 msgstr "Paires"
 
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/documents.service.ts:126
+#: src/business/documents.service.ts:137
+#: src/business/documents.service.ts:242
+msgid "Paper not found."
+msgstr "Document introuvable."
+
+#: src/notifications/notification-templates.ts:628
+msgid "Papers that run out are asked for again a month before they do. Thank you for keeping them in order."
+msgstr "Les documents qui expirent sont redemandés un mois avant. Merci de les tenir à jour."
+
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:365
 msgid "Parking"
@@ -6326,11 +6392,11 @@ msgstr "PAYE"
 msgid "Payment"
 msgstr "Paiement"
 
-#: src/notifications/notification-templates.ts:291
+#: src/notifications/notification-templates.ts:298
 msgid "Payment did not go through: {serviceName}"
 msgstr "Paiement non abouti : {serviceName}"
 
-#: src/notifications/notification-templates.ts:575
+#: src/notifications/notification-templates.ts:582
 msgid "Payment sent: {amount}"
 msgstr "Paiement envoyé : {amount}"
 
@@ -6463,11 +6529,11 @@ msgstr "Photo et création"
 msgid "Photos"
 msgstr "Photos"
 
-#: src/business/shop-advice.ts:117
+#: src/business/shop-advice.ts:122
 msgid "Photos of {branches}"
 msgstr "Photos de {branches}"
 
-#: src/business/shop-advice.ts:118
+#: src/business/shop-advice.ts:123
 msgid "Photos of every branch"
 msgstr "Photos de chaque succursale"
 
@@ -6667,6 +6733,11 @@ msgstr "Réponses privées — ouvrez la réservation pour les lire."
 msgid "Private Dining"
 msgstr "Repas privé"
 
+#. A refusal: the app shows it as the reason something did not work.
+#: src/storage/storage.service.ts:263
+msgid "Private file storage is not set up (R2_PRIVATE_BUCKET_NAME), so business papers cannot be kept. Our team has been told."
+msgstr "Le stockage privé des fichiers n’est pas configuré (R2_PRIVATE_BUCKET_NAME), donc les documents d’entreprise ne peuvent pas être conservés. Notre équipe a été prévenue."
+
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:815
 msgid "Private or shared"
@@ -6691,6 +6762,10 @@ msgstr "Photo de produits"
 #: prisma/seed.ts:146
 msgid "Professional"
 msgstr "Professionnel"
+
+#: src/business/document-rules.ts:22
+msgid "Professional licence"
+msgstr "Licence professionnelle"
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1812
@@ -6742,7 +6817,7 @@ msgid "Rackets for 4"
 msgstr "Raquettes pour 4"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/discovery/discovery.service.ts:801
+#: src/discovery/discovery.service.ts:830
 msgid "radiusKm needs lat and lng — a radius has to be a radius around something."
 msgstr "radiusKm nécessite lat et lng — un rayon se mesure autour d’un point."
 
@@ -6768,6 +6843,10 @@ msgstr "La note ne peut pas dépasser 5."
 #: src/business/choice-suggestions.ts:1278
 msgid "Rats or mice"
 msgstr "Rats ou souris"
+
+#: src/business/document-rules.ts:18
+msgid "RDB registration certificate"
+msgstr "Certificat d’immatriculation RDB"
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1491
@@ -6798,7 +6877,7 @@ msgstr "Livraison en 24 heures"
 msgid "Ready when I arrive"
 msgstr "Prêts à mon arrivée"
 
-#: src/notifications/notification-templates.ts:174
+#: src/notifications/notification-templates.ts:181
 #: src/support/support-accounts.service.ts:42
 msgid "Reason: {reason}"
 msgstr "Motif : {reason}"
@@ -6829,7 +6908,7 @@ msgstr "Loisirs"
 msgid "Referee"
 msgstr "Arbitre"
 
-#: src/notifications/notification-templates.ts:65
+#: src/notifications/notification-templates.ts:72
 msgid "Reference: {reference}"
 msgstr "Référence : {reference}"
 
@@ -6902,6 +6981,10 @@ msgstr "Retirez les assureurs que vous n’acceptez pas."
 #: src/business/choice-suggestions.ts:1920
 msgid "Remove the ways you do not offer."
 msgstr "Retirez les options que vous ne proposez pas."
+
+#: src/notifications/notification-templates.ts:659
+msgid "Renew it in time, then upload the new one under Business papers, so nothing stops when the old one ends."
+msgstr "Renouvelez-la à temps, puis téléversez la nouvelle sous Documents de l’entreprise, pour que rien ne s’arrête quand l’ancienne expire."
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:585
@@ -6997,6 +7080,10 @@ msgstr "RSSB"
 msgid "Rush"
 msgstr "Express"
 
+#: src/business/document-rules.ts:23
+msgid "Rwanda FDA licence"
+msgstr "Licence Rwanda FDA"
+
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1889
 #: src/business/choice-suggestions.ts:1904
@@ -7039,6 +7126,11 @@ msgid "Say any age limits in the service’s description."
 msgstr "Indiquez les limites d’âge dans la description du service."
 
 #. A refusal: the app shows it as the reason something did not work.
+#: src/business/documents.service.ts:78
+msgid "Say what the paper is, in a few words."
+msgstr "Dites ce qu’est le document, en quelques mots."
+
+#. A refusal: the app shows it as the reason something did not work.
 #: src/support/support-log.service.ts:36
 msgid "Say why, in a few words. It is kept with what you did."
 msgstr "Dites pourquoi, en quelques mots. C’est conservé avec ce que vous avez fait."
@@ -7078,7 +7170,7 @@ msgstr "Shampooing sièges et moquettes"
 msgid "Seating wish"
 msgstr "Souhait de place"
 
-#: src/notifications/notification-email.ts:294
+#: src/notifications/notification-email.ts:298
 #: src/notifications/notifications.service.ts:63
 msgid "See bookings"
 msgstr "Voir les réservations"
@@ -7091,7 +7183,7 @@ msgstr "Voir les avis"
 msgid "See you on {weekday} at {clock}"
 msgstr "On vous attend {weekday} à {clock}"
 
-#: src/notifications/notification-templates.ts:322
+#: src/notifications/notification-templates.ts:329
 msgid "See you on {weekday} at {clock}."
 msgstr "On vous attend {weekday} à {clock}."
 
@@ -7103,7 +7195,7 @@ msgstr "À bientôt"
 msgid "See you today at {clock}"
 msgstr "On vous attend aujourd’hui à {clock}"
 
-#: src/notifications/notification-templates.ts:319
+#: src/notifications/notification-templates.ts:326
 msgid "See you today at {clock}."
 msgstr "On vous attend aujourd’hui à {clock}."
 
@@ -7111,7 +7203,7 @@ msgstr "On vous attend aujourd’hui à {clock}."
 msgid "See you tomorrow at {clock}"
 msgstr "On vous attend demain à {clock}"
 
-#: src/notifications/notification-templates.ts:321
+#: src/notifications/notification-templates.ts:328
 msgid "See you tomorrow at {clock}."
 msgstr "On vous attend demain à {clock}."
 
@@ -7145,11 +7237,11 @@ msgstr "Service"
 #: src/appointments/appointments.service.ts:428
 #: src/availability/availability.service.ts:324
 #: src/business/business-access.service.ts:139
-#: src/favourites/favourites.service.ts:167
+#: src/favourites/favourites.service.ts:169
 msgid "Service not found."
 msgstr "Service introuvable."
 
-#: src/notifications/notification-templates.ts:59
+#: src/notifications/notification-templates.ts:66
 msgid "Service: {serviceName}"
 msgstr "Service : {serviceName}"
 
@@ -7250,7 +7342,7 @@ msgstr "Crustacés et coquillages"
 msgid "Shoe Repair"
 msgstr "Cordonnerie"
 
-#: src/business/shop-advice.ts:201
+#: src/business/shop-advice.ts:212
 msgid "Shops with clear, high-resolution photos and full details get booked far more often. Before you post, finish your shop by adding:"
 msgstr "Les établissements aux photos nettes, en haute résolution, et aux informations complètes sont bien plus souvent réservés. Avant de publier, complétez votre établissement en ajoutant :"
 
@@ -7283,7 +7375,7 @@ msgstr "Visible uniquement par l’établissement."
 msgid "Shown to you in red. People with serious allergies should still call you."
 msgstr "Affiché en rouge pour vous. Les personnes ayant une allergie grave devraient quand même vous appeler."
 
-#: src/business/shop-advice.ts:151
+#: src/business/shop-advice.ts:156
 msgid "shown under “About this service” before they book"
 msgstr "affiché sous « À propos de ce service » avant la réservation"
 
@@ -7371,7 +7463,7 @@ msgstr "Snacks"
 msgid "Snacks when"
 msgstr "Moment des snacks"
 
-#: src/business/shop-advice.ts:112
+#: src/business/shop-advice.ts:117
 msgid "so customers can reach you"
 msgstr "pour que les clients puissent vous joindre"
 
@@ -7444,8 +7536,8 @@ msgid "sort must be one of: {value0}"
 msgstr "sort doit être l’une des valeurs suivantes : {value0}"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/discovery/discovery.service.ts:90
-#: src/discovery/discovery.service.ts:338
+#: src/discovery/discovery.service.ts:115
+#: src/discovery/discovery.service.ts:364
 msgid "sort=distance requires lat and lng."
 msgstr "sort=distance nécessite lat et lng."
 
@@ -7612,8 +7704,8 @@ msgstr "Style"
 msgid "Subject"
 msgstr "Matière"
 
-#: src/notifications/notification-templates.ts:365
-#: src/notifications/notification-templates.ts:386
+#: src/notifications/notification-templates.ts:372
+#: src/notifications/notification-templates.ts:393
 msgid "Subject: {subject}"
 msgstr "Objet : {subject}"
 
@@ -7718,6 +7810,10 @@ msgstr "Fuseler"
 msgid "Tattoo & Piercing"
 msgstr "Tatouage et piercing"
 
+#: src/business/document-rules.ts:19
+msgid "Taxpayer registration (TIN)"
+msgstr "Immatriculation fiscale (TIN)"
+
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:1352
 msgid "Teeth"
@@ -7768,7 +7864,7 @@ msgstr "Terrasse"
 msgid "Test day: the car and a warm-up"
 msgstr "Jour de l’examen : voiture et révision"
 
-#: src/notifications/notification-templates.ts:568
+#: src/notifications/notification-templates.ts:575
 msgid "Thank you for visiting {businessName}."
 msgstr "Merci de votre visite chez {businessName}."
 
@@ -7817,7 +7913,12 @@ msgid "That document has not been published yet."
 msgstr "Ce document n’a pas encore été publié."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/storage/storage.service.ts:121
+#: src/business/documents.service.ts:81
+msgid "That end date is not a real day."
+msgstr "Cette date de fin n’est pas un jour réel."
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/storage/storage.service.ts:129
 msgid "That file is not a picture we can open. Try a JPG, PNG or WebP photo."
 msgstr "Ce fichier n’est pas une image que nous pouvons ouvrir. Essayez une photo JPG, PNG ou WebP."
 
@@ -7916,7 +8017,7 @@ msgstr "l’application sur {system, select, iPhone {un iPhone} iPad {un iPad} C
 msgid "The arrival code is six digits."
 msgstr "Le code d’arrivée comporte six chiffres."
 
-#: src/notifications/notification-email.ts:389
+#: src/notifications/notification-email.ts:393
 msgid "The BwanguReservations team"
 msgstr "L’équipe BwanguReservations"
 
@@ -7925,15 +8026,15 @@ msgstr "L’équipe BwanguReservations"
 msgid "The configured exchange rate converts this deposit to zero. Check the rate before taking payments."
 msgstr "Le taux de change configuré ramène cet acompte à zéro. Vérifiez le taux avant d’encaisser des paiements."
 
-#: src/notifications/notification-templates.ts:251
+#: src/notifications/notification-templates.ts:258
 msgid "The customer cancelled this booking."
 msgstr "Le client a annulé cette réservation."
 
-#: src/notifications/notification-templates.ts:603
+#: src/notifications/notification-templates.ts:610
 msgid "The customer changed their choices or their note for {serviceName}."
 msgstr "Le client a modifié ses choix ou sa note pour {serviceName}."
 
-#: src/notifications/notification-templates.ts:263
+#: src/notifications/notification-templates.ts:270
 msgid "The customer gets their whole deposit back, and the mobile money charge for sending it back is yours."
 msgstr "Le client récupère tout son acompte, et les frais Mobile Money du renvoi sont à votre charge."
 
@@ -7955,11 +8056,11 @@ msgstr "La veille d’un rendez-vous, pour ne pas le manquer."
 msgid "The deposit did not go through"
 msgstr "L’acompte n’est pas passé"
 
-#: src/notifications/notification-templates.ts:204
+#: src/notifications/notification-templates.ts:211
 msgid "The deposit is paid, so this booking is confirmed."
 msgstr "L’acompte est payé : cette réservation est donc confirmée."
 
-#: src/business/shop-advice.ts:97
+#: src/business/shop-advice.ts:102
 msgid "the first thing customers see on your page"
 msgstr "la première chose que les clients voient sur votre page"
 
@@ -7984,7 +8085,7 @@ msgstr "Le dernier jour d’une promo ne peut pas être déjà passé."
 msgid "The maximum reporting range is {MAX_RANGE_DAYS} days. Requested {value1}."
 msgstr "La période maximale d’un rapport est de {MAX_RANGE_DAYS} jours. Demandé : {value1}."
 
-#: src/notifications/notification-templates.ts:434
+#: src/notifications/notification-templates.ts:441
 msgid "The name on your reviews was removed"
 msgstr "Le nom affiché sur vos avis a été retiré"
 
@@ -8003,23 +8104,23 @@ msgstr "Le propriétaire ne peut pas être retiré. Chaque entreprise doit avoir
 msgid "The owner cannot be removed. Hand the shop to someone else first."
 msgstr "Le propriétaire ne peut pas être retiré. Confiez d’abord l’établissement à quelqu’un d’autre."
 
-#: src/notifications/notification-templates.ts:93
+#: src/notifications/notification-templates.ts:100
 msgid "The owner invited you to join {businessName} as a manager on BwanguReservations."
 msgstr "Le propriétaire vous invite à rejoindre {businessName} en tant que gérant sur BwanguReservations."
 
-#: src/notifications/notification-templates.ts:95
+#: src/notifications/notification-templates.ts:102
 msgid "The owner invited you to join {businessName} as a team member on BwanguReservations."
 msgstr "Le propriétaire vous invite à rejoindre {businessName} en tant que membre de l’équipe sur BwanguReservations."
 
-#: src/notifications/notification-templates.ts:97
+#: src/notifications/notification-templates.ts:104
 msgid "The owner invited you to join {businessName} as an administrator on BwanguReservations."
 msgstr "Le propriétaire vous invite à rejoindre {businessName} en tant qu’administrateur sur BwanguReservations."
 
-#: src/notifications/notification-templates.ts:91
+#: src/notifications/notification-templates.ts:98
 msgid "The owner invited you to join {businessName} as an owner on BwanguReservations."
 msgstr "Le propriétaire vous invite à rejoindre {businessName} en tant que propriétaire sur BwanguReservations."
 
-#: src/notifications/notification-templates.ts:98
+#: src/notifications/notification-templates.ts:105
 msgid "The owner invited you to join {businessName} on BwanguReservations."
 msgstr "Le propriétaire vous invite à rejoindre {businessName} sur BwanguReservations."
 
@@ -8059,15 +8160,15 @@ msgstr "Le salon : synthétiques"
 msgid "The sauna"
 msgstr "Le sauna"
 
-#: src/notifications/notification-templates.ts:405
+#: src/notifications/notification-templates.ts:412
 msgid "The shop replied to your review"
 msgstr "L’établissement a répondu à votre avis"
 
-#: src/notifications/notification-templates.ts:406
+#: src/notifications/notification-templates.ts:413
 msgid "The shop replied to your review."
 msgstr "L’établissement a répondu à votre avis."
 
-#: src/notifications/notification-templates.ts:509
+#: src/notifications/notification-templates.ts:516
 msgid "The suspension has been lifted. Customers can find and book with you again, and money kept while you were suspended goes out with your next payment."
 msgstr "La suspension a été levée. Les clients peuvent de nouveau vous trouver et réserver chez vous, et l’argent retenu pendant la suspension partira avec votre prochain versement."
 
@@ -8076,15 +8177,15 @@ msgstr "La suspension a été levée. Les clients peuvent de nouveau vous trouve
 msgid "The tank or pump"
 msgstr "La citerne ou la pompe"
 
-#: src/notifications/notification-templates.ts:257
+#: src/notifications/notification-templates.ts:264
 msgid "The time is free for someone else."
 msgstr "Le créneau est libre pour quelqu’un d’autre."
 
-#: src/notifications/notification-templates.ts:302
+#: src/notifications/notification-templates.ts:309
 msgid "The time is held a little longer while they try again, then it is free."
 msgstr "Le créneau reste bloqué un peu plus longtemps le temps qu’il réessaie, puis il se libère."
 
-#: src/notifications/notification-templates.ts:186
+#: src/notifications/notification-templates.ts:193
 msgid "The time is held while they pay the deposit, which usually takes a minute or two. We will tell you when it is paid; if it is not paid within 5 minutes, the time is free again."
 msgstr "Le créneau est bloqué pendant que le client paie l’acompte, ce qui prend en général une minute ou deux. Nous vous préviendrons quand il sera payé ; s’il n’est pas payé dans les 5 minutes, le créneau se libère."
 
@@ -8124,11 +8225,11 @@ msgstr "Code de la route"
 msgid "Therapy"
 msgstr "Thérapie"
 
-#: src/notifications/notification-templates.ts:364
+#: src/notifications/notification-templates.ts:371
 msgid "There is a new reply to your question."
 msgstr "Il y a une nouvelle réponse à votre question."
 
-#: src/notifications/notification-templates.ts:381
+#: src/notifications/notification-templates.ts:388
 msgid "There is news on your question."
 msgstr "Il y a du nouveau sur votre question."
 
@@ -8153,7 +8254,7 @@ msgstr "Il n’y a rien d’écrit à publier."
 msgid "They are the only owner of {shop}. Make someone else an owner first, or it would be left with nobody who can change anything."
 msgstr "Cette personne est le seul propriétaire de {shop}. Nommez d’abord un autre propriétaire, sinon plus personne ne pourra rien y modifier."
 
-#: src/notifications/notification-templates.ts:259
+#: src/notifications/notification-templates.ts:266
 msgid "They cancelled more than 24 hours before, so their deposit goes back to them and nothing is paid to you for this booking."
 msgstr "Le client a annulé plus de 24 heures avant : son acompte lui est rendu, et rien ne vous est versé pour cette réservation."
 
@@ -8250,19 +8351,19 @@ msgstr "Ce rendez-vous a déjà été vérifié : il ne peut donc pas être mar
 msgid "This booking can no longer be changed."
 msgstr "Cette réservation ne peut plus être modifiée."
 
-#: src/notifications/notification-templates.ts:256
+#: src/notifications/notification-templates.ts:263
 msgid "This booking has been cancelled."
 msgstr "Cette réservation a été annulée."
 
-#: src/notifications/notification-templates.ts:253
+#: src/notifications/notification-templates.ts:260
 msgid "This booking was cancelled by your shop."
 msgstr "Cette réservation a été annulée par votre établissement."
 
-#: src/notifications/notification-templates.ts:255
+#: src/notifications/notification-templates.ts:262
 msgid "This booking was let go, because the deposit was not paid in time."
 msgstr "Cette réservation a été libérée, car l’acompte n’a pas été payé à temps."
 
-#: src/notifications/notification-templates.ts:285
+#: src/notifications/notification-templates.ts:292
 msgid "This booking was marked as missed."
 msgstr "Cette réservation a été marquée comme manquée."
 
@@ -8290,12 +8391,12 @@ msgstr "Cette succursale reçoit une personne à la fois."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: value0.
-#: src/business/business-moderation.service.ts:251
+#: src/business/business-moderation.service.ts:255
 msgid "This business cannot go live yet: it still needs {value0}. Listed without that, no customer could book it — ask the business to finish setting up."
 msgstr "Cette entreprise ne peut pas encore être en ligne : il lui manque encore {value0}. Listée ainsi, aucun client ne pourrait la réserver — demandez à l’entreprise de finir sa configuration."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/business/business-moderation.service.ts:245
+#: src/business/business-moderation.service.ts:249
 msgid "This business has no name, so it cannot be approved — it would appear in search as a blank. Ask the business to complete its profile first."
 msgstr "Cette entreprise n’a pas de nom, elle ne peut donc pas être approuvée — elle apparaîtrait vide dans la recherche. Demandez d’abord à l’entreprise de compléter son profil."
 
@@ -8405,6 +8506,16 @@ msgstr "Ce membre a été retiré. Invitez-le à nouveau au lieu de modifier ses
 #: src/business/members.service.ts:269
 msgid "This member has been removed. Re-invite them instead of changing their role."
 msgstr "Ce membre a été retiré. Invitez-le à nouveau au lieu de modifier son rôle."
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/documents.service.ts:83
+msgid "This paper has already run out. Upload the renewed one."
+msgstr "Ce document a déjà expiré. Téléversez le document renouvelé."
+
+#. A refusal: the app shows it as the reason something did not work.
+#: src/business/documents.service.ts:128
+msgid "This paper has been checked, so it stays. Upload a newer one to replace it."
+msgstr "Ce document a été vérifié, il reste donc. Téléversez-en un plus récent pour le remplacer."
 
 #. A refusal: the app shows it as the reason something did not work.
 #: src/support/support-accounts.service.ts:260
@@ -8526,7 +8637,7 @@ msgstr "Le temps de faire connaissance."
 msgid "Titanium"
 msgstr "Titane"
 
-#: src/notifications/notification-templates.ts:634
+#: src/notifications/notification-templates.ts:689
 msgid "To accept, sign in with this email address — that is all."
 msgstr "Pour accepter, connectez-vous avec cette adresse e-mail — c’est tout."
 
@@ -8540,11 +8651,11 @@ msgstr "to doit être une date et heure au format ISO-8601."
 msgid "To pay at the shop"
 msgstr "À payer sur place"
 
-#: src/notifications/notification-templates.ts:313
+#: src/notifications/notification-templates.ts:320
 msgid "Today at {clock}: {serviceName} at {businessName}"
 msgstr "Aujourd’hui à {clock} : {serviceName} chez {businessName}"
 
-#: src/notifications/notification-templates.ts:315
+#: src/notifications/notification-templates.ts:322
 msgid "Tomorrow at {clock}: {serviceName} at {businessName}"
 msgstr "Demain à {clock} : {serviceName} chez {businessName}"
 
@@ -8601,10 +8712,18 @@ msgstr "Total"
 msgid "Tour language"
 msgstr "Langue de la visite"
 
+#: src/business/document-rules.ts:24
+msgid "Tourism operating licence"
+msgstr "Licence d’exploitation touristique"
+
 #. A category of shop, a type of shop, or what a category covers — shown on cards and in pickers, so keep names short.
 #: prisma/seed.ts:242
 msgid "Tours & Experiences"
 msgstr "Excursions et expériences"
+
+#: src/business/document-rules.ts:20
+msgid "Trading licence"
+msgstr "Patente"
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:488
@@ -8743,9 +8862,17 @@ msgstr "Jusqu’à 5"
 msgid "Up to 5 kg"
 msgstr "Jusqu’à 5 kg"
 
-#: src/notifications/notification-templates.ts:383
+#: src/notifications/notification-templates.ts:390
 msgid "Update on your question: {subject}"
 msgstr "Du nouveau sur votre question : {subject}"
+
+#: src/notifications/notification-templates.ts:639
+msgid "Upload it again under Business papers — a clear, complete scan or photo of the whole page."
+msgstr "Téléversez-le à nouveau sous Documents de l’entreprise — un scan ou une photo nette et complète de toute la page."
+
+#: src/notifications/notification-templates.ts:653
+msgid "Upload the renewed one under Business papers. A shop whose licence has run out may be taken off the app until it is renewed."
+msgstr "Téléversez le document renouvelé sous Documents de l’entreprise. Un commerce dont la licence a expiré peut être retiré de l’application jusqu’à son renouvellement."
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
 #: src/business/choice-suggestions.ts:768
@@ -8895,7 +9022,7 @@ msgstr "Marcher en laisse"
 msgid "Walking pace"
 msgstr "Rythme de marche"
 
-#: src/notifications/notification-templates.ts:616
+#: src/notifications/notification-templates.ts:671
 msgid "Was it you? Then there is nothing to do."
 msgstr "C’était vous ? Alors il n’y a rien à faire."
 
@@ -8941,7 +9068,7 @@ msgstr "Cire"
 msgid "Wax or polish"
 msgstr "Cire ou lustrage"
 
-#: src/notifications/notification-templates.ts:374
+#: src/notifications/notification-templates.ts:381
 msgid "We are looking into your question."
 msgstr "Nous examinons votre question."
 
@@ -8978,7 +9105,7 @@ msgstr "Nous avons enregistré l’arrivée du client pour {serviceName} le {whe
 msgid "We checked the customer in for {serviceName}."
 msgstr "Nous avons enregistré l’arrivée du client pour {serviceName}."
 
-#: src/notifications/notification-templates.ts:527
+#: src/notifications/notification-templates.ts:534
 msgid "We checked the number you gave, and your payments now go there. Anything kept while it was being checked goes out with your next payment."
 msgstr "Nous avons vérifié le numéro que vous avez donné, et vos versements y sont désormais envoyés. Ce qui a été retenu pendant la vérification part avec votre prochain versement."
 
@@ -8990,11 +9117,19 @@ msgstr "Nous avons vérifié auprès de MTN : l’acompte n’est pas passé. V
 msgid "We checked with MTN: your deposit went through, and the booking is confirmed."
 msgstr "Nous avons vérifié auprès de MTN : votre acompte est bien passé, et la réservation est confirmée."
 
+#: src/notifications/notification-templates.ts:627
+msgid "We checked your {paper} and it is in order."
+msgstr "Nous avons vérifié votre {paper} et il est en règle."
+
 #: src/appointments/appointments.service.ts:2219
 msgid "We corrected {serviceName}: it was marked as missed, but the customer came. It now counts as done."
 msgstr "Nous avons corrigé {serviceName} : le rendez-vous était marqué comme manqué, mais le client est venu. Il compte désormais comme effectué."
 
-#: src/notifications/notification-templates.ts:538
+#: src/notifications/notification-templates.ts:637
+msgid "We could not accept the {paper} you uploaded."
+msgstr "Nous n’avons pas pu accepter le {paper} que vous avez téléversé."
+
+#: src/notifications/notification-templates.ts:545
 msgid "We could not accept the number you gave, so your payments stay paused."
 msgstr "Nous n’avons pas pu accepter le numéro que vous avez donné : vos versements restent donc en pause."
 
@@ -9014,7 +9149,7 @@ msgstr "Nous avons marqué {serviceName} comme terminé. L’établissement est 
 msgid "We marked {serviceName} on {when} as done, because it could not be done in the app. Your share of the deposit is paid to you as usual."
 msgstr "Nous avons marqué {serviceName} du {when} comme terminé, car cela n’a pas pu se faire dans l’application. Votre part de l’acompte vous est versée comme d’habitude."
 
-#: src/notifications/notification-templates.ts:376
+#: src/notifications/notification-templates.ts:383
 msgid "We marked your question as solved. If it is not, reply within 14 days and it opens again."
 msgstr "Nous avons marqué votre question comme résolue. Si ce n’est pas le cas, répondez sous 14 jours et elle sera rouverte."
 
@@ -9026,11 +9161,11 @@ msgstr "Nous avons rouvert votre établissement : les clients peuvent y réserv
 msgid "We paused your shop: no new bookings until it is opened again. Bookings already made still happen."
 msgstr "Nous avons mis votre établissement en pause : plus de nouvelles réservations jusqu’à sa réouverture. Les réservations déjà faites sont maintenues."
 
-#: src/notifications/notification-templates.ts:362
+#: src/notifications/notification-templates.ts:369
 msgid "We replied: {subject}"
 msgstr "Nous avons répondu : {subject}"
 
-#: src/notifications/notification-templates.ts:484
+#: src/notifications/notification-templates.ts:491
 msgid "We reviewed your shop and could not approve it yet."
 msgstr "Nous avons examiné votre établissement et n’avons pas encore pu l’approuver."
 
@@ -9173,7 +9308,7 @@ msgstr "Quel est le motif de la visite ?"
 msgid "What is your goal?"
 msgstr "Quel est votre objectif ?"
 
-#: src/business/readiness.ts:109
+#: src/business/readiness.ts:130
 msgid "what kind of shop it is"
 msgstr "son type d’établissement"
 
@@ -9272,12 +9407,12 @@ msgstr "Quand arriverez-vous ?"
 msgid "When would you like them?"
 msgstr "Quand les souhaitez-vous ?"
 
-#: src/notifications/notification-templates.ts:69
+#: src/notifications/notification-templates.ts:76
 msgid "When you arrive, give the shop your 6-digit arrival code. It is in the app, on the booking."
 msgstr "À votre arrivée, donnez à l’établissement votre code d’arrivée à 6 chiffres. Il se trouve dans l’application, sur la réservation."
 
 #: src/mail/email-kit.ts:495
-#: src/notifications/notification-templates.ts:61
+#: src/notifications/notification-templates.ts:68
 msgid "When: {when}"
 msgstr "Quand : {when}"
 
@@ -9326,7 +9461,7 @@ msgid "Where would you like to sit?"
 msgstr "Où souhaitez-vous vous asseoir ?"
 
 #: src/mail/email-kit.ts:496
-#: src/notifications/notification-templates.ts:60
+#: src/notifications/notification-templates.ts:67
 msgid "Where: {locationName}"
 msgstr "Où : {locationName}"
 
@@ -9658,7 +9793,7 @@ msgstr "Avec un ingénieur du son ?"
 msgid "With these answers the price would be below nothing. Please pick other answers, or ask the shop."
 msgstr "Avec ces réponses, le prix serait inférieur à zéro. Choisissez d’autres réponses, ou demandez à l’établissement."
 
-#: src/business/shop-advice.ts:127
+#: src/business/shop-advice.ts:132
 msgid "without hours, nothing there can be booked"
 msgstr "sans horaires, rien ne peut y être réservé"
 
@@ -9879,7 +10014,7 @@ msgstr "Vous êtes"
 msgid "You are all set"
 msgstr "Tout est prêt"
 
-#: src/notifications/notification-templates.ts:194
+#: src/notifications/notification-templates.ts:201
 msgid "You are booked: {serviceName}, {short}"
 msgstr "C’est réservé : {serviceName}, {short}"
 
@@ -9887,7 +10022,7 @@ msgstr "C’est réservé : {serviceName}, {short}"
 msgid "You are checked in"
 msgstr "Votre arrivée est enregistrée"
 
-#: src/notifications/notification-templates.ts:631
+#: src/notifications/notification-templates.ts:686
 msgid "You are invited to join {businessName}"
 msgstr "Vous êtes invité à rejoindre {businessName}"
 
@@ -9921,7 +10056,7 @@ msgstr "Vous êtes le seul propriétaire de {shop}. Nommez d’abord un autre pr
 msgid "You asked for a new arrival code, so any earlier one no longer works."
 msgstr "Vous avez demandé un nouveau code d’arrivée : tout code précédent ne fonctionne donc plus."
 
-#: src/notifications/notification-templates.ts:438
+#: src/notifications/notification-templates.ts:445
 msgid "You can choose a new one the next time you write or edit a review."
 msgstr "Vous pourrez en choisir un nouveau la prochaine fois que vous écrirez ou modifierez un avis."
 
@@ -9935,11 +10070,11 @@ msgstr "Vous pouvez ignorer cet e-mail. Personne ne peut se connecter sans le co
 msgid "You can start at most {MAX_INQUIRY_THREADS_PER_DAY} new conversations per day. You can still reply in conversations you already have."
 msgstr "Vous pouvez lancer au plus {MAX_INQUIRY_THREADS_PER_DAY} nouvelles conversations par jour. Vous pouvez toujours répondre dans vos conversations existantes."
 
-#: src/notifications/notification-templates.ts:235
+#: src/notifications/notification-templates.ts:242
 msgid "You cancelled more than 24 hours before, so your whole deposit comes back to the number that paid it."
 msgstr "Vous avez annulé plus de 24 heures avant : tout votre acompte revient au numéro qui l’a payé."
 
-#: src/notifications/notification-templates.ts:225
+#: src/notifications/notification-templates.ts:232
 msgid "You cancelled your booking at {businessName}."
 msgstr "Vous avez annulé votre réservation chez {businessName}."
 
@@ -9953,7 +10088,7 @@ msgstr "Vous ne pouvez pas consulter les statistiques de cette entreprise."
 msgid "You cannot remove yourself."
 msgstr "Vous ne pouvez pas vous retirer vous-même."
 
-#: src/notifications/notification-email.ts:296
+#: src/notifications/notification-email.ts:300
 msgid "You chose one booking summary each morning instead of an email for each."
 msgstr "Vous avez choisi un seul résumé des réservations chaque matin au lieu d’un e-mail pour chacune."
 
@@ -10004,7 +10139,7 @@ msgstr "Vous avez {upcoming} réservation(s) à venir. Annulez-les d’abord, ou
 msgid "You have a new booking"
 msgstr "Vous avez une nouvelle réservation"
 
-#: src/notifications/notification-templates.ts:393
+#: src/notifications/notification-templates.ts:400
 msgid "You have a new review"
 msgstr "Vous avez un nouvel avis"
 
@@ -10016,11 +10151,35 @@ msgstr "Vous avez été marqué absent"
 msgid "You were signed out everywhere"
 msgstr "Vous avez été déconnecté partout"
 
-#: src/business/shop-advice.ts:70
+#: src/business/shop-advice.ts:75
 msgid "your {count} branches"
 msgstr "vos {count} succursales"
 
-#: src/notifications/notification-email.ts:126
+#: src/notifications/notification-templates.ts:650
+msgid "Your {paper} has run out"
+msgstr "Votre {paper} a expiré"
+
+#: src/notifications/notification-templates.ts:625
+msgid "Your {paper} is checked"
+msgstr "Votre {paper} est vérifié"
+
+#: src/notifications/notification-templates.ts:652
+msgid "Your {paper} ran out on {day}."
+msgstr "Votre {paper} a expiré le {day}."
+
+#: src/notifications/notification-templates.ts:656
+msgid "Your {paper} runs out on {day}"
+msgstr "Votre {paper} expire le {day}"
+
+#: src/notifications/notification-templates.ts:658
+msgid "Your {paper} runs out on {day}."
+msgstr "Votre {paper} expire le {day}."
+
+#: src/notifications/notification-templates.ts:635
+msgid "Your {paper} was not accepted"
+msgstr "Votre {paper} n’a pas été accepté"
+
+#: src/notifications/notification-email.ts:130
 msgid "Your account"
 msgstr "Votre compte"
 
@@ -10028,7 +10187,7 @@ msgstr "Votre compte"
 msgid "Your account is closed"
 msgstr "Votre compte est fermé"
 
-#: src/notifications/notification-templates.ts:614
+#: src/notifications/notification-templates.ts:669
 msgid "Your account was just signed in to on {device}."
 msgstr "Une connexion à votre compte vient d’avoir lieu sur {device}."
 
@@ -10037,7 +10196,7 @@ msgid "Your account, your support requests, and notices about the service."
 msgstr "Votre compte, vos demandes d’assistance et les avis concernant le service."
 
 #: src/mail/mail.service.ts:362
-#: src/notifications/notification-email.ts:384
+#: src/notifications/notification-email.ts:388
 msgid "Your arrival code"
 msgstr "Votre code d’arrivée"
 
@@ -10045,15 +10204,15 @@ msgstr "Votre code d’arrivée"
 msgid "Your booking"
 msgstr "Votre réservation"
 
-#: src/notifications/notification-templates.ts:230
+#: src/notifications/notification-templates.ts:237
 msgid "Your booking at {businessName} has been cancelled."
 msgstr "Votre réservation chez {businessName} a été annulée."
 
-#: src/notifications/notification-templates.ts:223
+#: src/notifications/notification-templates.ts:230
 msgid "Your booking at {businessName} was cancelled on the shop's side by our support team."
 msgstr "Votre réservation chez {businessName} a été annulée au nom de l’établissement par notre équipe d’assistance."
 
-#: src/notifications/notification-templates.ts:229
+#: src/notifications/notification-templates.ts:236
 msgid "Your booking at {businessName} was let go, because the deposit was not paid in time."
 msgstr "Votre réservation chez {businessName} a été libérée, car l’acompte n’a pas été payé à temps."
 
@@ -10078,7 +10237,11 @@ msgstr "L’heure de votre rendez-vous a commencé : il ne peut plus être annu
 msgid "Your bookings are in the app, under Bookings."
 msgstr "Vos réservations sont dans l’application, sous Réservations."
 
-#: src/business/shop-advice.ts:109
+#: src/business/shop-advice.ts:167
+msgid "Your business papers"
+msgstr "Vos documents d’entreprise"
+
+#: src/business/shop-advice.ts:114
 msgid "Your category and type"
 msgstr "Votre catégorie et votre type"
 
@@ -10095,27 +10258,27 @@ msgstr "Votre numéro de sabot, ou le look souhaité."
 msgid "Your code to confirm"
 msgstr "Votre code de confirmation"
 
-#: src/notifications/notification-templates.ts:293
+#: src/notifications/notification-templates.ts:300
 msgid "Your deposit for {serviceName} at {businessName} did not go through."
 msgstr "Votre acompte pour {serviceName} chez {businessName} n’est pas passé."
 
-#: src/notifications/notification-templates.ts:196
+#: src/notifications/notification-templates.ts:203
 msgid "Your deposit is paid and your booking at {businessName} is confirmed."
 msgstr "Votre acompte est payé et votre réservation chez {businessName} est confirmée."
 
-#: src/business/shop-advice.ts:99
+#: src/business/shop-advice.ts:104
 msgid "Your logo"
 msgstr "Votre logo"
 
-#: src/notifications/notification-templates.ts:525
+#: src/notifications/notification-templates.ts:532
 msgid "Your mobile money number is confirmed"
 msgstr "Votre numéro Mobile Money est confirmé"
 
-#: src/notifications/notification-templates.ts:536
+#: src/notifications/notification-templates.ts:543
 msgid "Your mobile money number was not accepted"
 msgstr "Votre numéro Mobile Money n’a pas été accepté"
 
-#: src/notifications/notification-email.ts:281
+#: src/notifications/notification-email.ts:285
 msgid "Your morning summary"
 msgstr "Votre résumé du matin"
 
@@ -10136,11 +10299,11 @@ msgstr "Votre paiement n’est pas passé"
 msgid "Your private answers are with the shop — see them in the app."
 msgstr "Vos réponses privées sont transmises à l’établissement — consultez-les dans l’application."
 
-#: src/notifications/notification-templates.ts:378
+#: src/notifications/notification-templates.ts:385
 msgid "Your question is now closed."
 msgstr "Votre question est maintenant close."
 
-#: src/notifications/notification-templates.ts:380
+#: src/notifications/notification-templates.ts:387
 msgid "Your question is open again, and we will reply soon."
 msgstr "Votre question est rouverte, et nous vous répondrons bientôt."
 
@@ -10156,15 +10319,15 @@ msgstr "Vos avis"
 msgid "your saved address"
 msgstr "votre adresse enregistrée"
 
-#: src/business/shop-advice.ts:157
+#: src/business/shop-advice.ts:162
 msgid "your share of each deposit is paid to it"
 msgstr "votre part de chaque acompte y est versée"
 
-#: src/notifications/notification-templates.ts:285
+#: src/notifications/notification-templates.ts:292
 msgid "Your share of the deposit is paid to you."
 msgstr "Votre part de l’acompte vous est versée."
 
-#: src/notifications/notification-templates.ts:261
+#: src/notifications/notification-templates.ts:268
 msgid "Your share of the deposit is still paid to you."
 msgstr "Votre part de l’acompte vous est quand même versée."
 
@@ -10185,7 +10348,7 @@ msgstr "Votre établissement et l’assistance"
 msgid "Your shop cannot be posted yet: it still needs {value0}, or customers would find nothing to book."
 msgstr "Votre établissement ne peut pas encore être publié : il lui faut encore {value0}, sinon les clients n’auraient rien à réserver."
 
-#: src/notifications/notification-templates.ts:494
+#: src/notifications/notification-templates.ts:501
 msgid "Your shop has been suspended"
 msgstr "Votre établissement a été suspendu"
 
@@ -10209,11 +10372,11 @@ msgstr "Votre établissement est déjà publié."
 msgid "Your shop is already waiting for review."
 msgstr "Votre établissement est déjà en attente de vérification."
 
-#: src/notifications/notification-templates.ts:470
+#: src/notifications/notification-templates.ts:477
 msgid "Your shop is approved"
 msgstr "Votre établissement est approuvé"
 
-#: src/notifications/notification-templates.ts:506
+#: src/notifications/notification-templates.ts:513
 msgid "Your shop is back"
 msgstr "Votre établissement est de retour"
 
@@ -10228,7 +10391,7 @@ msgstr "Votre établissement n’est pas encore prêt pour la vérification. Res
 msgid "Your shop needs to be live on the app to write to its followers."
 msgstr "Votre établissement doit être en ligne sur l’application pour écrire à vos abonnés."
 
-#: src/notifications/notification-templates.ts:482
+#: src/notifications/notification-templates.ts:489
 msgid "Your shop was not approved yet"
 msgstr "Votre établissement n’a pas encore été approuvé"
 
@@ -10240,7 +10403,7 @@ msgstr "Votre code de connexion : {code}"
 msgid "Your time is held"
 msgstr "Votre créneau est retenu"
 
-#: src/notifications/notification-templates.ts:295
+#: src/notifications/notification-templates.ts:302
 msgid "Your time is held for a few more minutes — open the booking in the app and try again."
 msgstr "Votre créneau reste retenu encore quelques minutes — ouvrez la réservation dans l’application et réessayez."
 
@@ -10257,6 +10420,6 @@ msgstr "Votre visite pour {serviceName} avait été marquée comme manquée, mai
 msgid "Your visit to {shop} for {serviceName} was marked as missed, but you came. Our support team corrected it: it now counts as done, and you can leave a review."
 msgstr "Votre visite chez {shop} pour {serviceName} avait été marquée comme manquée, mais vous êtes venu. Notre équipe d’assistance l’a corrigée : elle compte désormais comme effectuée, et vous pouvez laisser un avis."
 
-#: src/notifications/notification-templates.ts:233
+#: src/notifications/notification-templates.ts:240
 msgid "Your whole deposit comes back to you, the platform fee included."
 msgstr "Votre acompte vous est remboursé en entier, frais de plateforme compris."

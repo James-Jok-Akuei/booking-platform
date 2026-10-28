@@ -19,7 +19,7 @@ export type NavItem = {
   /** Said under the label in the search, so a page is found by what it is FOR. */
   hint: string;
   /** Shown only to those who may use it (§277): the money, or how it is going. */
-  need?: 'money' | 'insights';
+  need?: 'money' | 'insights' | 'runsBusiness';
 };
 
 /** `key` names the group for code (the welcome tour, §307); `group` is its heading, in the app's language (§308). */
@@ -78,6 +78,14 @@ export const SECTIONS: NavGroup[] = [
         icon: 'pin',
         get keywords() { return t({ message: 'locations opening times address map people served at once places capacity', context: 'search words' }); },
         get hint() { return t`Where you are and when you open`; },
+      },
+      {
+        to: '/papers',
+        get label() { return t`Business papers`; },
+        icon: 'legal',
+        get keywords() { return t({ message: 'documents licence license RDB TIN certificate registration ipatanti permit papers registered', context: 'search words' }); },
+        get hint() { return t`Your registration and licences`; },
+        need: 'runsBusiness',
       },
       {
         to: '/closures',

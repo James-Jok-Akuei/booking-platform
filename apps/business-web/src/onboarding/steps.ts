@@ -12,7 +12,7 @@ import { t } from '@lingui/core/macro';
  * the seller. Every step can be skipped; only sending for review waits for the
  * required ones (§255).
  */
-export type StepKey = 'shop' | 'branch' | 'service' | 'paid' | 'review';
+export type StepKey = 'shop' | 'branch' | 'service' | 'paid' | 'papers' | 'review';
 
 export const STEPS: Array<{ key: StepKey; title: string; short: string; icon: IconName; keys: ReadinessKey[]; optional?: boolean }> = [
   {
@@ -45,6 +45,14 @@ export const STEPS: Array<{ key: StepKey; title: string; short: string; icon: Ic
     optional: true
   },
   {
+    key: 'papers',
+    get title() { return t`Business papers`; },
+    get short() { return t`Registration, or your licence`; },
+    icon: 'legal',
+    keys: ['papers'],
+    optional: true
+  },
+  {
     key: 'review',
     get title() { return t`Send for review`; },
     get short() { return t`We check it, you post it`; },
@@ -58,7 +66,7 @@ export const STEPS: Array<{ key: StepKey; title: string; short: string; icon: Ic
  * as a few short questions rather than one long form, so a screen never
  * holds more than a field or two.
  */
-export type Screen = 'name' | 'kind' | 'type' | 'contact' | 'address' | 'hours' | 'service' | 'price' | 'paid' | 'review';
+export type Screen = 'name' | 'kind' | 'type' | 'contact' | 'address' | 'hours' | 'service' | 'price' | 'paid' | 'papers' | 'review';
 
 export const SCREENS: Array<{ key: Screen; section: StepKey }> = [
   { key: 'name', section: 'shop' },
@@ -70,6 +78,7 @@ export const SCREENS: Array<{ key: Screen; section: StepKey }> = [
   { key: 'service', section: 'service' },
   { key: 'price', section: 'service' },
   { key: 'paid', section: 'paid' },
+  { key: 'papers', section: 'papers' },
   { key: 'review', section: 'review' },
 ];
 
@@ -83,7 +92,8 @@ export const SKIP_TO: Record<Screen, Screen> = {
   hours: 'service',
   service: 'paid',
   price: 'paid',
-  paid: 'review',
+  paid: 'papers',
+  papers: 'review',
   review: 'review',
 };
 
@@ -132,6 +142,11 @@ export const ITEM_WORDS: Record<ReadinessKey, { label: string; step: Screen; sec
     step: 'paid',
     section: 'paid'
   },
+  papers: {
+    get label() { return t`Your business papers`; },
+    step: 'papers',
+    section: 'papers'
+  },
 };
 
 /**
@@ -171,6 +186,9 @@ export function nextStep(readiness: Readiness | undefined): Screen {
   if (!done('branch')) return 'address';
   if (!done('hours')) return 'hours';
   if (!done('service')) return 'service';
+  // A licensed trade cannot be reviewed without its licence (§314); any other shop may skip its papers.
+  const papers = readiness.items.find((i) => i.key === 'papers');
+  if (papers?.required && !papers.done) return 'papers';
   return 'review';
 }
 

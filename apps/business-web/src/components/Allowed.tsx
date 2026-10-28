@@ -5,7 +5,7 @@ import { Icon, type IconName } from '../ui/Icon';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 
-type Need = 'money' | 'insights' | 'people';
+type Need = 'money' | 'insights' | 'people' | 'runsBusiness';
 
 const WORDS: Record<Need, { icon: IconName; title: string; body: string }> = {
   money: {
@@ -22,6 +22,11 @@ const WORDS: Record<Need, { icon: IconName; title: string; body: string }> = {
     icon: 'users',
     get title() { return t`Only the owner adds people`; },
     get body() { return t`Ask the owner to invite someone, or to change who works where.`; },
+  },
+  runsBusiness: {
+    icon: 'legal',
+    get title() { return t`This is for the owner and every-branch managers`; },
+    get body() { return t`The shop’s business papers are seen and added by the owner, and by managers who look after every branch.`; },
   },
 };
 

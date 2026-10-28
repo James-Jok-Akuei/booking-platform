@@ -12,6 +12,7 @@ import { NotificationSettingsPage } from './pages/NotificationSettingsPage';
 import { SecurityPage } from './pages/SecurityPage';
 import { FollowersPage } from './pages/FollowersPage';
 import { AppQrPage } from './pages/AppQrPage';
+import { PapersPage } from './pages/PapersPage';
 import { ClosuresPage } from './pages/ClosuresPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { ReviewsPage } from './pages/ReviewsPage';
@@ -60,6 +61,14 @@ export function App() {
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/followers" element={<FollowersPage />} />
         <Route path="/app-qr" element={<AppQrPage />} />
+        <Route
+          path="/papers"
+          element={
+            <Allowed need="runsBusiness">
+              <PapersPage />
+            </Allowed>
+          }
+        />
         <Route path="/notifications" element={<NotificationSettingsPage />} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/people" element={<StaffPage />} />

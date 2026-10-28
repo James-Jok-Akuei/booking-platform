@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, openFile } from './client';
 import type { components } from './schema';
 
 /**
@@ -978,3 +978,29 @@ export const postStory = (file: File, caption: string, locationId: string | null
 };
 
 export const deleteStory = (id: string) => api<ActionMessage>(`/business/stories/${id}`, { method: 'DELETE' });
+
+// ---------------------------------------------------------------------------
+// Business papers (§314)
+// ---------------------------------------------------------------------------
+
+export type BusinessDocuments = components['schemas']['BusinessDocumentsDto'];
+export type BusinessDocument = components['schemas']['BusinessDocumentDto'];
+export type DocumentKind = BusinessDocument['kind'];
+export type PaperRule = components['schemas']['PaperRuleDto'];
+
+export const listDocuments = () => api<BusinessDocuments>('/business/documents');
+
+export const uploadDocument = (kind: DocumentKind, file: File, extra: { label?: string; number?: string; expiresAt?: string } = {}) => {
+  const form = new FormData();
+  form.set('kind', kind);
+  if (extra.label) form.set('label', extra.label);
+  if (extra.number) form.set('number', extra.number);
+  if (extra.expiresAt) form.set('expiresAt', extra.expiresAt);
+  form.set('file', file);
+  return api<BusinessDocument>('/business/documents', { method: 'POST', body: form });
+};
+
+export const removeDocument = (id: string) => api<BusinessDocuments>(`/business/documents/${id}`, { method: 'DELETE' });
+
+/** The file itself, in a new tab — through the sign-in, since no link reaches it. */
+export const openDocument = (doc: Pick<BusinessDocument, 'id' | 'fileName'>) => openFile(`/business/documents/${doc.id}/file`, doc.fileName);

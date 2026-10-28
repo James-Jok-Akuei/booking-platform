@@ -146,6 +146,10 @@ enum NotificationType {
   SUPPORT_UPDATE // our support team did something for you or about your booking (§297)
   NEW_SIGN_IN // the account was signed in to on a phone or browser not seen before (§298)
   BOOKING_CHOICES_CHANGED // a customer changed their wishes or note after booking (§300); the shop is told
+  BUSINESS_DOCUMENT_SUBMITTED // a shop uploaded a business paper (§314); administrators check it
+  BUSINESS_DOCUMENT_VERIFIED // our team checked a paper and it is in order (§314)
+  BUSINESS_DOCUMENT_REFUSED // our team could not accept a paper, with a reason (§314)
+  BUSINESS_DOCUMENT_EXPIRING // a paper runs out soon, or has (§314)
 }
 
 /// What a notification is about, for choosing what you get and how (§287).
@@ -309,6 +313,27 @@ enum PayoutDestinationStatus {
   SUPERSEDED // replaced by a later submission; kept as history
 }
 
+/// A business paper a shop uploads (§314): its registration, or a licence
+/// its kind of shop must hold.
+enum BusinessDocumentKind {
+  RDB_CERTIFICATE // RDB certificate of registration (company code / TIN)
+  TIN_CERTIFICATE // RRA taxpayer registration (a sole trader's TIN)
+  TRADING_LICENCE // the district's yearly trading licence (ipatanti)
+  HEALTH_FACILITY_LICENCE // Ministry of Health licence for a clinic, lab or pharmacy
+  PROFESSIONAL_LICENCE // a practitioner's licence from their council
+  FDA_LICENCE // Rwanda FDA licence, for medicines and the like
+  TOURISM_LICENCE // RDB tourism operating licence
+  BAR_MEMBERSHIP // Rwanda Bar Association practising certificate
+  OTHER // anything else, named by the shop
+}
+
+enum BusinessDocumentStatus {
+  SUBMITTED // uploaded, waiting for our team
+  VERIFIED // our team checked it and it is in order
+  REFUSED // our team could not accept it, with a reason
+  REPLACED // a newer one of the same kind was uploaded
+}
+
 /// HOW a destination was verified.
 ///
 /// Null until it is. `ADMIN` today; an OTP path later sets `OTP` with
@@ -420,6 +445,10 @@ model User {
   /// as an admin acting on a dispute. Who ACTED; Appointment.cancelledBy says
   /// who bears responsibility, which is a different question.
   cancelledAppointments Appointment[] @relation("CancelledAppointments")
+
+  /// Business papers this user uploaded, and ones they checked as an administrator (§314).
+  uploadedDocuments BusinessDocument[] @relation("UploadedDocuments")
+  checkedDocuments  BusinessDocument[] @relation("CheckedDocuments")
 
   notifications Notification[] @relation("UserNotifications")
 
@@ -599,6 +628,9 @@ model BusinessProfile {
   serviceDrafts ServiceDraft[]
 
   kinds BusinessKind[]
+
+  /// Its business papers (§314).
+  documents BusinessDocument[]
 
   @@index([categoryId])
   @@index([status])
@@ -3066,4 +3098,48 @@ model Refund {
 
   @@index([status, createdAt])
   @@map("refunds")
+}
+
+/// A business paper (§314): the file lives in PRIVATE storage, reached only
+/// through the owner's and our team's own routes — never a public link. The
+/// row says what it is, its number and when it runs out; our team marks it
+/// checked or refused. A newer upload of the same kind replaces it.
+model BusinessDocument {
+  id String @id @default(uuid())
+
+  businessId String
+  business   BusinessProfile @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  kind      BusinessDocumentKind
+  /// What it is, in the shop's words, when the kind is OTHER.
+  label     String?
+  /// The number on it — company code, TIN, licence number — as typed.
+  number    String?
+  /// When it runs out, for papers that do (a trading licence, a licence with a term).
+  expiresAt DateTime?
+
+  /// The object's key in private storage; its original name, type and size.
+  fileKey   String
+  fileName  String
+  mimeType  String
+  sizeBytes Int
+
+  status        BusinessDocumentStatus @default(SUBMITTED)
+  refusalReason String?
+  checkedById   String?
+  checkedBy     User?                  @relation("CheckedDocuments", fields: [checkedById], references: [id], onDelete: SetNull)
+  checkedAt     DateTime?
+
+  uploadedById String
+  uploadedBy   User   @relation("UploadedDocuments", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  /// Expiry notices sent: 0 none, 1 "runs out soon", 2 "has run out".
+  reminderStage Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId, kind, status])
+  @@index([status, expiresAt])
+  @@map("business_documents")
 }

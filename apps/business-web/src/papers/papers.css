@@ -1,0 +1,115 @@
+/* Business papers (§314): the mark, the licences a kind of shop must hold, and the registration. */
+
+.pp { display: flex; flex-direction: column; gap: 18px; max-width: 860px; }
+.pp-skeleton { height: 220px; border-radius: 28px; }
+.pp-notice { display: flex; align-items: center; gap: 8px; margin: 0; }
+
+/* ---- the mark ---- */
+
+.pp-mark {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 24px;
+  background: var(--panel);
+  border: 1px solid rgba(31, 42, 31, 0.05);
+  box-shadow: var(--shadow-sm);
+  animation: rise-in 420ms var(--ease) both;
+}
+.pp-mark.is-on { background: linear-gradient(135deg, #f1fbf4, #fff); border-color: rgba(11, 125, 66, 0.18); }
+.pp-mark-badge { flex: none; width: 50px; height: 50px; display: grid; place-items: center; border-radius: 16px; background: var(--sunken); color: var(--ink-2); }
+.pp-mark.is-on .pp-mark-badge { background: var(--ok-soft); color: var(--ok-deep); }
+.pp-mark strong { display: block; font-size: 16px; }
+.pp-mark p { margin: 4px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+
+/* ---- groups ---- */
+
+.pp-group { display: flex; flex-direction: column; gap: 10px; }
+.pp-group > h2 { display: flex; align-items: center; gap: 8px; margin: 6px 0 0; font-size: 17px; letter-spacing: -0.01em; }
+.pp-group > h2 svg { color: var(--accent); }
+.pp-group > p { margin: -4px 0 2px; font-size: 13.5px; }
+.pp-slots { display: flex; flex-direction: column; gap: 10px; }
+.pp-rule { padding: 14px 16px 16px; border-radius: 22px; background: var(--sunken); display: flex; flex-direction: column; gap: 8px; }
+.pp-rule-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pp-rule-head strong { font-size: 15px; }
+.pp-add { display: flex; }
+
+/* ---- one paper ---- */
+
+.pp-slot {
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: var(--panel);
+  border: 1px solid rgba(31, 42, 31, 0.06);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: rise-in 360ms var(--ease) both;
+}
+.pp-slot.is-ok { border-color: rgba(11, 125, 66, 0.22); }
+.pp-slot.is-bad { border-color: rgba(217, 45, 32, 0.28); }
+.pp-slot-head { display: flex; align-items: center; gap: 12px; }
+.pp-slot-icon { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--accent-tint); color: var(--accent-deep); }
+.pp-slot.is-ok .pp-slot-icon { background: var(--ok-soft); color: var(--ok-deep); }
+.pp-slot-title { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pp-slot-title strong { font-size: 14.5px; }
+.pp-slot-title em { font-style: normal; font-size: 12.5px; color: var(--muted); }
+.pp-slot-why { margin: -2px 0 0 50px; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.pp-slot.is-compact .pp-slot-why { margin-left: 0; }
+
+.pp-doc { display: flex; flex-direction: column; gap: 8px; margin-left: 50px; }
+.pp-slot.is-compact .pp-doc { margin-left: 0; }
+.pp-doc-file { display: flex; align-items: center; gap: 9px; }
+.pp-doc-file > svg { flex: none; color: var(--muted); }
+.pp-doc-file span { min-width: 0; display: flex; flex-direction: column; }
+.pp-doc-file strong { font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-doc-file em { font-style: normal; font-size: 12px; color: var(--muted); }
+.pp-expiry { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 650; color: var(--muted); }
+.pp-expiry.is-soon { color: #9a5d00; }
+.pp-expiry.is-bad { color: var(--danger); }
+.pp-refused { display: flex; gap: 8px; margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--danger-soft); font-size: 13px; line-height: 1.45; color: #9c1f14; }
+.pp-refused > svg { flex: none; margin-top: 2px; }
+.pp-checked { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; color: var(--ok-deep); }
+.pp-doc-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pp-doc-actions button { min-height: 36px; border-radius: 11px; font-size: 13px; }
+
+/* ---- the form ---- */
+
+.pp-form { display: flex; flex-direction: column; gap: 10px; margin-left: 50px; }
+.pp-slot.is-compact .pp-form { margin-left: 0; }
+.pp-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pp-field { display: flex; flex-direction: column; gap: 5px; }
+.pp-field > span { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 650; color: var(--ink-2); }
+.pp-field > span em { font-style: normal; font-weight: 500; color: var(--muted); }
+.pp-field input { min-height: 40px; border-radius: 12px; border: 1px solid var(--line-strong); padding: 0 12px; font: inherit; font-size: 14px; background: var(--panel); }
+.pp-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(240, 83, 45, 0.14); }
+.pp-drop { border-radius: 16px; }
+.pp-pick {
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px dashed #d6d0c5;
+  border-radius: 16px;
+  background: var(--sunken);
+  text-align: left;
+  white-space: normal;
+}
+.pp-pick:hover:not(:disabled) { background: var(--accent-tint); border-color: rgba(240, 83, 45, 0.45); }
+.pp-pick > svg { flex: none; color: var(--accent-deep); }
+.pp-pick span { display: flex; flex-direction: column; min-width: 0; }
+.pp-pick strong { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-pick em { font-style: normal; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.pp-problem { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 13px; color: var(--danger); }
+.pp-form-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.pp-form-actions button { min-height: 38px; }
+
+@container page (max-width: 640px) {
+  .pp-slot-why, .pp-doc, .pp-form { margin-left: 0; }
+  .pp-fields { grid-template-columns: minmax(0, 1fr); }
+  .pp-mark { align-items: flex-start; }
+}

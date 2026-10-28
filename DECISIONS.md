@@ -20435,3 +20435,70 @@ if made at least 24 hours before** (a new money rule).
 - **Not changed**: unpaid holds still lapse after 5 minutes; a checked-in
   booking cannot be cancelled or marked missed; reviews, payouts and the
   payout hold work as before.
+
+## 314. Business papers — a licence before a licensed trade goes live, a "Registered business" mark for everyone else (2026-10-28)
+
+The user asked whether, in Rwanda, only registered businesses should be
+onboarded, which documents we would need, and where sellers would upload
+them. The decision: **registration is not a condition of selling** — most
+of the trades the app serves (salons, barbers, car washes, tailors) are run
+by people who are not yet registered, and turning them away would empty the
+app — but **a licensed trade cannot go live without its licence**, and any
+shop that shows its registration earns a mark customers see. No national ID
+is asked for.
+
+- **The rules** (`business/document-rules.ts`): which kinds of shop must
+  hold which paper — Health & Medical (every type) and the Wellness types
+  that are clinical (acupuncture, diet, chiropractic, therapy, physio): a
+  health facility licence or the practitioner's professional licence;
+  Veterinary Clinic: a professional or facility licence; Tours & Experiences
+  and the Hotels & Stays types that are stays: RDB's tourism operating
+  licence; Legal Consultation: the Bar's practising certificate. Any one of a
+  rule's kinds is enough. A rule is `checked` (our team verified one, not
+  run out), `waiting` (uploaded) or `missing`. The registration papers —
+  RDB certificate, TIN, trading licence (ipatanti) — are optional for
+  everyone; one of them checked and not run out makes the shop a
+  **registered business**.
+- **The papers** (`BusinessDocument`): kind, a label for "another paper", the
+  number on it, when it runs out, the file (PDF/JPG/PNG/WebP, up to the
+  upload limit), who uploaded it, SUBMITTED → VERIFIED or REFUSED (with a
+  reason) → REPLACED when a newer one of the same kind is uploaded. Files
+  live in **private storage** (`private-uploads/` locally, the
+  `R2_PRIVATE_BUCKET_NAME` bucket in production — set it before launch) and
+  are reached only through signed-in routes (`GET …/documents/:id/file`, for
+  the shop's owner and every-branch managers, and for our team); no public
+  link exists. A checked paper cannot be removed by the shop, only replaced.
+  Replaced files are kept for now (a record of what was shown to us).
+- **Readiness and approval** (§255): a new `papers` item — required for a
+  licensed trade (uploaded is enough to send for review), optional otherwise;
+  `goLiveGaps` gains `papers` until the licence is **checked**, so the server
+  refuses to approve a clinic whose licence we have not verified. Approval
+  advice (§303) mentions missing papers.
+- **Business app**: a wizard step between Getting paid and Send for review
+  (for a licensed trade: the licence, Next waits for it, "Add it later"
+  skips; for everyone else: "Is your business registered?" with the three
+  registration papers in tabs, skippable); a **Business papers** page
+  (`/papers`, owner and every-branch managers): the mark card, the required
+  rule with its slots, the registration slots, other papers with "Add
+  another paper"; each slot shows the file, number, expiry (warned 30 days
+  ahead, "Run out" after), the refusal reason, Open it / Replace / Remove.
+  For you carries one card when a paper is missing, refused, run out or
+  about to. Notices: checked, refused (with the reason), running out,
+  run out.
+- **Console**: the review panel's checklist knows papers (gate for a
+  licensed trade), a **Business papers** section with each paper (open it,
+  **Mark as checked**, Refuse with a reason), the "Registered business" state
+  and each rule's state; the list row says "N papers to check". Admins are
+  notified of a new paper from a shop that has sent itself for review.
+- **Customer app and discovery**: `registeredBusiness` on every public shop
+  shape; the shop page shows a "Registered business" pill; search ranks a
+  registered shop a little higher.
+- **Reminders**: a daily job (08:15 Kigali) tells the shop 30 days before a
+  paper runs out, and on the day.
+- **Words** in English, Kinyarwanda and French in the business and customer
+  apps; the console in English. For the lawyer: Seller Agreement 10.1 should
+  say that a seller must hold and show on request the licences its trade
+  requires, and that we may remove a shop whose licence we cannot verify.
+- **Not done**: no national ID or owner identity check; no automatic check
+  against RDB's register (none is open to us); the "Health & Medical"
+  category exists in the seed but is not in this dev database's live list.

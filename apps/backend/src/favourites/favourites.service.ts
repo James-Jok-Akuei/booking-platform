@@ -17,6 +17,8 @@ import {
   FavouriteStateDto,
   SavedPlacePageDto,
 } from './dto/favourite-response.dto';
+import { BusinessDocumentStatus } from '@prisma/client';
+import { REGISTRATION_KINDS } from '../business/document-rules';
 
 @Injectable()
 export class FavouritesService {
@@ -244,6 +246,16 @@ export class FavouritesService {
                 category: { select: { id: true, name: true, icon: true } },
                 subcategory: { select: { id: true, name: true } },
                 kinds: KINDS_SELECT,
+                // The "Registered business" mark (§314): one checked registration paper, still standing.
+                documents: {
+                  where: {
+                    status: BusinessDocumentStatus.VERIFIED,
+                    kind: { in: REGISTRATION_KINDS },
+                    OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+                  },
+                  select: { id: true },
+                  take: 1,
+                },
               },
             },
           },
@@ -277,7 +289,8 @@ export class FavouritesService {
     const services: SavedServiceDto[] = kept.map((r) => {
       const offer = r.service.locations.find((o) => o.locationId === r.locationId)!;
       const price = priceFor(offer.priceMinor, liveDiscount(r.service, today, timeZone));
-      const { status, pausedAt, publishedAt, ...business } = r.location.business;
+      const { status, pausedAt, publishedAt, documents, ...rest } = r.location.business;
+      const business = { ...rest, registeredBusiness: documents.length > 0 };
       return {
         id: r.service.id,
         name: r.service.name,

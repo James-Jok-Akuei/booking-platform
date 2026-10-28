@@ -80,6 +80,7 @@ describe('Advice sent with an approval (§303)', () => {
       'where',
       'service-photos',
       'service-words',
+      'papers',
     ]);
     expect(missing.find((item) => item.key === 'gallery')?.title).toBe('Photos of Test Branch');
     expect(missing.find((item) => item.key === 'service-words')?.title).toBe('A description on 1 service');
@@ -164,6 +165,7 @@ describe('Advice sent with an approval (§303)', () => {
       locations: [],
       services: [],
       payoutDestinations: [],
+        documents: [],
     });
     const sent = adviceToSend(items, ['payout', 'logo', 'cover', 'nonsense'], '   ');
     expect(sent.items.map((item) => item.key)).toEqual(['cover', 'payout']);
@@ -201,6 +203,7 @@ describe('Advice sent with an approval (§303)', () => {
             { description: 'Beard trim.', _count: { images: 0 }, locations: [{}] },
           ],
           payoutDestinations: [],
+        documents: [],
         },
         keys: ['cover', 'service-photos'],
         note: 'Lovely cuts — add a photo of the shop front.',

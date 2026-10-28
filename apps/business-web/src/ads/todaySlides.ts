@@ -1,5 +1,6 @@
 import { plural, t } from '@lingui/core/macro';
-import type { TodayItem } from '../api/business';
+import type { DocumentKind, TodayItem } from '../api/business';
+import { PAPER_WORDS } from '../papers/words';
 import { dateLocale, formatDate } from '../i18n/format';
 import type { AdData } from './useAdData';
 import type { Slide } from './slides';
@@ -236,6 +237,50 @@ function slideFor(item: TodayItem, d: AdData): Slide | null {
         // The free feed asks to be named; the button does it.
         cta: item.sourceUrl ? { label: t`Rates by ${source}`, href: item.sourceUrl } : undefined,
       };
+    }
+
+    case 'papers': {
+      // Which paper, by its name in the app; the server sends its kind (§314).
+      const paper = (item.paper && PAPER_WORDS[item.paper as DocumentKind]?.name) || t`a paper`;
+      const day = item.date ? dayWords(item.date) : '';
+      const base = {
+        key: `today-papers-${item.state ?? ''}`,
+        look: 'amber' as const,
+        icon: 'legal' as const,
+        effect: 'rays' as const,
+        eyebrow: t`Business papers`,
+        cta: d.access.runsBusiness ? { label: t`Open Business papers`, to: '/papers' } : undefined,
+      };
+      switch (item.state) {
+        case 'missing':
+          return {
+            ...base,
+            title: t`Your shop needs its licence`,
+            text: t`Your kind of shop cannot go live until our team has checked your ${paper}. Upload it under Business papers.`,
+            gist: t`Upload your ${paper} to go live`,
+          };
+        case 'refused':
+          return {
+            ...base,
+            title: t`A paper was not accepted`,
+            text: t`Our team could not accept your ${paper}. Open Business papers to read why, and upload a clear copy.`,
+            gist: t`Your ${paper} was not accepted — upload a clear copy`,
+          };
+        case 'expired':
+          return {
+            ...base,
+            title: t`A paper has run out`,
+            text: t`Your ${paper} ran out on ${day}. Upload the renewed one so your papers stay in order.`,
+            gist: t`Your ${paper} ran out on ${day}`,
+          };
+        default:
+          return {
+            ...base,
+            title: t`A paper runs out soon`,
+            text: t`Your ${paper} runs out on ${day}. Upload the renewed one when you have it.`,
+            gist: t`Your ${paper} runs out on ${day}`,
+          };
+      }
     }
 
     case 'news':

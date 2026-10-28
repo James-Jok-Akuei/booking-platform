@@ -230,3 +230,22 @@
   .ap-items, .ap-sent-list { grid-template-columns: minmax(0, 1fr); }
   .ap-head { flex-direction: column; }
 }
+
+/* ---- Business papers (§314) ---- */
+
+.bz-papers-marks { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.bz-papers-marks .pill { display: inline-flex; align-items: center; gap: 5px; }
+.bz-papers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.bz-papers li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--sunken); }
+.bz-papers li.is-pending { background: var(--warn-soft, #fff6e5); }
+.bz-paper-icon { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--panel); color: var(--accent); }
+.bz-paper-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bz-paper-text strong { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.bz-paper-text em { font-style: normal; font-size: 12.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+.bz-paper-why { color: var(--danger) !important; }
+.bz-paper-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.bz-paper-actions button { min-height: 34px; padding: 0 12px; font-size: 13px; border-radius: 10px; }
+@media (max-width: 640px) {
+  .bz-papers li { flex-wrap: wrap; }
+  .bz-paper-actions { width: 100%; justify-content: flex-start; padding-left: 48px; }
+}

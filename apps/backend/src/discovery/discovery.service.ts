@@ -22,6 +22,8 @@ import { notePromptIn } from '../business/choice-suggestions';
 import { COUNTED_BOOKING_STATUSES, byPopularity } from './popularity';
 import { TaxonomyNamesService, fold } from '../categories/taxonomy-names.service';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { BusinessDocumentStatus } from '@prisma/client';
+import { REGISTRATION_KINDS } from '../business/document-rules';
 
 /** Rows the bounding-box + haversine query returns. */
 interface DistanceRow {
@@ -45,6 +47,29 @@ function intersectIds(a: string[] | null, b: string[] | null): string[] | null {
   if (b === null) return a;
   const inB = new Set(b);
   return a.filter((id) => inB.has(id));
+}
+
+/**
+ * "Registered business" (§314): a registration paper our team checked, still
+ * standing. One row is enough — the mark is yes or no.
+ */
+const registeredSelect = () => ({
+  documents: {
+    where: {
+      status: BusinessDocumentStatus.VERIFIED,
+      kind: { in: REGISTRATION_KINDS },
+      // Read when the query is built, never once at start-up: "still standing" moves with the day.
+      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
+    },
+    select: { id: true },
+    take: 1 as const,
+  },
+});
+
+/** The business as the public sees it: the papers themselves never leave, only the mark. */
+function publicBusiness<T extends { documents: unknown[] }>(business: T): Omit<T, 'documents'> & { registeredBusiness: boolean } {
+  const { documents, ...rest } = business;
+  return { ...rest, registeredBusiness: documents.length > 0 };
 }
 
 @Injectable()
@@ -195,6 +220,7 @@ export class DiscoveryService {
               category: { select: { id: true, name: true, icon: true } },
               subcategory: { select: { id: true, name: true } },
               kinds: KINDS_SELECT,
+              ...registeredSelect(),
             },
           },
         },
@@ -274,7 +300,7 @@ export class DiscoveryService {
                   provinceName: location.district.province.name,
                 }
               : null,
-            business: location.business,
+            business: publicBusiness(location.business),
             ratingAvg: location.ratingAvg ? Number(location.ratingAvg) : null,
             ratingCount: location.ratingCount,
             fromPriceMinor,
@@ -420,6 +446,7 @@ export class DiscoveryService {
                 category: { select: { id: true, name: true, icon: true } },
                 subcategory: { select: { id: true, name: true } },
                 kinds: KINDS_SELECT,
+                ...registeredSelect(),
               },
             },
           },
@@ -546,7 +573,7 @@ export class DiscoveryService {
             ? { distanceKm: round2(distanceById.get(o.locationId)!) }
             : {}),
         },
-        business: o.location.business,
+        business: publicBusiness(o.location.business),
         ...(viewerId ? { saved: savedServices.has(key(o.serviceId, o.locationId)) } : {}),
       })),
     };
@@ -613,6 +640,7 @@ export class DiscoveryService {
             subcategory: { select: { id: true, name: true } },
             kinds: KINDS_SELECT,
             _count: { select: { followers: true } },
+            ...registeredSelect(),
           },
         },
         hours: {
@@ -722,6 +750,7 @@ export class DiscoveryService {
         subcategory: location.business.subcategory,
         kinds: location.business.kinds,
         followers: location.business._count.followers,
+        registeredBusiness: location.business.documents.length > 0,
       },
       rating: {
         average: location.ratingAvg ? Number(location.ratingAvg) : null,

@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, openFile } from './client';
 import type { components } from './schema';
 
 /**
@@ -815,3 +815,25 @@ export const retryRefund = (id: string) => api<{ id: string; status: string }>(`
 
 export const markRefundSent = (id: string, body: { reference: string; phoneNumber?: string }) =>
   api<{ id: string; status: string }>(`/admin/refunds/${id}/mark-sent`, { method: 'POST', body });
+
+// ---------------------------------------------------------------------------
+// Business papers (§314): a shop's registration and licences, checked by us
+
+export type AdminDocument = components['schemas']['BusinessDocumentDto'];
+export type AdminDocumentKind = AdminDocument['kind'];
+export type AdminPaperRule = components['schemas']['PaperRuleDto'];
+
+export const listBusinessDocuments = (businessId: string) =>
+  api<components['schemas']['BusinessDocumentsDto']>(`/admin/businesses/${businessId}/documents`);
+
+/** Checked and in order: a registration paper earns the shop the "Registered business" mark. */
+export const verifyDocument = (businessId: string, id: string) =>
+  api<AdminDocument>(`/admin/businesses/${businessId}/documents/${id}/verify`, { method: 'PATCH' });
+
+/** Refusing REQUIRES a reason — the shop is told it. */
+export const refuseDocument = (businessId: string, id: string, reason: string) =>
+  api<AdminDocument>(`/admin/businesses/${businessId}/documents/${id}/refuse`, { method: 'PATCH', body: { reason } });
+
+/** The paper itself, in a new tab — fetched with the sign-in, since no link reaches it. */
+export const openBusinessDocument = (businessId: string, doc: Pick<AdminDocument, 'id' | 'fileName'>) =>
+  openFile(`/admin/businesses/${businessId}/documents/${doc.id}/file`, doc.fileName);

@@ -104,6 +104,10 @@ const LOOKS: Partial<Record<NotificationType, Look>> = {
   [T.PAYOUT_DESTINATION_SUBMITTED]: { tone: 'warn', glyph: BANG, eyebrow: 'Waiting for a check' },
   [T.PAYOUT_DESTINATION_VERIFIED]: { tone: 'ok', glyph: CHECK, eyebrow: msg('Getting paid') },
   [T.PAYOUT_DESTINATION_REJECTED]: { tone: 'danger', glyph: CROSS, eyebrow: msg('Getting paid') },
+  [T.BUSINESS_DOCUMENT_SUBMITTED]: { tone: 'info', glyph: HELP, eyebrow: 'Waiting for a check' },
+  [T.BUSINESS_DOCUMENT_VERIFIED]: { tone: 'ok', glyph: CHECK, eyebrow: msg('Business papers') },
+  [T.BUSINESS_DOCUMENT_REFUSED]: { tone: 'danger', glyph: CROSS, eyebrow: msg('Business papers') },
+  [T.BUSINESS_DOCUMENT_EXPIRING]: { tone: 'warn', glyph: BANG, eyebrow: msg('Business papers') },
   [T.PAYOUT_SENT]: {
     tone: 'ok',
     glyph: CHECK,

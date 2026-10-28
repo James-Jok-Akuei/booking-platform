@@ -170,7 +170,7 @@ msgid "{0} paid with MTN Mobile Money. Your slot is confirmed."
 msgstr "{0} paid with MTN Mobile Money. Your slot is confirmed."
 
 #. placeholder {0}: s.business.followers.toLocaleString()
-#: app/shop/[id].tsx:283
+#: app/shop/[id].tsx:285
 msgid "{0} people follow {displayName}"
 msgstr "{0} people follow {displayName}"
 
@@ -1060,8 +1060,8 @@ msgid "Close your account?"
 msgstr "Close your account?"
 
 #: app/shop/[id].tsx:220
-#: app/shop/[id].tsx:436
-#: app/shop/[id].tsx:452
+#: app/shop/[id].tsx:438
+#: app/shop/[id].tsx:454
 msgid "Closed"
 msgstr "Closed"
 
@@ -1103,7 +1103,7 @@ msgstr "coaching call"
 msgid "Coming soon"
 msgstr "Coming soon"
 
-#: app/shop/[id].tsx:446
+#: app/shop/[id].tsx:448
 msgid "Coming up"
 msgstr "Coming up"
 
@@ -1463,11 +1463,11 @@ msgstr "fitting"
 msgid "Fix"
 msgstr "Fix"
 
-#: app/shop/[id].tsx:253
+#: app/shop/[id].tsx:255
 msgid "Follow"
 msgstr "Follow"
 
-#: app/shop/[id].tsx:245
+#: app/shop/[id].tsx:247
 msgid "Follow {displayName}"
 msgstr "Follow {displayName}"
 
@@ -1487,7 +1487,7 @@ msgstr "Follow {shopName}?"
 msgid "Follow, and send me offers"
 msgstr "Follow, and send me offers"
 
-#: app/shop/[id].tsx:253
+#: app/shop/[id].tsx:255
 #: src/components/FollowingCard.tsx:138
 msgid "Following"
 msgstr "Following"
@@ -1497,7 +1497,7 @@ msgctxt "how many shops you follow"
 msgid "Following"
 msgstr "Following"
 
-#: app/shop/[id].tsx:245
+#: app/shop/[id].tsx:247
 msgid "Following {displayName}. Tap to unfollow"
 msgstr "Following {displayName}. Tap to unfollow"
 
@@ -1545,13 +1545,13 @@ msgstr "from"
 msgid "From"
 msgstr "From"
 
-#: app/shop/[id].tsx:598
+#: app/shop/[id].tsx:600
 msgid "from "
 msgstr "from "
 
 #. placeholder {0}: s.rating.count
-#: app/shop/[id].tsx:310
-#: app/shop/[id].tsx:471
+#: app/shop/[id].tsx:312
+#: app/shop/[id].tsx:473
 msgid "from {0} reviews"
 msgstr "from {0} reviews"
 
@@ -1614,7 +1614,7 @@ msgid "Getting there"
 msgstr "Getting there"
 
 #: app/shop/[id].tsx:138
-#: app/shop/[id].tsx:533
+#: app/shop/[id].tsx:535
 #: app/thread/[id].tsx:216
 #: src/ui/TopBar.tsx:48
 msgid "Go back"
@@ -1965,7 +1965,7 @@ msgstr "match"
 msgid "Message"
 msgstr "Message"
 
-#: app/shop/[id].tsx:331
+#: app/shop/[id].tsx:333
 #: src/booking/Reservation.tsx:339
 #: src/booking/Reservation.tsx:375
 msgid "Message the shop"
@@ -2158,7 +2158,7 @@ msgstr "No times left today. Pick another day."
 msgid "Nobody checked you in, so the booking was marked as missed a day after its time."
 msgstr "Nobody checked you in, so the booking was marked as missed a day after its time."
 
-#: app/shop/[id].tsx:477
+#: app/shop/[id].tsx:479
 msgid "Nobody has reviewed this place yet."
 msgstr "Nobody has reviewed this place yet."
 
@@ -2299,7 +2299,7 @@ msgstr "Nothing here yet"
 msgid "Nothing here yet."
 msgstr "Nothing here yet."
 
-#: app/shop/[id].tsx:403
+#: app/shop/[id].tsx:405
 msgid "Nothing is bookable here yet."
 msgstr "Nothing is bookable here yet."
 
@@ -2475,7 +2475,7 @@ msgstr "Open {businessName}"
 msgid "Open a place and tap Message the shop to ask something before you book."
 msgstr "Open a place and tap Message the shop to ask something before you book."
 
-#: app/shop/[id].tsx:391
+#: app/shop/[id].tsx:393
 msgid "Open hours"
 msgstr "Open hours"
 
@@ -2524,7 +2524,7 @@ msgstr "Open the support request"
 msgid "Opened {0}"
 msgstr "Opened {0}"
 
-#: app/shop/[id].tsx:331
+#: app/shop/[id].tsx:333
 msgid "Opening…"
 msgstr "Opening…"
 
@@ -2557,7 +2557,7 @@ msgid "Past"
 msgstr "Past"
 
 #. placeholder {0}: format(depositMinor, service.currency)
-#: app/shop/[id].tsx:605
+#: app/shop/[id].tsx:607
 msgid "pay {0} now"
 msgstr "pay {0} now"
 
@@ -2634,7 +2634,7 @@ msgstr "Photo {0}"
 #. placeholder {0}: index + 1
 #. placeholder {1}: photos.length
 #. placeholder {1}: s.gallery.length
-#: app/shop/[id].tsx:366
+#: app/shop/[id].tsx:368
 #: src/ui/PhotoViewer.tsx:295
 msgid "Photo {0} of {1}"
 msgstr "Photo {0} of {1}"
@@ -2659,7 +2659,7 @@ msgid "Photos"
 msgstr "Photos"
 
 #. placeholder {0}: s.gallery.length
-#: app/shop/[id].tsx:347
+#: app/shop/[id].tsx:349
 msgid "Photos <0>{0}</0>"
 msgstr "Photos <0>{0}</0>"
 
@@ -2818,6 +2818,10 @@ msgstr "Read your private answers, to help"
 msgid "Real shops near you, booked in a few taps."
 msgstr "Real shops near you, booked in a few taps."
 
+#: app/shop/[id].tsx:223
+msgid "Registered business"
+msgstr "Registered business"
+
 #: src/booking/PaidCelebration.tsx:307
 msgid "Remind me before it"
 msgstr "Remind me before it"
@@ -2891,13 +2895,13 @@ msgstr "Reservation no."
 msgid "Review"
 msgstr "Review"
 
-#: app/shop/[id].tsx:394
+#: app/shop/[id].tsx:396
 #: src/exportDocument.ts:200
 msgid "Reviews"
 msgstr "Reviews"
 
 #. placeholder {0}: reviews.data.total
-#: app/shop/[id].tsx:394
+#: app/shop/[id].tsx:396
 msgid "Reviews ({0})"
 msgstr "Reviews ({0})"
 
@@ -2991,7 +2995,7 @@ msgstr "sec"
 msgid "See all"
 msgstr "See all"
 
-#: app/shop/[id].tsx:350
+#: app/shop/[id].tsx:352
 msgid "See all →"
 msgstr "See all →"
 
@@ -3017,7 +3021,7 @@ msgstr "See or change it"
 msgid "See the shop"
 msgstr "See the shop"
 
-#: app/shop/[id].tsx:268
+#: app/shop/[id].tsx:270
 msgid "See the story from {displayName}"
 msgstr "See the story from {displayName}"
 
@@ -3107,7 +3111,7 @@ msgstr "Services"
 msgid "Services{0}"
 msgstr "Services{0}"
 
-#: app/shop/[id].tsx:537
+#: app/shop/[id].tsx:539
 msgid "Share this place"
 msgstr "Share this place"
 
@@ -3532,7 +3536,7 @@ msgstr "There is no account for <0>{clean}</0> yet. Let us make one — it takes
 msgid "They are kept with your account, so they follow you to any phone."
 msgstr "They are kept with your account, so they follow you to any phone."
 
-#: app/shop/[id].tsx:492
+#: app/shop/[id].tsx:494
 msgid "They replied"
 msgstr "They replied"
 
@@ -3977,7 +3981,7 @@ msgstr "What is it about?"
 msgid "What is wrong with this story?"
 msgstr "What is wrong with this story?"
 
-#: app/shop/[id].tsx:390
+#: app/shop/[id].tsx:392
 msgid "What they do"
 msgstr "What they do"
 

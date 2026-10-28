@@ -1,5 +1,7 @@
 import { say } from '../i18n/say';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { BusinessDocumentKind, BusinessDocumentStatus } from '@prisma/client';
+import { hasRegistration } from './document-rules';
 /**
  * What would make a shop easier to book (§303) — beyond what approval needs.
  *
@@ -26,6 +28,7 @@ export const ADVICE_KEYS = [
   'service-photos',
   'service-words',
   'payout',
+  'papers',
 ] as const;
 export type AdviceKey = (typeof ADVICE_KEYS)[number];
 
@@ -53,6 +56,8 @@ export interface AdviceShop {
   /** Active services, with the open branches they are offered at. */
   services: Array<{ description: string | null; _count: { images: number }; locations: unknown[] }>;
   payoutDestinations: unknown[];
+  /** Its papers in hand (§314). */
+  documents: Array<{ kind: BusinessDocumentKind; status: BusinessDocumentStatus; expiresAt: Date | null }>;
 }
 
 export interface AdviceItem {
@@ -155,6 +160,12 @@ export function adviceItems(shop: AdviceShop, locale: Locale = DEFAULT_LOCALE): 
       done: shop.payoutDestinations.length > 0,
       title: say(l, 'A payout number'),
       why: say(l, 'your share of each deposit is paid to it'),
+    },
+    {
+      key: 'papers',
+      done: hasRegistration(shop.documents),
+      title: say(l, 'Your business papers'),
+      why: say(l, 'a checked registration earns the “Registered business” mark customers trust'),
     },
   ];
 }

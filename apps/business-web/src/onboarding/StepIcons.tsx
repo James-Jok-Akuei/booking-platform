@@ -42,6 +42,14 @@ const GLYPHS = {
       <circle cx="16" cy="14.2" r="1.35" fill="currentColor" stroke="none" />
     </>
   ),
+  papers: (
+    <>
+      <path d="M6.5 3h7.6L19 7.9v11.6A1.5 1.5 0 0 1 17.5 21h-11A1.5 1.5 0 0 1 5 19.5v-15A1.5 1.5 0 0 1 6.5 3Z" fill="currentColor" fillOpacity={FILL} />
+      <path d="M14 3v5h5" />
+      <path d="M8.5 11.5h7M8.5 14.5h4.5" />
+      <circle cx="15.6" cy="17.2" r="2.1" fill="currentColor" fillOpacity={FILL} />
+    </>
+  ),
   review: (
     <>
       <path d="M21.5 2.5 14.6 21a.6.6 0 0 1-1.1.05L10.6 13.4 2.95 10.5a.6.6 0 0 1 .05-1.1Z" fill="currentColor" fillOpacity={FILL} />

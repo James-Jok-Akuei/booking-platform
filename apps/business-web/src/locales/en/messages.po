@@ -17,7 +17,7 @@ msgid " · {0} people"
 msgstr " · {0} people"
 
 #. placeholder {0}: questions.length
-#: src/onboarding/Welcome.tsx:351
+#: src/onboarding/Welcome.tsx:356
 msgid " · {n} of {0}"
 msgstr " · {n} of {0}"
 
@@ -86,7 +86,7 @@ msgstr " Sign in again to carry on."
 msgid " that match"
 msgstr " that match"
 
-#: src/onboarding/GoLiveCard.tsx:427
+#: src/onboarding/GoLiveCard.tsx:428
 msgid "— Our review team"
 msgstr "— Our review team"
 
@@ -101,11 +101,11 @@ msgid "· signed in {0}"
 msgstr "· signed in {0}"
 
 #. placeholder {0}: thread.lastMessage?.preview ?? t`Sent a photo`
-#: src/ads/slides.ts:319
+#: src/ads/slides.ts:322
 msgid "“{0}” — a quick reply is the chance to win the booking."
 msgstr "“{0}” — a quick reply is the chance to win the booking."
 
-#: src/ui/DropZone.tsx:63
+#: src/ui/DropZone.tsx:70
 msgid "“{name}” is over {limit} MB — try a smaller copy."
 msgstr "“{name}” is over {limit} MB — try a smaller copy."
 
@@ -174,12 +174,12 @@ msgid "{0, plural, one {# change. Click it to open its day above.} other {# chan
 msgstr "{0, plural, one {# change. Click it to open its day above.} other {# changes. Click one to open its day above.}}"
 
 #. placeholder {0}: tooBig.length
-#: src/ui/DropZone.tsx:64
+#: src/ui/DropZone.tsx:71
 msgid "{0, plural, one {# file is over {limit} MB and was left out.} other {# files are over {limit} MB and were left out.}}"
 msgstr "{0, plural, one {# file is over {limit} MB and was left out.} other {# files are over {limit} MB and were left out.}}"
 
 #. placeholder {0}: wrongKind.length
-#: src/ui/DropZone.tsx:53
+#: src/ui/DropZone.tsx:60
 msgid "{0, plural, one {# file isn’t {words}, so it was left out.} other {# files aren’t {words}, so they were left out.}}"
 msgstr "{0, plural, one {# file isn’t {words}, so it was left out.} other {# files aren’t {words}, so they were left out.}}"
 
@@ -219,7 +219,7 @@ msgid "{0, plural, one {# thing customers notice} other {# things customers noti
 msgstr "{0, plural, one {# thing customers notice} other {# things customers notice}}"
 
 #. placeholder {0}: missing.length
-#: src/onboarding/Welcome.tsx:1606
+#: src/onboarding/Welcome.tsx:1686
 msgid "{0, plural, one {# thing is still needed before we can review your shop.} other {# things are still needed before we can review your shop.}}"
 msgstr "{0, plural, one {# thing is still needed before we can review your shop.} other {# things are still needed before we can review your shop.}}"
 
@@ -289,7 +289,7 @@ msgid "{0, plural, one {Saved, but # photo change did not go through: {why}. Ope
 msgstr "{0, plural, one {Saved, but # photo change did not go through: {why}. Open Edit on the service to try again.} other {Saved, but # photo changes did not go through: {why}. Open Edit on the service to try again.}}"
 
 #. placeholder {0}: open.length
-#: src/ads/todaySlides.ts:111
+#: src/ads/todaySlides.ts:112
 msgid "{0, plural, one {Shops close 08:00–11:00, but # of your branches is open for bookings then.} other {Shops close 08:00–11:00, but # of your branches are open for bookings then.}}"
 msgstr "{0, plural, one {Shops close 08:00–11:00, but # of your branches is open for bookings then.} other {Shops close 08:00–11:00, but # of your branches are open for bookings then.}}"
 
@@ -304,7 +304,7 @@ msgid "{0, plural, one {With MTN for # day} other {With MTN for # days}}"
 msgstr "{0, plural, one {With MTN for # day} other {With MTN for # days}}"
 
 #. placeholder {0}: offered.length
-#: src/onboarding/Welcome.tsx:1163
+#: src/onboarding/Welcome.tsx:1168
 msgid "{0, plural, one {You have # service ready to book.} other {You have # services ready to book.}}"
 msgstr "{0, plural, one {You have # service ready to book.} other {You have # services ready to book.}}"
 
@@ -329,7 +329,7 @@ msgstr "{0} · {1} min"
 #. placeholder {0}: money.format(Math.min(...first.locations.map((o) => o.priceMinor)))
 #. placeholder {1}: first.durationMinutes
 #. placeholder {2}: Number(first.depositPercentage)
-#: src/onboarding/Welcome.tsx:1168
+#: src/onboarding/Welcome.tsx:1173
 msgid "{0} · {1} min · {2}% deposit"
 msgstr "{0} · {1} min · {2}% deposit"
 
@@ -480,12 +480,12 @@ msgid "{0} of {PHOTO_LIMIT} · choose the cover with “Make cover”"
 msgstr "{0} of {PHOTO_LIMIT} · choose the cover with “Make cover”"
 
 #. placeholder {0}: chosen.length
-#: src/onboarding/Welcome.tsx:596
+#: src/onboarding/Welcome.tsx:601
 msgid "{0} of up to {MAX_KIND_CATEGORIES} chosen — take one off to choose another."
 msgstr "{0} of up to {MAX_KIND_CATEGORIES} chosen — take one off to choose another."
 
 #. placeholder {0}: chosen.length
-#: src/onboarding/Welcome.tsx:597
+#: src/onboarding/Welcome.tsx:602
 msgid "{0} of up to {MAX_KIND_CATEGORIES} chosen."
 msgstr "{0} of up to {MAX_KIND_CATEGORIES} chosen."
 
@@ -534,7 +534,7 @@ msgid "{0} waiting for a reply"
 msgstr "{0} waiting for a reply"
 
 #. placeholder {0}: thread.customer.email
-#: src/ads/slides.ts:318
+#: src/ads/slides.ts:321
 msgid "{0} wrote to you"
 msgstr "{0} wrote to you"
 
@@ -597,15 +597,15 @@ msgstr "{change}% on the {days} days before"
 msgid "{clean}. Change the email"
 msgstr "{clean}. Change the email"
 
-#: src/ads/todaySlides.ts:158
+#: src/ads/todaySlides.ts:159
 msgid "{count, plural, one {# search near you this week} other {# searches near you this week}}"
 msgstr "{count, plural, one {# search near you this week} other {# searches near you this week}}"
 
-#: src/ads/todaySlides.ts:153
+#: src/ads/todaySlides.ts:154
 msgid "{count, plural, one {# search this week in {district}, and you do not offer it yet.} other {# searches this week in {district}, and you do not offer it yet.}}"
 msgstr "{count, plural, one {# search this week in {district}, and you do not offer it yet.} other {# searches this week in {district}, and you do not offer it yet.}}"
 
-#: src/ads/todaySlides.ts:149
+#: src/ads/todaySlides.ts:150
 msgid "{count, plural, one {# search this week in {district}, and you offer it. A discount could bring them in.} other {# searches this week in {district}, and you offer it. A discount could bring them in.}}"
 msgstr "{count, plural, one {# search this week in {district}, and you offer it. A discount could bring them in.} other {# searches this week in {district}, and you offer it. A discount could bring them in.}}"
 
@@ -618,7 +618,7 @@ msgstr "{count} of {limit}"
 msgid "{count} on {0}"
 msgstr "{count} on {0}"
 
-#: src/onboarding/Welcome.tsx:1143
+#: src/onboarding/Welcome.tsx:1148
 msgid "{d} min"
 msgstr "{d} min"
 
@@ -643,7 +643,7 @@ msgid "{done} of {total} done"
 msgstr "{done} of {total} done"
 
 #. placeholder {0}: required.length
-#: src/onboarding/Welcome.tsx:193
+#: src/onboarding/Welcome.tsx:197
 msgid "{doneCount} of {0} required things done"
 msgstr "{doneCount} of {0} required things done"
 
@@ -667,11 +667,11 @@ msgstr "{expectedToday, plural, one {# customer still expected today.} other {# 
 msgid "{expectedToday, plural, one {# customer} other {# customers}} still expected today, and {withYou} with you now."
 msgstr "{expectedToday, plural, one {# customer} other {# customers}} still expected today, and {withYou} with you now."
 
-#: src/onboarding/Welcome.tsx:1020
+#: src/onboarding/Welcome.tsx:1025
 msgid "{first} to {last}"
 msgstr "{first} to {last}"
 
-#: src/onboarding/Welcome.tsx:468
+#: src/onboarding/Welcome.tsx:473
 msgid "{firstThree} and more"
 msgstr "{firstThree} and more"
 
@@ -725,11 +725,11 @@ msgstr "{h}h {m}m left"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# hour} other {# hours}}"
 
-#: src/onboarding/Welcome.tsx:1143
+#: src/onboarding/Welcome.tsx:1148
 msgid "{hours} h"
 msgstr "{hours} h"
 
-#: src/onboarding/Welcome.tsx:1143
+#: src/onboarding/Welcome.tsx:1148
 msgid "{hours} h {minutes}"
 msgstr "{hours} h {minutes}"
 
@@ -972,7 +972,7 @@ msgstr "<0/> {0} on sale"
 msgid "<0/>{0}% booked"
 msgstr "<0/>{0}% booked"
 
-#: src/onboarding/Welcome.tsx:1366
+#: src/onboarding/Welcome.tsx:1371
 msgid "<0/>At your shop"
 msgstr "<0/>At your shop"
 
@@ -1000,7 +1000,7 @@ msgstr "<0/>Different hours"
 msgid "<0/>Free<1/>Closed<2/>Break"
 msgstr "<0/>Free<1/>Closed<2/>Break"
 
-#: src/onboarding/Welcome.tsx:1362
+#: src/onboarding/Welcome.tsx:1367
 msgid "<0/>On their phone, to book"
 msgstr "<0/>On their phone, to book"
 
@@ -1017,11 +1017,11 @@ msgstr "<0/>Past"
 msgid "<0/>Platform fees {0}"
 msgstr "<0/>Platform fees {0}"
 
-#: src/onboarding/Welcome.tsx:412
+#: src/onboarding/Welcome.tsx:417
 msgid "<0/>Saving…"
 msgstr "<0/>Saving…"
 
-#: src/onboarding/Welcome.tsx:1649
+#: src/onboarding/Welcome.tsx:1729
 msgid "<0/>Sending…"
 msgstr "<0/>Sending…"
 
@@ -1061,7 +1061,7 @@ msgstr "<0>{0}/{capacity}</0>places"
 msgid "<0>{0}</0> is with you now."
 msgstr "<0>{0}</0> is with you now."
 
-#: src/onboarding/Welcome.tsx:195
+#: src/onboarding/Welcome.tsx:199
 msgid "<0>{doneCount} of {total}</0> done <1>{percent}%</1>"
 msgstr "<0>{doneCount} of {total}</0> done <1>{percent}%</1>"
 
@@ -1097,7 +1097,7 @@ msgstr "<0>Customers cannot see this right now</0> — your shop is not posted y
 msgid "<0>esc</0> to close"
 msgstr "<0>esc</0> to close"
 
-#: src/onboarding/Welcome.tsx:1558
+#: src/onboarding/Welcome.tsx:1638
 msgid "<0>Meanwhile, make it shine</0>Photos, a description, more services and your team. Shops with photos get booked first."
 msgstr "<0>Meanwhile, make it shine</0>Photos, a description, more services and your team. Shops with photos get booked first."
 
@@ -1105,7 +1105,7 @@ msgstr "<0>Meanwhile, make it shine</0>Photos, a description, more services and 
 msgid "<0>Please accept this before listing a service.</0> Listing one is you agreeing to trade under these terms, so it is the one thing we stop until you have read them."
 msgstr "<0>Please accept this before listing a service.</0> Listing one is you agreeing to trade under these terms, so it is the one thing we stop until you have read them."
 
-#: src/onboarding/Welcome.tsx:1530
+#: src/onboarding/Welcome.tsx:1610
 msgid "<0>We check your details</0>Usually within one working day. We may call your shop’s number."
 msgstr "<0>We check your details</0>Usually within one working day. We may call your shop’s number."
 
@@ -1113,11 +1113,11 @@ msgstr "<0>We check your details</0>Usually within one working day. We may call 
 msgid "<0>You are up to date.</0> You have agreed to the latest version of everything."
 msgstr "<0>You are up to date.</0> You have agreed to the latest version of everything."
 
-#: src/onboarding/Welcome.tsx:1540
+#: src/onboarding/Welcome.tsx:1620
 msgid "<0>You get an email</0>At {address}, the moment you are approved."
 msgstr "<0>You get an email</0>At {address}, the moment you are approved."
 
-#: src/onboarding/Welcome.tsx:1548
+#: src/onboarding/Welcome.tsx:1628
 msgid "<0>You post your shop</0>When you are ready — one button on your dashboard. Customers see it from then, not before."
 msgstr "<0>You post your shop</0>When you are ready — one button on your dashboard. Customers see it from then, not before."
 
@@ -1125,11 +1125,11 @@ msgstr "<0>You post your shop</0>When you are ready — one button on your dashb
 msgid "★ Cover"
 msgstr "★ Cover"
 
-#: src/ads/todaySlides.ts:235
+#: src/ads/todaySlides.ts:236
 msgid "€1 = {eur} · KSh 1 = {kes}"
 msgstr "€1 = {eur} · KSh 1 = {kes}"
 
-#: src/ads/todaySlides.ts:234
+#: src/ads/todaySlides.ts:235
 msgid "€1 = {eur} · KSh 1 = {kes} · USh 1 = {ugx}. Not the official BNR rates."
 msgstr "€1 = {eur} · KSh 1 = {kes} · USh 1 = {ugx}. Not the official BNR rates."
 
@@ -1137,7 +1137,7 @@ msgstr "€1 = {eur} · KSh 1 = {kes} · USh 1 = {ugx}. Not the official BNR rat
 msgid "0, 0 is a point in the Atlantic Ocean. That is usually what a map shows when it has not found anything yet."
 msgstr "0, 0 is a point in the Atlantic Ocean. That is usually what a map shows when it has not found anything yet."
 
-#: src/ads/todaySlides.ts:115
+#: src/ads/todaySlides.ts:116
 msgid "08:00–11:00 · block the morning"
 msgstr "08:00–11:00 · block the morning"
 
@@ -1145,7 +1145,7 @@ msgstr "08:00–11:00 · block the morning"
 msgid "1 customer served"
 msgstr "1 customer served"
 
-#: src/ads/todaySlides.ts:232
+#: src/ads/todaySlides.ts:233
 msgid "1 US dollar = {usd}"
 msgstr "1 US dollar = {usd}"
 
@@ -1198,7 +1198,7 @@ msgstr "A branch and its hours"
 msgid "A branch cannot be closed while it still has bookings to come."
 msgstr "A branch cannot be closed while it still has bookings to come."
 
-#: src/onboarding/steps.ts:116
+#: src/onboarding/steps.ts:126
 msgid "A branch on the map"
 msgstr "A branch on the map"
 
@@ -1211,7 +1211,7 @@ msgstr "A browser"
 msgid "A calm, specific reply does more for the next reader than for this one."
 msgstr "A calm, specific reply does more for the next reader than for this one."
 
-#: src/nav.ts:122
+#: src/nav.ts:130
 msgid "A code customers scan to get the app"
 msgstr "A code customers scan to get the app"
 
@@ -1243,7 +1243,7 @@ msgstr "A customer finds you"
 msgid "A customer has booked. It shows under “Expected” as soon as their deposit is paid."
 msgstr "A customer has booked. It shows under “Expected” as soon as their deposit is paid."
 
-#: src/onboarding/Welcome.tsx:1450
+#: src/onboarding/Welcome.tsx:1455
 msgid "A customer pays a deposit to book"
 msgstr "A customer pays a deposit to book"
 
@@ -1275,7 +1275,7 @@ msgstr "A customer wrote to you. A shop cannot start a conversation, so a quick 
 msgid "A deposit holds each booking. Your share is paid to your number."
 msgstr "A deposit holds each booking. Your share is paid to your number."
 
-#: src/onboarding/Welcome.tsx:1371
+#: src/onboarding/Welcome.tsx:1376
 msgid "A deposit means fewer people who book and do not come."
 msgstr "A deposit means fewer people who book and do not come."
 
@@ -1299,6 +1299,14 @@ msgstr "A discounted service shows its −% badge and the old price crossed out,
 #: src/pages/StoriesPage.tsx:314
 msgid "A few words <0>{0}/{CAPTION_MAX}</0>"
 msgstr "A few words <0>{0}/{CAPTION_MAX}</0>"
+
+#: src/papers/words.ts:80
+msgid "A health licence"
+msgstr "A health licence"
+
+#: src/pages/PapersPage.tsx:133
+msgid "A licence from Rwanda FDA or the tourism board, a permit, a certificate — anything you want us to have."
+msgstr "A licence from Rwanda FDA or the tourism board, a permit, a certificate — anything you want us to have."
 
 #: src/pages/ServicesPage.tsx:1383
 msgid "A little too long"
@@ -1332,13 +1340,41 @@ msgstr "A new branch starts closed every day. Set its hours once it is open, or 
 msgid "A new phone or browser? We email you, and tell your other phones, each time one signs in."
 msgstr "A new phone or browser? We email you, and tell your other phones, each time one signs in."
 
-#: src/onboarding/Welcome.tsx:795
+#: src/onboarding/Welcome.tsx:800
 msgid "A number customers can call. We may call it too, to check your shop before it goes live."
 msgstr "A number customers can call. We may call it too, to check your shop before it goes live."
 
-#: src/onboarding/steps.ts:131
+#: src/onboarding/steps.ts:141
 msgid "A number to be paid on"
 msgstr "A number to be paid on"
+
+#: src/ads/todaySlides.ts:244
+msgid "a paper"
+msgstr "a paper"
+
+#: src/ads/todaySlides.ts:272
+msgid "A paper has run out"
+msgstr "A paper has run out"
+
+#: src/ads/todaySlides.ts:279
+msgid "A paper runs out soon"
+msgstr "A paper runs out soon"
+
+#: src/ads/slides.ts:297
+msgid "A paper runs out soon, or has. Renew it and upload the new one under Business papers."
+msgstr "A paper runs out soon, or has. Renew it and upload the new one under Business papers."
+
+#: src/ads/todaySlides.ts:265
+msgid "A paper was not accepted"
+msgstr "A paper was not accepted"
+
+#: src/onboarding/Welcome.tsx:1542
+msgid "A PDF or a clear photo of the whole page. Only you and our team can open it."
+msgstr "A PDF or a clear photo of the whole page. Only you and our team can open it."
+
+#: src/ui/DropZone.tsx:33
+msgid "a PDF or a photo — PDF, JPG, PNG or WebP"
+msgstr "a PDF or a photo — PDF, JPG, PNG or WebP"
 
 #: src/ads/guide.ts:24
 msgid "a percentage"
@@ -1349,7 +1385,7 @@ msgid "A phone"
 msgstr "A phone"
 
 #: src/ads/useAdData.ts:143
-#: src/onboarding/steps.ts:106
+#: src/onboarding/steps.ts:116
 msgid "A phone number"
 msgstr "A phone number"
 
@@ -1372,6 +1408,10 @@ msgstr "a photo was not removed"
 #: src/pages/SupportPage.tsx:387
 msgid "a photo, PDF, Word, Excel, CSV or text file"
 msgstr "a photo, PDF, Word, Excel, CSV or text file"
+
+#: src/papers/words.ts:83
+msgid "A practising certificate"
+msgstr "A practising certificate"
 
 #: src/pages/choices/ChoicesEditor.tsx:970
 msgid "A private question"
@@ -1405,11 +1445,11 @@ msgstr "A reply is public"
 msgid "A sale, whenever you want one"
 msgstr "A sale, whenever you want one"
 
-#: src/onboarding/Welcome.tsx:1257
+#: src/onboarding/Welcome.tsx:1262
 msgid "A service is offered at a branch, so add your address first. "
 msgstr "A service is offered at a branch, so add your address first. "
 
-#: src/onboarding/steps.ts:126
+#: src/onboarding/steps.ts:136
 msgid "A service to book"
 msgstr "A service to book"
 
@@ -1466,7 +1506,15 @@ msgstr "A story takes a JPG, PNG or WebP photo."
 msgid "A story takes a JPG, PNG or WebP photo. This one is a .{ext} file."
 msgstr "A story takes a JPG, PNG or WebP photo. This one is a .{ext} file."
 
-#: src/ads/todaySlides.ts:95
+#: src/papers/words.ts:82
+msgid "A tourism licence"
+msgstr "A tourism licence"
+
+#: src/papers/words.ts:81
+msgid "A veterinary licence"
+msgstr "A veterinary licence"
+
+#: src/ads/todaySlides.ts:96
 msgid "A week of remembrance — the app stays quiet"
 msgstr "A week of remembrance — the app stays quiet"
 
@@ -1474,7 +1522,7 @@ msgstr "A week of remembrance — the app stays quiet"
 msgid "About"
 msgstr "About"
 
-#: src/onboarding/Welcome.tsx:190
+#: src/onboarding/Welcome.tsx:194
 msgid "About five minutes. Skip anything you do not have to hand — it waits on your Overview."
 msgstr "About five minutes. Skip anything you do not have to hand — it waits on your Overview."
 
@@ -1496,18 +1544,18 @@ msgstr "Action"
 msgid "Actions"
 msgstr "Actions"
 
-#: src/onboarding/GoLiveCard.tsx:446
+#: src/onboarding/GoLiveCard.tsx:447
 #: src/pages/choices/ChoicesEditor.tsx:559
 #: src/pages/ProfilePage.tsx:516
 msgid "Add"
 msgstr "Add"
 
-#: src/onboarding/Welcome.tsx:1585
+#: src/onboarding/Welcome.tsx:1665
 msgid "Add "
 msgstr "Add "
 
 #. placeholder {0}: item.title.toLowerCase()
-#: src/onboarding/GoLiveCard.tsx:456
+#: src/onboarding/GoLiveCard.tsx:457
 msgid "Add {0}"
 msgstr "Add {0}"
 
@@ -1542,7 +1590,7 @@ msgstr "Add a photo"
 msgid "Add a question — a ready-made one below, or your own"
 msgstr "Add a question — a ready-made one below, or your own"
 
-#: src/ads/todaySlides.ts:159
+#: src/ads/todaySlides.ts:160
 #: src/pages/OverviewPage.tsx:276
 #: src/pages/ServicesPage.tsx:601
 #: src/pages/ServicesPage.tsx:736
@@ -1563,6 +1611,14 @@ msgstr "Add another file"
 msgid "Add another kind…"
 msgstr "Add another kind…"
 
+#: src/pages/PapersPage.tsx:150
+msgid "Add another paper"
+msgstr "Add another paper"
+
+#: src/pages/PapersPage.tsx:151
+msgid "Add another paper…"
+msgstr "Add another paper…"
+
 #: src/pages/choices/ChoicesEditor.tsx:467
 msgid "Add another question"
 msgstr "Add another question"
@@ -1575,7 +1631,8 @@ msgstr "Add anything else that might help…"
 msgid "Add it"
 msgstr "Add it"
 
-#: src/onboarding/Welcome.tsx:1466
+#: src/onboarding/Welcome.tsx:1471
+#: src/onboarding/Welcome.tsx:1546
 msgid "Add it later"
 msgstr "Add it later"
 
@@ -1588,11 +1645,11 @@ msgstr "Add it now"
 msgid "Add more photos"
 msgstr "Add more photos"
 
-#: src/onboarding/GoLiveCard.tsx:507
+#: src/onboarding/GoLiveCard.tsx:508
 msgid "Add more services"
 msgstr "Add more services"
 
-#: src/onboarding/Welcome.tsx:1172
+#: src/onboarding/Welcome.tsx:1177
 msgid "Add more, with photos and descriptions, in <0>Services</0> whenever you like."
 msgstr "Add more, with photos and descriptions, in <0>Services</0> whenever you like."
 
@@ -1615,8 +1672,8 @@ msgstr "Add photos"
 msgid "Add someone"
 msgstr "Add someone"
 
-#: src/onboarding/Welcome.tsx:1061
-#: src/onboarding/Welcome.tsx:1259
+#: src/onboarding/Welcome.tsx:1066
+#: src/onboarding/Welcome.tsx:1264
 msgid "Add the address"
 msgstr "Add the address"
 
@@ -1640,7 +1697,7 @@ msgstr "Add this service"
 msgid "Add your first question"
 msgstr "Add your first question"
 
-#: src/onboarding/Welcome.tsx:815
+#: src/onboarding/Welcome.tsx:820
 msgid "Add your logo"
 msgstr "Add your logo"
 
@@ -1739,7 +1796,7 @@ msgstr "Alerts are not available here"
 msgid "Alerts are on here"
 msgstr "Alerts are on here"
 
-#: src/nav.ts:170
+#: src/nav.ts:178
 msgctxt "search words"
 msgid "alerts email push quiet hours settings summary unsubscribe"
 msgstr "alerts email push quiet hours settings summary unsubscribe"
@@ -1791,7 +1848,7 @@ msgstr "All changes saved"
 msgid "All done"
 msgstr "All done"
 
-#: src/onboarding/GoLiveCard.tsx:415
+#: src/onboarding/GoLiveCard.tsx:416
 msgid "All done — thank you"
 msgstr "All done — thank you"
 
@@ -1812,7 +1869,7 @@ msgstr "All your branches"
 msgid "Allow notifications for this site — the lock or tune icon beside the address — then come back here."
 msgstr "Allow notifications for this site — the lock or tune icon beside the address — then come back here."
 
-#: src/onboarding/Welcome.tsx:1601
+#: src/onboarding/Welcome.tsx:1681
 msgid "Almost there"
 msgstr "Almost there"
 
@@ -1820,7 +1877,7 @@ msgstr "Almost there"
 msgid "Already in the full price below."
 msgstr "Already in the full price below."
 
-#: src/onboarding/Welcome.tsx:675
+#: src/onboarding/Welcome.tsx:680
 msgid "Also"
 msgstr "Also"
 
@@ -1860,12 +1917,12 @@ msgstr "An owner or manager can check someone in without the code by writing wha
 msgid "An unpaid booking holds the time for 5 minutes, then lets it go."
 msgstr "An unpaid booking holds the time for 5 minutes, then lets it go."
 
-#: src/nav.ts:142
+#: src/nav.ts:150
 msgctxt "search words"
 msgid "analytics stats numbers reports busiest earnings"
 msgstr "analytics stats numbers reports busiest earnings"
 
-#: src/onboarding/Welcome.tsx:799
+#: src/onboarding/Welcome.tsx:804
 msgid "And if you have one"
 msgstr "And if you have one"
 
@@ -1878,6 +1935,10 @@ msgstr "Anonymous"
 #: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "Another answer"
 msgstr "Another answer"
+
+#: src/papers/words.ts:70
+msgid "Another paper"
+msgstr "Another paper"
 
 #: src/ads/guide.ts:167
 msgid "Another shop in another street, district or town? Add it on Branches & hours with “Add a branch”. An owner or a manager can."
@@ -1904,6 +1965,23 @@ msgstr "Answer them "
 msgid "Any number"
 msgstr "Any number"
 
+#: src/pages/PapersPage.tsx:115
+msgid "Any one of these earns the mark once checked. A company’s RDB certificate carries its TIN too."
+msgstr "Any one of these earns the mark once checked. A company’s RDB certificate carries its TIN too."
+
+#: src/onboarding/Welcome.tsx:1513
+#: src/pages/PapersPage.tsx:99
+msgid "Any one of these is enough."
+msgstr "Any one of these is enough."
+
+#: src/papers/PaperSlot.tsx:142
+msgid "Any other permit or certificate"
+msgstr "Any other permit or certificate"
+
+#: src/papers/words.ts:72
+msgid "Any other permit or certificate you want on record with us."
+msgstr "Any other permit or certificate you want on record with us."
+
 #: src/pages/MessagesPage.tsx:130
 msgid "Anything said about a booking"
 msgstr "Anything said about a booking"
@@ -1918,7 +1996,7 @@ msgid "Anything the shop should know?"
 msgstr "Anything the shop should know?"
 
 #: src/appqr/ShowQr.tsx:63
-#: src/nav.ts:119
+#: src/nav.ts:127
 #: src/pages/AppQrPage.tsx:57
 msgid "App QR code"
 msgstr "App QR code"
@@ -2003,7 +2081,7 @@ msgstr "Ask us about anything — we reply on this page and by email."
 msgid "Ask us about it"
 msgstr "Ask us about it"
 
-#: src/nav.ts:185
+#: src/nav.ts:193
 msgid "Ask us anything"
 msgstr "Ask us anything"
 
@@ -2016,11 +2094,11 @@ msgstr "Ask us anything, any time. This tour is in Help too, whenever you want i
 msgid "Asked only when “{0}” is picked"
 msgstr "Asked only when “{0}” is picked"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "Assessment"
 msgstr "Assessment"
 
-#: src/ads/todaySlides.ts:28
+#: src/ads/todaySlides.ts:29
 msgid "Assumption Day"
 msgstr "Assumption Day"
 
@@ -2052,13 +2130,13 @@ msgstr "Attach a screenshot, a statement or an invoice — it saves us asking."
 msgid "Awaiting payment"
 msgstr "Awaiting payment"
 
-#: src/onboarding/Welcome.tsx:399
-#: src/onboarding/Welcome.tsx:1641
+#: src/onboarding/Welcome.tsx:404
+#: src/onboarding/Welcome.tsx:1721
 #: src/tour/Tour.tsx:627
 msgid "Back"
 msgstr "Back"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Back massage"
 msgstr "Back massage"
 
@@ -2070,7 +2148,7 @@ msgstr "Back to conversations"
 msgid "Back to the code"
 msgstr "Back to the code"
 
-#: src/components/Allowed.tsx:52
+#: src/components/Allowed.tsx:57
 msgid "Back to your day "
 msgstr "Back to your day "
 
@@ -2078,7 +2156,11 @@ msgstr "Back to your day "
 msgid "Balance at the shop"
 msgstr "Balance at the shop"
 
-#: src/onboarding/Welcome.tsx:519
+#: src/papers/words.ts:63
+msgid "Bar Association practising certificate"
+msgstr "Bar Association practising certificate"
+
+#: src/onboarding/Welcome.tsx:524
 msgid "Barbers, salons, spas, garages and more"
 msgstr "Barbers, salons, spas, garages and more"
 
@@ -2090,7 +2172,7 @@ msgstr "barbershop"
 msgid "Bars: customers each day, not counting cancelled or unpaid bookings."
 msgstr "Bars: customers each day, not counting cancelled or unpaid bookings."
 
-#: src/onboarding/Welcome.tsx:1185
+#: src/onboarding/Welcome.tsx:1190
 msgid "Beard trim"
 msgstr "Beard trim"
 
@@ -2098,7 +2180,7 @@ msgstr "Beard trim"
 msgid "Before it can be posted, it needs {needs} — otherwise customers would find nothing to book. "
 msgstr "Before it can be posted, it needs {needs} — otherwise customers would find nothing to book. "
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "Beginners’ class"
 msgstr "Beginners’ class"
 
@@ -2110,19 +2192,19 @@ msgstr "Being checked"
 msgid "Being looked at"
 msgstr "Being looked at"
 
-#: src/ads/todaySlides.ts:117
+#: src/ads/todaySlides.ts:118
 msgid "Block the morning"
 msgstr "Block the morning"
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "Blood test"
 msgstr "Blood test"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "Boat safari"
 msgstr "Boat safari"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Body scrub"
 msgstr "Body scrub"
 
@@ -2227,7 +2309,7 @@ msgstr "Bookings at this time"
 msgid "Bookings by hour of the day"
 msgstr "Bookings by hour of the day"
 
-#: src/onboarding/Welcome.tsx:329
+#: src/onboarding/Welcome.tsx:334
 msgid "Bookings land here"
 msgstr "Bookings land here"
 
@@ -2256,7 +2338,7 @@ msgstr "Bookings, and how many came"
 msgid "Bookings, last 7 days"
 msgstr "Bookings, last 7 days"
 
-#: src/nav.ts:143
+#: src/nav.ts:151
 msgid "Bookings, money and ratings over time"
 msgstr "Bookings, money and ratings over time"
 
@@ -2264,15 +2346,15 @@ msgstr "Bookings, money and ratings over time"
 msgid "boutique"
 msgstr "boutique"
 
-#: src/onboarding/Welcome.tsx:1186
+#: src/onboarding/Welcome.tsx:1191
 msgid "Box braids"
 msgstr "Box braids"
 
-#: src/ads/todaySlides.ts:30
+#: src/ads/todaySlides.ts:31
 msgid "Boxing Day"
 msgstr "Boxing Day"
 
-#: src/onboarding/Welcome.tsx:1187
+#: src/onboarding/Welcome.tsx:1192
 msgid "Braids"
 msgstr "Braids"
 
@@ -2289,7 +2371,7 @@ msgid "Branch"
 msgstr "Branch"
 
 #: src/components/NewBranchForm.tsx:278
-#: src/onboarding/Welcome.tsx:967
+#: src/onboarding/Welcome.tsx:972
 #: src/pages/HoursPage.tsx:652
 msgid "Branch name"
 msgstr "Branch name"
@@ -2329,15 +2411,15 @@ msgstr "Break {0} – {1}"
 msgid "Break {0}–{1}{2}"
 msgstr "Break {0}–{1}{2}"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Breakfast to collect"
 msgstr "Breakfast to collect"
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Bridal make-up"
 msgstr "Bridal make-up"
 
-#: src/onboarding/Welcome.tsx:1189
+#: src/onboarding/Welcome.tsx:1194
 msgid "Brow shaping"
 msgstr "Brow shaping"
 
@@ -2371,7 +2453,14 @@ msgstr "Busiest: {0} · {1}"
 msgid "Business name"
 msgstr "Business name"
 
-#: src/onboarding/Welcome.tsx:171
+#: src/ads/todaySlides.ts:251
+#: src/nav.ts:84
+#: src/onboarding/steps.ts:49
+#: src/pages/PapersPage.tsx:50
+msgid "Business papers"
+msgstr "Business papers"
+
+#: src/onboarding/Welcome.tsx:175
 #: src/ui/Logo.tsx:22
 msgid "Bwangu<0>Reservations</0>"
 msgstr "Bwangu<0>Reservations</0>"
@@ -2408,18 +2497,19 @@ msgstr "Calendar"
 msgid "can skip"
 msgstr "can skip"
 
-#: src/onboarding/Welcome.tsx:952
+#: src/onboarding/Welcome.tsx:957
 msgid "Can’t find it? Paste a map link or use where you are"
 msgstr "Can’t find it? Paste a map link or use where you are"
 
 #: src/components/NewBranchForm.tsx:247
-#: src/pages/AppointmentsPage.tsx:1263
+#: src/pages/AppointmentsPage.tsx:1271
 #: src/pages/HoursPage.tsx:634
 #: src/pages/PayoutsPage.tsx:477
 #: src/pages/ReviewsPage.tsx:598
 #: src/pages/ServicesPage.tsx:1859
 #: src/pages/StaffPage.tsx:314
 #: src/pages/SupportPage.tsx:444
+#: src/papers/PaperSlot.tsx:246
 #: src/session/ConfirmItsYou.tsx:145
 #: src/ui/Dialog.tsx:201
 msgid "Cancel"
@@ -2468,7 +2558,7 @@ msgstr "Cancelling…"
 msgid "car wash"
 msgstr "car wash"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Car wash"
 msgstr "Car wash"
 
@@ -2490,8 +2580,8 @@ msgstr "Category"
 
 #: src/auth/LoginPage.tsx:594
 #: src/checkin/CheckIn.tsx:583
-#: src/onboarding/Welcome.tsx:680
-#: src/onboarding/Welcome.tsx:818
+#: src/onboarding/Welcome.tsx:685
+#: src/onboarding/Welcome.tsx:823
 msgid "Change"
 msgstr "Change"
 
@@ -2540,7 +2630,7 @@ msgstr "Changing your number"
 msgid "Charged by the operator"
 msgstr "Charged by the operator"
 
-#: src/nav.ts:99
+#: src/nav.ts:107
 msgctxt "search words"
 msgid "chat inbox questions reply"
 msgstr "chat inbox questions reply"
@@ -2553,7 +2643,7 @@ msgstr "cheapest service {0}"
 #: src/checkin/CheckIn.tsx:245
 #: src/checkin/CheckIn.tsx:346
 #: src/pages/AppointmentsPage.tsx:797
-#: src/pages/AppointmentsPage.tsx:1292
+#: src/pages/AppointmentsPage.tsx:1300
 #: src/pages/calendar/AppointmentCalendar.tsx:1158
 #: src/pages/OverviewPage.tsx:581
 #: src/shell/Topbar.tsx:92
@@ -2607,18 +2697,28 @@ msgstr "Check your <0>inbox.</0>"
 msgid "Check your connection and try again."
 msgstr "Check your connection and try again."
 
-#: src/onboarding/Welcome.tsx:1207
-#: src/onboarding/Welcome.tsx:1223
+#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1228
 msgid "Check-up"
 msgstr "Check-up"
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Check-up and clean"
 msgstr "Check-up and clean"
 
-#: src/onboarding/Welcome.tsx:1413
+#: src/pages/PapersPage.tsx:16
+#: src/papers/PaperSlot.tsx:24
+msgid "Checked"
+msgstr "Checked"
+
+#: src/onboarding/Welcome.tsx:1418
 msgid "Checked — payouts go here"
 msgstr "Checked — payouts go here"
+
+#. placeholder {0}: shortDay(doc.checkedAt)
+#: src/papers/PaperSlot.tsx:171
+msgid "Checked by our team on {0}"
+msgstr "Checked by our team on {0}"
 
 #: src/auth/Moments.tsx:29
 #: src/checkin/CheckIn.tsx:428
@@ -2642,7 +2742,7 @@ msgstr "Checking in…"
 msgid "Checking…"
 msgstr "Checking…"
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Chimpanzee trek"
 msgstr "Chimpanzee trek"
 
@@ -2666,11 +2766,11 @@ msgstr "Choose a last day (the whole day counts) or leave it to run until you en
 msgid "Choose a photo"
 msgstr "Choose a photo"
 
-#: src/onboarding/Welcome.tsx:659
+#: src/onboarding/Welcome.tsx:664
 msgid "Choose all that apply."
 msgstr "Choose all that apply."
 
-#: src/onboarding/Welcome.tsx:560
+#: src/onboarding/Welcome.tsx:565
 msgid "Choose all that fit, up to four — a shop with a salon at one branch and a spa at another is both. The first you choose is your main one."
 msgstr "Choose all that fit, up to four — a shop with a salon at one branch and a spa at another is both. The first you choose is your main one."
 
@@ -2683,11 +2783,11 @@ msgstr "Choose an advert"
 msgid "Choose any"
 msgstr "Choose any"
 
-#: src/onboarding/Welcome.tsx:659
+#: src/onboarding/Welcome.tsx:664
 msgid "Choose at least one in each. You can choose more than one."
 msgstr "Choose at least one in each. You can choose more than one."
 
-#: src/onboarding/Welcome.tsx:666
+#: src/onboarding/Welcome.tsx:671
 msgid "Choose it"
 msgstr "Choose it"
 
@@ -2699,16 +2799,24 @@ msgstr "Choose one"
 msgid "Choose the cover"
 msgstr "Choose the cover"
 
-#: src/onboarding/Welcome.tsx:1122
+#: src/onboarding/Welcome.tsx:1127
 msgid "Choose the days you open."
 msgstr "Choose the days you open."
+
+#: src/papers/PaperSlot.tsx:223
+msgid "Choose the file"
+msgstr "Choose the file"
+
+#: src/papers/PaperSlot.tsx:126
+msgid "Choose the file first."
+msgstr "Choose the file first."
 
 #. placeholder {0}: g.maxPicks
 #: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Choose up to {0}"
 msgstr "Choose up to {0}"
 
-#: src/onboarding/Welcome.tsx:664
+#: src/onboarding/Welcome.tsx:669
 msgid "Choose what kind of shop it is first. "
 msgstr "Choose what kind of shop it is first. "
 
@@ -2728,7 +2836,7 @@ msgstr "Chosen branches"
 msgid "Chosen from your shop and the app. Nothing here is paid for."
 msgstr "Chosen from your shop and the app. Nothing here is paid for."
 
-#: src/ads/todaySlides.ts:29
+#: src/ads/todaySlides.ts:30
 msgid "Christmas Day"
 msgstr "Christmas Day"
 
@@ -2740,7 +2848,7 @@ msgstr "cinema"
 msgid "classes"
 msgstr "classes"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Classic facial"
 msgstr "Classic facial"
 
@@ -2767,11 +2875,11 @@ msgstr "clinic"
 
 #: src/appqr/ShowQr.tsx:68
 #: src/checkin/CheckIn.tsx:258
-#: src/onboarding/GoLiveCard.tsx:509
+#: src/onboarding/GoLiveCard.tsx:510
 #: src/pages/calendar/AppointmentCalendar.tsx:1111
 #: src/pages/LegalPage.tsx:198
 #: src/pages/PayoutDetail.tsx:158
-#: src/ui/DropZone.tsx:162
+#: src/ui/DropZone.tsx:169
 #: src/ui/Select.tsx:212
 msgid "Close"
 msgstr "Close"
@@ -2863,7 +2971,7 @@ msgstr "Closed every day — nothing can be booked"
 msgid "Closed today"
 msgstr "Closed today"
 
-#: src/onboarding/Welcome.tsx:1112
+#: src/onboarding/Welcome.tsx:1117
 #: src/pages/ClosuresPage.tsx:578
 msgid "Closes"
 msgstr "Closes"
@@ -2872,7 +2980,7 @@ msgstr "Closes"
 msgid "Closing…"
 msgstr "Closing…"
 
-#: src/nav.ts:84
+#: src/nav.ts:92
 #: src/pages/ClosuresPage.tsx:105
 msgid "Closures & breaks"
 msgstr "Closures & breaks"
@@ -2907,7 +3015,7 @@ msgstr "Coming up at {0}"
 msgid "Common for shops like yours"
 msgstr "Common for shops like yours"
 
-#: src/onboarding/Welcome.tsx:1072
+#: src/onboarding/Welcome.tsx:1077
 msgid "Common weeks"
 msgstr "Common weeks"
 
@@ -2915,7 +3023,7 @@ msgstr "Common weeks"
 msgid "complete"
 msgstr "complete"
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Conference hall"
 msgstr "Conference hall"
 
@@ -2936,20 +3044,21 @@ msgstr "Confirmed {0}. Your payments go here."
 msgid "consultancy"
 msgstr "consultancy"
 
-#: src/onboarding/Welcome.tsx:1193
-#: src/onboarding/Welcome.tsx:1207
+#: src/onboarding/Welcome.tsx:1198
+#: src/onboarding/Welcome.tsx:1212
 msgid "Consultation"
 msgstr "Consultation"
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Contact lens fitting"
 msgstr "Contact lens fitting"
 
 #: src/auth/LoginPage.tsx:465
-#: src/onboarding/Welcome.tsx:905
-#: src/onboarding/Welcome.tsx:1130
-#: src/onboarding/Welcome.tsx:1175
-#: src/onboarding/Welcome.tsx:1416
+#: src/onboarding/Welcome.tsx:910
+#: src/onboarding/Welcome.tsx:1135
+#: src/onboarding/Welcome.tsx:1180
+#: src/onboarding/Welcome.tsx:1421
+#: src/onboarding/Welcome.tsx:1546
 msgid "Continue"
 msgstr "Continue"
 
@@ -2987,7 +3096,7 @@ msgstr "Copy No. {number}"
 msgid "Copy the reference"
 msgstr "Copy the reference"
 
-#: src/onboarding/Welcome.tsx:1186
+#: src/onboarding/Welcome.tsx:1191
 msgid "Cornrows"
 msgstr "Cornrows"
 
@@ -3002,6 +3111,10 @@ msgstr "Could not get your position. Allow location for this site, or paste a Go
 #: src/pages/PayoutDetail.tsx:283
 msgid "Could not load the bookings."
 msgstr "Could not load the bookings."
+
+#: src/papers/PaperSlot.tsx:175
+msgid "Could not open it."
+msgstr "Could not open it."
 
 #: src/pages/HoursPage.tsx:486
 #: src/pages/HoursPage.tsx:574
@@ -3064,7 +3177,7 @@ msgstr "Customer arrived"
 msgid "Customer cancels 24 h ahead: refunded · Later: deposit kept · You cancel: full refund"
 msgstr "Customer cancels 24 h ahead: refunded · Later: deposit kept · You cancel: full refund"
 
-#: src/nav.ts:93
+#: src/nav.ts:101
 msgid "Customers"
 msgstr "Customers"
 
@@ -3109,7 +3222,7 @@ msgstr "Customers can book you once your shop is live. The Overview shows what i
 msgid "Customers can cancel until their time starts. After that, not coming is a no-show."
 msgstr "Customers can cancel until their time starts. After that, not coming is a no-show."
 
-#: src/onboarding/GoLiveCard.tsx:498
+#: src/onboarding/GoLiveCard.tsx:499
 msgid "Customers can now find <0>{name}</0> and book. New bookings appear on this page and in Appointments, and we tell you each time."
 msgstr "Customers can now find <0>{name}</0> and book. New bookings appear on this page and in Appointments, and we tell you each time."
 
@@ -3157,7 +3270,7 @@ msgstr "Customers cannot find or book it. Talk to support."
 msgid "Customers cannot find you or make new bookings. Bookings you already have still happen, and money you are owed is still paid out — pausing does not cancel anything."
 msgstr "Customers cannot find you or make new bookings. Bookings you already have still happen, and money you are owed is still paid out — pausing does not cancel anything."
 
-#: src/ads/todaySlides.ts:72
+#: src/ads/todaySlides.ts:73
 msgid "Customers cannot pay deposits right now. Their times stay held while they try again."
 msgstr "Customers cannot pay deposits right now. Their times stay held while they try again."
 
@@ -3193,7 +3306,7 @@ msgstr "Customers find your shop and pick a time that is free."
 msgid "Customers follow from your page in the app, and after they book. The more good stories and offers you post, the more follow."
 msgstr "Customers follow from your page in the app, and after they book. The more good stories and offers you post, the more follow."
 
-#: src/ads/todaySlides.ts:171
+#: src/ads/todaySlides.ts:172
 msgid "Customers may arrive late or change plans."
 msgstr "Customers may arrive late or change plans."
 
@@ -3202,11 +3315,11 @@ msgstr "Customers may arrive late or change plans."
 msgid "Customers must answer"
 msgstr "Customers must answer"
 
-#: src/ads/todaySlides.ts:146
+#: src/ads/todaySlides.ts:147
 msgid "Customers near you"
 msgstr "Customers near you"
 
-#: src/onboarding/Welcome.tsx:936
+#: src/onboarding/Welcome.tsx:941
 msgid "Customers nearby will find you here."
 msgstr "Customers nearby will find you here."
 
@@ -3220,11 +3333,11 @@ msgstr "customers pay <0>{0}</0> instead of <1>{1}</1>"
 msgid "Customers pay a deposit to hold their time; the rest is paid to you at the shop."
 msgstr "Customers pay a deposit to hold their time; the rest is paid to you at the shop."
 
-#: src/onboarding/Welcome.tsx:1330
+#: src/onboarding/Welcome.tsx:1335
 msgid "Customers pay a small part when they book, the rest at your shop."
 msgstr "Customers pay a small part when they book, the rest at your shop."
 
-#: src/onboarding/Welcome.tsx:960
+#: src/onboarding/Welcome.tsx:965
 msgid "Customers search by area, so this is how they find you."
 msgstr "Customers search by area, so this is how they find you."
 
@@ -3236,7 +3349,7 @@ msgstr "Customers see a −% badge and the old price crossed out. The deposit is
 msgid "Customers see each branch on its own: people nearby find the one closest to them, and each branch collects its own reviews and rating."
 msgstr "Customers see each branch on its own: people nearby find the one closest to them, and each branch collects its own reviews and rating."
 
-#: src/onboarding/Welcome.tsx:242
+#: src/onboarding/Welcome.tsx:246
 msgid "Customers see nothing until we approve your shop and you post it."
 msgstr "Customers see nothing until we approve your shop and you post it."
 
@@ -3248,9 +3361,13 @@ msgstr "Customers see these when they pick this service. Add them now and they g
 msgid "Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it."
 msgstr "Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it."
 
-#: src/onboarding/Welcome.tsx:723
+#: src/onboarding/Welcome.tsx:728
 msgid "Customers see this instead of “Other”. Our team checks it with the rest of your shop."
 msgstr "Customers see this instead of “Other”. Our team checks it with the rest of your shop."
+
+#: src/pages/PapersPage.tsx:78
+msgid "Customers see this mark on your page: our team checked your registration. Keep a paper that runs out renewed, and the mark stays."
+msgstr "Customers see this mark on your page: our team checked your registration. Keep a paper that runs out renewed, and the mark stays."
 
 #: src/shell/Sidebar.tsx:62
 msgid "Customers see your shop once you post it."
@@ -3304,7 +3421,7 @@ msgstr "Dates, amounts and the booking reference if you have one — it saves us
 msgid "Day"
 msgstr "Day"
 
-#: src/onboarding/Welcome.tsx:1198
+#: src/onboarding/Welcome.tsx:1203
 msgid "Day pass"
 msgstr "Day pass"
 
@@ -3312,7 +3429,7 @@ msgstr "Day pass"
 msgid "Days"
 msgstr "Days"
 
-#: src/nav.ts:87
+#: src/nav.ts:95
 msgid "Days off and blocked-out hours"
 msgstr "Days off and blocked-out hours"
 
@@ -3324,15 +3441,15 @@ msgstr "Days that do not follow the usual week, and breaks taken out of a day. T
 msgid "Days that do not follow your usual week. Pick a day, then close it, change its hours or take a break out of it — customers cannot book the times you take out."
 msgstr "Days that do not follow your usual week. Pick a day, then close it, change its hours or take a break out of it — customers cannot book the times you take out."
 
-#: src/ads/todaySlides.ts:187
+#: src/ads/todaySlides.ts:188
 msgid "Declared and paid through the Rwanda Revenue Authority (RRA)."
 msgstr "Declared and paid through the Rwanda Revenue Authority (RRA)."
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Deep clean"
 msgstr "Deep clean"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Deep-cleanse facial"
 msgstr "Deep-cleanse facial"
 
@@ -3382,7 +3499,7 @@ msgstr "Deposit paid on"
 msgid "Deposit refunded"
 msgstr "Deposit refunded"
 
-#: src/onboarding/Welcome.tsx:1348
+#: src/onboarding/Welcome.tsx:1353
 msgid "Deposit to book"
 msgstr "Deposit to book"
 
@@ -3390,15 +3507,15 @@ msgstr "Deposit to book"
 msgid "Deposits and fees"
 msgstr "Deposits and fees"
 
-#: src/onboarding/Welcome.tsx:320
+#: src/onboarding/Welcome.tsx:325
 msgid "Deposits by MoMo"
 msgstr "Deposits by MoMo"
 
-#: src/ads/todaySlides.ts:73
+#: src/ads/todaySlides.ts:74
 msgid "Deposits cannot start right now — try again in a few minutes"
 msgstr "Deposits cannot start right now — try again in a few minutes"
 
-#: src/ads/todaySlides.ts:83
+#: src/ads/todaySlides.ts:84
 msgid "Deposits may take longer — customers can try again"
 msgstr "Deposits may take longer — customers can try again"
 
@@ -3473,7 +3590,7 @@ msgstr "Didn’t get it?"
 msgid "Digit {0}"
 msgstr "Digit {0}"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Dinner to collect"
 msgstr "Dinner to collect"
 
@@ -3499,15 +3616,20 @@ msgstr "District"
 msgid "Do not ask this"
 msgstr "Do not ask this"
 
-#: src/onboarding/Welcome.tsx:1223
+#: src/nav.ts:86
+msgctxt "search words"
+msgid "documents licence license RDB TIN certificate registration ipatanti permit papers registered"
+msgstr "documents licence license RDB TIN certificate registration ipatanti permit papers registered"
+
+#: src/onboarding/Welcome.tsx:1228
 msgid "Dog grooming"
 msgstr "Dog grooming"
 
 #: src/checkin/CheckIn.tsx:494
 #: src/lib/bookingLook.tsx:27
-#: src/onboarding/GoLiveCard.tsx:442
-#: src/onboarding/Welcome.tsx:221
-#: src/onboarding/Welcome.tsx:939
+#: src/onboarding/GoLiveCard.tsx:443
+#: src/onboarding/Welcome.tsx:225
+#: src/onboarding/Welcome.tsx:944
 #: src/pages/AppointmentsPage.tsx:76
 #: src/pages/AppointmentsPage.tsx:1045
 #: src/pages/OverviewPage.tsx:75
@@ -3545,11 +3667,11 @@ msgstr "Draft saved · {0}"
 msgid "Drafts<0>{0}</0><1>Saved as you typed — customers never see a draft</1>"
 msgstr "Drafts<0>{0}</0><1>Saved as you typed — customers never see a draft</1>"
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Dress fitting"
 msgstr "Dress fitting"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Driving lesson"
 msgstr "Driving lesson"
 
@@ -3569,6 +3691,10 @@ msgstr "Drop photos for this service"
 msgid "Drop photos of {name}"
 msgstr "Drop photos of {name}"
 
+#: src/papers/PaperSlot.tsx:219
+msgid "Drop the paper here"
+msgstr "Drop the paper here"
+
 #: src/pages/SupportPage.tsx:325
 msgid "Drop to attach"
 msgstr "Drop to attach"
@@ -3581,7 +3707,7 @@ msgstr "Drop to attach the photo"
 msgid "Drop to make it your cover"
 msgstr "Drop to make it your cover"
 
-#: src/onboarding/Welcome.tsx:804
+#: src/onboarding/Welcome.tsx:809
 #: src/pages/ProfilePage.tsx:202
 msgid "Drop to make it your logo"
 msgstr "Drop to make it your logo"
@@ -3590,7 +3716,7 @@ msgstr "Drop to make it your logo"
 msgid "Drop to make it your new cover"
 msgstr "Drop to make it your new cover"
 
-#: src/onboarding/Welcome.tsx:804
+#: src/onboarding/Welcome.tsx:809
 #: src/pages/ProfilePage.tsx:202
 msgid "Drop to make it your new logo"
 msgstr "Drop to make it your new logo"
@@ -3603,11 +3729,11 @@ msgstr "Drop to use this photo"
 msgid "Drop to use this photo instead"
 msgstr "Drop to use this photo instead"
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "Drop-in class"
 msgstr "Drop-in class"
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Dry cleaning"
 msgstr "Dry cleaning"
 
@@ -3616,9 +3742,9 @@ msgctxt "after an amount: still to be paid at the shop"
 msgid "due"
 msgstr "due"
 
-#: src/ads/todaySlides.ts:188
-#: src/ads/todaySlides.ts:201
-#: src/ads/todaySlides.ts:213
+#: src/ads/todaySlides.ts:189
+#: src/ads/todaySlides.ts:202
+#: src/ads/todaySlides.ts:214
 msgid "Due by {date}"
 msgstr "Due by {date}"
 
@@ -3628,39 +3754,43 @@ msgid "Due now"
 msgstr "Due now"
 
 #. placeholder {0}: examples[0] ?? 'Haircut'
-#: src/onboarding/Welcome.tsx:1264
+#: src/onboarding/Welcome.tsx:1269
 msgid "e.g. {0}"
 msgstr "e.g. {0}"
+
+#: src/papers/PaperSlot.tsx:208
+msgid "e.g. 102345678"
+msgstr "e.g. 102345678"
 
 #: src/pages/ServicesPage.tsx:1679
 msgid "e.g. 20"
 msgstr "e.g. 20"
 
-#: src/onboarding/Welcome.tsx:752
+#: src/onboarding/Welcome.tsx:757
 msgid "e.g. Beading"
 msgstr "e.g. Beading"
 
-#: src/onboarding/Welcome.tsx:749
+#: src/onboarding/Welcome.tsx:754
 msgid "e.g. Camping"
 msgstr "e.g. Camping"
 
-#: src/onboarding/Welcome.tsx:751
+#: src/onboarding/Welcome.tsx:756
 msgid "e.g. Car hire"
 msgstr "e.g. Car hire"
 
-#: src/onboarding/Welcome.tsx:747
+#: src/onboarding/Welcome.tsx:752
 msgid "e.g. Chess club"
 msgstr "e.g. Chess club"
 
-#: src/onboarding/Welcome.tsx:744
+#: src/onboarding/Welcome.tsx:749
 msgid "e.g. Climbing wall"
 msgstr "e.g. Climbing wall"
 
-#: src/onboarding/Welcome.tsx:748
+#: src/onboarding/Welcome.tsx:753
 msgid "e.g. Coffee farm visit"
 msgstr "e.g. Coffee farm visit"
 
-#: src/onboarding/Welcome.tsx:745
+#: src/onboarding/Welcome.tsx:750
 msgid "e.g. Cooking at your table"
 msgstr "e.g. Cooking at your table"
 
@@ -3668,11 +3798,15 @@ msgstr "e.g. Cooking at your table"
 msgid "e.g. Cut"
 msgstr "e.g. Cut"
 
-#: src/onboarding/Welcome.tsx:750
+#: src/onboarding/Welcome.tsx:755
 msgid "e.g. CV writing"
 msgstr "e.g. CV writing"
 
-#: src/onboarding/Welcome.tsx:755
+#: src/papers/PaperSlot.tsx:200
+msgid "e.g. District operating permit"
+msgstr "e.g. District operating permit"
+
+#: src/onboarding/Welcome.tsx:760
 msgid "e.g. Drone filming"
 msgstr "e.g. Drone filming"
 
@@ -3680,19 +3814,19 @@ msgstr "e.g. Drone filming"
 msgid "e.g. Haircut"
 msgstr "e.g. Haircut"
 
-#: src/onboarding/Welcome.tsx:743
+#: src/onboarding/Welcome.tsx:748
 msgid "e.g. Hearing tests"
 msgstr "e.g. Hearing tests"
 
-#: src/onboarding/Welcome.tsx:741
+#: src/onboarding/Welcome.tsx:746
 msgid "e.g. Henna artist"
 msgstr "e.g. Henna artist"
 
-#: src/onboarding/Welcome.tsx:922
+#: src/onboarding/Welcome.tsx:927
 msgid "e.g. KG 11 Ave, Kimironko"
 msgstr "e.g. KG 11 Ave, Kimironko"
 
-#: src/onboarding/Welcome.tsx:504
+#: src/onboarding/Welcome.tsx:509
 msgid "e.g. Kigali Barbers"
 msgstr "e.g. Kigali Barbers"
 
@@ -3700,19 +3834,19 @@ msgstr "e.g. Kigali Barbers"
 msgid "e.g. Long"
 msgstr "e.g. Long"
 
-#: src/onboarding/Welcome.tsx:754
+#: src/onboarding/Welcome.tsx:759
 msgid "e.g. Pet photography"
 msgstr "e.g. Pet photography"
 
-#: src/onboarding/Welcome.tsx:756
+#: src/onboarding/Welcome.tsx:761
 msgid "e.g. Photo booth hire"
 msgstr "e.g. Photo booth hire"
 
-#: src/onboarding/Welcome.tsx:746
+#: src/onboarding/Welcome.tsx:751
 msgid "e.g. Poetry nights"
 msgstr "e.g. Poetry nights"
 
-#: src/onboarding/Welcome.tsx:742
+#: src/onboarding/Welcome.tsx:747
 msgid "e.g. Reflexology"
 msgstr "e.g. Reflexology"
 
@@ -3720,7 +3854,7 @@ msgstr "e.g. Reflexology"
 msgid "e.g. Short"
 msgstr "e.g. Short"
 
-#: src/onboarding/Welcome.tsx:753
+#: src/onboarding/Welcome.tsx:758
 msgid "e.g. Solar panel fitting"
 msgstr "e.g. Solar panel fitting"
 
@@ -3756,7 +3890,7 @@ msgstr "Each one"
 msgid "Each service is offered at the branches you choose, at <0>that branch's price</0> — a city-centre shop can charge more than a quieter one for the same work. The deposit percentage is what a customer pays up front to hold the slot; the rest is settled with you directly."
 msgstr "Each service is offered at the branches you choose, at <0>that branch's price</0> — a city-centre shop can charge more than a quieter one for the same work. The deposit percentage is what a customer pays up front to hold the slot; the rest is settled with you directly."
 
-#: src/onboarding/Welcome.tsx:1193
+#: src/onboarding/Welcome.tsx:1198
 msgid "Ear piercing"
 msgstr "Ear piercing"
 
@@ -3776,11 +3910,15 @@ msgstr "Earlier (←)"
 msgid "Earlier, not checked in"
 msgstr "Earlier, not checked in"
 
+#: src/pages/PapersPage.tsx:75
+msgid "Earn the “Registered business” mark"
+msgstr "Earn the “Registered business” mark"
+
 #: src/pages/PayoutsPage.tsx:157
 msgid "Earned, and not in your mobile money yet."
 msgstr "Earned, and not in your mobile money yet."
 
-#: src/ads/todaySlides.ts:23
+#: src/ads/todaySlides.ts:24
 msgid "Easter Monday"
 msgstr "Easter Monday"
 
@@ -3804,11 +3942,11 @@ msgstr "Edit service"
 msgid "Edit your shop"
 msgstr "Edit your shop"
 
-#: src/ads/todaySlides.ts:32
+#: src/ads/todaySlides.ts:33
 msgid "Eid al-Adha"
 msgstr "Eid al-Adha"
 
-#: src/ads/todaySlides.ts:31
+#: src/ads/todaySlides.ts:32
 msgid "Eid al-Fitr"
 msgstr "Eid al-Fitr"
 
@@ -3859,15 +3997,15 @@ msgstr "Enter to send · Shift + Enter for a new line<0> · drop a photo to atta
 msgid "Esc"
 msgstr "Esc"
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Evening make-up"
 msgstr "Evening make-up"
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Evening slot"
 msgstr "Evening slot"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Event coverage"
 msgstr "Event coverage"
 
@@ -3898,7 +4036,7 @@ msgstr "Every booking, in every state, will be listed here."
 msgid "Every branch"
 msgstr "Every branch"
 
-#: src/onboarding/steps.ts:188
+#: src/onboarding/steps.ts:206
 msgid "Every day"
 msgstr "Every day"
 
@@ -3955,7 +4093,7 @@ msgstr "Everything is in place"
 msgid "Everything we need is in. Send it and we check it, usually within one working day."
 msgstr "Everything we need is in. Send it and we check it, usually within one working day."
 
-#: src/onboarding/GoLiveCard.tsx:420
+#: src/onboarding/GoLiveCard.tsx:421
 msgid "Everything we suggested is in. Shops like yours get booked far more often."
 msgstr "Everything we suggested is in. Shops like yours get booked far more often."
 
@@ -3963,7 +4101,7 @@ msgstr "Everything we suggested is in. Shops like yours get booked far more ofte
 msgid "Everywhere"
 msgstr "Everywhere"
 
-#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1208
 msgid "Exam revision"
 msgstr "Exam revision"
 
@@ -3971,7 +4109,7 @@ msgstr "Exam revision"
 msgid "Example — what customers see"
 msgstr "Example — what customers see"
 
-#: src/ads/todaySlides.ts:172
+#: src/ads/todaySlides.ts:173
 msgid "Expect late arrivals"
 msgstr "Expect late arrivals"
 
@@ -3994,7 +4132,7 @@ msgstr "Exporting…"
 msgid "Extra minutes for answer {0}"
 msgstr "Extra minutes for answer {0}"
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Eye test"
 msgstr "Eye test"
 
@@ -4003,11 +4141,11 @@ msgstr "Eye test"
 msgid "Failed"
 msgstr "Failed"
 
-#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1217
 msgid "Family day pass"
 msgstr "Family day pass"
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Filling"
 msgstr "Filling"
 
@@ -4043,9 +4181,9 @@ msgstr "Finding you…"
 msgid "Finish"
 msgstr "Finish"
 
-#: src/onboarding/Welcome.tsx:177
-#: src/onboarding/Welcome.tsx:248
-#: src/onboarding/Welcome.tsx:248
+#: src/onboarding/Welcome.tsx:181
+#: src/onboarding/Welcome.tsx:252
+#: src/onboarding/Welcome.tsx:252
 msgid "Finish later"
 msgstr "Finish later"
 
@@ -4076,16 +4214,16 @@ msgstr "Finished {0}"
 msgid "Finished. Raise a new one if it comes back."
 msgstr "Finished. Raise a new one if it comes back."
 
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1209
 msgid "First consultation"
 msgstr "First consultation"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "First session"
 msgstr "First session"
 
-#: src/onboarding/Welcome.tsx:1198
-#: src/onboarding/Welcome.tsx:1202
+#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1207
 msgid "Fitness assessment"
 msgstr "Fitness assessment"
 
@@ -4097,7 +4235,7 @@ msgstr "Five moments, on the real screens. Then we can show you around — it ta
 msgid "Fix"
 msgstr "Fix"
 
-#: src/onboarding/Welcome.tsx:1604
+#: src/onboarding/Welcome.tsx:1684
 msgid "Fix what we asked, then send it back. Everything you set up is still here."
 msgstr "Fix what we asked, then send it back. Everything you set up is still here."
 
@@ -4118,34 +4256,38 @@ msgstr "Fold the menu"
 msgid "Follow"
 msgstr "Follow"
 
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1209
 msgid "Follow-up"
 msgstr "Follow-up"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "Follow-up session"
 msgstr "Follow-up session"
 
-#: src/onboarding/Welcome.tsx:1207
+#: src/onboarding/Welcome.tsx:1212
 msgid "Follow-up visit"
 msgstr "Follow-up visit"
 
-#: src/nav.ts:111
+#: src/nav.ts:119
 #: src/pages/FollowersPage.tsx:117
 msgid "Followers"
 msgstr "Followers"
 
-#: src/nav.ts:113
+#: src/nav.ts:121
 msgctxt "search words"
 msgid "followers offers message customers blast promotion marketing send"
 msgstr "followers offers message customers blast promotion marketing send"
+
+#: src/papers/words.ts:23
+msgid "For a sole trader registered for tax. Earns the “Registered business” mark too."
+msgstr "For a sole trader registered for tax. Earns the “Registered business” mark too."
 
 #: src/pages/choices/ChoicesEditor.tsx:971
 msgid "For allergies, health or anything personal."
 msgstr "For allergies, health or anything personal."
 
 #: src/auth/LoginPage.tsx:333
-#: src/onboarding/Welcome.tsx:173
+#: src/onboarding/Welcome.tsx:177
 msgid "For businesses"
 msgstr "For businesses"
 
@@ -4157,9 +4299,13 @@ msgstr "For example: knew it was the 16:00 hot-towel shave, and showed the booki
 msgid "For example: the barber is ill today — we are sorry."
 msgstr "For example: the barber is ill today — we are sorry."
 
-#: src/ads/todaySlides.ts:200
+#: src/ads/todaySlides.ts:201
 msgid "For last year’s income, filed with the Rwanda Revenue Authority (RRA)."
 msgstr "For last year’s income, filed with the Rwanda Revenue Authority (RRA)."
+
+#: src/papers/words.ts:51
+msgid "For medicines, and what Rwanda FDA licenses."
+msgstr "For medicines, and what Rwanda FDA licenses."
 
 #: src/pages/AppQrPage.tsx:117
 msgid "For now the code opens the customer app in Expo Go on this Wi-Fi, like the code in the terminal. Once the app is in the App Store and Google Play, it will open the store instead — print cards then."
@@ -4251,7 +4397,7 @@ msgstr "from {0} up front"
 msgid "from 1 review"
 msgstr "from 1 review"
 
-#: src/ads/todaySlides.ts:247
+#: src/ads/todaySlides.ts:292
 msgid "From BwanguReservations"
 msgstr "From BwanguReservations"
 
@@ -4259,7 +4405,7 @@ msgstr "From BwanguReservations"
 msgid "From now on customers can find it in the app, see your services, prices and opening times, and book — paying their deposit as they do."
 msgstr "From now on customers can find it in the app, see your services, prices and opening times, and book — paying their deposit as they do."
 
-#: src/onboarding/GoLiveCard.tsx:418
+#: src/onboarding/GoLiveCard.tsx:419
 msgid "From our review team"
 msgstr "From our review team"
 
@@ -4284,11 +4430,11 @@ msgstr "Full"
 msgid "Full price"
 msgstr "Full price"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Full-body massage"
 msgstr "Full-body massage"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "Full-day safari"
 msgstr "Full-day safari"
 
@@ -4301,15 +4447,15 @@ msgstr "garage"
 msgid "Gateway fee"
 msgstr "Gateway fee"
 
-#: src/onboarding/Welcome.tsx:1188
+#: src/onboarding/Welcome.tsx:1193
 msgid "Gel nails"
 msgstr "Gel nails"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "General admission"
 msgstr "General admission"
 
-#: src/ads/todaySlides.ts:21
+#: src/ads/todaySlides.ts:22
 msgid "Genocide against the Tutsi Memorial Day"
 msgstr "Genocide against the Tutsi Memorial Day"
 
@@ -4331,7 +4477,7 @@ msgid "Get the app"
 msgstr "Get the app"
 
 #: src/ads/guide.ts:136
-#: src/nav.ts:132
+#: src/nav.ts:140
 #: src/onboarding/steps.ts:41
 #: src/pages/PayoutsPage.tsx:109
 msgid "Getting paid"
@@ -4358,7 +4504,7 @@ msgid "Give any service a discount from 1% to 90% off, at every branch at once."
 msgstr "Give any service a discount from 1% to 90% off, at every branch at once."
 
 #: src/ads/slides.ts:105
-#: src/ads/todaySlides.ts:159
+#: src/ads/todaySlides.ts:160
 msgid "Give it a discount"
 msgstr "Give it a discount"
 
@@ -4366,7 +4512,7 @@ msgstr "Give it a discount"
 msgid "Give it a price"
 msgstr "Give it a price"
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Glasses fitting"
 msgstr "Glasses fitting"
 
@@ -4378,7 +4524,7 @@ msgstr "Go back"
 msgid "Go to Appointments"
 msgstr "Go to Appointments"
 
-#: src/onboarding/Welcome.tsx:1567
+#: src/onboarding/Welcome.tsx:1647
 msgid "Go to my dashboard "
 msgstr "Go to my dashboard "
 
@@ -4388,7 +4534,7 @@ msgstr "Go to my dashboard "
 msgid "Go to Overview"
 msgstr "Go to Overview"
 
-#: src/onboarding/Welcome.tsx:282
+#: src/onboarding/Welcome.tsx:286
 msgid "Go to the dashboard "
 msgstr "Go to the dashboard "
 
@@ -4406,7 +4552,7 @@ msgstr "Goes live at {0, plural, one {# branch} other {# branches}} with {1, plu
 msgid "Going away, or fully booked for a while? Pausing takes every branch out of search and stops new bookings, and you can undo it at any time."
 msgstr "Going away, or fully booked for a while? Pausing takes every branch out of search and stops new bookings, and you can undo it at any time."
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Golden monkey trek"
 msgstr "Golden monkey trek"
 
@@ -4418,7 +4564,7 @@ msgstr "Good afternoon"
 msgid "Good evening"
 msgstr "Good evening"
 
-#: src/ads/todaySlides.ts:22
+#: src/ads/todaySlides.ts:23
 msgid "Good Friday"
 msgstr "Good Friday"
 
@@ -4430,7 +4576,7 @@ msgstr "Good morning"
 msgid "Good to see you again."
 msgstr "Good to see you again."
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Gorilla trekking"
 msgstr "Gorilla trekking"
 
@@ -4438,11 +4584,11 @@ msgstr "Gorilla trekking"
 msgid "Got it"
 msgstr "Got it"
 
-#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1208
 msgid "Group lesson"
 msgstr "Group lesson"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "Group of four"
 msgstr "Group of four"
 
@@ -4463,7 +4609,7 @@ msgstr "Grow your business — bookings, deposits and check-ins in one place."
 msgid "guesthouse"
 msgstr "guesthouse"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "Guided hike"
 msgstr "Guided hike"
 
@@ -4471,11 +4617,11 @@ msgstr "Guided hike"
 msgid "gym"
 msgstr "gym"
 
-#: src/onboarding/Welcome.tsx:1198
+#: src/onboarding/Welcome.tsx:1203
 msgid "Gym session"
 msgstr "Gym session"
 
-#: src/onboarding/Welcome.tsx:1185
+#: src/onboarding/Welcome.tsx:1190
 msgid "Haircut"
 msgstr "Haircut"
 
@@ -4483,11 +4629,11 @@ msgstr "Haircut"
 msgid "Haircut · Saturday at 10:30"
 msgstr "Haircut · Saturday at 10:30"
 
-#: src/onboarding/Welcome.tsx:1185
+#: src/onboarding/Welcome.tsx:1190
 msgid "Haircut and beard"
 msgstr "Haircut and beard"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "Half-day game drive"
 msgstr "Half-day game drive"
 
@@ -4499,7 +4645,7 @@ msgstr "Have another shop? Add it as a branch"
 msgid "Have shops in different places? Add each one as a branch."
 msgstr "Have shops in different places? Add each one as a branch."
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "Health check"
 msgstr "Health check"
 
@@ -4507,30 +4653,34 @@ msgstr "Health check"
 msgid "Health details don’t belong in the note box — it is not private. Ask about an allergy, a pregnancy or an injury in a private question instead."
 msgstr "Health details don’t belong in the note box — it is not private. Ask about an allergy, a pregnancy or an injury in a private question instead."
 
+#: src/papers/words.ts:35
+msgid "Health facility licence"
+msgstr "Health facility licence"
+
 #: src/pages/NotificationSettingsPage.tsx:327
 msgid "Hear about a new booking the moment it comes in, even with the app in another tab."
 msgstr "Hear about a new booking the moment it comes in, even with the app in another tab."
 
 #. placeholder {0}: item.from ?? ''
-#: src/ads/todaySlides.ts:170
+#: src/ads/todaySlides.ts:171
 msgid "Heavy rain from {0}"
 msgstr "Heavy rain from {0}"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Heel replacement"
 msgstr "Heel replacement"
 
-#: src/nav.ts:182
+#: src/nav.ts:190
 #: src/pages/SupportPage.tsx:137
 #: src/shell/Topbar.tsx:127
 msgid "Help"
 msgstr "Help"
 
-#: src/onboarding/Welcome.tsx:1522
+#: src/onboarding/Welcome.tsx:1602
 msgid "Here is what happens next."
 msgstr "Here is what happens next."
 
-#: src/ads/todaySlides.ts:20
+#: src/ads/todaySlides.ts:21
 msgid "Heroes’ Day"
 msgstr "Heroes’ Day"
 
@@ -4568,12 +4718,12 @@ msgctxt "search words"
 msgid "holiday closed break lunch"
 msgstr "holiday closed break lunch"
 
-#: src/nav.ts:86
+#: src/nav.ts:94
 msgctxt "search words"
 msgid "holiday closed lunch break block time off"
 msgstr "holiday closed lunch break block time off"
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Home cleaning"
 msgstr "Home cleaning"
 
@@ -4586,7 +4736,7 @@ msgstr "home today dashboard summary schedule next"
 msgid "hotel"
 msgstr "hotel"
 
-#: src/onboarding/Welcome.tsx:1059
+#: src/onboarding/Welcome.tsx:1064
 msgid "Hours belong to a branch, so add your address first. "
 msgstr "Hours belong to a branch, so add your address first. "
 
@@ -4610,7 +4760,7 @@ msgstr "How a booking reaches you, and where everything is"
 msgid "How bookings ended"
 msgstr "How bookings ended"
 
-#: src/onboarding/Welcome.tsx:795
+#: src/onboarding/Welcome.tsx:800
 msgid "How can customers reach you?"
 msgstr "How can customers reach you?"
 
@@ -4630,7 +4780,7 @@ msgstr "How customers find you when they browse."
 msgid "How customers nearby find you."
 msgstr "How customers nearby find you."
 
-#: src/onboarding/Welcome.tsx:508
+#: src/onboarding/Welcome.tsx:513
 #: src/pages/ProfilePage.tsx:572
 msgid "How customers see you"
 msgstr "How customers see you"
@@ -4639,11 +4789,11 @@ msgstr "How customers see you"
 msgid "How customers see your shop"
 msgstr "How customers see your shop"
 
-#: src/onboarding/Welcome.tsx:505
+#: src/onboarding/Welcome.tsx:510
 msgid "How customers will see you"
 msgstr "How customers will see you"
 
-#: src/nav.ts:140
+#: src/nav.ts:148
 #: src/pages/AnalyticsPage.tsx:108
 msgid "How it is going"
 msgstr "How it is going"
@@ -4663,7 +4813,7 @@ msgstr "How it works"
 msgid "How it works · {0}"
 msgstr "How it works · {0}"
 
-#: src/onboarding/Welcome.tsx:1277
+#: src/onboarding/Welcome.tsx:1282
 msgid "How long does it take?"
 msgstr "How long does it take?"
 
@@ -4696,11 +4846,11 @@ msgid "How many people it serves at once"
 msgstr "How many people it serves at once"
 
 #. placeholder {0}: draft.name.toLowerCase()
-#: src/onboarding/Welcome.tsx:1329
+#: src/onboarding/Welcome.tsx:1334
 msgid "How much is {0}?"
 msgstr "How much is {0}?"
 
-#: src/onboarding/Welcome.tsx:1329
+#: src/onboarding/Welcome.tsx:1334
 msgid "How much is it?"
 msgstr "How much is it?"
 
@@ -4742,7 +4892,7 @@ msgid "Ideas, news and how it all works"
 msgstr "Ideas, news and how it all works"
 
 #. placeholder {0}: clock(d.endTime)
-#: src/pages/AppointmentsPage.tsx:1314
+#: src/pages/AppointmentsPage.tsx:1261
 msgid "If they don’t come, you can mark a no-show from {0}, when their time is over."
 msgstr "If they don’t come, you can mark a no-show from {0}, when their time is over."
 
@@ -4754,7 +4904,7 @@ msgstr "If they have not paid within 5 minutes, it is cancelled by itself and th
 msgid "If you cancel, the customer gets the whole deposit back, the platform’s fee included, and the mobile money charge for sending it back is yours."
 msgstr "If you cancel, the customer gets the whole deposit back, the platform’s fee included, and the mobile money charge for sending it back is yours."
 
-#: src/ads/todaySlides.ts:212
+#: src/ads/todaySlides.ts:213
 msgid "If you file monthly, last month’s return and payment go to RRA."
 msgstr "If you file monthly, last month’s return and payment go to RRA."
 
@@ -4772,7 +4922,7 @@ msgstr "in {0}"
 msgid "In {days} days"
 msgstr "In {days} days"
 
-#: src/onboarding/Welcome.tsx:720
+#: src/onboarding/Welcome.tsx:725
 msgid "In a few words"
 msgstr "In a few words"
 
@@ -4782,7 +4932,7 @@ msgstr "In a few words"
 msgid "In progress"
 msgstr "In progress"
 
-#: src/onboarding/steps.ts:155
+#: src/onboarding/steps.ts:170
 msgid "In review"
 msgstr "In review"
 
@@ -4794,7 +4944,7 @@ msgstr "In the app, near them — by what you sell, with your photos, prices and
 msgid "in the last two weeks"
 msgstr "in the last two weeks"
 
-#: src/onboarding/Welcome.tsx:1463
+#: src/onboarding/Welcome.tsx:1468
 msgid "In the shop’s or the owner’s name. Our team checks it before the first payout."
 msgstr "In the shop’s or the owner’s name. Our team checks it before the first payout."
 
@@ -4806,7 +4956,7 @@ msgstr "In your app"
 msgid "Including any you open later"
 msgstr "Including any you open later"
 
-#: src/ads/todaySlides.ts:25
+#: src/ads/todaySlides.ts:26
 msgid "Independence Day"
 msgstr "Independence Day"
 
@@ -4842,9 +4992,13 @@ msgstr "Invited to work with a business? This makes your account — you join th
 msgid "Invited, not joined yet"
 msgstr "Invited, not joined yet"
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Ironing"
 msgstr "Ironing"
+
+#: src/onboarding/Welcome.tsx:1502
+msgid "Is your business registered?"
+msgstr "Is your business registered?"
 
 #: src/pages/ProfilePage.tsx:696
 msgid "It cannot be brought back."
@@ -4870,6 +5024,10 @@ msgstr "It is in the email we sent them, and on the booking in their app."
 msgid "It is not something you did. Try it again — and if it keeps happening, tell us from Help and we will put it right."
 msgstr "It is not something you did. Try it again — and if it keeps happening, tell us from Help and we will put it right."
 
+#: src/papers/PaperSlot.tsx:105
+msgid "It is taken off your record. You can upload it again at any time."
+msgstr "It is taken off your record. You can upload it again at any time."
+
 #: src/tour/steps.ts:67
 msgid "It lands in your bookings"
 msgstr "It lands in your bookings"
@@ -4878,7 +5036,7 @@ msgstr "It lands in your bookings"
 msgid "It moves to “Not on sale”, keeps its prices, and you can put it back at any time. Appointments already made are unaffected."
 msgstr "It moves to “Not on sale”, keeps its prices, and you can put it back at any time. Appointments already made are unaffected."
 
-#: src/onboarding/Welcome.tsx:816
+#: src/onboarding/Welcome.tsx:821
 msgid "It shows on every card customers see."
 msgstr "It shows on every card customers see."
 
@@ -4920,8 +5078,8 @@ msgstr "Jump to anything"
 
 #. placeholder {0}: ago(n.createdAt)
 #. placeholder {0}: thread.lastMessageAt ? ago(thread.lastMessageAt) : t`now`
-#: src/ads/slides.ts:317
-#: src/ads/slides.ts:331
+#: src/ads/slides.ts:320
+#: src/ads/slides.ts:334
 msgid "Just in · {0}"
 msgstr "Just in · {0}"
 
@@ -4934,7 +5092,7 @@ msgstr "just now"
 msgid "Just one"
 msgstr "Just one"
 
-#: src/onboarding/Welcome.tsx:1253
+#: src/onboarding/Welcome.tsx:1258
 msgid "Just one to start. You can add the rest later, with photos."
 msgstr "Just one to start. You can add the rest later, with photos."
 
@@ -4945,6 +5103,7 @@ msgstr "Keep editing"
 #: src/pages/AppointmentsPage.tsx:338
 #: src/pages/choices/ChoicesEditor.tsx:403
 #: src/pages/SecurityPage.tsx:38
+#: src/papers/PaperSlot.tsx:109
 msgid "Keep it"
 msgstr "Keep it"
 
@@ -4973,15 +5132,15 @@ msgstr "Keep writing"
 msgid "Kept on purpose: this is the record that they once had access."
 msgstr "Kept on purpose: this is the record that they once had access."
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Kids’ lesson"
 msgstr "Kids’ lesson"
 
-#: src/onboarding/Welcome.tsx:968
+#: src/onboarding/Welcome.tsx:973
 msgid "Kigali Barbers — Kimironko"
 msgstr "Kigali Barbers — Kimironko"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "Kigali city tour"
 msgstr "Kigali city tour"
 
@@ -5002,15 +5161,15 @@ msgid "Kinds of shop <0>the first is your main one · up to {MAX_KIND_CATEGORIES
 msgstr "Kinds of shop <0>the first is your main one · up to {MAX_KIND_CATEGORIES} categories</0>"
 
 #. placeholder {0}: item.number ?? ''
-#: src/ads/todaySlides.ts:92
+#: src/ads/todaySlides.ts:93
 msgid "Kwibuka {0}"
 msgstr "Kwibuka {0}"
 
-#: src/ads/todaySlides.ts:24
+#: src/ads/todaySlides.ts:25
 msgid "Labour Day"
 msgstr "Labour Day"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "Lake boat trip"
 msgstr "Lake boat trip"
 
@@ -5023,11 +5182,11 @@ msgstr "Language"
 msgid "Language on the card"
 msgstr "Language on the card"
 
-#: src/onboarding/Welcome.tsx:1189
+#: src/onboarding/Welcome.tsx:1194
 msgid "Lash extensions"
 msgstr "Lash extensions"
 
-#: src/onboarding/Welcome.tsx:1189
+#: src/onboarding/Welcome.tsx:1194
 msgid "Lash lift"
 msgstr "Lash lift"
 
@@ -5045,7 +5204,7 @@ msgstr "Last day"
 msgid "Last saved {0}"
 msgstr "Last saved {0}"
 
-#: src/onboarding/Welcome.tsx:350
+#: src/onboarding/Welcome.tsx:355
 msgid "Last step"
 msgstr "Last step"
 
@@ -5094,7 +5253,7 @@ msgstr "Leave without saving"
 msgid "Leave without saving?"
 msgstr "Leave without saving?"
 
-#: src/nav.ts:175
+#: src/nav.ts:183
 #: src/pages/LegalPage.tsx:72
 #: src/shell/Topbar.tsx:126
 msgid "Legal"
@@ -5108,7 +5267,7 @@ msgstr "Let customers say what they want"
 msgid "Let customers write a note"
 msgstr "Let customers write a note"
 
-#: src/ads/todaySlides.ts:26
+#: src/ads/todaySlides.ts:27
 msgid "Liberation Day"
 msgstr "Liberation Day"
 
@@ -5124,7 +5283,7 @@ msgstr "Like the length of hair"
 msgid "List"
 msgstr "List"
 
-#: src/onboarding/steps.ts:152
+#: src/onboarding/steps.ts:167
 msgid "Live"
 msgstr "Live"
 
@@ -5153,7 +5312,7 @@ msgctxt "search words"
 msgid "locations opening times address map people served at once places capacity"
 msgstr "locations opening times address map people served at once places capacity"
 
-#: src/onboarding/Welcome.tsx:1186
+#: src/onboarding/Welcome.tsx:1191
 msgid "Locs retwist"
 msgstr "Locs retwist"
 
@@ -5186,7 +5345,7 @@ msgstr "Lowest rating first"
 msgid "Lunch"
 msgstr "Lunch"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Lunch to collect"
 msgstr "Lunch to collect"
 
@@ -5199,14 +5358,14 @@ msgstr "Lunch, a meeting, a delivery"
 msgid "Made for Rwanda"
 msgstr "Made for Rwanda"
 
-#: src/onboarding/Welcome.tsx:578
+#: src/onboarding/Welcome.tsx:583
 #: src/pages/ProfilePage.tsx:466
 #: src/shell/MobileNav.tsx:37
 #: src/shell/Sidebar.tsx:117
 msgid "Main"
 msgstr "Main"
 
-#: src/onboarding/Welcome.tsx:675
+#: src/onboarding/Welcome.tsx:680
 msgid "Main kind"
 msgstr "Main kind"
 
@@ -5222,7 +5381,7 @@ msgstr "Make it private"
 msgid "Make it stand out"
 msgstr "Make it stand out"
 
-#: src/onboarding/Welcome.tsx:684
+#: src/onboarding/Welcome.tsx:689
 msgid "Make it the main one"
 msgstr "Make it the main one"
 
@@ -5242,7 +5401,7 @@ msgstr "Make your shop stand out"
 msgid "Make your shop window stand out"
 msgstr "Make your shop window stand out"
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Make-up lesson"
 msgstr "Make-up lesson"
 
@@ -5250,7 +5409,7 @@ msgstr "Make-up lesson"
 msgid "Making the picture…"
 msgstr "Making the picture…"
 
-#: src/nav.ts:150
+#: src/nav.ts:158
 msgid "Manage account"
 msgstr "Manage account"
 
@@ -5259,7 +5418,7 @@ msgstr "Manage account"
 msgid "Manager"
 msgstr "Manager"
 
-#: src/onboarding/Welcome.tsx:1188
+#: src/onboarding/Welcome.tsx:1193
 msgid "Manicure"
 msgstr "Manicure"
 
@@ -5285,7 +5444,7 @@ msgid "Mark as no-show"
 msgstr "Mark as no-show"
 
 #: src/pages/AppointmentsPage.tsx:802
-#: src/pages/AppointmentsPage.tsx:1305
+#: src/pages/AppointmentsPage.tsx:1313
 #: src/pages/calendar/AppointmentCalendar.tsx:1164
 #: src/pages/OverviewPage.tsx:586
 msgid "Mark done"
@@ -5313,11 +5472,11 @@ msgid "Marked {0}"
 msgstr "Marked {0}"
 
 #. placeholder {0}: dayWords(item.date ?? '')
-#: src/ads/todaySlides.ts:231
+#: src/ads/todaySlides.ts:232
 msgid "Market rates · {0}"
 msgstr "Market rates · {0}"
 
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1214
 msgid "Meditation session"
 msgstr "Meditation session"
 
@@ -5325,11 +5484,11 @@ msgstr "Meditation session"
 msgid "Medium"
 msgstr "Medium"
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Meeting room, full day"
 msgstr "Meeting room, full day"
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Meeting room, half day"
 msgstr "Meeting room, half day"
 
@@ -5348,7 +5507,7 @@ msgid "Message the shop"
 msgstr "Message the shop"
 
 #: src/ads/guide.ts:195
-#: src/nav.ts:97
+#: src/nav.ts:105
 #: src/pages/MessagesPage.tsx:111
 #: src/shell/MobileNav.tsx:44
 #: src/shell/Topbar.tsx:98
@@ -5366,16 +5525,24 @@ msgstr "Messages "
 msgid "min"
 msgstr "min"
 
+#: src/papers/words.ts:36
+msgid "Ministry of Health"
+msgstr "Ministry of Health"
+
 #: src/pages/ServicesPage.tsx:1563
 msgid "Minutes"
 msgstr "Minutes"
 
-#: src/ads/todaySlides.ts:70
-#: src/ads/todaySlides.ts:80
+#: src/pages/PapersPage.tsx:18
+msgid "Missing"
+msgstr "Missing"
+
+#: src/ads/todaySlides.ts:71
+#: src/ads/todaySlides.ts:81
 msgid "Mobile money"
 msgstr "Mobile money"
 
-#: src/onboarding/Welcome.tsx:1445
+#: src/onboarding/Welcome.tsx:1450
 msgid "Mobile money number"
 msgstr "Mobile money number"
 
@@ -5383,19 +5550,19 @@ msgstr "Mobile money number"
 msgid "Mobile money reference<0>The payment's own number at the mobile money operator — quote it if a customer says the money left their phone.</0>"
 msgstr "Mobile money reference<0>The payment's own number at the mobile money operator — quote it if a customer says the money left their phone.</0>"
 
-#: src/onboarding/Welcome.tsx:1445
+#: src/onboarding/Welcome.tsx:1450
 msgid "MoMo or Airtel number"
 msgstr "MoMo or Airtel number"
 
-#: src/onboarding/steps.ts:195
+#: src/onboarding/steps.ts:213
 msgid "Monday to Friday"
 msgstr "Monday to Friday"
 
-#: src/onboarding/steps.ts:181
+#: src/onboarding/steps.ts:199
 msgid "Monday to Saturday"
 msgstr "Monday to Saturday"
 
-#: src/nav.ts:128
+#: src/nav.ts:136
 #: src/pages/AnalyticsPage.tsx:376
 #: src/pages/AppointmentsPage.tsx:1167
 #: src/pages/OverviewPage.tsx:876
@@ -5420,7 +5587,7 @@ msgstr "more"
 msgid "More"
 msgstr "More"
 
-#: src/onboarding/Welcome.tsx:902
+#: src/onboarding/Welcome.tsx:907
 msgid "More branches and photos are in <0>Branches & hours</0>, whenever you want them."
 msgstr "More branches and photos are in <0>Branches & hours</0>, whenever you want them."
 
@@ -5448,7 +5615,7 @@ msgstr "More services"
 msgid "More than one shop"
 msgstr "More than one shop"
 
-#: src/onboarding/Welcome.tsx:939
+#: src/onboarding/Welcome.tsx:944
 msgid "Move the pin"
 msgstr "Move the pin"
 
@@ -5460,11 +5627,11 @@ msgstr "MTN"
 msgid "MTN MoMo"
 msgstr "MTN MoMo"
 
-#: src/ads/todaySlides.ts:71
+#: src/ads/todaySlides.ts:72
 msgid "MTN MoMo is not answering"
 msgstr "MTN MoMo is not answering"
 
-#: src/ads/todaySlides.ts:81
+#: src/ads/todaySlides.ts:82
 msgid "MTN MoMo is slow right now"
 msgstr "MTN MoMo is slow right now"
 
@@ -5489,7 +5656,7 @@ msgstr "My payment of {amount}, worked out on {workedOut}, says “{status}” �
 msgid "My payment of {amount}, worked out on {workedOut}, says “{status}”. Could you check it?"
 msgstr "My payment of {amount}, worked out on {workedOut}, says “{status}”. Could you check it?"
 
-#: src/onboarding/Welcome.tsx:1223
+#: src/onboarding/Welcome.tsx:1228
 msgid "Nail clipping"
 msgstr "Nail clipping"
 
@@ -5505,11 +5672,11 @@ msgstr "Name"
 msgid "Name and words"
 msgstr "Name and words"
 
-#: src/onboarding/Welcome.tsx:1337
+#: src/onboarding/Welcome.tsx:1342
 msgid "Name it"
 msgstr "Name it"
 
-#: src/onboarding/Welcome.tsx:1335
+#: src/onboarding/Welcome.tsx:1340
 msgid "Name the service first. "
 msgstr "Name the service first. "
 
@@ -5529,7 +5696,7 @@ msgstr "Need a break later? Pause it on your Shopfront page. Bookings already ma
 msgid "Need a haircut, a massage, a repair?"
 msgstr "Need a haircut, a massage, a repair?"
 
-#: src/onboarding/Welcome.tsx:235
+#: src/onboarding/Welcome.tsx:239
 msgid "Need a hand?"
 msgstr "Need a hand?"
 
@@ -5538,7 +5705,7 @@ msgid "Need words? Tap one"
 msgstr "Need words? Tap one"
 
 #: src/onboarding/GoLiveCard.tsx:163
-#: src/onboarding/steps.ts:158
+#: src/onboarding/steps.ts:173
 #: src/shell/Sidebar.tsx:79
 msgid "Needs a change"
 msgstr "Needs a change"
@@ -5594,7 +5761,7 @@ msgstr "new service price create"
 msgid "New this week — book it in the app"
 msgstr "New this week — book it in the app"
 
-#: src/ads/todaySlides.ts:18
+#: src/ads/todaySlides.ts:19
 msgid "New Year’s Day"
 msgstr "New Year’s Day"
 
@@ -5606,8 +5773,8 @@ msgstr "Newest first"
 msgid "News, ideas and how it all works"
 msgstr "News, ideas and how it all works"
 
-#: src/onboarding/Welcome.tsx:380
-#: src/onboarding/Welcome.tsx:1130
+#: src/onboarding/Welcome.tsx:385
+#: src/onboarding/Welcome.tsx:1135
 #: src/tour/Tour.tsx:636
 msgid "Next"
 msgstr "Next"
@@ -5634,7 +5801,7 @@ msgid "Nice to <0>meet you.</0>"
 msgstr "Nice to <0>meet you.</0>"
 
 #: src/onboarding/GoLiveCard.tsx:226
-#: src/onboarding/Welcome.tsx:1630
+#: src/onboarding/Welcome.tsx:1710
 msgid "Nice to have — add whenever you like"
 msgstr "Nice to have — add whenever you like"
 
@@ -5680,7 +5847,7 @@ msgid "No category chosen"
 msgstr "No category chosen"
 
 #: src/checkin/CheckIn.tsx:359
-#: src/pages/AppointmentsPage.tsx:1280
+#: src/pages/AppointmentsPage.tsx:1288
 msgid "No code?"
 msgstr "No code?"
 
@@ -5688,7 +5855,7 @@ msgstr "No code?"
 msgid "No cover photo yet"
 msgstr "No cover photo yet"
 
-#: src/onboarding/Welcome.tsx:1015
+#: src/onboarding/Welcome.tsx:1020
 msgid "No days chosen"
 msgstr "No days chosen"
 
@@ -5764,10 +5931,15 @@ msgid "No title yet"
 msgstr "No title yet"
 
 #: src/lib/bookingLook.tsx:31
-#: src/pages/AppointmentsPage.tsx:1269
+#: src/pages/AppointmentsPage.tsx:1277
 #: src/pages/OverviewPage.tsx:79
 msgid "No-show"
 msgstr "No-show"
+
+#. placeholder {0}: doc.number
+#: src/papers/PaperSlot.tsx:156
+msgid "No. {0}"
+msgstr "No. {0}"
 
 #: src/pages/AppointmentsPage.tsx:756
 msgid "No. {number}"
@@ -5835,6 +6007,10 @@ msgstr "Nobody matches “{search}”"
 msgid "None yet"
 msgstr "None yet"
 
+#: src/papers/PaperSlot.tsx:25
+msgid "Not accepted"
+msgstr "Not accepted"
+
 #: src/pages/LegalPage.tsx:133
 msgid "Not agreed yet"
 msgstr "Not agreed yet"
@@ -5892,9 +6068,13 @@ msgstr "Not paid in time"
 msgid "Not paid yet"
 msgstr "Not paid yet"
 
-#: src/onboarding/steps.ts:149
+#: src/onboarding/steps.ts:164
 msgid "Not posted"
 msgstr "Not posted"
+
+#: src/onboarding/Welcome.tsx:1543
+msgid "Not registered yet? Skip this — your shop can still go live, and you can add it any time under Business papers."
+msgstr "Not registered yet? Skip this — your shop can still go live, and you can add it any time under Business papers."
 
 #: src/pages/OverviewPage.tsx:927
 msgid "Not replied yet"
@@ -5947,9 +6127,13 @@ msgstr "Nothing changed"
 msgid "Nothing changed — and usually shut"
 msgstr "Nothing changed — and usually shut"
 
-#: src/onboarding/Welcome.tsx:594
+#: src/onboarding/Welcome.tsx:599
 msgid "Nothing chosen yet."
 msgstr "Nothing chosen yet."
+
+#: src/pages/PapersPage.tsx:132
+msgid "Nothing else on record"
+msgstr "Nothing else on record"
 
 #: src/pages/AppointmentsPage.tsx:938
 msgid "Nothing finished yet"
@@ -6036,12 +6220,12 @@ msgstr "Nothing yet."
 #: src/components/Notifications.tsx:152
 #: src/components/Notifications.tsx:159
 #: src/components/Notifications.tsx:184
-#: src/nav.ts:168
+#: src/nav.ts:176
 #: src/pages/NotificationSettingsPage.tsx:67
 msgid "Notifications"
 msgstr "Notifications"
 
-#: src/ads/slides.ts:317
+#: src/ads/slides.ts:320
 #: src/auth/Moments.tsx:71
 #: src/pages/FollowersPage.tsx:306
 #: src/pages/StoriesPage.tsx:282
@@ -6068,6 +6252,10 @@ msgstr "Now, {0}"
 msgid "Number"
 msgstr "Number"
 
+#: src/papers/PaperSlot.tsx:206
+msgid "Number on it"
+msgstr "Number on it"
+
 #: src/ui/RichTextField.tsx:168
 msgid "Numbered list"
 msgstr "Numbered list"
@@ -6084,11 +6272,11 @@ msgstr "Offered"
 msgid "Offered — switch off for “not available now”"
 msgstr "Offered — switch off for “not available now”"
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Office cleaning"
 msgstr "Office cleaning"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Oil change"
 msgstr "Oil change"
 
@@ -6121,7 +6309,7 @@ msgstr "On the card"
 msgid "On the customer’s phone"
 msgstr "On the customer’s phone"
 
-#: src/onboarding/Welcome.tsx:935
+#: src/onboarding/Welcome.tsx:940
 msgid "On the map"
 msgstr "On the map"
 
@@ -6145,11 +6333,11 @@ msgstr "Once the booking’s time is over, press “No-show” on it. The deposi
 msgid "Once their time is over, mark them as a no-show: the deposit is not refunded."
 msgstr "Once their time is over, mark them as a no-show: the deposit is not refunded."
 
-#: src/onboarding/Welcome.tsx:330
+#: src/onboarding/Welcome.tsx:335
 msgid "Once your shop is posted"
 msgstr "Once your shop is posted"
 
-#: src/ui/DropZone.tsx:137
+#: src/ui/DropZone.tsx:144
 msgid "One at a time here — the first one was used."
 msgstr "One at a time here — the first one was used."
 
@@ -6173,11 +6361,11 @@ msgstr "One line that makes someone want it — e.g. “Sharp fades and clean li
 msgid "One more"
 msgstr "One more"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "One night, double room"
 msgstr "One night, double room"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "One night, single room"
 msgstr "One night, single room"
 
@@ -6197,12 +6385,12 @@ msgstr "One summary at 7:00"
 msgid "One team, one payout number and one money page cover every branch."
 msgstr "One team, one payout number and one money page cover every branch."
 
-#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1208
 msgid "One-hour lesson"
 msgstr "One-hour lesson"
 
-#: src/onboarding/Welcome.tsx:1202
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1207
+#: src/onboarding/Welcome.tsx:1209
 msgid "One-hour session"
 msgstr "One-hour session"
 
@@ -6242,7 +6430,7 @@ msgstr "Only the owner can add people and choose where they work. "
 msgid "Only the owner can change this."
 msgstr "Only the owner can change this."
 
-#: src/onboarding/Welcome.tsx:269
+#: src/onboarding/Welcome.tsx:273
 msgid "Only the owner can set up the shop"
 msgstr "Only the owner can set up the shop"
 
@@ -6289,7 +6477,7 @@ msgid "Open {0} – {1} instead"
 msgstr "Open {0} – {1} instead"
 
 #. placeholder {0}: branch.hours.filter((h) => !h.isClosed).length
-#: src/onboarding/Welcome.tsx:1068
+#: src/onboarding/Welcome.tsx:1073
 msgid "Open {0} days a week — change them any time in Branches & hours"
 msgstr "Open {0} days a week — change them any time in Branches & hours"
 
@@ -6300,13 +6488,17 @@ msgstr "Open {from} to {until}"
 #. placeholder {0}: daysInWords(week.days)
 #. placeholder {1}: week.open
 #. placeholder {2}: week.close
-#: src/onboarding/Welcome.tsx:1119
+#: src/onboarding/Welcome.tsx:1124
 msgid "Open <0>{0}</0>, {1}–{2}"
 msgstr "Open <0>{0}</0>, {1}–{2}"
 
 #: src/components/MapPin.tsx:27
 msgid "Open a bigger map"
 msgstr "Open a bigger map"
+
+#: src/ads/todaySlides.ts:252
+msgid "Open Business papers"
+msgstr "Open Business papers"
 
 #: src/pages/AppointmentsPage.tsx:713
 msgid "Open details"
@@ -6326,7 +6518,8 @@ msgstr "Open Help"
 msgid "Open hours"
 msgstr "Open hours"
 
-#: src/ads/slides.ts:334
+#: src/ads/slides.ts:337
+#: src/papers/PaperSlot.tsx:177
 msgid "Open it"
 msgstr "Open it"
 
@@ -6339,7 +6532,11 @@ msgstr "Open it to read the reason, then add a number again."
 msgid "Open it to read the reason."
 msgstr "Open it to read the reason."
 
-#: src/ads/slides.ts:333
+#: src/ads/slides.ts:296
+msgid "Open it to read why, then upload a clearer copy under Business papers."
+msgstr "Open it to read why, then upload a clearer copy under Business papers."
+
+#: src/ads/slides.ts:336
 msgid "Open it to see the details."
 msgstr "Open it to see the details."
 
@@ -6351,7 +6548,7 @@ msgstr "Open late tonight"
 msgid "Open messages"
 msgstr "Open messages"
 
-#: src/onboarding/Welcome.tsx:1093
+#: src/onboarding/Welcome.tsx:1098
 msgid "Open on"
 msgstr "Open on"
 
@@ -6360,13 +6557,13 @@ msgstr "Open on"
 msgid "Open on {0}"
 msgstr "Open on {0}"
 
-#: src/ads/todaySlides.ts:133
+#: src/ads/todaySlides.ts:134
 msgid "Open or closed? Set the day"
 msgstr "Open or closed? Set the day"
 
-#: src/ads/todaySlides.ts:189
-#: src/ads/todaySlides.ts:202
-#: src/ads/todaySlides.ts:214
+#: src/ads/todaySlides.ts:190
+#: src/ads/todaySlides.ts:203
+#: src/ads/todaySlides.ts:215
 msgid "Open RRA"
 msgstr "Open RRA"
 
@@ -6401,12 +6598,12 @@ msgstr "Open this day above"
 msgid "Open, but different hours"
 msgstr "Open, but different hours"
 
-#: src/onboarding/steps.ts:121
+#: src/onboarding/steps.ts:131
 #: src/pages/HoursPage.tsx:408
 msgid "Opening hours"
 msgstr "Opening hours"
 
-#: src/onboarding/Welcome.tsx:1067
+#: src/onboarding/Welcome.tsx:1072
 msgid "Opening hours are set"
 msgstr "Opening hours are set"
 
@@ -6420,16 +6617,18 @@ msgstr "Opening hours at {0}"
 msgid "Opening…"
 msgstr "Opening…"
 
-#: src/onboarding/Welcome.tsx:1105
+#: src/onboarding/Welcome.tsx:1110
 #: src/pages/ClosuresPage.tsx:574
 msgid "Opens"
 msgstr "Opens"
 
 #: src/onboarding/GoLiveCard.tsx:234
+#: src/papers/PaperSlot.tsx:206
+#: src/papers/PaperSlot.tsx:213
 msgid "optional"
 msgstr "optional"
 
-#: src/onboarding/Welcome.tsx:352
+#: src/onboarding/Welcome.tsx:357
 msgid "Optional"
 msgstr "Optional"
 
@@ -6445,7 +6644,7 @@ msgstr "Optional — ask what they want, like the cut or extras"
 msgid "Optional — customers see the old price crossed out"
 msgstr "Optional — customers see the old price crossed out"
 
-#: src/onboarding/Welcome.tsx:816
+#: src/onboarding/Welcome.tsx:821
 msgid "Optional · square works best · JPG, PNG or WebP"
 msgstr "Optional · square works best · JPG, PNG or WebP"
 
@@ -6453,7 +6652,7 @@ msgstr "Optional · square works best · JPG, PNG or WebP"
 msgid "Optional. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} files, {MAX_UPLOAD_MB}MB each. A statement or an invoice helps most for anything about money."
 msgstr "Optional. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} files, {MAX_UPLOAD_MB}MB each. A statement or an invoice helps most for anything about money."
 
-#: src/onboarding/Welcome.tsx:271
+#: src/onboarding/Welcome.tsx:275
 msgid "Or a manager who looks after every branch. Ask them to finish setting it up — you can still look around."
 msgstr "Or a manager who looks after every branch. Ask them to finish setting it up — you can still look around."
 
@@ -6495,7 +6694,11 @@ msgstr "Order"
 msgid "Other · {0}"
 msgstr "Other · {0}"
 
-#: src/onboarding/GoLiveCard.tsx:415
+#: src/pages/PapersPage.tsx:126
+msgid "Other papers"
+msgstr "Other papers"
+
+#: src/onboarding/GoLiveCard.tsx:416
 msgid "Our advice before you post"
 msgstr "Our advice before you post"
 
@@ -6538,6 +6741,18 @@ msgstr "Our support team read your conversation"
 #: src/pages/AppointmentsPage.tsx:1005
 msgid "Our support team sent the customer a new code"
 msgstr "Our support team sent the customer a new code"
+
+#: src/ads/slides.ts:295
+msgid "Our team checked one of your business papers and it is in order."
+msgstr "Our team checked one of your business papers and it is in order."
+
+#: src/papers/PaperSlot.tsx:165
+msgid "Our team could not accept it:"
+msgstr "Our team could not accept it:"
+
+#: src/ads/todaySlides.ts:266
+msgid "Our team could not accept your {paper}. Open Business papers to read why, and upload a clear copy."
+msgstr "Our team could not accept your {paper}. Open Business papers to read why, and upload a clear copy."
 
 #: src/pages/PayoutsPage.tsx:430
 msgid "Our team is checking it. Your payments wait until then — nothing is lost."
@@ -6583,15 +6798,19 @@ msgstr "paid to you directly, not through us"
 msgid "Paid to you so far"
 msgstr "Paid to you so far"
 
-#: src/onboarding/Welcome.tsx:321
+#: src/onboarding/Welcome.tsx:326
 msgid "Paid when they book"
 msgstr "Paid when they book"
+
+#: src/pages/PapersPage.tsx:63
+msgid "Papers cannot be kept on this server yet — our team has been told. Try again later."
+msgstr "Papers cannot be kept on this server yet — our team has been told. Try again later."
 
 #: src/pages/ClosuresPage.tsx:540
 msgid "Part of the day"
 msgstr "Part of the day"
 
-#: src/onboarding/Welcome.tsx:1202
+#: src/onboarding/Welcome.tsx:1207
 msgid "Partner session"
 msgstr "Partner session"
 
@@ -6608,7 +6827,7 @@ msgstr "Paste a Google Maps link, or -1.9536, 30.0606"
 msgid "Paste a Google Maps link, or type the coordinates."
 msgstr "Paste a Google Maps link, or type the coordinates."
 
-#: src/onboarding/Welcome.tsx:948
+#: src/onboarding/Welcome.tsx:953
 msgid "Paste your Google Maps link, or use your position if you are at the shop now."
 msgstr "Paste your Google Maps link, or use your position if you are at the shop now."
 
@@ -6622,7 +6841,7 @@ msgstr "Pause the shop"
 msgid "Pause the shop?"
 msgstr "Pause the shop?"
 
-#: src/onboarding/steps.ts:151
+#: src/onboarding/steps.ts:166
 #: src/pages/ServicesPage.tsx:1088
 #: src/shell/Topbar.tsx:156
 msgid "Paused"
@@ -6683,7 +6902,7 @@ msgstr "Payout for September has not arrived"
 msgid "Payouts are paused — see Getting paid for why."
 msgstr "Payouts are paused — see Getting paid for why."
 
-#: src/nav.ts:134
+#: src/nav.ts:142
 msgctxt "search words"
 msgid "payouts balance momo mobile money number"
 msgstr "payouts balance momo mobile money number"
@@ -6700,7 +6919,11 @@ msgstr "Payouts start as soon as an administrator confirms it. Nothing you earn 
 msgid "Payouts start as soon as it is confirmed"
 msgstr "Payouts start as soon as it is confirmed"
 
-#: src/onboarding/Welcome.tsx:1188
+#: src/papers/PaperSlot.tsx:224
+msgid "PDF or a clear photo of the whole page — up to 15 MB"
+msgstr "PDF or a clear photo of the whole page — up to 15 MB"
+
+#: src/onboarding/Welcome.tsx:1193
 msgid "Pedicure"
 msgstr "Pedicure"
 
@@ -6709,7 +6932,7 @@ msgstr "Pedicure"
 msgid "Pending"
 msgstr "Pending"
 
-#: src/nav.ts:154
+#: src/nav.ts:162
 #: src/pages/AppointmentsPage.tsx:862
 #: src/pages/StaffPage.tsx:116
 #: src/shell/Topbar.tsx:125
@@ -6748,7 +6971,7 @@ msgstr "Phone"
 msgid "Phone for this branch <0>optional</0>"
 msgstr "Phone for this branch <0>optional</0>"
 
-#: src/onboarding/Welcome.tsx:797
+#: src/onboarding/Welcome.tsx:802
 msgid "Phone number"
 msgstr "Phone number"
 
@@ -6820,11 +7043,11 @@ msgstr "Pick a time, pay a small deposit with MTN MoMo, and show your code when 
 msgid "Pick one on the left to read it and reply. Replies reach the customer in their app straight away."
 msgstr "Pick one on the left to read it and reply. Replies reach the customer in their app straight away."
 
-#: src/onboarding/Welcome.tsx:1055
+#: src/onboarding/Welcome.tsx:1060
 msgid "Pick your usual week. Lunch breaks and odd days can be set later."
 msgstr "Pick your usual week. Lunch breaks and odd days can be set later."
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Pitch for one hour"
 msgstr "Pitch for one hour"
 
@@ -6851,7 +7074,7 @@ msgstr "Please read and agree when you can."
 msgid "Please write at least 10 characters. This is the record of the decision."
 msgstr "Please write at least 10 characters. This is the record of the decision."
 
-#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1217
 msgid "Pool day pass"
 msgstr "Pool day pass"
 
@@ -6863,7 +7086,7 @@ msgstr "Popular means bookings weighted by rating — good reviews move you up t
 msgid "Popular shops are shown first"
 msgstr "Popular shops are shown first"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Portrait session"
 msgstr "Portrait session"
 
@@ -6893,7 +7116,7 @@ msgstr "Post the picture so regulars can get the app from home."
 msgid "Post this service"
 msgstr "Post this service"
 
-#: src/onboarding/GoLiveCard.tsx:495
+#: src/onboarding/GoLiveCard.tsx:496
 msgid "Posted"
 msgstr "Posted"
 
@@ -6945,7 +7168,7 @@ msgstr "Press here to send it for review"
 msgid "Previous month"
 msgstr "Previous month"
 
-#: src/onboarding/Welcome.tsx:1344
+#: src/onboarding/Welcome.tsx:1349
 msgid "Price"
 msgstr "Price"
 
@@ -7000,15 +7223,15 @@ msgstr "Private answers are always free and take no extra time."
 msgid "Private answers were removed 30 days after the visit."
 msgstr "Private answers were removed 30 days after the visit."
 
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1214
 msgid "Private class"
 msgstr "Private class"
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "Private lesson"
 msgstr "Private lesson"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Private room for ten"
 msgstr "Private room for ten"
 
@@ -7017,17 +7240,25 @@ msgstr "Private room for ten"
 msgid "Processing"
 msgstr "Processing"
 
+#: src/papers/words.ts:42
+msgid "Professional licence"
+msgstr "Professional licence"
+
 #: src/nav.ts:58
 msgctxt "search words"
 msgid "profile logo cover photos gallery description pause"
 msgstr "profile logo cover photos gallery description pause"
+
+#: src/papers/words.ts:16
+msgid "Proves the business is registered. Once checked, customers see the “Registered business” mark on your page."
+msgstr "Proves the business is registered. Once checked, customers see the “Registered business” mark on your page."
 
 #: src/pages/ClosuresPage.tsx:604
 msgid "Public holiday"
 msgstr "Public holiday"
 
 #. placeholder {0}: dayWords(date)
-#: src/ads/todaySlides.ts:130
+#: src/ads/todaySlides.ts:131
 msgid "Public holiday · {0}"
 msgstr "Public holiday · {0}"
 
@@ -7056,7 +7287,7 @@ msgstr "Put something new on your menu"
 msgid "Put your first service on sale"
 msgstr "Put your first service on sale"
 
-#: src/nav.ts:121
+#: src/nav.ts:129
 msgctxt "search words"
 msgid "qr code scan download app store google play install poster print counter card get customers"
 msgstr "qr code scan download app store google play install poster print counter card get customers"
@@ -7073,7 +7304,7 @@ msgstr "Question {number}: write what you ask customers."
 msgid "questions"
 msgstr "questions"
 
-#: src/nav.ts:100
+#: src/nav.ts:108
 msgid "Questions and replies"
 msgstr "Questions and replies"
 
@@ -7101,6 +7332,10 @@ msgstr "Quicker replies"
 msgid "Quiet hours"
 msgstr "Quiet hours"
 
+#: src/papers/PaperSlot.tsx:34
+msgid "Ran out on {day}"
+msgstr "Ran out on {day}"
+
 #: src/ads/AdRail.tsx:230
 msgid "Ranked the way the customer app ranks them: bookings, weighted by rating. Compare yours on <0>Services</0>."
 msgstr "Ranked the way the customer app ranks them: bookings, weighted by rating. Compare yours on <0>Services</0>."
@@ -7116,7 +7351,7 @@ msgstr "rate used {0}"
 msgid "rated {0} over {1}"
 msgstr "rated {0} over {1}"
 
-#: src/ads/todaySlides.ts:237
+#: src/ads/todaySlides.ts:238
 msgid "Rates by {source}"
 msgstr "Rates by {source}"
 
@@ -7124,10 +7359,14 @@ msgstr "Rates by {source}"
 msgid "Rating"
 msgstr "Rating"
 
-#: src/nav.ts:106
+#: src/nav.ts:114
 msgctxt "search words"
 msgid "ratings stars feedback reply"
 msgstr "ratings stars feedback reply"
+
+#: src/papers/words.ts:14
+msgid "RDB registration certificate"
+msgstr "RDB registration certificate"
 
 #: src/pages/ReviewsPage.tsx:508
 msgid "Read all"
@@ -7171,7 +7410,7 @@ msgid "Ready to choose a time"
 msgstr "Ready to choose a time"
 
 #: src/auth/Moments.tsx:39
-#: src/onboarding/Welcome.tsx:1601
+#: src/onboarding/Welcome.tsx:1681
 #: src/pages/PayoutsPage.tsx:220
 #: src/shell/Sidebar.tsx:76
 msgid "Ready to send"
@@ -7186,7 +7425,7 @@ msgstr "Ready-made for {kindName}"
 msgid "Reason"
 msgstr "Reason"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Refresher lesson"
 msgstr "Refresher lesson"
 
@@ -7198,7 +7437,15 @@ msgstr "Refused"
 msgid "Refused. Submit another number."
 msgstr "Refused. Submit another number."
 
-#: src/onboarding/Welcome.tsx:1187
+#: src/pages/PapersPage.tsx:75
+msgid "Registered business ✓"
+msgstr "Registered business ✓"
+
+#: src/onboarding/steps.ts:50
+msgid "Registration, or your licence"
+msgstr "Registration, or your licence"
+
+#: src/onboarding/Welcome.tsx:1192
 msgid "Relaxer"
 msgstr "Relaxer"
 
@@ -7216,6 +7463,7 @@ msgstr "remove"
 #: src/pages/ServicesPage.tsx:1945
 #: src/pages/StaffPage.tsx:535
 #: src/pages/StaffPage.tsx:550
+#: src/papers/PaperSlot.tsx:188
 msgid "Remove"
 msgstr "Remove"
 
@@ -7241,6 +7489,10 @@ msgstr "Remove {0}?"
 msgid "Remove answer {0}"
 msgstr "Remove answer {0}"
 
+#: src/papers/PaperSlot.tsx:108
+msgid "Remove it"
+msgstr "Remove it"
+
 #: src/pages/choices/ChoicesEditor.tsx:402
 msgid "Remove question"
 msgstr "Remove question"
@@ -7252,6 +7504,10 @@ msgstr "Remove the photo"
 #: src/pages/choices/ChoicesEditor.tsx:1187
 msgid "Remove this answer"
 msgstr "Remove this answer"
+
+#: src/papers/PaperSlot.tsx:104
+msgid "Remove this paper?"
+msgstr "Remove this paper?"
 
 #: src/pages/ProfilePage.tsx:695
 msgid "Remove this photo?"
@@ -7269,9 +7525,13 @@ msgstr "Remove this question?"
 msgid "Removing photos…"
 msgstr "Removing photos…"
 
-#: src/onboarding/Welcome.tsx:980
+#: src/onboarding/Welcome.tsx:985
 msgid "Rename"
 msgstr "Rename"
+
+#: src/papers/words.ts:30
+msgid "Renewed every year by 31 January. Shows the shop is trading this year, and earns the mark."
+msgstr "Renewed every year by 31 January. Shows the shop is trading this year, and earns the mark."
 
 #: src/pages/HoursPage.tsx:285
 msgid "Reopen this branch"
@@ -7285,6 +7545,14 @@ msgstr "Reopening…"
 #: src/auth/growWords.ts:23
 msgid "repair service"
 msgstr "repair service"
+
+#: src/papers/PaperSlot.tsx:182
+msgid "Replace"
+msgstr "Replace"
+
+#: src/papers/PaperSlot.tsx:250
+msgid "Replace it"
+msgstr "Replace it"
 
 #: src/pages/PayoutsPage.tsx:42
 msgid "Replaced"
@@ -7311,7 +7579,7 @@ msgid "Replies show under each review, for everyone."
 msgstr "Replies show under each review, for everyone."
 
 #: src/ads/slides.ts:267
-#: src/ads/slides.ts:320
+#: src/ads/slides.ts:323
 #: src/pages/ReviewsPage.tsx:549
 msgid "Reply"
 msgstr "Reply"
@@ -7323,6 +7591,22 @@ msgstr "Reply now"
 #: src/ads/guide.ts:157
 msgid "Reply to reviews"
 msgstr "Reply to reviews"
+
+#: src/papers/words.ts:37
+msgid "Required for a clinic, a lab, a dental or eye practice before it can go live."
+msgstr "Required for a clinic, a lab, a dental or eye practice before it can go live."
+
+#: src/papers/words.ts:58
+msgid "Required for tours, treks, safaris and places to stay before they can go live."
+msgstr "Required for tours, treks, safaris and places to stay before they can go live."
+
+#: src/pages/PapersPage.tsx:88
+msgid "Required for your kind of shop"
+msgstr "Required for your kind of shop"
+
+#: src/papers/words.ts:65
+msgid "Required to offer legal advice before the shop can go live."
+msgstr "Required to offer legal advice before the shop can go live."
 
 #: src/pages/AppointmentsPage.tsx:856
 msgid "Reservation no."
@@ -7336,7 +7620,7 @@ msgstr "Resolved"
 msgid "restaurant"
 msgstr "restaurant"
 
-#: src/nav.ts:104
+#: src/nav.ts:112
 #: src/pages/ReviewsPage.tsx:158
 #: src/shopfront/CustomerPhone.tsx:231
 msgid "Reviews"
@@ -7363,6 +7647,10 @@ msgstr "Role of {0}"
 msgid "Run a discount this week"
 msgstr "Run a discount this week"
 
+#: src/papers/PaperSlot.tsx:23
+msgid "Run out"
+msgstr "Run out"
+
 #: src/pages/StaffPage.tsx:55
 msgid "Runs everything"
 msgstr "Runs everything"
@@ -7370,6 +7658,14 @@ msgstr "Runs everything"
 #: src/pages/StaffPage.tsx:40
 msgid "Runs everything at every branch: the money, the shopfront, and who works where. There is only one owner."
 msgstr "Runs everything at every branch: the money, the shopfront, and who works where. There is only one owner."
+
+#: src/papers/PaperSlot.tsx:213
+msgid "Runs out on"
+msgstr "Runs out on"
+
+#: src/papers/PaperSlot.tsx:35
+msgid "Runs out on {day} — renew it"
+msgstr "Runs out on {day} — renew it"
 
 #: src/pages/StaffPage.tsx:56
 msgid "Runs their branches"
@@ -7384,11 +7680,32 @@ msgstr "Runs their branches: bookings, cancellations, hours, closures and photos
 msgid "Rwanda"
 msgstr "Rwanda"
 
-#: src/ads/todaySlides.ts:94
+#: src/papers/words.ts:64
+msgid "Rwanda Bar Association"
+msgstr "Rwanda Bar Association"
+
+#: src/papers/words.ts:15
+#: src/papers/words.ts:57
+msgid "Rwanda Development Board"
+msgstr "Rwanda Development Board"
+
+#: src/papers/words.ts:49
+msgid "Rwanda FDA licence"
+msgstr "Rwanda FDA licence"
+
+#: src/papers/words.ts:50
+msgid "Rwanda Food and Drugs Authority"
+msgstr "Rwanda Food and Drugs Authority"
+
+#: src/ads/todaySlides.ts:95
 msgid "Rwanda remembers the Genocide against the Tutsi. Bookings work as usual."
 msgstr "Rwanda remembers the Genocide against the Tutsi. Bookings work as usual."
 
-#: src/onboarding/Welcome.tsx:1343
+#: src/papers/words.ts:22
+msgid "Rwanda Revenue Authority"
+msgstr "Rwanda Revenue Authority"
+
+#: src/onboarding/Welcome.tsx:1348
 msgid "RWF"
 msgstr "RWF"
 
@@ -7408,7 +7725,7 @@ msgstr "safari business"
 msgid "salon"
 msgstr "salon"
 
-#: src/ads/todaySlides.ts:108
+#: src/ads/todaySlides.ts:109
 msgid "Saturday morning is Umuganda"
 msgstr "Saturday morning is Umuganda"
 
@@ -7488,9 +7805,13 @@ msgstr "Saving…"
 msgid "Say what each “Other” is — customers see it in its place."
 msgstr "Say what each “Other” is — customers see it in its place."
 
-#: src/onboarding/Welcome.tsx:731
+#: src/onboarding/Welcome.tsx:736
 msgid "Say what kind it is, under “Other”."
 msgstr "Say what kind it is, under “Other”."
+
+#: src/papers/PaperSlot.tsx:127
+msgid "Say what the paper is, in a few words."
+msgstr "Say what the paper is, in a few words."
 
 #: src/appqr/cardWords.ts:27
 msgid "Scan the code"
@@ -7504,7 +7825,7 @@ msgstr "Scan with your camera"
 msgid "Scan with your phone’s camera to get the BwanguReservations app."
 msgstr "Scan with your phone’s camera to get the BwanguReservations app."
 
-#: src/ads/todaySlides.ts:157
+#: src/ads/todaySlides.ts:158
 msgctxt "under a number"
 msgid "search"
 msgstr "search"
@@ -7552,12 +7873,12 @@ msgstr "Search the list"
 msgid "Search the words or a name"
 msgstr "Search the words or a name"
 
-#: src/ads/todaySlides.ts:157
+#: src/ads/todaySlides.ts:158
 msgctxt "under a number"
 msgid "searches"
 msgstr "searches"
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "Seat for two"
 msgstr "Seat for two"
 
@@ -7581,7 +7902,7 @@ msgstr "See it as customers will"
 msgid "See more"
 msgstr "See more"
 
-#: src/ads/todaySlides.ts:173
+#: src/ads/todaySlides.ts:174
 msgid "See today’s bookings"
 msgstr "See today’s bookings"
 
@@ -7648,13 +7969,13 @@ msgid "Send a new one in 0:{0}"
 msgstr "Send a new one in 0:{0}"
 
 #: src/onboarding/GoLiveCard.tsx:188
-#: src/onboarding/Welcome.tsx:1653
+#: src/onboarding/Welcome.tsx:1733
 msgid "Send back for review"
 msgstr "Send back for review"
 
 #: src/onboarding/GoLiveCard.tsx:188
-#: src/onboarding/steps.ts:49
-#: src/onboarding/Welcome.tsx:1653
+#: src/onboarding/steps.ts:57
+#: src/onboarding/Welcome.tsx:1733
 msgid "Send for review"
 msgstr "Send for review"
 
@@ -7666,7 +7987,7 @@ msgstr "Send invitation"
 msgid "Send it"
 msgstr "Send it"
 
-#: src/onboarding/Welcome.tsx:1601
+#: src/onboarding/Welcome.tsx:1681
 msgid "Send your shop back for review"
 msgstr "Send your shop back for review"
 
@@ -7708,12 +8029,12 @@ msgid "Sent {0}"
 msgstr "Sent {0}"
 
 #. placeholder {0}: formatDate(new Date(readiness.submittedAt), { day: 'numeric', month: 'long' })
-#: src/onboarding/Welcome.tsx:1520
+#: src/onboarding/Welcome.tsx:1600
 msgid "Sent {0}. "
 msgstr "Sent {0}. "
 
-#: src/ads/slides.ts:314
-#: src/ads/slides.ts:319
+#: src/ads/slides.ts:317
+#: src/ads/slides.ts:322
 #: src/pages/MessagesPage.tsx:31
 #: src/pages/OverviewPage.tsx:714
 msgid "Sent a photo"
@@ -7731,7 +8052,7 @@ msgstr "Sent on {sentOn}. Waiting for MTN MoMo to confirm — that usually takes
 msgid "Service"
 msgstr "Service"
 
-#: src/onboarding/Welcome.tsx:1264
+#: src/onboarding/Welcome.tsx:1269
 msgid "Service name"
 msgstr "Service name"
 
@@ -7748,7 +8069,7 @@ msgstr "Service stopped"
 msgid "Services"
 msgstr "Services"
 
-#: src/nav.ts:163
+#: src/nav.ts:171
 msgctxt "search words"
 msgid "sessions devices phones signed in sign out everywhere login security lost phone"
 msgstr "sessions devices phones signed in sign out everywhere login security lost phone"
@@ -7757,7 +8078,7 @@ msgstr "sessions devices phones signed in sign out everywhere login security los
 msgid "Set deposits on Services"
 msgstr "Set deposits on Services"
 
-#: src/ads/todaySlides.ts:134
+#: src/ads/todaySlides.ts:135
 msgid "Set the day"
 msgstr "Set the day"
 
@@ -7773,26 +8094,26 @@ msgstr "Set up your shop"
 msgid "Set what each answer adds to the price or the time"
 msgstr "Set what each answer adds to the price or the time"
 
-#: src/onboarding/steps.ts:156
-#: src/onboarding/Welcome.tsx:188
+#: src/onboarding/steps.ts:171
+#: src/onboarding/Welcome.tsx:192
 msgid "Setting up"
 msgstr "Setting up"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Shoe repair"
 msgstr "Shoe repair"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Shoe shine"
 msgstr "Shoe shine"
 
-#: src/onboarding/Welcome.tsx:511
-#: src/onboarding/Welcome.tsx:782
+#: src/onboarding/Welcome.tsx:516
+#: src/onboarding/Welcome.tsx:787
 #: src/pages/AppointmentsPage.tsx:904
 msgid "Shop"
 msgstr "Shop"
 
-#: src/onboarding/Welcome.tsx:504
+#: src/onboarding/Welcome.tsx:509
 msgid "Shop name"
 msgstr "Shop name"
 
@@ -7800,7 +8121,7 @@ msgstr "Shop name"
 msgid "Shop suspended"
 msgstr "Shop suspended"
 
-#: src/ads/todaySlides.ts:110
+#: src/ads/todaySlides.ts:111
 msgid "Shops close 08:00–11:00, but {one} is open for bookings then."
 msgstr "Shops close 08:00–11:00, but {one} is open for bookings then."
 
@@ -7809,7 +8130,7 @@ msgid "Shops usually charge for this"
 msgstr "Shops usually charge for this"
 
 #. placeholder {0}: items.length
-#: src/onboarding/GoLiveCard.tsx:421
+#: src/onboarding/GoLiveCard.tsx:422
 msgid "Shops with clear, high-resolution photos and full details get booked far more often · {done} of {0} done"
 msgstr "Shops with clear, high-resolution photos and full details get booked far more often · {done} of {0} done"
 
@@ -7927,7 +8248,7 @@ msgstr "Shown on your shop’s page in the app."
 msgid "Shown on your shop’s page in the app. The owner, or a manager of every branch, changes them."
 msgstr "Shown on your shop’s page in the app. The owner, or a manager of every branch, changes them."
 
-#: src/onboarding/Welcome.tsx:971
+#: src/onboarding/Welcome.tsx:976
 msgid "Shown to customers as "
 msgstr "Shown to customers as "
 
@@ -7973,7 +8294,7 @@ msgstr "Sign out?"
 msgid "Sign up in our customer app with your personal email"
 msgstr "Sign up in our customer app with your personal email"
 
-#: src/nav.ts:161
+#: src/nav.ts:169
 #: src/pages/SecurityPage.tsx:48
 msgid "Sign-in and security"
 msgstr "Sign-in and security"
@@ -8012,7 +8333,8 @@ msgstr "Six digits, no button"
 msgid "Skin fade"
 msgstr "Skin fade"
 
-#: src/onboarding/Welcome.tsx:382
+#: src/onboarding/Welcome.tsx:387
+#: src/onboarding/Welcome.tsx:1546
 msgid "Skip for now"
 msgstr "Skip for now"
 
@@ -8020,7 +8342,7 @@ msgstr "Skip for now"
 msgid "slide"
 msgstr "slide"
 
-#: src/onboarding/Welcome.tsx:1193
+#: src/onboarding/Welcome.tsx:1198
 msgid "Small tattoo"
 msgstr "Small tattoo"
 
@@ -8032,7 +8354,7 @@ msgstr "So customers can reach you."
 msgid "So they can book you again from their phone."
 msgstr "So they can book you again from their phone."
 
-#: src/ads/todaySlides.ts:82
+#: src/ads/todaySlides.ts:83
 msgid "Some deposits are slow or failing. Customers’ times stay held while they retry."
 msgstr "Some deposits are slow or failing. Customers’ times stay held while they retry."
 
@@ -8048,7 +8370,7 @@ msgstr "Someone is on it"
 msgid "Someone is working on this."
 msgstr "Someone is working on this."
 
-#: src/ads/slides.ts:332
+#: src/ads/slides.ts:335
 #: src/pages/FollowersPage.tsx:28
 msgid "Something new"
 msgstr "Something new"
@@ -8073,7 +8395,7 @@ msgstr "Something wrong with this payment? Ask us about it"
 msgid "spa"
 msgstr "spa"
 
-#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1217
 msgid "Spa and pool day"
 msgstr "Spa and pool day"
 
@@ -8103,7 +8425,7 @@ msgstr "Staff"
 msgid "Staff can check customers in and handle bookings, but cannot change prices or hours."
 msgstr "Staff can check customers in and handle bookings, but cannot change prices or hours."
 
-#: src/nav.ts:156
+#: src/nav.ts:164
 msgctxt "search words"
 msgid "staff team colleagues invite manager"
 msgstr "staff team colleagues invite manager"
@@ -8112,7 +8434,7 @@ msgstr "staff team colleagues invite manager"
 msgid "Staff work the front desk at the branches you choose. They see only those branches’ bookings, messages and reviews."
 msgstr "Staff work the front desk at the branches you choose. They see only those branches’ bookings, messages and reviews."
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "Standard ticket"
 msgstr "Standard ticket"
 
@@ -8145,7 +8467,7 @@ msgstr "Start selling.<0/><1>Free to join.</1>"
 msgid "Start typing — KG 9 Ave, Kimironko…"
 msgstr "Start typing — KG 9 Ave, Kimironko…"
 
-#: src/onboarding/Welcome.tsx:919
+#: src/onboarding/Welcome.tsx:924
 msgid "Start typing the address and pick it from the list — we put you on the map."
 msgstr "Start typing the address and pick it from the list — we put you on the map."
 
@@ -8176,7 +8498,7 @@ msgstr "Statuses shown"
 msgid "Stay signed in"
 msgstr "Stay signed in"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Steam room"
 msgstr "Steam room"
 
@@ -8206,7 +8528,7 @@ msgid "Still there?"
 msgstr "Still there?"
 
 #. placeholder {0}: empty.map((g) => g.name).join(' and ')
-#: src/onboarding/Welcome.tsx:729
+#: src/onboarding/Welcome.tsx:734
 msgid "Still to choose: one in {0}."
 msgstr "Still to choose: one in {0}."
 
@@ -8252,7 +8574,7 @@ msgctxt "search words"
 msgid "story photo today post 24 hours instagram status advert"
 msgstr "story photo today post 24 hours instagram status advert"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Studio hour"
 msgstr "Studio hour"
 
@@ -8264,7 +8586,7 @@ msgstr "Submit for checking"
 msgid "Suggestions from OpenStreetMap"
 msgstr "Suggestions from OpenStreetMap"
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Suit made to measure"
 msgstr "Suit made to measure"
 
@@ -8272,20 +8594,20 @@ msgstr "Suit made to measure"
 msgid "Support"
 msgstr "Support"
 
-#: src/nav.ts:184
+#: src/nav.ts:192
 msgctxt "search words"
 msgid "support ticket problem contact"
 msgstr "support ticket problem contact"
 
-#: src/onboarding/steps.ts:159
+#: src/onboarding/steps.ts:174
 msgid "Suspended"
 msgstr "Suspended"
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Swim session"
 msgstr "Swim session"
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Swimming lesson"
 msgstr "Swimming lesson"
 
@@ -8301,11 +8623,11 @@ msgstr "Switch on to offer it again."
 msgid "Switched off at every branch"
 msgstr "Switched off at every branch"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Table for four"
 msgstr "Table for four"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Table for two"
 msgstr "Table for two"
 
@@ -8362,7 +8684,7 @@ msgstr "Takes off the price"
 msgid "Talk to support"
 msgstr "Talk to support"
 
-#: src/onboarding/Welcome.tsx:238
+#: src/onboarding/Welcome.tsx:242
 msgid "Talk to us"
 msgstr "Talk to us"
 
@@ -8383,11 +8705,15 @@ msgstr "Tap the magnifying glass at the top"
 msgid "Tapping it opens"
 msgstr "Tapping it opens"
 
-#: src/ads/todaySlides.ts:185
-#: src/ads/todaySlides.ts:198
-#: src/ads/todaySlides.ts:210
+#: src/ads/todaySlides.ts:186
+#: src/ads/todaySlides.ts:199
+#: src/ads/todaySlides.ts:211
 msgid "Taxes · RRA"
 msgstr "Taxes · RRA"
+
+#: src/papers/words.ts:21
+msgid "Taxpayer registration (TIN)"
+msgstr "Taxpayer registration (TIN)"
 
 #: src/pages/SupportPage.tsx:439
 msgid "Tell us what happened"
@@ -8397,7 +8723,7 @@ msgstr "Tell us what happened"
 msgid "Ten posted today"
 msgstr "Ten posted today"
 
-#: src/nav.ts:177
+#: src/nav.ts:185
 msgctxt "search words"
 msgid "terms agreement privacy policy documents"
 msgstr "terms agreement privacy policy documents"
@@ -8406,7 +8732,7 @@ msgstr "terms agreement privacy policy documents"
 msgid "Terms of Use"
 msgstr "Terms of Use"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Test preparation"
 msgstr "Test preparation"
 
@@ -8477,9 +8803,9 @@ msgstr "That did not post. Check your connection."
 msgid "That did not save."
 msgstr "That did not save."
 
-#: src/onboarding/Welcome.tsx:485
-#: src/onboarding/Welcome.tsx:641
-#: src/onboarding/Welcome.tsx:779
+#: src/onboarding/Welcome.tsx:490
+#: src/onboarding/Welcome.tsx:646
+#: src/onboarding/Welcome.tsx:784
 #: src/pages/ServicesPage.tsx:563
 msgid "That did not save. Check your connection and try again."
 msgstr "That did not save. Check your connection and try again."
@@ -8494,7 +8820,7 @@ msgid "That did not send."
 msgstr "That did not send."
 
 #: src/onboarding/GoLiveCard.tsx:28
-#: src/onboarding/Welcome.tsx:1633
+#: src/onboarding/Welcome.tsx:1713
 msgid "That did not send. Check your connection and try again."
 msgstr "That did not send. Check your connection and try again."
 
@@ -8512,6 +8838,7 @@ msgstr "That did not send. Check your connection."
 #: src/pages/ServicesPage.tsx:643
 #: src/pages/StaffPage.tsx:448
 #: src/pages/SupportPage.tsx:653
+#: src/papers/PaperSlot.tsx:98
 msgid "That did not work."
 msgstr "That did not work."
 
@@ -8535,11 +8862,11 @@ msgstr "That is a lot of codes for one hour. Please try again a little later."
 msgid "That is a shortened link, which hides the coordinates. Open it in a browser first, then copy the full address from the bar."
 msgstr "That is a shortened link, which hides the coordinates. Open it in a browser first, then copy the full address from the bar."
 
-#: src/ui/DropZone.tsx:52
+#: src/ui/DropZone.tsx:59
 msgid "That isn’t {words}."
 msgstr "That isn’t {words}."
 
-#: src/onboarding/Welcome.tsx:1395
+#: src/onboarding/Welcome.tsx:1400
 msgid "That number did not save."
 msgstr "That number did not save."
 
@@ -8547,11 +8874,11 @@ msgstr "That number did not save."
 msgid "That photo is {size} MB. A story takes one up to {MAX_MB} MB."
 msgstr "That photo is {size} MB. A story takes one up to {MAX_MB} MB."
 
-#: src/onboarding/Welcome.tsx:774
+#: src/onboarding/Welcome.tsx:779
 msgid "That picture did not upload. Try a JPG or PNG under 5 MB."
 msgstr "That picture did not upload. Try a JPG or PNG under 5 MB."
 
-#: src/onboarding/Welcome.tsx:1313
+#: src/onboarding/Welcome.tsx:1318
 msgid "That service did not save."
 msgstr "That service did not save."
 
@@ -8567,11 +8894,11 @@ msgstr "That’s the most — {MAX_OPTIONS} answers"
 msgid "The address may be mistyped, or the page has moved. Nothing of yours is lost — here is the way back."
 msgstr "The address may be mistyped, or the page has moved. Nothing of yours is lost — here is the way back."
 
-#: src/nav.ts:178
+#: src/nav.ts:186
 msgid "The agreements you work under"
 msgstr "The agreements you work under"
 
-#: src/ads/todaySlides.ts:199
+#: src/ads/todaySlides.ts:200
 msgid "The annual income tax return is due by {date}"
 msgstr "The annual income tax return is due by {date}"
 
@@ -8647,7 +8974,7 @@ msgstr "The customer can then rate the visit."
 msgid "The customer is told this reason, and if they have paid a deposit it is refunded in full — including our fee."
 msgstr "The customer is told this reason, and if they have paid a deposit it is refunded in full — including our fee."
 
-#: src/ads/todaySlides.ts:19
+#: src/ads/todaySlides.ts:20
 msgid "The day after New Year"
 msgstr "The day after New Year"
 
@@ -8709,7 +9036,7 @@ msgstr "The money is for the owner"
 msgid "The most answers a customer may pick"
 msgstr "The most answers a customer may pick"
 
-#: src/onboarding/Welcome.tsx:502
+#: src/onboarding/Welcome.tsx:507
 msgid "The name customers see when they find you — the one on your sign is best."
 msgstr "The name customers see when they find you — the one on your sign is best."
 
@@ -8750,6 +9077,10 @@ msgstr "The owner, or a manager of every branch, finishes this."
 msgid "The owner, or a manager of every branch, posts it."
 msgstr "The owner, or a manager of every branch, posts it."
 
+#: src/papers/PaperSlot.tsx:89
+msgid "The paper did not upload. Try again."
+msgstr "The paper did not upload. Try again."
+
 #: src/ads/slides.ts:284
 msgid "The payment did not go through. The customer can try again."
 msgstr "The payment did not go through. The customer can try again."
@@ -8781,6 +9112,10 @@ msgstr "The pin was moved to this address."
 #: src/ads/guide.ts:35
 msgid "The platform’s fee ({fee} of the price) comes out of that deposit. What is left of the deposit is your share, paid out to you."
 msgstr "The platform’s fee ({fee} of the price) comes out of that deposit. What is left of the deposit is your share, paid out to you."
+
+#: src/papers/words.ts:44
+msgid "The practitioner’s own licence — medical, dental, nursing, allied health or veterinary."
+msgstr "The practitioner’s own licence — medical, dental, nursing, allied health or veterinary."
 
 #: src/pages/ProfilePage.tsx:555
 msgid "The preview shows your changes — save to make them live."
@@ -8814,6 +9149,10 @@ msgstr "The rules for using the platform, for everyone."
 msgid "The rules, in plain words"
 msgstr "The rules, in plain words"
 
+#: src/components/Allowed.tsx:29
+msgid "The shop’s business papers are seen and added by the owner, and by managers who look after every branch."
+msgstr "The shop’s business papers are seen and added by the owner, and by managers who look after every branch."
+
 #: src/ads/slides.ts:281
 msgid "The time is free again for someone else. Who cancelled decides what happens to the deposit."
 msgstr "The time is free again for someone else. Who cancelled decides what happens to the deposit."
@@ -8831,7 +9170,7 @@ msgstr "The time, the service and their answers — here, the moment it is paid.
 msgid "The tour is kept for you"
 msgstr "The tour is kept for you"
 
-#: src/ads/todaySlides.ts:186
+#: src/ads/todaySlides.ts:187
 msgid "The trading licence tax is due by {date}"
 msgstr "The trading licence tax is due by {date}"
 
@@ -8863,7 +9202,7 @@ msgstr "Their questions and your replies, what they said in reviews, and news fo
 msgid "Then a type"
 msgstr "Then a type"
 
-#: src/ads/slides.ts:295
+#: src/ads/slides.ts:298
 msgid "There is a reply to your help request."
 msgstr "There is a reply to your help request."
 
@@ -9016,6 +9355,10 @@ msgstr "This email is not for the business app."
 msgid "This is a translation. If it ever differs from the English, the English applies."
 msgstr "This is a translation. If it ever differs from the English, the English applies."
 
+#: src/components/Allowed.tsx:28
+msgid "This is for the owner and every-branch managers"
+msgstr "This is for the owner and every-branch managers"
+
 #: src/components/Allowed.tsx:18
 msgid "This is for the owner and managers"
 msgstr "This is for the owner and managers"
@@ -9060,7 +9403,7 @@ msgstr "This was resolved more than {REOPEN_WINDOW_DAYS} days ago, so it can no 
 msgid "This week"
 msgstr "This week"
 
-#: src/onboarding/Welcome.tsx:1040
+#: src/onboarding/Welcome.tsx:1045
 msgid "Those hours did not save."
 msgstr "Those hours did not save."
 
@@ -9186,6 +9529,14 @@ msgctxt "search words"
 msgid "tour guide walkthrough new start learn how it works show me around"
 msgstr "tour guide walkthrough new start learn how it works show me around"
 
+#: src/papers/words.ts:56
+msgid "Tourism operating licence"
+msgstr "Tourism operating licence"
+
+#: src/papers/words.ts:28
+msgid "Trading licence (ipatanti)"
+msgstr "Trading licence (ipatanti)"
+
 #. placeholder {0}: d.subcategoryName ?? ""
 #: src/ads/slides.ts:120
 msgid "Trending in {0}"
@@ -9196,11 +9547,11 @@ msgstr "Trending in {0}"
 msgid "Trending on the app"
 msgstr "Trending on the app"
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Trouser alterations"
 msgstr "Trouser alterations"
 
-#: src/onboarding/Welcome.tsx:1267
+#: src/onboarding/Welcome.tsx:1272
 msgid "Try"
 msgstr "Try"
 
@@ -9317,16 +9668,16 @@ msgid "Type your email and we will send you a 6-digit code. New here? The same c
 msgstr "Type your email and we will send you a 6-digit code. New here? The same code creates your business account."
 
 #. placeholder {0}: group.name
-#: src/onboarding/Welcome.tsx:688
+#: src/onboarding/Welcome.tsx:693
 msgid "Types of {0}"
 msgstr "Types of {0}"
 
 #. placeholder {0}: dayWords(date)
-#: src/ads/todaySlides.ts:107
+#: src/ads/todaySlides.ts:108
 msgid "Umuganda · {0}"
 msgstr "Umuganda · {0}"
 
-#: src/ads/todaySlides.ts:27
+#: src/ads/todaySlides.ts:28
 msgid "Umuganura"
 msgstr "Umuganura"
 
@@ -9380,7 +9731,7 @@ msgstr "Up to {MAX_GROUPS} questions per service"
 msgid "Up to {MAX_KIND_CATEGORIES} categories"
 msgstr "Up to {MAX_KIND_CATEGORIES} categories"
 
-#: src/onboarding/Welcome.tsx:575
+#: src/onboarding/Welcome.tsx:580
 msgid "Up to {MAX_KIND_CATEGORIES} kinds — take one off first"
 msgstr "Up to {MAX_KIND_CATEGORIES} kinds — take one off first"
 
@@ -9400,9 +9751,31 @@ msgstr "Up to 11 per service · the first one is the cover"
 msgid "Up to 11 photos per service and 30 per branch — JPEG, PNG or WebP, up to 15 MB each."
 msgstr "Up to 11 photos per service and 30 per branch — JPEG, PNG or WebP, up to 15 MB each."
 
-#: src/onboarding/Welcome.tsx:818
+#: src/onboarding/Welcome.tsx:823
+#: src/papers/PaperSlot.tsx:250
 msgid "Upload"
 msgstr "Upload"
+
+#: src/papers/PaperSlot.tsx:182
+msgid "Upload a new one"
+msgstr "Upload a new one"
+
+#: src/ads/todaySlides.ts:260
+msgid "Upload your {paper} to go live"
+msgstr "Upload your {paper} to go live"
+
+#: src/onboarding/Welcome.tsx:1506
+msgid "Upload your RDB certificate, TIN or trading licence. Once our team checks it, customers see “Registered business” on your page."
+msgstr "Upload your RDB certificate, TIN or trading licence. Once our team checks it, customers see “Registered business” on your page."
+
+#: src/pages/PapersPage.tsx:79
+msgid "Upload your RDB certificate, your TIN or your trading licence. Once our team checks it, customers see the mark on your page — and it ranks you a little higher."
+msgstr "Upload your RDB certificate, your TIN or your trading licence. Once our team checks it, customers see the mark on your page — and it ranks you a little higher."
+
+#. placeholder {0}: shortDay(doc.createdAt)
+#: src/papers/PaperSlot.tsx:155
+msgid "uploaded {0}"
+msgstr "uploaded {0}"
 
 #. placeholder {0}: batch.at
 #. placeholder {1}: batch.of
@@ -9421,6 +9794,7 @@ msgstr "Uploading photo {0} of {1}…"
 #: src/components/ImageButton.tsx:46
 #: src/pages/ProfilePage.tsx:192
 #: src/pages/ProfilePage.tsx:719
+#: src/papers/PaperSlot.tsx:250
 msgid "Uploading…"
 msgstr "Uploading…"
 
@@ -9454,11 +9828,15 @@ msgstr "Usually open {0} – {1}"
 msgid "Usually within one working day. We may call your shop’s number, and you get an email at <0>{0}</0> the moment it is live."
 msgstr "Usually within one working day. We may call your shop’s number, and you get an email at <0>{0}</0> the moment it is live."
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "Vaccination"
 msgstr "Vaccination"
 
-#: src/ads/todaySlides.ts:211
+#: src/papers/PaperSlot.tsx:36
+msgid "Valid until {day}"
+msgstr "Valid until {day}"
+
+#: src/ads/todaySlides.ts:212
 msgid "VAT and PAYE are due by {date}"
 msgstr "VAT and PAYE are due by {date}"
 
@@ -9539,11 +9917,11 @@ msgstr "View text file"
 msgid "views"
 msgstr "views"
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "VIP seat"
 msgstr "VIP seat"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "VIP ticket"
 msgstr "VIP ticket"
 
@@ -9568,6 +9946,11 @@ msgstr "Waiting"
 msgid "Waiting for a reply"
 msgstr "Waiting for a reply"
 
+#: src/pages/PapersPage.tsx:17
+#: src/papers/PaperSlot.tsx:26
+msgid "Waiting for our team"
+msgstr "Waiting for our team"
+
 #: src/shell/Sidebar.tsx:65
 msgid "Waiting for review"
 msgstr "Waiting for review"
@@ -9580,7 +9963,7 @@ msgstr "Waiting for support"
 msgid "Waiting for them to arrive"
 msgstr "Waiting for them to arrive"
 
-#: src/onboarding/Welcome.tsx:1413
+#: src/onboarding/Welcome.tsx:1418
 msgid "Waiting to be checked by our team"
 msgstr "Waiting to be checked by our team"
 
@@ -9600,11 +9983,11 @@ msgstr "was staff"
 msgid "was the owner"
 msgstr "was the owner"
 
-#: src/onboarding/Welcome.tsx:1187
+#: src/onboarding/Welcome.tsx:1192
 msgid "Wash and blow-dry"
 msgstr "Wash and blow-dry"
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Wash and fold"
 msgstr "Wash and fold"
 
@@ -9620,11 +10003,11 @@ msgstr "We are checking your shop. You get an email when it is approved."
 msgid "We are here to help"
 msgstr "We are here to help"
 
-#: src/onboarding/Welcome.tsx:236
+#: src/onboarding/Welcome.tsx:240
 msgid "We can set it up with you."
 msgstr "We can set it up with you."
 
-#: src/onboarding/Welcome.tsx:1610
+#: src/onboarding/Welcome.tsx:1690
 msgid "We check every shop before customers can book it. Send yours now — it only takes a moment."
 msgstr "We check every shop before customers can book it. Send yours now — it only takes a moment."
 
@@ -9632,7 +10015,7 @@ msgstr "We check every shop before customers can book it. Send yours now — it 
 msgid "We check it"
 msgstr "We check it"
 
-#: src/onboarding/steps.ts:50
+#: src/onboarding/steps.ts:58
 msgid "We check it, you post it"
 msgstr "We check it, you post it"
 
@@ -9648,7 +10031,7 @@ msgstr "We could not save what you typed last — check your connection. Everyth
 msgid "We have it. Nobody has picked it up yet."
 msgstr "We have it. Nobody has picked it up yet."
 
-#: src/onboarding/Welcome.tsx:1451
+#: src/onboarding/Welcome.tsx:1456
 msgid "We hold it safely until they come"
 msgstr "We hold it safely until they come"
 
@@ -9660,7 +10043,7 @@ msgstr "We just added a new service. Have a look on our page in the app."
 msgid "We let you know straight away"
 msgstr "We let you know straight away"
 
-#: src/ads/todaySlides.ts:93
+#: src/ads/todaySlides.ts:94
 msgid "We remember"
 msgstr "We remember"
 
@@ -9681,7 +10064,7 @@ msgid "We're sorry. That isn't the {what} we want for anyone. Please message us 
 msgstr "We're sorry. That isn't the {what} we want for anyone. Please message us so we can put it right."
 
 #. placeholder {0}: item.district ?? ''
-#: src/ads/todaySlides.ts:169
+#: src/ads/todaySlides.ts:170
 msgid "Weather · {0}"
 msgstr "Weather · {0}"
 
@@ -9689,11 +10072,11 @@ msgstr "Weather · {0}"
 msgid "Week"
 msgstr "Week"
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Weekend slot"
 msgstr "Weekend slot"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "Weekend stay"
 msgstr "Weekend stay"
 
@@ -9729,7 +10112,7 @@ msgstr "What a customer reads on the service's page"
 msgid "What a customer sees before they book. The photos do most of the work."
 msgstr "What a customer sees before they book. The photos do most of the work."
 
-#: src/onboarding/Welcome.tsx:1253
+#: src/onboarding/Welcome.tsx:1258
 msgid "What can customers book first?"
 msgstr "What can customers book first?"
 
@@ -9747,7 +10130,7 @@ msgstr "What changed: {0}"
 msgid "What customers are booking"
 msgstr "What customers are booking"
 
-#: src/onboarding/Welcome.tsx:1163
+#: src/onboarding/Welcome.tsx:1168
 msgid "What customers can book"
 msgstr "What customers can book"
 
@@ -9755,7 +10138,7 @@ msgstr "What customers can book"
 msgid "What customers read when they choose it"
 msgstr "What customers read when they choose it"
 
-#: src/nav.ts:107
+#: src/nav.ts:115
 msgid "What customers said"
 msgstr "What customers said"
 
@@ -9803,6 +10186,10 @@ msgstr "What happens"
 msgid "What is in it"
 msgstr "What is in it"
 
+#: src/papers/PaperSlot.tsx:199
+msgid "What is it?"
+msgstr "What is it?"
+
 #: src/tour/steps.ts:100
 msgid "What is left of the deposit after our fee is sent to your MoMo number a couple of days after the visit."
 msgstr "What is left of the deposit after our fee is sent to your MoMo number a couple of days after the visit."
@@ -9823,7 +10210,7 @@ msgstr "What it is and what is included — a customer reads this before choosin
 msgid "What kind exactly"
 msgstr "What kind exactly"
 
-#: src/onboarding/Welcome.tsx:714
+#: src/onboarding/Welcome.tsx:719
 #: src/pages/ProfilePage.tsx:454
 msgid "What kind exactly?"
 msgstr "What kind exactly?"
@@ -9837,15 +10224,15 @@ msgstr "What kind exactly? e.g. Henna artist"
 msgid "What kind of {0} exactly"
 msgstr "What kind of {0} exactly"
 
-#: src/onboarding/Welcome.tsx:563
+#: src/onboarding/Welcome.tsx:568
 msgid "What kind of shop"
 msgstr "What kind of shop"
 
-#: src/onboarding/Welcome.tsx:559
+#: src/onboarding/Welcome.tsx:564
 msgid "What kind of shop is it?"
 msgstr "What kind of shop is it?"
 
-#: src/onboarding/steps.ts:101
+#: src/onboarding/steps.ts:111
 msgid "What kind of shop it is"
 msgstr "What kind of shop it is"
 
@@ -9878,12 +10265,12 @@ msgid "What we keep about you and your customers, and why."
 msgstr "What we keep about you and your customers, and why."
 
 #. placeholder {0}: required.length
-#: src/onboarding/Welcome.tsx:1625
+#: src/onboarding/Welcome.tsx:1705
 msgid "What we need <0>{have} of {0}</0>"
 msgstr "What we need <0>{have} of {0}</0>"
 
 #: src/onboarding/GoLiveCard.tsx:291
-#: src/onboarding/Welcome.tsx:1618
+#: src/onboarding/Welcome.tsx:1698
 msgid "What we said"
 msgstr "What we said"
 
@@ -9891,7 +10278,7 @@ msgstr "What we said"
 msgid "What we send you"
 msgstr "What we send you"
 
-#: src/nav.ts:171
+#: src/nav.ts:179
 msgid "What we send you, and how"
 msgstr "What we send you, and how"
 
@@ -9912,11 +10299,11 @@ msgstr "What you have agreed to. Older versions are kept — what you agreed to 
 msgid "What you sell, and for how much"
 msgstr "What you sell, and for how much"
 
-#: src/onboarding/Welcome.tsx:502
+#: src/onboarding/Welcome.tsx:507
 msgid "What’s your shop called?"
 msgstr "What’s your shop called?"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Wheel balancing"
 msgstr "Wheel balancing"
 
@@ -9949,7 +10336,7 @@ msgstr "When a customer reads out their code, the sixth digit checks them in on 
 msgid "When a document changes, everything keeps running — agree when you have read it."
 msgstr "When a document changes, everything keeps running — agree when you have read it."
 
-#: src/onboarding/Welcome.tsx:1055
+#: src/onboarding/Welcome.tsx:1060
 msgid "When are you open?"
 msgstr "When are you open?"
 
@@ -10007,8 +10394,8 @@ msgstr "Where alerts go"
 msgid "Where every franc of your deposits is, from a booking to your mobile money."
 msgstr "Where every franc of your deposits is, from a booking to your mobile money."
 
-#: src/onboarding/Welcome.tsx:883
-#: src/onboarding/Welcome.tsx:919
+#: src/onboarding/Welcome.tsx:888
+#: src/onboarding/Welcome.tsx:924
 msgid "Where is your shop?"
 msgstr "Where is your shop?"
 
@@ -10024,8 +10411,8 @@ msgstr "Where it is, on the map customers use"
 msgid "Where it works best"
 msgstr "Where it works best"
 
-#: src/onboarding/Welcome.tsx:1408
-#: src/onboarding/Welcome.tsx:1433
+#: src/onboarding/Welcome.tsx:1413
+#: src/onboarding/Welcome.tsx:1438
 msgid "Where should we send your money?"
 msgstr "Where should we send your money?"
 
@@ -10051,7 +10438,7 @@ msgstr "Where you are and when you open"
 msgid "Where you are signed in"
 msgstr "Where you are signed in"
 
-#: src/nav.ts:164
+#: src/nav.ts:172
 msgid "Where you are signed in, and signing out there"
 msgstr "Where you are signed in, and signing out there"
 
@@ -10068,17 +10455,21 @@ msgstr "Which branch"
 msgid "Which branches"
 msgstr "Which branches"
 
-#: src/onboarding/Welcome.tsx:658
+#: src/onboarding/Welcome.tsx:663
 msgid "Which describe it best?"
 msgstr "Which describe it best?"
 
-#: src/onboarding/Welcome.tsx:658
+#: src/onboarding/Welcome.tsx:663
 msgid "Which describes it best?"
 msgstr "Which describes it best?"
 
 #: src/pages/ReviewsPage.tsx:243
 msgid "Which ones are waiting for a reply"
 msgstr "Which ones are waiting for a reply"
+
+#: src/onboarding/Welcome.tsx:1521
+msgid "Which paper"
+msgstr "Which paper"
 
 #: src/pages/ProfilePage.tsx:502
 msgid "Which type"
@@ -10088,7 +10479,7 @@ msgstr "Which type"
 msgid "While you wait"
 msgstr "While you wait"
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Whitening"
 msgstr "Whitening"
 
@@ -10116,7 +10507,7 @@ msgstr "Who is coming, and when — as a list or on a calendar"
 msgid "Who is coming, checking them in, and what they still owe you."
 msgstr "Who is coming, checking them in, and what they still owe you."
 
-#: src/nav.ts:157
+#: src/nav.ts:165
 msgid "Who works here with you"
 msgstr "Who works here with you"
 
@@ -10132,7 +10523,7 @@ msgstr "Whoever is using it will need a new code, sent to your email, to get bac
 msgid "Why <0>optional — customers do not see this</0>"
 msgstr "Why <0>optional — customers do not see this</0>"
 
-#: src/ads/todaySlides.ts:132
+#: src/ads/todaySlides.ts:133
 msgid "Will you open? Close the day or set its hours."
 msgstr "Will you open? Close the day or set its hours."
 
@@ -10192,7 +10583,7 @@ msgstr "Write a reply"
 msgid "Write my own question"
 msgstr "Write my own question"
 
-#: src/nav.ts:114
+#: src/nav.ts:122
 msgid "Write to customers who follow your shop"
 msgstr "Write to customers who follow your shop"
 
@@ -10213,7 +10604,7 @@ msgstr "Yes, mark done"
 msgid "Yesterday"
 msgstr "Yesterday"
 
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1214
 msgid "Yoga class"
 msgstr "Yoga class"
 
@@ -10239,7 +10630,7 @@ msgstr "You agreed to version {0} on {1}. This one is newer."
 msgid "You are <0>in!</0>"
 msgstr "You are <0>in!</0>"
 
-#: src/onboarding/GoLiveCard.tsx:496
+#: src/onboarding/GoLiveCard.tsx:497
 msgid "You are live! 🎉"
 msgstr "You are live! 🎉"
 
@@ -10331,11 +10722,31 @@ msgstr "You work at every branch."
 msgid "you@example.com"
 msgstr "you@example.com"
 
-#: src/onboarding/Welcome.tsx:1477
+#: src/ads/todaySlides.ts:274
+msgid "Your {paper} ran out on {day}"
+msgstr "Your {paper} ran out on {day}"
+
+#: src/ads/todaySlides.ts:273
+msgid "Your {paper} ran out on {day}. Upload the renewed one so your papers stay in order."
+msgstr "Your {paper} ran out on {day}. Upload the renewed one so your papers stay in order."
+
+#: src/ads/todaySlides.ts:281
+msgid "Your {paper} runs out on {day}"
+msgstr "Your {paper} runs out on {day}"
+
+#: src/ads/todaySlides.ts:280
+msgid "Your {paper} runs out on {day}. Upload the renewed one when you have it."
+msgstr "Your {paper} runs out on {day}. Upload the renewed one when you have it."
+
+#: src/ads/todaySlides.ts:267
+msgid "Your {paper} was not accepted — upload a clear copy"
+msgstr "Your {paper} was not accepted — upload a clear copy"
+
+#: src/onboarding/Welcome.tsx:1557
 msgid "your address"
 msgstr "your address"
 
-#: src/nav.ts:135
+#: src/nav.ts:143
 msgid "Your balance and payouts"
 msgstr "Your balance and payouts"
 
@@ -10356,11 +10767,11 @@ msgid "Your bookings, your money and your ratings."
 msgstr "Your bookings, your money and your ratings."
 
 #. placeholder {0}: active[0].name
-#: src/onboarding/Welcome.tsx:989
+#: src/onboarding/Welcome.tsx:994
 msgid "Your branch “{0}” has no map pin or district yet. Add them in <0>Branches & hours</0>, or add the address here."
 msgstr "Your branch “{0}” has no map pin or district yet. Add them in <0>Branches & hours</0>, or add the address here."
 
-#: src/onboarding/Welcome.tsx:883
+#: src/onboarding/Welcome.tsx:888
 msgid "Your branch is on the map."
 msgstr "Your branch is on the map."
 
@@ -10383,6 +10794,10 @@ msgstr "Your business"
 #: src/auth/LoginPage.tsx:658
 msgid "Your business account is ready. Let us set up your shop."
 msgstr "Your business account is ready. Let us set up your shop."
+
+#: src/onboarding/steps.ts:146
+msgid "Your business papers"
+msgstr "Your business papers"
 
 #: src/ads/useAdData.ts:142
 msgid "Your category and type"
@@ -10407,6 +10822,10 @@ msgstr "Your day at a glance"
 msgid "Your description shows here. Say what you offer and why you are worth the trip."
 msgstr "Your description shows here. Say what you offer and why you are worth the trip."
 
+#: src/papers/words.ts:29
+msgid "Your district"
+msgstr "Your district"
+
 #: src/pages/AppointmentsPage.tsx:961
 msgid "Your first booking will appear here"
 msgstr "Your first booking will appear here"
@@ -10424,7 +10843,7 @@ msgstr "Your first payment shows here once money from a booking is ready to send
 msgid "Your first service"
 msgstr "Your first service"
 
-#: src/ads/slides.ts:296
+#: src/ads/slides.ts:299
 msgid "Your help request has moved on."
 msgstr "Your help request has moved on."
 
@@ -10432,9 +10851,21 @@ msgstr "Your help request has moved on."
 msgid "Your kind"
 msgstr "Your kind"
 
+#: src/ads/todaySlides.ts:259
+msgid "Your kind of shop cannot go live until our team has checked your {paper}. Upload it under Business papers."
+msgstr "Your kind of shop cannot go live until our team has checked your {paper}. Upload it under Business papers."
+
+#: src/onboarding/Welcome.tsx:1505
+msgid "Your kind of shop cannot go live without it. Upload it here; our team checks it before you are approved."
+msgstr "Your kind of shop cannot go live without it. Upload it here; our team checks it before you are approved."
+
+#: src/onboarding/Welcome.tsx:1502
+msgid "Your licence"
+msgstr "Your licence"
+
 #: src/ads/useAdData.ts:133
-#: src/onboarding/steps.ts:111
-#: src/onboarding/Welcome.tsx:815
+#: src/onboarding/steps.ts:121
+#: src/onboarding/Welcome.tsx:820
 msgid "Your logo"
 msgstr "Your logo"
 
@@ -10480,7 +10911,7 @@ msgstr "Your next visit, booked in seconds."
 msgid "Your numbers start with your first booking"
 msgstr "Your numbers start with your first booking"
 
-#: src/onboarding/Welcome.tsx:1055
+#: src/onboarding/Welcome.tsx:1060
 msgid "Your opening hours are set."
 msgstr "Your opening hours are set."
 
@@ -10500,6 +10931,10 @@ msgstr "Your payout number is being checked"
 msgid "Your payout number was not accepted"
 msgstr "Your payout number was not accepted"
 
+#: src/papers/words.ts:43
+msgid "Your professional council"
+msgstr "Your professional council"
+
 #: src/pages/SupportPage.tsx:551
 msgid "Your question"
 msgstr "Your question"
@@ -10515,6 +10950,18 @@ msgstr "Your rating"
 #: src/pages/AnalyticsPage.tsx:167
 msgid "Your rating, and your busiest days"
 msgstr "Your rating, and your busiest days"
+
+#: src/pages/PapersPage.tsx:113
+msgid "Your registration"
+msgstr "Your registration"
+
+#: src/nav.ts:87
+msgid "Your registration and licences"
+msgstr "Your registration and licences"
+
+#: src/pages/PapersPage.tsx:52
+msgid "Your registration and the licences your kind of shop needs. Only you and our team can open them."
+msgstr "Your registration and the licences your kind of shop needs. Only you and our team can open them."
 
 #: src/pages/ReviewsPage.tsx:519
 msgid "Your reply"
@@ -10553,7 +11000,7 @@ msgstr "Your share comes to your mobile money"
 msgid "Your share is held until you add one"
 msgstr "Your share is held until you add one"
 
-#: src/onboarding/Welcome.tsx:1452
+#: src/onboarding/Welcome.tsx:1457
 msgid "Your share is sent to this number"
 msgstr "Your share is sent to this number"
 
@@ -10573,7 +11020,7 @@ msgstr "Your share of deposits is paid to it."
 msgid "Your share of deposits, paid to your mobile money"
 msgstr "Your share of deposits, paid to your mobile money"
 
-#: src/onboarding/Welcome.tsx:1408
+#: src/onboarding/Welcome.tsx:1413
 msgid "Your share of every deposit goes to this number."
 msgstr "Your share of every deposit goes to this number."
 
@@ -10598,7 +11045,7 @@ msgstr "your shop"
 #: src/nav.ts:52
 #: src/onboarding/GoLiveCard.tsx:80
 #: src/onboarding/steps.ts:20
-#: src/onboarding/Welcome.tsx:189
+#: src/onboarding/Welcome.tsx:193
 #: src/pages/FollowersPage.tsx:75
 #: src/pages/ReviewsPage.tsx:461
 #: src/pages/StoriesPage.tsx:127
@@ -10618,15 +11065,19 @@ msgstr "Your shop · not live"
 msgid "Your shop · paused"
 msgstr "Your shop · paused"
 
-#: src/onboarding/Welcome.tsx:1434
+#: src/onboarding/Welcome.tsx:1439
 msgid "Your shop can go live without it — you are paid once it is added and checked."
 msgstr "Your shop can go live without it — you are paid once it is added and checked."
+
+#: src/pages/PapersPage.tsx:91
+msgid "Your shop cannot be sent for review without it, and goes live once our team has checked it."
+msgstr "Your shop cannot be sent for review without it, and goes live once our team has checked it."
 
 #: src/onboarding/GoLiveCard.tsx:320
 msgid "Your shop is approved. Post it when you are ready"
 msgstr "Your shop is approved. Post it when you are ready"
 
-#: src/onboarding/GoLiveCard.tsx:484
+#: src/onboarding/GoLiveCard.tsx:485
 msgid "Your shop is live"
 msgstr "Your shop is live"
 
@@ -10651,13 +11102,17 @@ msgstr "Your shop is ready to send"
 msgid "Your shop is suspended"
 msgstr "Your shop is suspended"
 
-#: src/onboarding/Welcome.tsx:1517
+#: src/onboarding/Welcome.tsx:1597
 msgid "Your shop is waiting for review"
 msgstr "Your shop is waiting for review"
 
-#: src/onboarding/Welcome.tsx:1517
+#: src/onboarding/Welcome.tsx:1597
 msgid "Your shop is with us for review"
 msgstr "Your shop is with us for review"
+
+#: src/ads/todaySlides.ts:258
+msgid "Your shop needs its licence"
+msgstr "Your shop needs its licence"
 
 #: src/pages/FollowersPage.tsx:81
 msgid "Your shop needs to be live on the app first."
@@ -10667,12 +11122,12 @@ msgstr "Your shop needs to be live on the app first."
 msgid "Your shop window is complete"
 msgstr "Your shop window is complete"
 
-#: src/onboarding/Welcome.tsx:971
+#: src/onboarding/Welcome.tsx:976
 msgid "your shop’s name"
 msgstr "your shop’s name"
 
-#: src/onboarding/steps.ts:96
-#: src/onboarding/Welcome.tsx:518
+#: src/onboarding/steps.ts:106
+#: src/onboarding/Welcome.tsx:523
 msgid "Your shop’s name"
 msgstr "Your shop’s name"
 

@@ -26,6 +26,13 @@ export const PHOTOS: FileKind = {
   get words() { return t`a photo — JPG, PNG or WebP`; },
 };
 
+/** A business paper (§314): a scan or a photo of it. */
+export const PAPERS: FileKind = {
+  types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'],
+  extensions: ['.pdf', '.jpg', '.jpeg', '.png', '.webp'],
+  get words() { return t`a PDF or a photo — PDF, JPG, PNG or WebP`; },
+};
+
 const extensionOf = (file: File) => file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
 
 /**

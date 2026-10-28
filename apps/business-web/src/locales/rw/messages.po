@@ -17,7 +17,7 @@ msgid " · {0} people"
 msgstr " · abantu {0}"
 
 #. placeholder {0}: questions.length
-#: src/onboarding/Welcome.tsx:351
+#: src/onboarding/Welcome.tsx:356
 msgid " · {n} of {0}"
 msgstr " · {n} kuri {0}"
 
@@ -86,7 +86,7 @@ msgstr " Ongera winjire kugira ngo ukomeze."
 msgid " that match"
 msgstr " bihuye n’ishakisha"
 
-#: src/onboarding/GoLiveCard.tsx:427
+#: src/onboarding/GoLiveCard.tsx:428
 msgid "— Our review team"
 msgstr "— Itsinda ryacu rishinzwe isuzuma"
 
@@ -101,11 +101,11 @@ msgid "· signed in {0}"
 msgstr "· winjiye {0}"
 
 #. placeholder {0}: thread.lastMessage?.preview ?? t`Sent a photo`
-#: src/ads/slides.ts:319
+#: src/ads/slides.ts:322
 msgid "“{0}” — a quick reply is the chance to win the booking."
 msgstr "“{0}” — gusubiza vuba bishobora gutuma ubona gahunda."
 
-#: src/ui/DropZone.tsx:63
+#: src/ui/DropZone.tsx:70
 msgid "“{name}” is over {limit} MB — try a smaller copy."
 msgstr "“{name}” irengeje MB {limit} — gerageza ifoto ntoya."
 
@@ -174,12 +174,12 @@ msgid "{0, plural, one {# change. Click it to open its day above.} other {# chan
 msgstr "{0, plural, one {Impinduka #. Kanda kuri yo ufungure umunsi wayo hejuru.} other {Impinduka #. Kanda imwe ufungure umunsi wayo hejuru.}}"
 
 #. placeholder {0}: tooBig.length
-#: src/ui/DropZone.tsx:64
+#: src/ui/DropZone.tsx:71
 msgid "{0, plural, one {# file is over {limit} MB and was left out.} other {# files are over {limit} MB and were left out.}}"
 msgstr "{0, plural, one {Dosiye # irengeje MB {limit}, ntiyashyizwemo.} other {Dosiye # zirengeje MB {limit}, ntizashyizwemo.}}"
 
 #. placeholder {0}: wrongKind.length
-#: src/ui/DropZone.tsx:53
+#: src/ui/DropZone.tsx:60
 msgid "{0, plural, one {# file isn’t {words}, so it was left out.} other {# files aren’t {words}, so they were left out.}}"
 msgstr "{0, plural, one {Dosiye # si {words}, ntiyashyizwemo.} other {Dosiye # si {words}, ntizashyizwemo.}}"
 
@@ -219,7 +219,7 @@ msgid "{0, plural, one {# thing customers notice} other {# things customers noti
 msgstr "{0, plural, one {Ikintu # abakiriya bitaho} other {Ibintu # abakiriya bitaho}}"
 
 #. placeholder {0}: missing.length
-#: src/onboarding/Welcome.tsx:1606
+#: src/onboarding/Welcome.tsx:1686
 msgid "{0, plural, one {# thing is still needed before we can review your shop.} other {# things are still needed before we can review your shop.}}"
 msgstr "{0, plural, one {Hasigaye ikintu # mbere y’uko dusuzuma iduka ryawe.} other {Hasigaye ibintu # mbere y’uko dusuzuma iduka ryawe.}}"
 
@@ -289,7 +289,7 @@ msgid "{0, plural, one {Saved, but # photo change did not go through: {why}. Ope
 msgstr "{0, plural, one {Byabitswe, ariko impinduka # y’ifoto ntiyakunze: {why}. Fungura Hindura kuri serivisi wongere ugerageze.} other {Byabitswe, ariko impinduka # z’amafoto ntizakunze: {why}. Fungura Hindura kuri serivisi wongere ugerageze.}}"
 
 #. placeholder {0}: open.length
-#: src/ads/todaySlides.ts:111
+#: src/ads/todaySlides.ts:112
 msgid "{0, plural, one {Shops close 08:00–11:00, but # of your branches is open for bookings then.} other {Shops close 08:00–11:00, but # of your branches are open for bookings then.}}"
 msgstr "{0, plural, one {Amaduka afunga saa 08:00–11:00, ariko ishami # ryawe riracyafata gahunda icyo gihe.} other {Amaduka afunga saa 08:00–11:00, ariko amashami # yawe aracyafata gahunda icyo gihe.}}"
 
@@ -304,7 +304,7 @@ msgid "{0, plural, one {With MTN for # day} other {With MTN for # days}}"
 msgstr "{0, plural, one {Hashize umunsi # biri kwa MTN} other {Hashize iminsi # biri kwa MTN}}"
 
 #. placeholder {0}: offered.length
-#: src/onboarding/Welcome.tsx:1163
+#: src/onboarding/Welcome.tsx:1168
 msgid "{0, plural, one {You have # service ready to book.} other {You have # services ready to book.}}"
 msgstr "{0, plural, one {Ufite serivisi # yiteguye gufatirwa gahunda.} other {Ufite serivisi # ziteguye gufatirwa gahunda.}}"
 
@@ -329,7 +329,7 @@ msgstr "{0} · {1} min"
 #. placeholder {0}: money.format(Math.min(...first.locations.map((o) => o.priceMinor)))
 #. placeholder {1}: first.durationMinutes
 #. placeholder {2}: Number(first.depositPercentage)
-#: src/onboarding/Welcome.tsx:1168
+#: src/onboarding/Welcome.tsx:1173
 msgid "{0} · {1} min · {2}% deposit"
 msgstr "{0} · {1} min · avansi {2}%"
 
@@ -480,12 +480,12 @@ msgid "{0} of {PHOTO_LIMIT} · choose the cover with “Make cover”"
 msgstr "{0} kuri {PHOTO_LIMIT} · hitamo iy’imbere ukoresheje “Hitamo nk’iy’imbere”"
 
 #. placeholder {0}: chosen.length
-#: src/onboarding/Welcome.tsx:596
+#: src/onboarding/Welcome.tsx:601
 msgid "{0} of up to {MAX_KIND_CATEGORIES} chosen — take one off to choose another."
 msgstr "Wahisemo {0} kuri {MAX_KIND_CATEGORIES} ntarengwa — kuramo bumwe uhitemo ubundi."
 
 #. placeholder {0}: chosen.length
-#: src/onboarding/Welcome.tsx:597
+#: src/onboarding/Welcome.tsx:602
 msgid "{0} of up to {MAX_KIND_CATEGORIES} chosen."
 msgstr "Wahisemo {0} kuri {MAX_KIND_CATEGORIES} ntarengwa."
 
@@ -534,7 +534,7 @@ msgid "{0} waiting for a reply"
 msgstr "Bitegereje igisubizo: {0}"
 
 #. placeholder {0}: thread.customer.email
-#: src/ads/slides.ts:318
+#: src/ads/slides.ts:321
 msgid "{0} wrote to you"
 msgstr "{0} yakwandikiye"
 
@@ -597,15 +597,15 @@ msgstr "{change}% ugereranyije n’iminsi {days} ibanza"
 msgid "{clean}. Change the email"
 msgstr "{clean}. Hindura imeyili"
 
-#: src/ads/todaySlides.ts:158
+#: src/ads/todaySlides.ts:159
 msgid "{count, plural, one {# search near you this week} other {# searches near you this week}}"
 msgstr "{count, plural, one {Ishakisha # hafi yawe muri iki cyumweru} other {Amashakisha # hafi yawe muri iki cyumweru}}"
 
-#: src/ads/todaySlides.ts:153
+#: src/ads/todaySlides.ts:154
 msgid "{count, plural, one {# search this week in {district}, and you do not offer it yet.} other {# searches this week in {district}, and you do not offer it yet.}}"
 msgstr "{count, plural, one {Ishakisha # muri iki cyumweru i {district}, kandi ntabwo urayitanga.} other {Amashakisha # muri iki cyumweru i {district}, kandi ntabwo urayitanga.}}"
 
-#: src/ads/todaySlides.ts:149
+#: src/ads/todaySlides.ts:150
 msgid "{count, plural, one {# search this week in {district}, and you offer it. A discount could bring them in.} other {# searches this week in {district}, and you offer it. A discount could bring them in.}}"
 msgstr "{count, plural, one {Ishakisha # muri iki cyumweru i {district}, kandi urayitanga. Igabanywa ry’igiciro ryabazana.} other {Amashakisha # muri iki cyumweru i {district}, kandi urayitanga. Igabanywa ry’igiciro ryabazana.}}"
 
@@ -618,7 +618,7 @@ msgstr "{count} kuri {limit}"
 msgid "{count} on {0}"
 msgstr "{0}: {count}"
 
-#: src/onboarding/Welcome.tsx:1143
+#: src/onboarding/Welcome.tsx:1148
 msgid "{d} min"
 msgstr "{d} min"
 
@@ -643,7 +643,7 @@ msgid "{done} of {total} done"
 msgstr "{done} kuri {total} byakozwe"
 
 #. placeholder {0}: required.length
-#: src/onboarding/Welcome.tsx:193
+#: src/onboarding/Welcome.tsx:197
 msgid "{doneCount} of {0} required things done"
 msgstr "Ibya ngombwa byakozwe: {doneCount} kuri {0}"
 
@@ -667,11 +667,11 @@ msgstr "{expectedToday, plural, one {Umukiriya # aracyategerejwe uyu munsi.} oth
 msgid "{expectedToday, plural, one {# customer} other {# customers}} still expected today, and {withYou} with you now."
 msgstr "{expectedToday, plural, one {Umukiriya # aracyategerejwe} other {Abakiriya # baracyategerejwe}} uyu munsi, naho {withYou} bari kumwe nawe ubu."
 
-#: src/onboarding/Welcome.tsx:1020
+#: src/onboarding/Welcome.tsx:1025
 msgid "{first} to {last}"
 msgstr "Kuva {first} kugeza {last}"
 
-#: src/onboarding/Welcome.tsx:468
+#: src/onboarding/Welcome.tsx:473
 msgid "{firstThree} and more"
 msgstr "{firstThree} n’ibindi"
 
@@ -725,11 +725,11 @@ msgstr "Hasigaye {h}h {m}m"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {isaha #} other {amasaha #}}"
 
-#: src/onboarding/Welcome.tsx:1143
+#: src/onboarding/Welcome.tsx:1148
 msgid "{hours} h"
 msgstr "{hours} h"
 
-#: src/onboarding/Welcome.tsx:1143
+#: src/onboarding/Welcome.tsx:1148
 msgid "{hours} h {minutes}"
 msgstr "{hours} h {minutes}"
 
@@ -972,7 +972,7 @@ msgstr "<0/> {0} zitangwa"
 msgid "<0/>{0}% booked"
 msgstr "<0/>{0}% byafashwe"
 
-#: src/onboarding/Welcome.tsx:1366
+#: src/onboarding/Welcome.tsx:1371
 msgid "<0/>At your shop"
 msgstr "<0/>Ku iduka ryawe"
 
@@ -1000,7 +1000,7 @@ msgstr "<0/>Amasaha atandukanye"
 msgid "<0/>Free<1/>Closed<2/>Break"
 msgstr "<0/>Biraboneka<1/>Birafunze<2/>Ikiruhuko"
 
-#: src/onboarding/Welcome.tsx:1362
+#: src/onboarding/Welcome.tsx:1367
 msgid "<0/>On their phone, to book"
 msgstr "<0/>Kuri telefoni ye, afata gahunda"
 
@@ -1017,11 +1017,11 @@ msgstr "<0/>Izashize"
 msgid "<0/>Platform fees {0}"
 msgstr "<0/>Amafaranga ya serivisi y’urubuga {0}"
 
-#: src/onboarding/Welcome.tsx:412
+#: src/onboarding/Welcome.tsx:417
 msgid "<0/>Saving…"
 msgstr "<0/>Birabikwa…"
 
-#: src/onboarding/Welcome.tsx:1649
+#: src/onboarding/Welcome.tsx:1729
 msgid "<0/>Sending…"
 msgstr "<0/>Biroherezwa…"
 
@@ -1061,7 +1061,7 @@ msgstr "<0>{0}/{capacity}</0>imyanya"
 msgid "<0>{0}</0> is with you now."
 msgstr "<0>{0}</0> ari kumwe nawe ubu."
 
-#: src/onboarding/Welcome.tsx:195
+#: src/onboarding/Welcome.tsx:199
 msgid "<0>{doneCount} of {total}</0> done <1>{percent}%</1>"
 msgstr "<0>{doneCount} kuri {total}</0> byarangiye <1>{percent}%</1>"
 
@@ -1097,7 +1097,7 @@ msgstr "<0>Abakiriya ntibashobora kubibona ubu</0> — iduka ryawe ntirirashyirw
 msgid "<0>esc</0> to close"
 msgstr "<0>esc</0> gufunga"
 
-#: src/onboarding/Welcome.tsx:1558
+#: src/onboarding/Welcome.tsx:1638
 msgid "<0>Meanwhile, make it shine</0>Photos, a description, more services and your team. Shops with photos get booked first."
 msgstr "<0>Hagati aho, rinoze</0>Amafoto, ibisobanuro, serivisi nyinshi kurushaho n’itsinda ryawe. Amaduka afite amafoto ni yo afatirwamo gahunda mbere."
 
@@ -1105,7 +1105,7 @@ msgstr "<0>Hagati aho, rinoze</0>Amafoto, ibisobanuro, serivisi nyinshi kurushah
 msgid "<0>Please accept this before listing a service.</0> Listing one is you agreeing to trade under these terms, so it is the one thing we stop until you have read them."
 msgstr "<0>Banza wemere ibi mbere yo gushyiraho serivisi.</0> Gushyiraho serivisi bisobanuye ko wemeye gucuruza ukurikije aya mabwiriza, ni yo mpamvu ari cyo kintu cyonyine duhagarika kugeza uyasomye."
 
-#: src/onboarding/Welcome.tsx:1530
+#: src/onboarding/Welcome.tsx:1610
 msgid "<0>We check your details</0>Usually within one working day. We may call your shop’s number."
 msgstr "<0>Tugenzura amakuru yawe</0>Akenshi mu munsi umwe w’akazi. Dushobora guhamagara nimero y’iduka ryawe."
 
@@ -1113,11 +1113,11 @@ msgstr "<0>Tugenzura amakuru yawe</0>Akenshi mu munsi umwe w’akazi. Dushobora 
 msgid "<0>You are up to date.</0> You have agreed to the latest version of everything."
 msgstr "<0>Byose biri ku gihe.</0> Wemeye verisiyo iheruka ya byose."
 
-#: src/onboarding/Welcome.tsx:1540
+#: src/onboarding/Welcome.tsx:1620
 msgid "<0>You get an email</0>At {address}, the moment you are approved."
 msgstr "<0>Uhabwa imeyili</0>Kuri {address}, ukimara kwemezwa."
 
-#: src/onboarding/Welcome.tsx:1548
+#: src/onboarding/Welcome.tsx:1628
 msgid "<0>You post your shop</0>When you are ready — one button on your dashboard. Customers see it from then, not before."
 msgstr "<0>Ushyira iduka ryawe ahagaragara</0>Igihe witeguye — ni buto imwe kuri Incamake yawe. Abakiriya baribona guhera ubwo, si mbere yaho."
 
@@ -1125,11 +1125,11 @@ msgstr "<0>Ushyira iduka ryawe ahagaragara</0>Igihe witeguye — ni buto imwe ku
 msgid "★ Cover"
 msgstr "★ Ifoto y’imbere"
 
-#: src/ads/todaySlides.ts:235
+#: src/ads/todaySlides.ts:236
 msgid "€1 = {eur} · KSh 1 = {kes}"
 msgstr "€1 = {eur} · KSh 1 = {kes}"
 
-#: src/ads/todaySlides.ts:234
+#: src/ads/todaySlides.ts:235
 msgid "€1 = {eur} · KSh 1 = {kes} · USh 1 = {ugx}. Not the official BNR rates."
 msgstr "€1 = {eur} · KSh 1 = {kes} · USh 1 = {ugx}. Si igipimo cyemewe na BNR."
 
@@ -1137,7 +1137,7 @@ msgstr "€1 = {eur} · KSh 1 = {kes} · USh 1 = {ugx}. Si igipimo cyemewe na BN
 msgid "0, 0 is a point in the Atlantic Ocean. That is usually what a map shows when it has not found anything yet."
 msgstr "0, 0 ni ahantu mu Nyanja ya Atalantika. Akenshi ni byo ikarita yerekana iyo itarabona ikintu."
 
-#: src/ads/todaySlides.ts:115
+#: src/ads/todaySlides.ts:116
 msgid "08:00–11:00 · block the morning"
 msgstr "08:00–11:00 · funga icyo gitondo"
 
@@ -1145,7 +1145,7 @@ msgstr "08:00–11:00 · funga icyo gitondo"
 msgid "1 customer served"
 msgstr "Umukiriya 1 wahawe serivisi"
 
-#: src/ads/todaySlides.ts:232
+#: src/ads/todaySlides.ts:233
 msgid "1 US dollar = {usd}"
 msgstr "Idolari 1 rya Amerika = {usd}"
 
@@ -1198,7 +1198,7 @@ msgstr "Ishami n’amasaha yaryo"
 msgid "A branch cannot be closed while it still has bookings to come."
 msgstr "Ishami ntirishobora gufungwa rigifite gahunda zizaza."
 
-#: src/onboarding/steps.ts:116
+#: src/onboarding/steps.ts:126
 msgid "A branch on the map"
 msgstr "Ishami ku ikarita"
 
@@ -1211,7 +1211,7 @@ msgstr "Mushakisha"
 msgid "A calm, specific reply does more for the next reader than for this one."
 msgstr "Igisubizo gituje kandi gisobanutse kigirira akamaro umusomyi ukurikira kurusha uyu."
 
-#: src/nav.ts:122
+#: src/nav.ts:130
 msgid "A code customers scan to get the app"
 msgstr "Kode abakiriya basikana ngo babone porogaramu"
 
@@ -1243,7 +1243,7 @@ msgstr "Umukiriya akubona"
 msgid "A customer has booked. It shows under “Expected” as soon as their deposit is paid."
 msgstr "Umukiriya yafashe gahunda. Igaragara muri “Itegerejwe” akimara kwishyura avansi."
 
-#: src/onboarding/Welcome.tsx:1450
+#: src/onboarding/Welcome.tsx:1455
 msgid "A customer pays a deposit to book"
 msgstr "Umukiriya yishyura avansi kugira ngo afate gahunda"
 
@@ -1275,7 +1275,7 @@ msgstr "Umukiriya yakwandikiye. Iduka ntirishobora gutangiza ikiganiro, bityo gu
 msgid "A deposit holds each booking. Your share is paid to your number."
 msgstr "Avansi ifata buri gahunda. Umugabane wawe wishyurwa kuri nimero yawe."
 
-#: src/onboarding/Welcome.tsx:1371
+#: src/onboarding/Welcome.tsx:1376
 msgid "A deposit means fewer people who book and do not come."
 msgstr "Avansi igabanya abafata gahunda ntibaze."
 
@@ -1299,6 +1299,14 @@ msgstr "Serivisi iri ku igabanywa igaragaza ikimenyetso cya −% n’igiciro cya
 #: src/pages/StoriesPage.tsx:314
 msgid "A few words <0>{0}/{CAPTION_MAX}</0>"
 msgstr "Amagambo make <0>{0}/{CAPTION_MAX}</0>"
+
+#: src/papers/words.ts:80
+msgid "A health licence"
+msgstr "Uruhushya rw’ubuvuzi"
+
+#: src/pages/PapersPage.tsx:133
+msgid "A licence from Rwanda FDA or the tourism board, a permit, a certificate — anything you want us to have."
+msgstr "Uruhushya rwa Rwanda FDA cyangwa rw’ubukerarugendo, uruhushya urwo ari rwo rwose, icyemezo — ikintu cyose ushaka ko tubika."
 
 #: src/pages/ServicesPage.tsx:1383
 msgid "A little too long"
@@ -1332,13 +1340,41 @@ msgstr "Ishami rishya ritangira rifunze buri munsi. Shyiraho amasaha yaryo rimaz
 msgid "A new phone or browser? We email you, and tell your other phones, each time one signs in."
 msgstr "Telefoni nshya cyangwa mushakisha nshya? Tukoherereza imeyili, tukabimenyesha izindi telefoni zawe, igihe cyose hari iyinjiye."
 
-#: src/onboarding/Welcome.tsx:795
+#: src/onboarding/Welcome.tsx:800
 msgid "A number customers can call. We may call it too, to check your shop before it goes live."
 msgstr "Nimero abakiriya bashobora guhamagara. Natwe dushobora kuyihamagara, kugira ngo tugenzure iduka ryawe mbere y’uko rijya ku murongo."
 
-#: src/onboarding/steps.ts:131
+#: src/onboarding/steps.ts:141
 msgid "A number to be paid on"
 msgstr "Nimero yo kwishyurirwaho"
+
+#: src/ads/todaySlides.ts:244
+msgid "a paper"
+msgstr "inyandiko"
+
+#: src/ads/todaySlides.ts:272
+msgid "A paper has run out"
+msgstr "Inyandiko yarangiye"
+
+#: src/ads/todaySlides.ts:279
+msgid "A paper runs out soon"
+msgstr "Inyandiko igiye kurangira"
+
+#: src/ads/slides.ts:297
+msgid "A paper runs out soon, or has. Renew it and upload the new one under Business papers."
+msgstr "Inyandiko igiye kurangira, cyangwa yararangiye. Yongere maze ushyireho nshya muri Inyandiko z’ubucuruzi."
+
+#: src/ads/todaySlides.ts:265
+msgid "A paper was not accepted"
+msgstr "Inyandiko ntiyemewe"
+
+#: src/onboarding/Welcome.tsx:1542
+msgid "A PDF or a clear photo of the whole page. Only you and our team can open it."
+msgstr "PDF cyangwa ifoto igaragara neza y’urupapuro rwose. Wowe n’itsinda ryacu gusa ni mwe mushobora kuyifungura."
+
+#: src/ui/DropZone.tsx:33
+msgid "a PDF or a photo — PDF, JPG, PNG or WebP"
+msgstr "PDF cyangwa ifoto — PDF, JPG, PNG cyangwa WebP"
 
 #: src/ads/guide.ts:24
 msgid "a percentage"
@@ -1349,7 +1385,7 @@ msgid "A phone"
 msgstr "Telefoni"
 
 #: src/ads/useAdData.ts:143
-#: src/onboarding/steps.ts:106
+#: src/onboarding/steps.ts:116
 msgid "A phone number"
 msgstr "Nimero ya telefoni"
 
@@ -1372,6 +1408,10 @@ msgstr "ifoto imwe ntiyakuweho"
 #: src/pages/SupportPage.tsx:387
 msgid "a photo, PDF, Word, Excel, CSV or text file"
 msgstr "ifoto, cyangwa dosiye ya PDF, Word, Excel, CSV cyangwa y’inyandiko"
+
+#: src/papers/words.ts:83
+msgid "A practising certificate"
+msgstr "Icyemezo cyo gukora umwuga"
 
 #: src/pages/choices/ChoicesEditor.tsx:970
 msgid "A private question"
@@ -1405,11 +1445,11 @@ msgstr "Igisubizo kibonwa na bose"
 msgid "A sale, whenever you want one"
 msgstr "Igabanywa ry’igiciro, igihe ubishakiye"
 
-#: src/onboarding/Welcome.tsx:1257
+#: src/onboarding/Welcome.tsx:1262
 msgid "A service is offered at a branch, so add your address first. "
 msgstr "Serivisi itangirwa ku ishami, bityo banza ushyireho aderesi yawe. "
 
-#: src/onboarding/steps.ts:126
+#: src/onboarding/steps.ts:136
 msgid "A service to book"
 msgstr "Serivisi yo gufatira gahunda"
 
@@ -1466,7 +1506,15 @@ msgstr "Inkuru yakira ifoto ya JPG, PNG cyangwa WebP."
 msgid "A story takes a JPG, PNG or WebP photo. This one is a .{ext} file."
 msgstr "Inkuru yakira ifoto ya JPG, PNG cyangwa WebP. Iyi ni dosiye ya .{ext}."
 
-#: src/ads/todaySlides.ts:95
+#: src/papers/words.ts:82
+msgid "A tourism licence"
+msgstr "Uruhushya rw’ubukerarugendo"
+
+#: src/papers/words.ts:81
+msgid "A veterinary licence"
+msgstr "Uruhushya rw’ubuvuzi bw’amatungo"
+
+#: src/ads/todaySlides.ts:96
 msgid "A week of remembrance — the app stays quiet"
 msgstr "Icyumweru cyo kwibuka — porogaramu ituje"
 
@@ -1474,7 +1522,7 @@ msgstr "Icyumweru cyo kwibuka — porogaramu ituje"
 msgid "About"
 msgstr "Bireba"
 
-#: src/onboarding/Welcome.tsx:190
+#: src/onboarding/Welcome.tsx:194
 msgid "About five minutes. Skip anything you do not have to hand — it waits on your Overview."
 msgstr "Hafi iminota itanu. Simbuka icyo udafite hafi — kizagutegereza kuri Incamake yawe."
 
@@ -1496,18 +1544,18 @@ msgstr "Igikorwa"
 msgid "Actions"
 msgstr "Ibikorwa"
 
-#: src/onboarding/GoLiveCard.tsx:446
+#: src/onboarding/GoLiveCard.tsx:447
 #: src/pages/choices/ChoicesEditor.tsx:559
 #: src/pages/ProfilePage.tsx:516
 msgid "Add"
 msgstr "Ongeraho"
 
-#: src/onboarding/Welcome.tsx:1585
+#: src/onboarding/Welcome.tsx:1665
 msgid "Add "
 msgstr "Ongeraho "
 
 #. placeholder {0}: item.title.toLowerCase()
-#: src/onboarding/GoLiveCard.tsx:456
+#: src/onboarding/GoLiveCard.tsx:457
 msgid "Add {0}"
 msgstr "Ongeraho {0}"
 
@@ -1542,7 +1590,7 @@ msgstr "Ongeraho ifoto"
 msgid "Add a question — a ready-made one below, or your own"
 msgstr "Ongeraho ikibazo — kimwe mu biteguye hasi, cyangwa icyawe"
 
-#: src/ads/todaySlides.ts:159
+#: src/ads/todaySlides.ts:160
 #: src/pages/OverviewPage.tsx:276
 #: src/pages/ServicesPage.tsx:601
 #: src/pages/ServicesPage.tsx:736
@@ -1563,6 +1611,14 @@ msgstr "Ongeraho indi dosiye"
 msgid "Add another kind…"
 msgstr "Ongeraho ubundi bwoko…"
 
+#: src/pages/PapersPage.tsx:150
+msgid "Add another paper"
+msgstr "Ongeraho indi nyandiko"
+
+#: src/pages/PapersPage.tsx:151
+msgid "Add another paper…"
+msgstr "Ongeraho indi nyandiko…"
+
 #: src/pages/choices/ChoicesEditor.tsx:467
 msgid "Add another question"
 msgstr "Ongeraho ikindi kibazo"
@@ -1575,7 +1631,8 @@ msgstr "Ongeraho ikindi cyose cyafasha…"
 msgid "Add it"
 msgstr "Byongereho"
 
-#: src/onboarding/Welcome.tsx:1466
+#: src/onboarding/Welcome.tsx:1471
+#: src/onboarding/Welcome.tsx:1546
 msgid "Add it later"
 msgstr "Nzabyongeraho nyuma"
 
@@ -1588,11 +1645,11 @@ msgstr "Ongeraho ubu"
 msgid "Add more photos"
 msgstr "Ongeraho andi mafoto"
 
-#: src/onboarding/GoLiveCard.tsx:507
+#: src/onboarding/GoLiveCard.tsx:508
 msgid "Add more services"
 msgstr "Ongeraho izindi serivisi"
 
-#: src/onboarding/Welcome.tsx:1172
+#: src/onboarding/Welcome.tsx:1177
 msgid "Add more, with photos and descriptions, in <0>Services</0> whenever you like."
 msgstr "Ongeraho izindi, zifite amafoto n’ibisobanuro, muri <0>Serivisi</0> igihe cyose ubishakiye."
 
@@ -1615,8 +1672,8 @@ msgstr "Ongeraho amafoto"
 msgid "Add someone"
 msgstr "Ongeraho umuntu"
 
-#: src/onboarding/Welcome.tsx:1061
-#: src/onboarding/Welcome.tsx:1259
+#: src/onboarding/Welcome.tsx:1066
+#: src/onboarding/Welcome.tsx:1264
 msgid "Add the address"
 msgstr "Ongeraho aderesi"
 
@@ -1640,7 +1697,7 @@ msgstr "Ongeraho iyi serivisi"
 msgid "Add your first question"
 msgstr "Ongeraho ikibazo cyawe cya mbere"
 
-#: src/onboarding/Welcome.tsx:815
+#: src/onboarding/Welcome.tsx:820
 msgid "Add your logo"
 msgstr "Ongeraho ikirango cyawe"
 
@@ -1739,7 +1796,7 @@ msgstr "Amamenyesha ntaboneka hano"
 msgid "Alerts are on here"
 msgstr "Amamenyesha arafunguye hano"
 
-#: src/nav.ts:170
+#: src/nav.ts:178
 msgctxt "search words"
 msgid "alerts email push quiet hours settings summary unsubscribe"
 msgstr "amamenyesha imeyili push amasaha y’ituze igenamiterere incamake kwiyandukuza"
@@ -1791,7 +1848,7 @@ msgstr "Impinduka zose zabitswe"
 msgid "All done"
 msgstr "Byarangiye"
 
-#: src/onboarding/GoLiveCard.tsx:415
+#: src/onboarding/GoLiveCard.tsx:416
 msgid "All done — thank you"
 msgstr "Byarangiye — urakoze"
 
@@ -1812,7 +1869,7 @@ msgstr "Amashami yawe yose"
 msgid "Allow notifications for this site — the lock or tune icon beside the address — then come back here."
 msgstr "Emerera uru rubuga kohereza amamenyesha — akamenyetso k’ingufuri cyangwa k’igenamiterere kari iruhande rw’aderesi — hanyuma ugaruke hano."
 
-#: src/onboarding/Welcome.tsx:1601
+#: src/onboarding/Welcome.tsx:1681
 msgid "Almost there"
 msgstr "Hasigaye gato"
 
@@ -1820,7 +1877,7 @@ msgstr "Hasigaye gato"
 msgid "Already in the full price below."
 msgstr "Biri mu giciro cyose kiri hasi."
 
-#: src/onboarding/Welcome.tsx:675
+#: src/onboarding/Welcome.tsx:680
 msgid "Also"
 msgstr "Ikindi"
 
@@ -1860,12 +1917,12 @@ msgstr "Nyir’iduka cyangwa umuyobozi ashobora kwakira umukiriya nta kode, yand
 msgid "An unpaid booking holds the time for 5 minutes, then lets it go."
 msgstr "Gahunda itarishyurwa ifata umwanya iminota 5, hanyuma ikawurekura."
 
-#: src/nav.ts:142
+#: src/nav.ts:150
 msgctxt "search words"
 msgid "analytics stats numbers reports busiest earnings"
 msgstr "isesengura imibare raporo igihe gihuze cyane amafaranga yinjiye"
 
-#: src/onboarding/Welcome.tsx:799
+#: src/onboarding/Welcome.tsx:804
 msgid "And if you have one"
 msgstr "Kandi niba ugifite"
 
@@ -1878,6 +1935,10 @@ msgstr "Utazwi"
 #: src/pages/choices/ChoicesEditor.tsx:1104
 msgid "Another answer"
 msgstr "Ikindi gisubizo"
+
+#: src/papers/words.ts:70
+msgid "Another paper"
+msgstr "Indi nyandiko"
 
 #: src/ads/guide.ts:167
 msgid "Another shop in another street, district or town? Add it on Branches & hours with “Add a branch”. An owner or a manager can."
@@ -1904,6 +1965,23 @@ msgstr "Bisubize "
 msgid "Any number"
 msgstr "Nta mupaka"
 
+#: src/pages/PapersPage.tsx:115
+msgid "Any one of these earns the mark once checked. A company’s RDB certificate carries its TIN too."
+msgstr "Imwe muri izi irahagije kubona ikimenyetso imaze kugenzurwa. Icyemezo cya RDB cy’isosiyete kirimo na TIN yayo."
+
+#: src/onboarding/Welcome.tsx:1513
+#: src/pages/PapersPage.tsx:99
+msgid "Any one of these is enough."
+msgstr "Imwe muri izi irahagije."
+
+#: src/papers/PaperSlot.tsx:142
+msgid "Any other permit or certificate"
+msgstr "Urundi ruhushya cyangwa icyemezo"
+
+#: src/papers/words.ts:72
+msgid "Any other permit or certificate you want on record with us."
+msgstr "Urundi ruhushya cyangwa icyemezo ushaka ko tubika."
+
 #: src/pages/MessagesPage.tsx:130
 msgid "Anything said about a booking"
 msgstr "Ibivugwa kuri gahunda yafashwe"
@@ -1918,7 +1996,7 @@ msgid "Anything the shop should know?"
 msgstr "Hari icyo iduka rikwiye kumenya?"
 
 #: src/appqr/ShowQr.tsx:63
-#: src/nav.ts:119
+#: src/nav.ts:127
 #: src/pages/AppQrPage.tsx:57
 msgid "App QR code"
 msgstr "Kode QR"
@@ -2003,7 +2081,7 @@ msgstr "Tubaze icyo ari cyo cyose — dusubiza kuri iyi paji no kuri imeyili."
 msgid "Ask us about it"
 msgstr "Tubaze kuri byo"
 
-#: src/nav.ts:185
+#: src/nav.ts:193
 msgid "Ask us anything"
 msgstr "Tubaze icyo ushaka"
 
@@ -2016,11 +2094,11 @@ msgstr "Tubaze icyo ushaka, igihe cyose. Uru rugendo rwo kumenyereza ruri no mur
 msgid "Asked only when “{0}” is picked"
 msgstr "Kibazwa gusa iyo hahiswemo “{0}”"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "Assessment"
 msgstr "Isuzuma"
 
-#: src/ads/todaySlides.ts:28
+#: src/ads/todaySlides.ts:29
 msgid "Assumption Day"
 msgstr "Umunsi w’Ijyanwa mu Ijuru rya Bikira Mariya"
 
@@ -2052,13 +2130,13 @@ msgstr "Omekaho screenshot, raporo ya konti cyangwa fagitire — bituma tutagomb
 msgid "Awaiting payment"
 msgstr "Itegereje kwishyurwa"
 
-#: src/onboarding/Welcome.tsx:399
-#: src/onboarding/Welcome.tsx:1641
+#: src/onboarding/Welcome.tsx:404
+#: src/onboarding/Welcome.tsx:1721
 #: src/tour/Tour.tsx:627
 msgid "Back"
 msgstr "Subira inyuma"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Back massage"
 msgstr "Masaje y’umugongo"
 
@@ -2070,7 +2148,7 @@ msgstr "Subira ku biganiro"
 msgid "Back to the code"
 msgstr "Subira kuri kode"
 
-#: src/components/Allowed.tsx:52
+#: src/components/Allowed.tsx:57
 msgid "Back to your day "
 msgstr "Subira ku munsi wawe "
 
@@ -2078,7 +2156,11 @@ msgstr "Subira ku munsi wawe "
 msgid "Balance at the shop"
 msgstr "Asigaye ku iduka"
 
-#: src/onboarding/Welcome.tsx:519
+#: src/papers/words.ts:63
+msgid "Bar Association practising certificate"
+msgstr "Icyemezo cyo gukora cy’Urugaga rw’Abavoka"
+
+#: src/onboarding/Welcome.tsx:524
 msgid "Barbers, salons, spas, garages and more"
 msgstr "Abogoshi, salo, spa, garaje n’ibindi"
 
@@ -2090,7 +2172,7 @@ msgstr "inzu yawe yogosha"
 msgid "Bars: customers each day, not counting cancelled or unpaid bookings."
 msgstr "Inkingi: abakiriya buri munsi, utabariyemo gahunda zahagaritswe cyangwa zitishyuwe."
 
-#: src/onboarding/Welcome.tsx:1185
+#: src/onboarding/Welcome.tsx:1190
 msgid "Beard trim"
 msgstr "Gutunganya ubwanwa"
 
@@ -2098,7 +2180,7 @@ msgstr "Gutunganya ubwanwa"
 msgid "Before it can be posted, it needs {needs} — otherwise customers would find nothing to book. "
 msgstr "Mbere yo gushyirwa ahagaragara, rikeneye {needs} — bitabaye ibyo abakiriya ntacyo babona cyo gufatira gahunda. "
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "Beginners’ class"
 msgstr "Isomo ry’abatangizi"
 
@@ -2110,19 +2192,19 @@ msgstr "Irasuzumwa"
 msgid "Being looked at"
 msgstr "Biri kwigwaho"
 
-#: src/ads/todaySlides.ts:117
+#: src/ads/todaySlides.ts:118
 msgid "Block the morning"
 msgstr "Funga icyo gitondo"
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "Blood test"
 msgstr "Gupima amaraso"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "Boat safari"
 msgstr "Urugendo mu bwato"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Body scrub"
 msgstr "Gusukura umubiri (scrub)"
 
@@ -2227,7 +2309,7 @@ msgstr "Gahunda z’iki gihe"
 msgid "Bookings by hour of the day"
 msgstr "Gahunda ku isaha y’umunsi"
 
-#: src/onboarding/Welcome.tsx:329
+#: src/onboarding/Welcome.tsx:334
 msgid "Bookings land here"
 msgstr "Gahunda zigera hano"
 
@@ -2256,7 +2338,7 @@ msgstr "Gahunda zafashwe, n’abaje"
 msgid "Bookings, last 7 days"
 msgstr "Gahunda, iminsi 7 ishize"
 
-#: src/nav.ts:143
+#: src/nav.ts:151
 msgid "Bookings, money and ratings over time"
 msgstr "Gahunda, amafaranga n’amanota uko igihe gihita"
 
@@ -2264,15 +2346,15 @@ msgstr "Gahunda, amafaranga n’amanota uko igihe gihita"
 msgid "boutique"
 msgstr "butike yawe"
 
-#: src/onboarding/Welcome.tsx:1186
+#: src/onboarding/Welcome.tsx:1191
 msgid "Box braids"
 msgstr "Kuboha box braids"
 
-#: src/ads/todaySlides.ts:30
+#: src/ads/todaySlides.ts:31
 msgid "Boxing Day"
 msgstr "Umunsi ukurikira Noheli"
 
-#: src/onboarding/Welcome.tsx:1187
+#: src/onboarding/Welcome.tsx:1192
 msgid "Braids"
 msgstr "Kuboha imisatsi"
 
@@ -2289,7 +2371,7 @@ msgid "Branch"
 msgstr "Ishami"
 
 #: src/components/NewBranchForm.tsx:278
-#: src/onboarding/Welcome.tsx:967
+#: src/onboarding/Welcome.tsx:972
 #: src/pages/HoursPage.tsx:652
 msgid "Branch name"
 msgstr "Izina ry’ishami"
@@ -2329,15 +2411,15 @@ msgstr "Ikiruhuko {0} – {1}"
 msgid "Break {0}–{1}{2}"
 msgstr "Ikiruhuko {0}–{1}{2}"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Breakfast to collect"
 msgstr "Ifunguro rya mu gitondo ryo gutwara"
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Bridal make-up"
 msgstr "Makiyaje y’umugeni"
 
-#: src/onboarding/Welcome.tsx:1189
+#: src/onboarding/Welcome.tsx:1194
 msgid "Brow shaping"
 msgstr "Gutunganya ibitsike"
 
@@ -2371,7 +2453,14 @@ msgstr "Umunsi uhuze cyane: {0} · {1}"
 msgid "Business name"
 msgstr "Izina ry’ubucuruzi"
 
-#: src/onboarding/Welcome.tsx:171
+#: src/ads/todaySlides.ts:251
+#: src/nav.ts:84
+#: src/onboarding/steps.ts:49
+#: src/pages/PapersPage.tsx:50
+msgid "Business papers"
+msgstr "Inyandiko z’ubucuruzi"
+
+#: src/onboarding/Welcome.tsx:175
 #: src/ui/Logo.tsx:22
 msgid "Bwangu<0>Reservations</0>"
 msgstr "Bwangu<0>Reservations</0>"
@@ -2408,18 +2497,19 @@ msgstr "Kalendari"
 msgid "can skip"
 msgstr "bashobora kugisimbuka"
 
-#: src/onboarding/Welcome.tsx:952
+#: src/onboarding/Welcome.tsx:957
 msgid "Can’t find it? Paste a map link or use where you are"
 msgstr "Ntiwaribonye? Shyiramo umurongo w’ikarita cyangwa ukoreshe aho uri"
 
 #: src/components/NewBranchForm.tsx:247
-#: src/pages/AppointmentsPage.tsx:1263
+#: src/pages/AppointmentsPage.tsx:1271
 #: src/pages/HoursPage.tsx:634
 #: src/pages/PayoutsPage.tsx:477
 #: src/pages/ReviewsPage.tsx:598
 #: src/pages/ServicesPage.tsx:1859
 #: src/pages/StaffPage.tsx:314
 #: src/pages/SupportPage.tsx:444
+#: src/papers/PaperSlot.tsx:246
 #: src/session/ConfirmItsYou.tsx:145
 #: src/ui/Dialog.tsx:201
 msgid "Cancel"
@@ -2468,7 +2558,7 @@ msgstr "Birahagarikwa…"
 msgid "car wash"
 msgstr "aho woza imodoka"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Car wash"
 msgstr "Koza imodoka"
 
@@ -2490,8 +2580,8 @@ msgstr "Icyiciro"
 
 #: src/auth/LoginPage.tsx:594
 #: src/checkin/CheckIn.tsx:583
-#: src/onboarding/Welcome.tsx:680
-#: src/onboarding/Welcome.tsx:818
+#: src/onboarding/Welcome.tsx:685
+#: src/onboarding/Welcome.tsx:823
 msgid "Change"
 msgstr "Hindura"
 
@@ -2540,7 +2630,7 @@ msgstr "Guhindura nimero yawe"
 msgid "Charged by the operator"
 msgstr "Ayishyujwe n’ikigo cy’ubwishyu"
 
-#: src/nav.ts:99
+#: src/nav.ts:107
 msgctxt "search words"
 msgid "chat inbox questions reply"
 msgstr "chat ikiganiro ubutumwa ibibazo igisubizo gusubiza"
@@ -2553,7 +2643,7 @@ msgstr "serivisi ihendutse cyane {0}"
 #: src/checkin/CheckIn.tsx:245
 #: src/checkin/CheckIn.tsx:346
 #: src/pages/AppointmentsPage.tsx:797
-#: src/pages/AppointmentsPage.tsx:1292
+#: src/pages/AppointmentsPage.tsx:1300
 #: src/pages/calendar/AppointmentCalendar.tsx:1158
 #: src/pages/OverviewPage.tsx:581
 #: src/shell/Topbar.tsx:92
@@ -2607,18 +2697,28 @@ msgstr "Reba <0>imeyili yawe.</0>"
 msgid "Check your connection and try again."
 msgstr "Reba niba ufite interineti, hanyuma wongere ugerageze."
 
-#: src/onboarding/Welcome.tsx:1207
-#: src/onboarding/Welcome.tsx:1223
+#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1228
 msgid "Check-up"
 msgstr "Isuzuma"
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Check-up and clean"
 msgstr "Isuzuma no gusukura amenyo"
 
-#: src/onboarding/Welcome.tsx:1413
+#: src/pages/PapersPage.tsx:16
+#: src/papers/PaperSlot.tsx:24
+msgid "Checked"
+msgstr "Yagenzuwe"
+
+#: src/onboarding/Welcome.tsx:1418
 msgid "Checked — payouts go here"
 msgstr "Yagenzuwe — ni ho uzajya wishyurirwa"
+
+#. placeholder {0}: shortDay(doc.checkedAt)
+#: src/papers/PaperSlot.tsx:171
+msgid "Checked by our team on {0}"
+msgstr "Yagenzuwe n’itsinda ryacu ku wa {0}"
 
 #: src/auth/Moments.tsx:29
 #: src/checkin/CheckIn.tsx:428
@@ -2642,7 +2742,7 @@ msgstr "Arakirwa…"
 msgid "Checking…"
 msgstr "Birasuzumwa…"
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Chimpanzee trek"
 msgstr "Gusura impundu"
 
@@ -2666,11 +2766,11 @@ msgstr "Hitamo umunsi wa nyuma (umunsi wose urabarwa), cyangwa ureke igabanywa r
 msgid "Choose a photo"
 msgstr "Hitamo ifoto"
 
-#: src/onboarding/Welcome.tsx:659
+#: src/onboarding/Welcome.tsx:664
 msgid "Choose all that apply."
 msgstr "Hitamo ibihuye byose."
 
-#: src/onboarding/Welcome.tsx:560
+#: src/onboarding/Welcome.tsx:565
 msgid "Choose all that fit, up to four — a shop with a salon at one branch and a spa at another is both. The first you choose is your main one."
 msgstr "Hitamo ibihuye byose, kugeza kuri bine — iduka rifite salo ku ishami rimwe na spa ku rindi riba ari byombi. Icyo uhisemo mbere ni cyo nyamukuru."
 
@@ -2683,11 +2783,11 @@ msgstr "Hitamo itangazo"
 msgid "Choose any"
 msgstr "Hitamo ibyo ushaka"
 
-#: src/onboarding/Welcome.tsx:659
+#: src/onboarding/Welcome.tsx:664
 msgid "Choose at least one in each. You can choose more than one."
 msgstr "Hitamo nibura kimwe muri buri cyiciro. Ushobora guhitamo birenze kimwe."
 
-#: src/onboarding/Welcome.tsx:666
+#: src/onboarding/Welcome.tsx:671
 msgid "Choose it"
 msgstr "Hitamo"
 
@@ -2699,16 +2799,24 @@ msgstr "Hitamo kimwe"
 msgid "Choose the cover"
 msgstr "Hitamo ifoto y’imbere"
 
-#: src/onboarding/Welcome.tsx:1122
+#: src/onboarding/Welcome.tsx:1127
 msgid "Choose the days you open."
 msgstr "Hitamo iminsi ufungura."
+
+#: src/papers/PaperSlot.tsx:223
+msgid "Choose the file"
+msgstr "Hitamo dosiye"
+
+#: src/papers/PaperSlot.tsx:126
+msgid "Choose the file first."
+msgstr "Banza uhitemo dosiye."
 
 #. placeholder {0}: g.maxPicks
 #: src/pages/choices/ChoicesEditor.tsx:1268
 msgid "Choose up to {0}"
 msgstr "Hitamo kugeza kuri {0}"
 
-#: src/onboarding/Welcome.tsx:664
+#: src/onboarding/Welcome.tsx:669
 msgid "Choose what kind of shop it is first. "
 msgstr "Banza uhitemo ubwoko bw’iduka. "
 
@@ -2728,7 +2836,7 @@ msgstr "Amashami yatoranyijwe"
 msgid "Chosen from your shop and the app. Nothing here is paid for."
 msgstr "Byatoranyijwe mu iduka ryawe no muri porogaramu. Nta na kimwe hano cyishyuriwe."
 
-#: src/ads/todaySlides.ts:29
+#: src/ads/todaySlides.ts:30
 msgid "Christmas Day"
 msgstr "Noheli"
 
@@ -2740,7 +2848,7 @@ msgstr "sinema yawe"
 msgid "classes"
 msgstr "amasomo yawe"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Classic facial"
 msgstr "Isuku isanzwe yo mu maso"
 
@@ -2767,11 +2875,11 @@ msgstr "ivuriro ryawe"
 
 #: src/appqr/ShowQr.tsx:68
 #: src/checkin/CheckIn.tsx:258
-#: src/onboarding/GoLiveCard.tsx:509
+#: src/onboarding/GoLiveCard.tsx:510
 #: src/pages/calendar/AppointmentCalendar.tsx:1111
 #: src/pages/LegalPage.tsx:198
 #: src/pages/PayoutDetail.tsx:158
-#: src/ui/DropZone.tsx:162
+#: src/ui/DropZone.tsx:169
 #: src/ui/Select.tsx:212
 msgid "Close"
 msgstr "Funga"
@@ -2863,7 +2971,7 @@ msgstr "Birafunze buri munsi — nta gahunda ishobora gufatwa"
 msgid "Closed today"
 msgstr "Birafunze uyu munsi"
 
-#: src/onboarding/Welcome.tsx:1112
+#: src/onboarding/Welcome.tsx:1117
 #: src/pages/ClosuresPage.tsx:578
 msgid "Closes"
 msgstr "Gufunga"
@@ -2872,7 +2980,7 @@ msgstr "Gufunga"
 msgid "Closing…"
 msgstr "Birafungwa…"
 
-#: src/nav.ts:84
+#: src/nav.ts:92
 #: src/pages/ClosuresPage.tsx:105
 msgid "Closures & breaks"
 msgstr "Iminsi ifunze n’akaruhuko"
@@ -2907,7 +3015,7 @@ msgstr "Ibiteganyijwe kuri {0}"
 msgid "Common for shops like yours"
 msgstr "Bikunze ku maduka nk’iryawe"
 
-#: src/onboarding/Welcome.tsx:1072
+#: src/onboarding/Welcome.tsx:1077
 msgid "Common weeks"
 msgstr "Ibyumweru bisanzwe"
 
@@ -2915,7 +3023,7 @@ msgstr "Ibyumweru bisanzwe"
 msgid "complete"
 msgstr "byuzuye"
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Conference hall"
 msgstr "Icyumba cy’inama kinini"
 
@@ -2936,20 +3044,21 @@ msgstr "Yemejwe ku ya {0}. Amafaranga yawe yoherezwa hano."
 msgid "consultancy"
 msgstr "ikigo cyawe cy’ubujyanama"
 
-#: src/onboarding/Welcome.tsx:1193
-#: src/onboarding/Welcome.tsx:1207
+#: src/onboarding/Welcome.tsx:1198
+#: src/onboarding/Welcome.tsx:1212
 msgid "Consultation"
 msgstr "Kugisha inama"
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Contact lens fitting"
 msgstr "Gupimirwa lensi z’amaso"
 
 #: src/auth/LoginPage.tsx:465
-#: src/onboarding/Welcome.tsx:905
-#: src/onboarding/Welcome.tsx:1130
-#: src/onboarding/Welcome.tsx:1175
-#: src/onboarding/Welcome.tsx:1416
+#: src/onboarding/Welcome.tsx:910
+#: src/onboarding/Welcome.tsx:1135
+#: src/onboarding/Welcome.tsx:1180
+#: src/onboarding/Welcome.tsx:1421
+#: src/onboarding/Welcome.tsx:1546
 msgid "Continue"
 msgstr "Komeza"
 
@@ -2987,7 +3096,7 @@ msgstr "Koporora No. {number}"
 msgid "Copy the reference"
 msgstr "Koporora nimero y’ubwishyu"
 
-#: src/onboarding/Welcome.tsx:1186
+#: src/onboarding/Welcome.tsx:1191
 msgid "Cornrows"
 msgstr "Gusuka imirongo"
 
@@ -3002,6 +3111,10 @@ msgstr "Ntitwabonye aho uri. Emerera uru rubuga kumenya aho uri, cyangwa ushyire
 #: src/pages/PayoutDetail.tsx:283
 msgid "Could not load the bookings."
 msgstr "Ntitwashoboye kuzana gahunda."
+
+#: src/papers/PaperSlot.tsx:175
+msgid "Could not open it."
+msgstr "Ntibyashobotse kuyifungura."
 
 #: src/pages/HoursPage.tsx:486
 #: src/pages/HoursPage.tsx:574
@@ -3064,7 +3177,7 @@ msgstr "Umukiriya yaje"
 msgid "Customer cancels 24 h ahead: refunded · Later: deposit kept · You cancel: full refund"
 msgstr "Umukiriya ahagaritse habura amasaha 24: arasubizwa · Nyuma: avansi iragumaho · Uhagaritse: asubizwa byose"
 
-#: src/nav.ts:93
+#: src/nav.ts:101
 msgid "Customers"
 msgstr "Abakiriya"
 
@@ -3109,7 +3222,7 @@ msgstr "Abakiriya bazashobora kugufataho gahunda iduka ryawe rimaze kujya ahagar
 msgid "Customers can cancel until their time starts. After that, not coming is a no-show."
 msgstr "Abakiriya bashobora guhagarika kugeza igihe cyabo gitangiye. Nyuma y’aho, kutaza ni ukutitabira."
 
-#: src/onboarding/GoLiveCard.tsx:498
+#: src/onboarding/GoLiveCard.tsx:499
 msgid "Customers can now find <0>{name}</0> and book. New bookings appear on this page and in Appointments, and we tell you each time."
 msgstr "Ubu abakiriya bashobora kubona <0>{name}</0> no gufata gahunda. Gahunda nshya zigaragara kuri iyi paji no muri Gahunda, kandi tukakumenyesha buri gihe."
 
@@ -3157,7 +3270,7 @@ msgstr "Abakiriya ntibashobora kuribona cyangwa kurifataho gahunda. Vugana n’u
 msgid "Customers cannot find you or make new bookings. Bookings you already have still happen, and money you are owed is still paid out — pausing does not cancel anything."
 msgstr "Abakiriya ntibashobora kukubona cyangwa gufata gahunda nshya. Gahunda usanganywe zizakomeza kuba, kandi amafaranga ugomba guhabwa azakomeza kukwishyurwa — guhagarika by’agateganyo nta kintu bihagarika."
 
-#: src/ads/todaySlides.ts:72
+#: src/ads/todaySlides.ts:73
 msgid "Customers cannot pay deposits right now. Their times stay held while they try again."
 msgstr "Abakiriya ntibashobora kwishyura avansi ubu. Igihe bafashe kirabikwa mu gihe bongera kugerageza."
 
@@ -3193,7 +3306,7 @@ msgstr "Abakiriya babona iduka ryawe bagahitamo umwanya uboneka."
 msgid "Customers follow from your page in the app, and after they book. The more good stories and offers you post, the more follow."
 msgstr "Abakiriya bagukurikira bari kuri paji yawe muri porogaramu, no nyuma yo gufata gahunda. Uko ushyiraho inkuru nziza na promosiyo nyinshi, ni ko benshi bagukurikira."
 
-#: src/ads/todaySlides.ts:171
+#: src/ads/todaySlides.ts:172
 msgid "Customers may arrive late or change plans."
 msgstr "Abakiriya bashobora gukererwa cyangwa guhindura gahunda."
 
@@ -3202,11 +3315,11 @@ msgstr "Abakiriya bashobora gukererwa cyangwa guhindura gahunda."
 msgid "Customers must answer"
 msgstr "Abakiriya bagomba gusubiza"
 
-#: src/ads/todaySlides.ts:146
+#: src/ads/todaySlides.ts:147
 msgid "Customers near you"
 msgstr "Abakiriya bakwegereye"
 
-#: src/onboarding/Welcome.tsx:936
+#: src/onboarding/Welcome.tsx:941
 msgid "Customers nearby will find you here."
 msgstr "Abakiriya bari hafi bazakubona hano."
 
@@ -3220,11 +3333,11 @@ msgstr "abakiriya bishyura <0>{0}</0> aho kwishyura <1>{1}</1>"
 msgid "Customers pay a deposit to hold their time; the rest is paid to you at the shop."
 msgstr "Abakiriya bishyura avansi kugira ngo bafate umwanya wabo; asigaye akwishyurirwa ku iduka."
 
-#: src/onboarding/Welcome.tsx:1330
+#: src/onboarding/Welcome.tsx:1335
 msgid "Customers pay a small part when they book, the rest at your shop."
 msgstr "Abakiriya bishyura igice gito iyo bafata gahunda, asigaye bakayishyurira ku iduka ryawe."
 
-#: src/onboarding/Welcome.tsx:960
+#: src/onboarding/Welcome.tsx:965
 msgid "Customers search by area, so this is how they find you."
 msgstr "Abakiriya bashakisha bakurikije agace, bityo ni uko bakubona."
 
@@ -3236,7 +3349,7 @@ msgstr "Abakiriya babona ikimenyetso −% n’igiciro cya mbere gisibye. Avansi 
 msgid "Customers see each branch on its own: people nearby find the one closest to them, and each branch collects its own reviews and rating."
 msgstr "Abakiriya babona buri shami ukwaryo: abari hafi babona iribegereye, kandi buri shami rigira ibitekerezo n’amanota byaryo."
 
-#: src/onboarding/Welcome.tsx:242
+#: src/onboarding/Welcome.tsx:246
 msgid "Customers see nothing until we approve your shop and you post it."
 msgstr "Abakiriya nta cyo babona kugeza twemeje iduka ryawe nawe ukarishyira ahagaragara."
 
@@ -3248,9 +3361,13 @@ msgstr "Abakiriya babibona iyo bahisemo iyi serivisi. Bishyireho ubu bijyane nay
 msgid "Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it."
 msgstr "Abakiriya babibona iyo bahisemo iyi serivisi. Impinduka zikorewe hano zitegereza “Bika impinduka” — nta kintu gihinduka muri porogaramu kugeza uyikanze."
 
-#: src/onboarding/Welcome.tsx:723
+#: src/onboarding/Welcome.tsx:728
 msgid "Customers see this instead of “Other”. Our team checks it with the rest of your shop."
 msgstr "Abakiriya babona ibi aho kubona “Ibindi”. Itsinda ryacu ribisuzuma hamwe n’ibindi by’iduka ryawe."
+
+#: src/pages/PapersPage.tsx:78
+msgid "Customers see this mark on your page: our team checked your registration. Keep a paper that runs out renewed, and the mark stays."
+msgstr "Abakiriya babona iki kimenyetso ku rupapuro rwawe: itsinda ryacu ryagenzuye iyandikwa ryawe. Inyandiko irangira ujye uyongera, ikimenyetso kigume."
 
 #: src/shell/Sidebar.tsx:62
 msgid "Customers see your shop once you post it."
@@ -3304,7 +3421,7 @@ msgstr "Amatariki, amafaranga na nimero ya gahunda niba uyifite — biturinda ku
 msgid "Day"
 msgstr "Umunsi"
 
-#: src/onboarding/Welcome.tsx:1198
+#: src/onboarding/Welcome.tsx:1203
 msgid "Day pass"
 msgstr "Itike y’umunsi"
 
@@ -3312,7 +3429,7 @@ msgstr "Itike y’umunsi"
 msgid "Days"
 msgstr "Iminsi"
 
-#: src/nav.ts:87
+#: src/nav.ts:95
 msgid "Days off and blocked-out hours"
 msgstr "Iminsi y’ikiruhuko n’amasaha afunze"
 
@@ -3324,15 +3441,15 @@ msgstr "Iminsi idakurikiza icyumweru gisanzwe, n’ibiruhuko bikurwa mu munsi. N
 msgid "Days that do not follow your usual week. Pick a day, then close it, change its hours or take a break out of it — customers cannot book the times you take out."
 msgstr "Iminsi idakurikiza icyumweru cyawe gisanzwe. Hitamo umunsi, hanyuma uwufunge, uhindure amasaha yawo cyangwa uwukuremo ikiruhuko — abakiriya ntibashobora gufata gahunda mu masaha wakuyemo."
 
-#: src/ads/todaySlides.ts:187
+#: src/ads/todaySlides.ts:188
 msgid "Declared and paid through the Rwanda Revenue Authority (RRA)."
 msgstr "Umenyekanishwa kandi ukishyurwa binyuze ku Kigo cy’Imisoro n’Amahoro (RRA)."
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Deep clean"
 msgstr "Isuku yimbitse"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Deep-cleanse facial"
 msgstr "Gusukura uruhu rw’isura byimbitse"
 
@@ -3382,7 +3499,7 @@ msgstr "Avansi yishyuwe ku itariki"
 msgid "Deposit refunded"
 msgstr "Avansi yasubijwe"
 
-#: src/onboarding/Welcome.tsx:1348
+#: src/onboarding/Welcome.tsx:1353
 msgid "Deposit to book"
 msgstr "Avansi yo gufata gahunda"
 
@@ -3390,15 +3507,15 @@ msgstr "Avansi yo gufata gahunda"
 msgid "Deposits and fees"
 msgstr "Avansi n’amafaranga acibwa"
 
-#: src/onboarding/Welcome.tsx:320
+#: src/onboarding/Welcome.tsx:325
 msgid "Deposits by MoMo"
 msgstr "Avansi kuri MoMo"
 
-#: src/ads/todaySlides.ts:73
+#: src/ads/todaySlides.ts:74
 msgid "Deposits cannot start right now — try again in a few minutes"
 msgstr "Avansi ntizishobora gutangira ubu — ongera ugerageze nyuma y’iminota mike"
 
-#: src/ads/todaySlides.ts:83
+#: src/ads/todaySlides.ts:84
 msgid "Deposits may take longer — customers can try again"
 msgstr "Avansi zishobora gutinda — abakiriya bashobora kongera kugerageza"
 
@@ -3473,7 +3590,7 @@ msgstr "Ntiwayibonye?"
 msgid "Digit {0}"
 msgstr "Umubare wa {0}"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Dinner to collect"
 msgstr "Ifunguro rya nimugoroba ryo gutwara"
 
@@ -3499,15 +3616,20 @@ msgstr "Akarere"
 msgid "Do not ask this"
 msgstr "Ntubaze ibi"
 
-#: src/onboarding/Welcome.tsx:1223
+#: src/nav.ts:86
+msgctxt "search words"
+msgid "documents licence license RDB TIN certificate registration ipatanti permit papers registered"
+msgstr "inyandiko uruhushya impushya RDB TIN icyemezo iyandikwa ipatanti impapuro byanditswe"
+
+#: src/onboarding/Welcome.tsx:1228
 msgid "Dog grooming"
 msgstr "Gutunganya imbwa"
 
 #: src/checkin/CheckIn.tsx:494
 #: src/lib/bookingLook.tsx:27
-#: src/onboarding/GoLiveCard.tsx:442
-#: src/onboarding/Welcome.tsx:221
-#: src/onboarding/Welcome.tsx:939
+#: src/onboarding/GoLiveCard.tsx:443
+#: src/onboarding/Welcome.tsx:225
+#: src/onboarding/Welcome.tsx:944
 #: src/pages/AppointmentsPage.tsx:76
 #: src/pages/AppointmentsPage.tsx:1045
 #: src/pages/OverviewPage.tsx:75
@@ -3545,11 +3667,11 @@ msgstr "Byabitswe mu bitarangiye · {0}"
 msgid "Drafts<0>{0}</0><1>Saved as you typed — customers never see a draft</1>"
 msgstr "Ibitarangiye<0>{0}</0><1>Byabitswe uko wandikaga — abakiriya ntibabona ibitarangiye</1>"
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Dress fitting"
 msgstr "Gupima ikanzu"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Driving lesson"
 msgstr "Isomo ryo gutwara imodoka"
 
@@ -3569,6 +3691,10 @@ msgstr "Shyira hano amafoto y’iyi serivisi"
 msgid "Drop photos of {name}"
 msgstr "Shyira hano amafoto ya {name}"
 
+#: src/papers/PaperSlot.tsx:219
+msgid "Drop the paper here"
+msgstr "Rekura inyandiko hano"
+
 #: src/pages/SupportPage.tsx:325
 msgid "Drop to attach"
 msgstr "Shyira hano ngo womekeho"
@@ -3581,7 +3707,7 @@ msgstr "Shyira hano ngo wongereho ifoto"
 msgid "Drop to make it your cover"
 msgstr "Shyira hano ibe ifoto yawe y’imbere"
 
-#: src/onboarding/Welcome.tsx:804
+#: src/onboarding/Welcome.tsx:809
 #: src/pages/ProfilePage.tsx:202
 msgid "Drop to make it your logo"
 msgstr "Shyira hano ibe ikirango cyawe"
@@ -3590,7 +3716,7 @@ msgstr "Shyira hano ibe ikirango cyawe"
 msgid "Drop to make it your new cover"
 msgstr "Shyira hano ibe ifoto yawe nshya y’imbere"
 
-#: src/onboarding/Welcome.tsx:804
+#: src/onboarding/Welcome.tsx:809
 #: src/pages/ProfilePage.tsx:202
 msgid "Drop to make it your new logo"
 msgstr "Shyira hano ibe ikirango cyawe gishya"
@@ -3603,11 +3729,11 @@ msgstr "Shyira hano ukoreshe iyi foto"
 msgid "Drop to use this photo instead"
 msgstr "Shyira hano isimbure iyari ihari"
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "Drop-in class"
 msgstr "Isomo rimwe"
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Dry cleaning"
 msgstr "Kumesa imyenda (dry cleaning)"
 
@@ -3616,9 +3742,9 @@ msgctxt "after an amount: still to be paid at the shop"
 msgid "due"
 msgstr "asigaye"
 
-#: src/ads/todaySlides.ts:188
-#: src/ads/todaySlides.ts:201
-#: src/ads/todaySlides.ts:213
+#: src/ads/todaySlides.ts:189
+#: src/ads/todaySlides.ts:202
+#: src/ads/todaySlides.ts:214
 msgid "Due by {date}"
 msgstr "Bitarenze {date}"
 
@@ -3628,39 +3754,43 @@ msgid "Due now"
 msgstr "Igihe kirageze"
 
 #. placeholder {0}: examples[0] ?? 'Haircut'
-#: src/onboarding/Welcome.tsx:1264
+#: src/onboarding/Welcome.tsx:1269
 msgid "e.g. {0}"
 msgstr "Urugero: {0}"
+
+#: src/papers/PaperSlot.tsx:208
+msgid "e.g. 102345678"
+msgstr "urugero: 102345678"
 
 #: src/pages/ServicesPage.tsx:1679
 msgid "e.g. 20"
 msgstr "Urugero: 20"
 
-#: src/onboarding/Welcome.tsx:752
+#: src/onboarding/Welcome.tsx:757
 msgid "e.g. Beading"
 msgstr "Urugero: Imitako y’amasaro"
 
-#: src/onboarding/Welcome.tsx:749
+#: src/onboarding/Welcome.tsx:754
 msgid "e.g. Camping"
 msgstr "Urugero: Kurara mu mahema"
 
-#: src/onboarding/Welcome.tsx:751
+#: src/onboarding/Welcome.tsx:756
 msgid "e.g. Car hire"
 msgstr "Urugero: Gukodesha imodoka"
 
-#: src/onboarding/Welcome.tsx:747
+#: src/onboarding/Welcome.tsx:752
 msgid "e.g. Chess club"
 msgstr "Urugero: Ihuriro ry’abakina chess"
 
-#: src/onboarding/Welcome.tsx:744
+#: src/onboarding/Welcome.tsx:749
 msgid "e.g. Climbing wall"
 msgstr "Urugero: Urukuta rwo kurira"
 
-#: src/onboarding/Welcome.tsx:748
+#: src/onboarding/Welcome.tsx:753
 msgid "e.g. Coffee farm visit"
 msgstr "Urugero: Gusura umurima w’ikawa"
 
-#: src/onboarding/Welcome.tsx:745
+#: src/onboarding/Welcome.tsx:750
 msgid "e.g. Cooking at your table"
 msgstr "Urugero: Gutekera ku meza y’umukiriya"
 
@@ -3668,11 +3798,15 @@ msgstr "Urugero: Gutekera ku meza y’umukiriya"
 msgid "e.g. Cut"
 msgstr "Urugero: Imogoshe"
 
-#: src/onboarding/Welcome.tsx:750
+#: src/onboarding/Welcome.tsx:755
 msgid "e.g. CV writing"
 msgstr "Urugero: Kwandika CV"
 
-#: src/onboarding/Welcome.tsx:755
+#: src/papers/PaperSlot.tsx:200
+msgid "e.g. District operating permit"
+msgstr "urugero: Uruhushya rwo gukora rw’akarere"
+
+#: src/onboarding/Welcome.tsx:760
 msgid "e.g. Drone filming"
 msgstr "Urugero: Gufata amashusho na drone"
 
@@ -3680,19 +3814,19 @@ msgstr "Urugero: Gufata amashusho na drone"
 msgid "e.g. Haircut"
 msgstr "Urugero: Kogosha"
 
-#: src/onboarding/Welcome.tsx:743
+#: src/onboarding/Welcome.tsx:748
 msgid "e.g. Hearing tests"
 msgstr "Urugero: Gupima amatwi"
 
-#: src/onboarding/Welcome.tsx:741
+#: src/onboarding/Welcome.tsx:746
 msgid "e.g. Henna artist"
 msgstr "Urugero: Gushushanya na hina"
 
-#: src/onboarding/Welcome.tsx:922
+#: src/onboarding/Welcome.tsx:927
 msgid "e.g. KG 11 Ave, Kimironko"
 msgstr "Urugero: KG 11 Ave, Kimironko"
 
-#: src/onboarding/Welcome.tsx:504
+#: src/onboarding/Welcome.tsx:509
 msgid "e.g. Kigali Barbers"
 msgstr "Urugero: Kigali Barbers"
 
@@ -3700,19 +3834,19 @@ msgstr "Urugero: Kigali Barbers"
 msgid "e.g. Long"
 msgstr "Urugero: Muremure"
 
-#: src/onboarding/Welcome.tsx:754
+#: src/onboarding/Welcome.tsx:759
 msgid "e.g. Pet photography"
 msgstr "Urugero: Gufotora amatungo"
 
-#: src/onboarding/Welcome.tsx:756
+#: src/onboarding/Welcome.tsx:761
 msgid "e.g. Photo booth hire"
 msgstr "Urugero: Gukodesha photo booth"
 
-#: src/onboarding/Welcome.tsx:746
+#: src/onboarding/Welcome.tsx:751
 msgid "e.g. Poetry nights"
 msgstr "Urugero: Amajoro y’ubusizi"
 
-#: src/onboarding/Welcome.tsx:742
+#: src/onboarding/Welcome.tsx:747
 msgid "e.g. Reflexology"
 msgstr "Urugero: Gukanda ibirenge"
 
@@ -3720,7 +3854,7 @@ msgstr "Urugero: Gukanda ibirenge"
 msgid "e.g. Short"
 msgstr "Urugero: Mugufi"
 
-#: src/onboarding/Welcome.tsx:753
+#: src/onboarding/Welcome.tsx:758
 msgid "e.g. Solar panel fitting"
 msgstr "Urugero: Gushyiraho imirasire y’izuba"
 
@@ -3756,7 +3890,7 @@ msgstr "Imwe imwe"
 msgid "Each service is offered at the branches you choose, at <0>that branch's price</0> — a city-centre shop can charge more than a quieter one for the same work. The deposit percentage is what a customer pays up front to hold the slot; the rest is settled with you directly."
 msgstr "Buri serivisi itangirwa ku mashami uhitamo, ku <0>giciro cy’iryo shami</0> — iduka riri mu mujyi rwagati rishobora guca menshi kurusha irindi riri ahatuje ku kazi kamwe. Ijanisha ry’avansi ni igice umukiriya yishyura mbere ngo afate umwanya; asigaye umukiriya ayakwishyura imbonankubone."
 
-#: src/onboarding/Welcome.tsx:1193
+#: src/onboarding/Welcome.tsx:1198
 msgid "Ear piercing"
 msgstr "Gutobora amatwi"
 
@@ -3776,11 +3910,15 @@ msgstr "Mbere yaho (←)"
 msgid "Earlier, not checked in"
 msgstr "Mbere yaho, ntibakiriwe"
 
+#: src/pages/PapersPage.tsx:75
+msgid "Earn the “Registered business” mark"
+msgstr "Bona ikimenyetso “Ubucuruzi bwanditse”"
+
 #: src/pages/PayoutsPage.tsx:157
 msgid "Earned, and not in your mobile money yet."
 msgstr "Wayakoreye, ariko ntaragera kuri Mobile Money yawe."
 
-#: src/ads/todaySlides.ts:23
+#: src/ads/todaySlides.ts:24
 msgid "Easter Monday"
 msgstr "Ku wa Mbere wa Pasika"
 
@@ -3804,11 +3942,11 @@ msgstr "Hindura serivisi"
 msgid "Edit your shop"
 msgstr "Hindura iduka ryawe"
 
-#: src/ads/todaySlides.ts:32
+#: src/ads/todaySlides.ts:33
 msgid "Eid al-Adha"
 msgstr "Eid al-Adha"
 
-#: src/ads/todaySlides.ts:31
+#: src/ads/todaySlides.ts:32
 msgid "Eid al-Fitr"
 msgstr "Eid al-Fitr"
 
@@ -3859,15 +3997,15 @@ msgstr "Kanda Enter wohereze · Shift + Enter ujye ku murongo mushya<0> · shyir
 msgid "Esc"
 msgstr "Esc"
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Evening make-up"
 msgstr "Makiyaje ya nimugoroba"
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Evening slot"
 msgstr "Umwanya wa nimugoroba"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Event coverage"
 msgstr "Gufotora ibirori"
 
@@ -3898,7 +4036,7 @@ msgstr "Gahunda zose, uko zaba zimeze kose, zizagaragara hano."
 msgid "Every branch"
 msgstr "Amashami yose"
 
-#: src/onboarding/steps.ts:188
+#: src/onboarding/steps.ts:206
 msgid "Every day"
 msgstr "Buri munsi"
 
@@ -3955,7 +4093,7 @@ msgstr "Byose biteguye"
 msgid "Everything we need is in. Send it and we check it, usually within one working day."
 msgstr "Ibyo dukeneye byose birahari. Ohereza, tubisuzume, akenshi mu munsi umwe w’akazi."
 
-#: src/onboarding/GoLiveCard.tsx:420
+#: src/onboarding/GoLiveCard.tsx:421
 msgid "Everything we suggested is in. Shops like yours get booked far more often."
 msgstr "Ibyo twagusabye byose birahari. Amaduka nk’iryawe abona gahunda kenshi cyane."
 
@@ -3963,7 +4101,7 @@ msgstr "Ibyo twagusabye byose birahari. Amaduka nk’iryawe abona gahunda kenshi
 msgid "Everywhere"
 msgstr "Hose"
 
-#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1208
 msgid "Exam revision"
 msgstr "Kwitegura ibizamini"
 
@@ -3971,7 +4109,7 @@ msgstr "Kwitegura ibizamini"
 msgid "Example — what customers see"
 msgstr "Urugero — ibyo abakiriya babona"
 
-#: src/ads/todaySlides.ts:172
+#: src/ads/todaySlides.ts:173
 msgid "Expect late arrivals"
 msgstr "Witege abakererwa"
 
@@ -3994,7 +4132,7 @@ msgstr "Biramanurwa…"
 msgid "Extra minutes for answer {0}"
 msgstr "Iminota y’inyongera ku gisubizo cya {0}"
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Eye test"
 msgstr "Gupima amaso"
 
@@ -4003,11 +4141,11 @@ msgstr "Gupima amaso"
 msgid "Failed"
 msgstr "Byanze"
 
-#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1217
 msgid "Family day pass"
 msgstr "Itike y’umunsi y’umuryango"
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Filling"
 msgstr "Kuziba iryinyo"
 
@@ -4043,9 +4181,9 @@ msgstr "Turashaka aho uri…"
 msgid "Finish"
 msgstr "Soza"
 
-#: src/onboarding/Welcome.tsx:177
-#: src/onboarding/Welcome.tsx:248
-#: src/onboarding/Welcome.tsx:248
+#: src/onboarding/Welcome.tsx:181
+#: src/onboarding/Welcome.tsx:252
+#: src/onboarding/Welcome.tsx:252
 msgid "Finish later"
 msgstr "Nzabirangiza nyuma"
 
@@ -4076,16 +4214,16 @@ msgstr "Byarangiye {0}"
 msgid "Finished. Raise a new one if it comes back."
 msgstr "Byarangiye. Ikibazo nikigaruka, ohereza ikindi."
 
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1209
 msgid "First consultation"
 msgstr "Inama ya mbere"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "First session"
 msgstr "Inshuro ya mbere"
 
-#: src/onboarding/Welcome.tsx:1198
-#: src/onboarding/Welcome.tsx:1202
+#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1207
 msgid "Fitness assessment"
 msgstr "Isuzuma ry’imiterere y’umubiri"
 
@@ -4097,7 +4235,7 @@ msgstr "Ibihe bitanu, ku mashusho nyayo ya porogaramu. Hanyuma twakwereka aho bu
 msgid "Fix"
 msgstr "Kosora"
 
-#: src/onboarding/Welcome.tsx:1604
+#: src/onboarding/Welcome.tsx:1684
 msgid "Fix what we asked, then send it back. Everything you set up is still here."
 msgstr "Kosora ibyo twagusabye, hanyuma wongere uryohereze. Ibyo washyizeho byose biracyahari."
 
@@ -4118,34 +4256,38 @@ msgstr "Zinga menu"
 msgid "Follow"
 msgstr "Kurikira"
 
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1209
 msgid "Follow-up"
 msgstr "Gukurikirana"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "Follow-up session"
 msgstr "Inshuro yo gukurikirana"
 
-#: src/onboarding/Welcome.tsx:1207
+#: src/onboarding/Welcome.tsx:1212
 msgid "Follow-up visit"
 msgstr "Isuzuma ryo gukurikirana"
 
-#: src/nav.ts:111
+#: src/nav.ts:119
 #: src/pages/FollowersPage.tsx:117
 msgid "Followers"
 msgstr "Abagukurikira"
 
-#: src/nav.ts:113
+#: src/nav.ts:121
 msgctxt "search words"
 msgid "followers offers message customers blast promotion marketing send"
 msgstr "abagukurikira abakurikira promosiyo ubutumwa abakiriya kwamamaza kohereza ohereza"
+
+#: src/papers/words.ts:23
+msgid "For a sole trader registered for tax. Earns the “Registered business” mark too."
+msgstr "Ku mucuruzi ku giti cye wiyandikishije ku musoro. Na yo itanga ikimenyetso “Ubucuruzi bwanditse”."
 
 #: src/pages/choices/ChoicesEditor.tsx:971
 msgid "For allergies, health or anything personal."
 msgstr "Ku ndwara z’ubwivumbure, ubuzima cyangwa ikindi cyose cyihariye."
 
 #: src/auth/LoginPage.tsx:333
-#: src/onboarding/Welcome.tsx:173
+#: src/onboarding/Welcome.tsx:177
 msgid "For businesses"
 msgstr "Ku bacuruzi"
 
@@ -4157,9 +4299,13 @@ msgstr "Urugero: yari azi ko ari ukogoshwa n’igitambaro gishyushye saa 16:00, 
 msgid "For example: the barber is ill today — we are sorry."
 msgstr "Urugero: umwogoshi arwaye uyu munsi — tubiseguye."
 
-#: src/ads/todaySlides.ts:200
+#: src/ads/todaySlides.ts:201
 msgid "For last year’s income, filed with the Rwanda Revenue Authority (RRA)."
 msgstr "Ku nyungu z’umwaka ushize, rimenyekanishwa ku Kigo cy’Imisoro n’Amahoro (RRA)."
+
+#: src/papers/words.ts:51
+msgid "For medicines, and what Rwanda FDA licenses."
+msgstr "Ku miti, n’ibyo Rwanda FDA itangira uruhushya."
 
 #: src/pages/AppQrPage.tsx:117
 msgid "For now the code opens the customer app in Expo Go on this Wi-Fi, like the code in the terminal. Once the app is in the App Store and Google Play, it will open the store instead — print cards then."
@@ -4251,7 +4397,7 @@ msgstr "avansi guhera kuri {0}"
 msgid "from 1 review"
 msgstr "mu gitekerezo 1"
 
-#: src/ads/todaySlides.ts:247
+#: src/ads/todaySlides.ts:292
 msgid "From BwanguReservations"
 msgstr "Biturutse kuri BwanguReservations"
 
@@ -4259,7 +4405,7 @@ msgstr "Biturutse kuri BwanguReservations"
 msgid "From now on customers can find it in the app, see your services, prices and opening times, and book — paying their deposit as they do."
 msgstr "Guhera ubu abakiriya bashobora kuribona muri porogaramu, bakareba serivisi zawe, ibiciro n’amasaha yo gufungura, bagafata gahunda — bishyura avansi yabo icyo gihe."
 
-#: src/onboarding/GoLiveCard.tsx:418
+#: src/onboarding/GoLiveCard.tsx:419
 msgid "From our review team"
 msgstr "Bivuye ku itsinda ryacu risuzuma amaduka"
 
@@ -4284,11 +4430,11 @@ msgstr "Byuzuye"
 msgid "Full price"
 msgstr "Igiciro cyose"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Full-body massage"
 msgstr "Masaje y’umubiri wose"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "Full-day safari"
 msgstr "Safari y’umunsi wose"
 
@@ -4301,15 +4447,15 @@ msgstr "garaje yawe"
 msgid "Gateway fee"
 msgstr "Amafaranga y’ihererekanya"
 
-#: src/onboarding/Welcome.tsx:1188
+#: src/onboarding/Welcome.tsx:1193
 msgid "Gel nails"
 msgstr "Inzara za jeli"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "General admission"
 msgstr "Itike isanzwe"
 
-#: src/ads/todaySlides.ts:21
+#: src/ads/todaySlides.ts:22
 msgid "Genocide against the Tutsi Memorial Day"
 msgstr "Umunsi wo Kwibuka Jenoside yakorewe Abatutsi"
 
@@ -4331,7 +4477,7 @@ msgid "Get the app"
 msgstr "Shaka porogaramu"
 
 #: src/ads/guide.ts:136
-#: src/nav.ts:132
+#: src/nav.ts:140
 #: src/onboarding/steps.ts:41
 #: src/pages/PayoutsPage.tsx:109
 msgid "Getting paid"
@@ -4358,7 +4504,7 @@ msgid "Give any service a discount from 1% to 90% off, at every branch at once."
 msgstr "Ha serivisi iyo ari yo yose igabanywa ry’igiciro kuva kuri 1% kugeza kuri 90%, ku mashami yose icyarimwe."
 
 #: src/ads/slides.ts:105
-#: src/ads/todaySlides.ts:159
+#: src/ads/todaySlides.ts:160
 msgid "Give it a discount"
 msgstr "Shyiraho igabanywa ry’igiciro"
 
@@ -4366,7 +4512,7 @@ msgstr "Shyiraho igabanywa ry’igiciro"
 msgid "Give it a price"
 msgstr "Shyiraho igiciro"
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Glasses fitting"
 msgstr "Gupima amadarubindi"
 
@@ -4378,7 +4524,7 @@ msgstr "Subira inyuma"
 msgid "Go to Appointments"
 msgstr "Jya kuri Gahunda"
 
-#: src/onboarding/Welcome.tsx:1567
+#: src/onboarding/Welcome.tsx:1647
 msgid "Go to my dashboard "
 msgstr "Jya ahabanza hanjye "
 
@@ -4388,7 +4534,7 @@ msgstr "Jya ahabanza hanjye "
 msgid "Go to Overview"
 msgstr "Jya ku Incamake"
 
-#: src/onboarding/Welcome.tsx:282
+#: src/onboarding/Welcome.tsx:286
 msgid "Go to the dashboard "
 msgstr "Jya ahabanza "
 
@@ -4406,7 +4552,7 @@ msgstr "Izajya ku murongo ku {0, plural, one {ishami #} other {mashami #}} ifite
 msgid "Going away, or fully booked for a while? Pausing takes every branch out of search and stops new bookings, and you can undo it at any time."
 msgstr "Ugiye kugenda, cyangwa gahunda zuzuye igihe runaka? Guhagarika by’agateganyo bikura amashami yose mu ishakisha kandi bigahagarika gahunda nshya, kandi ushobora kubisubiza uko byari igihe icyo ari cyo cyose."
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Golden monkey trek"
 msgstr "Gusura inkima z’izahabu"
 
@@ -4418,7 +4564,7 @@ msgstr "Mwiriwe"
 msgid "Good evening"
 msgstr "Mwiriwe"
 
-#: src/ads/todaySlides.ts:22
+#: src/ads/todaySlides.ts:23
 msgid "Good Friday"
 msgstr "Ku wa Gatanu Mutagatifu"
 
@@ -4430,7 +4576,7 @@ msgstr "Mwaramutse"
 msgid "Good to see you again."
 msgstr "Twishimiye kongera kukubona."
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Gorilla trekking"
 msgstr "Gusura ingagi"
 
@@ -4438,11 +4584,11 @@ msgstr "Gusura ingagi"
 msgid "Got it"
 msgstr "Ndabyumvise"
 
-#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1208
 msgid "Group lesson"
 msgstr "Isomo ry’itsinda"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "Group of four"
 msgstr "Itsinda ry’abantu bane"
 
@@ -4463,7 +4609,7 @@ msgstr "Teza imbere ubucuruzi bwawe — gahunda, avansi no kwakira abakiriya aha
 msgid "guesthouse"
 msgstr "icumbi ryawe"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "Guided hike"
 msgstr "Urugendo rw’amaguru ruyobowe"
 
@@ -4471,11 +4617,11 @@ msgstr "Urugendo rw’amaguru ruyobowe"
 msgid "gym"
 msgstr "inzu yawe ya siporo"
 
-#: src/onboarding/Welcome.tsx:1198
+#: src/onboarding/Welcome.tsx:1203
 msgid "Gym session"
 msgstr "Imyitozo ya siporo"
 
-#: src/onboarding/Welcome.tsx:1185
+#: src/onboarding/Welcome.tsx:1190
 msgid "Haircut"
 msgstr "Kogosha"
 
@@ -4483,11 +4629,11 @@ msgstr "Kogosha"
 msgid "Haircut · Saturday at 10:30"
 msgstr "Kogosha · Ku wa Gatandatu saa 10:30"
 
-#: src/onboarding/Welcome.tsx:1185
+#: src/onboarding/Welcome.tsx:1190
 msgid "Haircut and beard"
 msgstr "Kogosha umusatsi n’ubwanwa"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "Half-day game drive"
 msgstr "Kureba inyamaswa mu modoka, igice cy’umunsi"
 
@@ -4499,7 +4645,7 @@ msgstr "Ufite irindi duka? Ryongere nk’ishami"
 msgid "Have shops in different places? Add each one as a branch."
 msgstr "Ufite amaduka ahantu hatandukanye? Buri rimwe ryongere nk’ishami."
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "Health check"
 msgstr "Isuzuma ry’ubuzima"
 
@@ -4507,30 +4653,34 @@ msgstr "Isuzuma ry’ubuzima"
 msgid "Health details don’t belong in the note box — it is not private. Ask about an allergy, a pregnancy or an injury in a private question instead."
 msgstr "Amakuru y’ubuzima ntagomba kujya mu gasanduku k’ubutumwa — si ibanga. Ahubwo baza ku ndwara y’ubwivumbure, gutwita cyangwa imvune mu kibazo cy’ibanga."
 
+#: src/papers/words.ts:35
+msgid "Health facility licence"
+msgstr "Uruhushya rw’ivuriro"
+
 #: src/pages/NotificationSettingsPage.tsx:327
 msgid "Hear about a new booking the moment it comes in, even with the app in another tab."
 msgstr "Menya gahunda nshya ikimara kuza, n’iyo porogaramu iri mu yindi tabu."
 
 #. placeholder {0}: item.from ?? ''
-#: src/ads/todaySlides.ts:170
+#: src/ads/todaySlides.ts:171
 msgid "Heavy rain from {0}"
 msgstr "Imvura nyinshi guhera saa {0}"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Heel replacement"
 msgstr "Gusimbuza agatsinsino"
 
-#: src/nav.ts:182
+#: src/nav.ts:190
 #: src/pages/SupportPage.tsx:137
 #: src/shell/Topbar.tsx:127
 msgid "Help"
 msgstr "Ubufasha"
 
-#: src/onboarding/Welcome.tsx:1522
+#: src/onboarding/Welcome.tsx:1602
 msgid "Here is what happens next."
 msgstr "Dore ibikurikiraho."
 
-#: src/ads/todaySlides.ts:20
+#: src/ads/todaySlides.ts:21
 msgid "Heroes’ Day"
 msgstr "Umunsi w’Intwari"
 
@@ -4568,12 +4718,12 @@ msgctxt "search words"
 msgid "holiday closed break lunch"
 msgstr "ikiruhuko konji birafunze gufunga saa sita"
 
-#: src/nav.ts:86
+#: src/nav.ts:94
 msgctxt "search words"
 msgid "holiday closed lunch break block time off"
 msgstr "ikiruhuko konji birafunze gufunga saa sita guhagarika umwanya"
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Home cleaning"
 msgstr "Isuku yo mu rugo"
 
@@ -4586,7 +4736,7 @@ msgstr "ahabanza uyu munsi incamake gahunda ikurikira"
 msgid "hotel"
 msgstr "hoteli yawe"
 
-#: src/onboarding/Welcome.tsx:1059
+#: src/onboarding/Welcome.tsx:1064
 msgid "Hours belong to a branch, so add your address first. "
 msgstr "Amasaha ni ay’ishami, bityo banza ushyireho aderesi yawe. "
 
@@ -4610,7 +4760,7 @@ msgstr "Uko gahunda ikugeraho, n’aho buri kintu kiri"
 msgid "How bookings ended"
 msgstr "Uko gahunda zarangiye"
 
-#: src/onboarding/Welcome.tsx:795
+#: src/onboarding/Welcome.tsx:800
 msgid "How can customers reach you?"
 msgstr "Abakiriya bakuvugisha bate?"
 
@@ -4630,7 +4780,7 @@ msgstr "Uko abakiriya bakubona iyo barimo kureba."
 msgid "How customers nearby find you."
 msgstr "Uko abakiriya bari hafi bakubona."
 
-#: src/onboarding/Welcome.tsx:508
+#: src/onboarding/Welcome.tsx:513
 #: src/pages/ProfilePage.tsx:572
 msgid "How customers see you"
 msgstr "Uko ugaragara ku bakiriya"
@@ -4639,11 +4789,11 @@ msgstr "Uko ugaragara ku bakiriya"
 msgid "How customers see your shop"
 msgstr "Uko iduka ryawe rigaragara ku bakiriya"
 
-#: src/onboarding/Welcome.tsx:505
+#: src/onboarding/Welcome.tsx:510
 msgid "How customers will see you"
 msgstr "Uko uzagaragara ku bakiriya"
 
-#: src/nav.ts:140
+#: src/nav.ts:148
 #: src/pages/AnalyticsPage.tsx:108
 msgid "How it is going"
 msgstr "Uko bigenda"
@@ -4663,7 +4813,7 @@ msgstr "Uko bikora"
 msgid "How it works · {0}"
 msgstr "Uko bikora · {0}"
 
-#: src/onboarding/Welcome.tsx:1277
+#: src/onboarding/Welcome.tsx:1282
 msgid "How long does it take?"
 msgstr "Bimara igihe kingana iki?"
 
@@ -4696,11 +4846,11 @@ msgid "How many people it serves at once"
 msgstr "Abantu rishobora kwakira icyarimwe"
 
 #. placeholder {0}: draft.name.toLowerCase()
-#: src/onboarding/Welcome.tsx:1329
+#: src/onboarding/Welcome.tsx:1334
 msgid "How much is {0}?"
 msgstr "Igiciro cya {0} ni angahe?"
 
-#: src/onboarding/Welcome.tsx:1329
+#: src/onboarding/Welcome.tsx:1334
 msgid "How much is it?"
 msgstr "Ni angahe?"
 
@@ -4742,7 +4892,7 @@ msgid "Ideas, news and how it all works"
 msgstr "Inama, amakuru n’uko byose bikora"
 
 #. placeholder {0}: clock(d.endTime)
-#: src/pages/AppointmentsPage.tsx:1314
+#: src/pages/AppointmentsPage.tsx:1261
 msgid "If they don’t come, you can mark a no-show from {0}, when their time is over."
 msgstr "Nibataza, ushobora kwandika ko ataje guhera saa {0}, igihe cyabo kirangiye."
 
@@ -4754,7 +4904,7 @@ msgstr "Iyo atishyuye mu minota 5, gahunda ihagarikwa ubwayo, umwanya ukongera k
 msgid "If you cancel, the customer gets the whole deposit back, the platform’s fee included, and the mobile money charge for sending it back is yours."
 msgstr "Nuhagarika, umukiriya asubizwa avansi yose, harimo n’amafaranga ya serivisi y’urubuga, kandi amafaranga ya mobile money yo kuyisubiza ni wowe uyishyura."
 
-#: src/ads/todaySlides.ts:212
+#: src/ads/todaySlides.ts:213
 msgid "If you file monthly, last month’s return and payment go to RRA."
 msgstr "Niba umenyekanisha buri kwezi, imenyekanisha n’ubwishyu by’ukwezi gushize bijya kuri RRA."
 
@@ -4772,7 +4922,7 @@ msgstr "hasigaye {0}"
 msgid "In {days} days"
 msgstr "Mu minsi {days}"
 
-#: src/onboarding/Welcome.tsx:720
+#: src/onboarding/Welcome.tsx:725
 msgid "In a few words"
 msgstr "Mu magambo make"
 
@@ -4782,7 +4932,7 @@ msgstr "Mu magambo make"
 msgid "In progress"
 msgstr "Biri gukorwa"
 
-#: src/onboarding/steps.ts:155
+#: src/onboarding/steps.ts:170
 msgid "In review"
 msgstr "Rirasuzumwa"
 
@@ -4794,7 +4944,7 @@ msgstr "Muri porogaramu, hafi yabo — bakurikije ibyo ucuruza, hamwe n’amafot
 msgid "in the last two weeks"
 msgstr "mu byumweru bibiri bishize"
 
-#: src/onboarding/Welcome.tsx:1463
+#: src/onboarding/Welcome.tsx:1468
 msgid "In the shop’s or the owner’s name. Our team checks it before the first payout."
 msgstr "Ku izina ry’iduka cyangwa irya nyir’iduka. Itsinda ryacu riyigenzura mbere yo kwishyurwa bwa mbere."
 
@@ -4806,7 +4956,7 @@ msgstr "Muri porogaramu yawe"
 msgid "Including any you open later"
 msgstr "Harimo n’ayo uzafungura nyuma"
 
-#: src/ads/todaySlides.ts:25
+#: src/ads/todaySlides.ts:26
 msgid "Independence Day"
 msgstr "Umunsi w’Ubwigenge"
 
@@ -4842,9 +4992,13 @@ msgstr "Watumiwe gukorana n’ubucuruzi? Ibi bigufungurira konti — ubwinjiramo
 msgid "Invited, not joined yet"
 msgstr "Batumiwe, ntibarinjira"
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Ironing"
 msgstr "Gutera ipasi"
+
+#: src/onboarding/Welcome.tsx:1502
+msgid "Is your business registered?"
+msgstr "Ubucuruzi bwawe bwanditse?"
 
 #: src/pages/ProfilePage.tsx:696
 msgid "It cannot be brought back."
@@ -4870,6 +5024,10 @@ msgstr "Iri muri imeyili twamwoherereje, no kuri gahunda ye muri porogaramu."
 msgid "It is not something you did. Try it again — and if it keeps happening, tell us from Help and we will put it right."
 msgstr "Si wowe wabiteye. Ongera ugerageze — kandi niba bikomeje, tubibwire unyuze ku Bufasha tuzabikemura."
 
+#: src/papers/PaperSlot.tsx:105
+msgid "It is taken off your record. You can upload it again at any time."
+msgstr "Ikurwa mu nyandiko zawe. Ushobora kongera kuyishyiraho igihe icyo ari cyo cyose."
+
 #: src/tour/steps.ts:67
 msgid "It lands in your bookings"
 msgstr "Igera muri gahunda zawe"
@@ -4878,7 +5036,7 @@ msgstr "Igera muri gahunda zawe"
 msgid "It moves to “Not on sale”, keeps its prices, and you can put it back at any time. Appointments already made are unaffected."
 msgstr "Ijya mu “Izitaboneka”, ibiciro byayo bikagumaho, kandi ushobora kuyisubizaho igihe cyose. Gahunda zamaze gufatwa ntizihinduka."
 
-#: src/onboarding/Welcome.tsx:816
+#: src/onboarding/Welcome.tsx:821
 msgid "It shows on every card customers see."
 msgstr "Kigaragara ku makarita yose abakiriya babona."
 
@@ -4920,8 +5078,8 @@ msgstr "Jya ku kintu cyose"
 
 #. placeholder {0}: ago(n.createdAt)
 #. placeholder {0}: thread.lastMessageAt ? ago(thread.lastMessageAt) : t`now`
-#: src/ads/slides.ts:317
-#: src/ads/slides.ts:331
+#: src/ads/slides.ts:320
+#: src/ads/slides.ts:334
 msgid "Just in · {0}"
 msgstr "Bishya · {0}"
 
@@ -4934,7 +5092,7 @@ msgstr "ubu nyine"
 msgid "Just one"
 msgstr "Kimwe gusa"
 
-#: src/onboarding/Welcome.tsx:1253
+#: src/onboarding/Welcome.tsx:1258
 msgid "Just one to start. You can add the rest later, with photos."
 msgstr "Imwe gusa yo gutangiriraho. Izindi uzazongeraho nyuma, hamwe n’amafoto."
 
@@ -4945,6 +5103,7 @@ msgstr "Komeza guhindura"
 #: src/pages/AppointmentsPage.tsx:338
 #: src/pages/choices/ChoicesEditor.tsx:403
 #: src/pages/SecurityPage.tsx:38
+#: src/papers/PaperSlot.tsx:109
 msgid "Keep it"
 msgstr "Bireke uko biri"
 
@@ -4973,15 +5132,15 @@ msgstr "Komeza wandike"
 msgid "Kept on purpose: this is the record that they once had access."
 msgstr "Byagumishijweho ku bushake: ni ikimenyetso cy’uko bigeze kugira uburenganzira bwo kwinjira."
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Kids’ lesson"
 msgstr "Isomo ry’abana"
 
-#: src/onboarding/Welcome.tsx:968
+#: src/onboarding/Welcome.tsx:973
 msgid "Kigali Barbers — Kimironko"
 msgstr "Kigali Barbers — Kimironko"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "Kigali city tour"
 msgstr "Gutembera umujyi wa Kigali"
 
@@ -5002,15 +5161,15 @@ msgid "Kinds of shop <0>the first is your main one · up to {MAX_KIND_CATEGORIES
 msgstr "Amoko y’iduka <0>ubwa mbere ni bwo nyamukuru · kugeza ku byiciro {MAX_KIND_CATEGORIES}</0>"
 
 #. placeholder {0}: item.number ?? ''
-#: src/ads/todaySlides.ts:92
+#: src/ads/todaySlides.ts:93
 msgid "Kwibuka {0}"
 msgstr "Kwibuka {0}"
 
-#: src/ads/todaySlides.ts:24
+#: src/ads/todaySlides.ts:25
 msgid "Labour Day"
 msgstr "Umunsi Mukuru w’Umurimo"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "Lake boat trip"
 msgstr "Gutembera mu bwato ku kiyaga"
 
@@ -5023,11 +5182,11 @@ msgstr "Ururimi"
 msgid "Language on the card"
 msgstr "Ururimi ruri ku ikarita"
 
-#: src/onboarding/Welcome.tsx:1189
+#: src/onboarding/Welcome.tsx:1194
 msgid "Lash extensions"
 msgstr "Kongeresha ibitsike"
 
-#: src/onboarding/Welcome.tsx:1189
+#: src/onboarding/Welcome.tsx:1194
 msgid "Lash lift"
 msgstr "Kuzamura ibitsike"
 
@@ -5045,7 +5204,7 @@ msgstr "Umunsi wa nyuma"
 msgid "Last saved {0}"
 msgstr "Biheruka kubikwa {0}"
 
-#: src/onboarding/Welcome.tsx:350
+#: src/onboarding/Welcome.tsx:355
 msgid "Last step"
 msgstr "Intambwe ya nyuma"
 
@@ -5094,7 +5253,7 @@ msgstr "Genda utabitse"
 msgid "Leave without saving?"
 msgstr "Uragenda utabitse?"
 
-#: src/nav.ts:175
+#: src/nav.ts:183
 #: src/pages/LegalPage.tsx:72
 #: src/shell/Topbar.tsx:126
 msgid "Legal"
@@ -5108,7 +5267,7 @@ msgstr "Reka abakiriya bavuge icyo bashaka"
 msgid "Let customers write a note"
 msgstr "Reka abakiriya bandike ubutumwa bugufi"
 
-#: src/ads/todaySlides.ts:26
+#: src/ads/todaySlides.ts:27
 msgid "Liberation Day"
 msgstr "Umunsi wo Kwibohora"
 
@@ -5124,7 +5283,7 @@ msgstr "Nk’uburebure bw’umusatsi"
 msgid "List"
 msgstr "Urutonde"
 
-#: src/onboarding/steps.ts:152
+#: src/onboarding/steps.ts:167
 msgid "Live"
 msgstr "Ku murongo"
 
@@ -5153,7 +5312,7 @@ msgctxt "search words"
 msgid "locations opening times address map people served at once places capacity"
 msgstr "amashami ishami amasaha gufungura aderesi ikarita abantu bakirwa icyarimwe ahantu umubare"
 
-#: src/onboarding/Welcome.tsx:1186
+#: src/onboarding/Welcome.tsx:1191
 msgid "Locs retwist"
 msgstr "Gusubiramo dreads"
 
@@ -5186,7 +5345,7 @@ msgstr "Amanota make mbere"
 msgid "Lunch"
 msgstr "Ifunguro rya saa sita"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Lunch to collect"
 msgstr "Ifunguro rya saa sita ryo gutwara"
 
@@ -5199,14 +5358,14 @@ msgstr "Ifunguro rya saa sita, inama, kwakira ibicuruzwa"
 msgid "Made for Rwanda"
 msgstr "Byakorewe u Rwanda"
 
-#: src/onboarding/Welcome.tsx:578
+#: src/onboarding/Welcome.tsx:583
 #: src/pages/ProfilePage.tsx:466
 #: src/shell/MobileNav.tsx:37
 #: src/shell/Sidebar.tsx:117
 msgid "Main"
 msgstr "Nyamukuru"
 
-#: src/onboarding/Welcome.tsx:675
+#: src/onboarding/Welcome.tsx:680
 msgid "Main kind"
 msgstr "Ubwoko nyamukuru"
 
@@ -5222,7 +5381,7 @@ msgstr "Kigire ibanga"
 msgid "Make it stand out"
 msgstr "Tuma rigaragara neza"
 
-#: src/onboarding/Welcome.tsx:684
+#: src/onboarding/Welcome.tsx:689
 msgid "Make it the main one"
 msgstr "Bugire nyamukuru"
 
@@ -5242,7 +5401,7 @@ msgstr "Tuma iduka ryawe rigaragara neza"
 msgid "Make your shop window stand out"
 msgstr "Tuma iduka ryawe rigaragara neza kurushaho"
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Make-up lesson"
 msgstr "Isomo ryo kwisiga"
 
@@ -5250,7 +5409,7 @@ msgstr "Isomo ryo kwisiga"
 msgid "Making the picture…"
 msgstr "Ifoto irategurwa…"
 
-#: src/nav.ts:150
+#: src/nav.ts:158
 msgid "Manage account"
 msgstr "Gucunga konti"
 
@@ -5259,7 +5418,7 @@ msgstr "Gucunga konti"
 msgid "Manager"
 msgstr "Umuyobozi"
 
-#: src/onboarding/Welcome.tsx:1188
+#: src/onboarding/Welcome.tsx:1193
 msgid "Manicure"
 msgstr "Manucure"
 
@@ -5285,7 +5444,7 @@ msgid "Mark as no-show"
 msgstr "Andika ko ntiyaje"
 
 #: src/pages/AppointmentsPage.tsx:802
-#: src/pages/AppointmentsPage.tsx:1305
+#: src/pages/AppointmentsPage.tsx:1313
 #: src/pages/calendar/AppointmentCalendar.tsx:1164
 #: src/pages/OverviewPage.tsx:586
 msgid "Mark done"
@@ -5313,11 +5472,11 @@ msgid "Marked {0}"
 msgstr "Yanditswe saa {0}"
 
 #. placeholder {0}: dayWords(item.date ?? '')
-#: src/ads/todaySlides.ts:231
+#: src/ads/todaySlides.ts:232
 msgid "Market rates · {0}"
 msgstr "Ivunjisha ku isoko · {0}"
 
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1214
 msgid "Meditation session"
 msgstr "Isomo rya meditasiyo"
 
@@ -5325,11 +5484,11 @@ msgstr "Isomo rya meditasiyo"
 msgid "Medium"
 msgstr "Uringaniye"
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Meeting room, full day"
 msgstr "Icyumba cy’inama, umunsi wose"
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Meeting room, half day"
 msgstr "Icyumba cy’inama, igice cy’umunsi"
 
@@ -5348,7 +5507,7 @@ msgid "Message the shop"
 msgstr "Andikira iduka"
 
 #: src/ads/guide.ts:195
-#: src/nav.ts:97
+#: src/nav.ts:105
 #: src/pages/MessagesPage.tsx:111
 #: src/shell/MobileNav.tsx:44
 #: src/shell/Topbar.tsx:98
@@ -5366,16 +5525,24 @@ msgstr "Ubutumwa "
 msgid "min"
 msgstr "iminota"
 
+#: src/papers/words.ts:36
+msgid "Ministry of Health"
+msgstr "Minisiteri y’Ubuzima"
+
 #: src/pages/ServicesPage.tsx:1563
 msgid "Minutes"
 msgstr "Iminota"
 
-#: src/ads/todaySlides.ts:70
-#: src/ads/todaySlides.ts:80
+#: src/pages/PapersPage.tsx:18
+msgid "Missing"
+msgstr "Irabura"
+
+#: src/ads/todaySlides.ts:71
+#: src/ads/todaySlides.ts:81
 msgid "Mobile money"
 msgstr "Mobile money"
 
-#: src/onboarding/Welcome.tsx:1445
+#: src/onboarding/Welcome.tsx:1450
 msgid "Mobile money number"
 msgstr "Nimero ya Mobile Money"
 
@@ -5383,19 +5550,19 @@ msgstr "Nimero ya Mobile Money"
 msgid "Mobile money reference<0>The payment's own number at the mobile money operator — quote it if a customer says the money left their phone.</0>"
 msgstr "Nimero y’ubwishyu kuri Mobile Money<0>Nimero ubu bwishyu bufite ku kigo cya Mobile Money — yifashishe niba umukiriya avuga ko amafaranga yavuye kuri telefoni ye.</0>"
 
-#: src/onboarding/Welcome.tsx:1445
+#: src/onboarding/Welcome.tsx:1450
 msgid "MoMo or Airtel number"
 msgstr "Nimero ya MoMo cyangwa Airtel"
 
-#: src/onboarding/steps.ts:195
+#: src/onboarding/steps.ts:213
 msgid "Monday to Friday"
 msgstr "Ku wa Mbere kugeza ku wa Gatanu"
 
-#: src/onboarding/steps.ts:181
+#: src/onboarding/steps.ts:199
 msgid "Monday to Saturday"
 msgstr "Ku wa Mbere kugeza ku wa Gatandatu"
 
-#: src/nav.ts:128
+#: src/nav.ts:136
 #: src/pages/AnalyticsPage.tsx:376
 #: src/pages/AppointmentsPage.tsx:1167
 #: src/pages/OverviewPage.tsx:876
@@ -5420,7 +5587,7 @@ msgstr "ibindi"
 msgid "More"
 msgstr "Ibindi"
 
-#: src/onboarding/Welcome.tsx:902
+#: src/onboarding/Welcome.tsx:907
 msgid "More branches and photos are in <0>Branches & hours</0>, whenever you want them."
 msgstr "Andi mashami n’amafoto biri muri <0>Amashami n’amasaha</0>, igihe cyose ubishakiye."
 
@@ -5448,7 +5615,7 @@ msgstr "Izindi serivisi"
 msgid "More than one shop"
 msgstr "Amaduka arenze rimwe"
 
-#: src/onboarding/Welcome.tsx:939
+#: src/onboarding/Welcome.tsx:944
 msgid "Move the pin"
 msgstr "Imura ikimenyetso"
 
@@ -5460,11 +5627,11 @@ msgstr "MTN"
 msgid "MTN MoMo"
 msgstr "MTN MoMo"
 
-#: src/ads/todaySlides.ts:71
+#: src/ads/todaySlides.ts:72
 msgid "MTN MoMo is not answering"
 msgstr "MTN MoMo ntiri gusubiza"
 
-#: src/ads/todaySlides.ts:81
+#: src/ads/todaySlides.ts:82
 msgid "MTN MoMo is slow right now"
 msgstr "MTN MoMo iratinda muri iki gihe"
 
@@ -5489,7 +5656,7 @@ msgstr "Ubwishyu bwanjye bwa {amount}, bwabazwe ku wa {workedOut}, bwanditseho �
 msgid "My payment of {amount}, worked out on {workedOut}, says “{status}”. Could you check it?"
 msgstr "Ubwishyu bwanjye bwa {amount}, bwabazwe ku wa {workedOut}, bwanditseho “{status}”. Mwabisuzuma?"
 
-#: src/onboarding/Welcome.tsx:1223
+#: src/onboarding/Welcome.tsx:1228
 msgid "Nail clipping"
 msgstr "Guca inzara"
 
@@ -5505,11 +5672,11 @@ msgstr "Izina"
 msgid "Name and words"
 msgstr "Izina n’amagambo"
 
-#: src/onboarding/Welcome.tsx:1337
+#: src/onboarding/Welcome.tsx:1342
 msgid "Name it"
 msgstr "Yite izina"
 
-#: src/onboarding/Welcome.tsx:1335
+#: src/onboarding/Welcome.tsx:1340
 msgid "Name the service first. "
 msgstr "Banza wite serivisi izina. "
 
@@ -5529,7 +5696,7 @@ msgstr "Uzakenera kuruhuka? Rihagarike by’agateganyo ku rupapuro rw’iduka ry
 msgid "Need a haircut, a massage, a repair?"
 msgstr "Ukeneye kwiyogoshesha, masaje, cyangwa gukoresha ikintu?"
 
-#: src/onboarding/Welcome.tsx:235
+#: src/onboarding/Welcome.tsx:239
 msgid "Need a hand?"
 msgstr "Ukeneye ubufasha?"
 
@@ -5538,7 +5705,7 @@ msgid "Need words? Tap one"
 msgstr "Ukeneye amagambo? Kanda rimwe"
 
 #: src/onboarding/GoLiveCard.tsx:163
-#: src/onboarding/steps.ts:158
+#: src/onboarding/steps.ts:173
 #: src/shell/Sidebar.tsx:79
 msgid "Needs a change"
 msgstr "Hari icyo guhindura"
@@ -5594,7 +5761,7 @@ msgstr "serivisi nshya igiciro kongeraho kurema"
 msgid "New this week — book it in the app"
 msgstr "Bishya muri iki cyumweru — fata gahunda muri porogaramu"
 
-#: src/ads/todaySlides.ts:18
+#: src/ads/todaySlides.ts:19
 msgid "New Year’s Day"
 msgstr "Umunsi mukuru w’Ubunani"
 
@@ -5606,8 +5773,8 @@ msgstr "Ibishya mbere"
 msgid "News, ideas and how it all works"
 msgstr "Amakuru, inama n’uko byose bikora"
 
-#: src/onboarding/Welcome.tsx:380
-#: src/onboarding/Welcome.tsx:1130
+#: src/onboarding/Welcome.tsx:385
+#: src/onboarding/Welcome.tsx:1135
 #: src/tour/Tour.tsx:636
 msgid "Next"
 msgstr "Komeza"
@@ -5634,7 +5801,7 @@ msgid "Nice to <0>meet you.</0>"
 msgstr "Twishimiye <0>kukumenya.</0>"
 
 #: src/onboarding/GoLiveCard.tsx:226
-#: src/onboarding/Welcome.tsx:1630
+#: src/onboarding/Welcome.tsx:1710
 msgid "Nice to have — add whenever you like"
 msgstr "Byiza kugira — ongeraho igihe ushakiye"
 
@@ -5680,7 +5847,7 @@ msgid "No category chosen"
 msgstr "Nta cyiciro cyahiswemo"
 
 #: src/checkin/CheckIn.tsx:359
-#: src/pages/AppointmentsPage.tsx:1280
+#: src/pages/AppointmentsPage.tsx:1288
 msgid "No code?"
 msgstr "Nta kode afite?"
 
@@ -5688,7 +5855,7 @@ msgstr "Nta kode afite?"
 msgid "No cover photo yet"
 msgstr "Nta foto y’imbere irashyirwaho"
 
-#: src/onboarding/Welcome.tsx:1015
+#: src/onboarding/Welcome.tsx:1020
 msgid "No days chosen"
 msgstr "Nta minsi yahiswemo"
 
@@ -5764,10 +5931,15 @@ msgid "No title yet"
 msgstr "Nta mutwe urashyirwaho"
 
 #: src/lib/bookingLook.tsx:31
-#: src/pages/AppointmentsPage.tsx:1269
+#: src/pages/AppointmentsPage.tsx:1277
 #: src/pages/OverviewPage.tsx:79
 msgid "No-show"
 msgstr "Ntiyaje"
+
+#. placeholder {0}: doc.number
+#: src/papers/PaperSlot.tsx:156
+msgid "No. {0}"
+msgstr "No {0}"
 
 #: src/pages/AppointmentsPage.tsx:756
 msgid "No. {number}"
@@ -5835,6 +6007,10 @@ msgstr "Nta muntu uhuye na “{search}”"
 msgid "None yet"
 msgstr "Nta n’umwe kugeza ubu"
 
+#: src/papers/PaperSlot.tsx:25
+msgid "Not accepted"
+msgstr "Ntiyemewe"
+
 #: src/pages/LegalPage.tsx:133
 msgid "Not agreed yet"
 msgstr "Ntiwaremera"
@@ -5892,9 +6068,13 @@ msgstr "Ntiyishyuwe ku gihe"
 msgid "Not paid yet"
 msgstr "Ntiyarishyurwa"
 
-#: src/onboarding/steps.ts:149
+#: src/onboarding/steps.ts:164
 msgid "Not posted"
 msgstr "Ntirirashyirwa ahagaragara"
+
+#: src/onboarding/Welcome.tsx:1543
+msgid "Not registered yet? Skip this — your shop can still go live, and you can add it any time under Business papers."
+msgstr "Ntiburanditswe? Simbuka ibi — iduka ryawe rishobora kujya ku murongo, kandi ushobora kubyongeraho igihe icyo ari cyo cyose muri Inyandiko z’ubucuruzi."
 
 #: src/pages/OverviewPage.tsx:927
 msgid "Not replied yet"
@@ -5947,9 +6127,13 @@ msgstr "Nta cyahindutse"
 msgid "Nothing changed — and usually shut"
 msgstr "Nta cyahindutse — kandi ubusanzwe birafunze"
 
-#: src/onboarding/Welcome.tsx:594
+#: src/onboarding/Welcome.tsx:599
 msgid "Nothing chosen yet."
 msgstr "Nta kirahitwamo."
+
+#: src/pages/PapersPage.tsx:132
+msgid "Nothing else on record"
+msgstr "Nta yindi nyandiko ibitse"
 
 #: src/pages/AppointmentsPage.tsx:938
 msgid "Nothing finished yet"
@@ -6036,12 +6220,12 @@ msgstr "Nta kirimo kugeza ubu."
 #: src/components/Notifications.tsx:152
 #: src/components/Notifications.tsx:159
 #: src/components/Notifications.tsx:184
-#: src/nav.ts:168
+#: src/nav.ts:176
 #: src/pages/NotificationSettingsPage.tsx:67
 msgid "Notifications"
 msgstr "Amamenyesha"
 
-#: src/ads/slides.ts:317
+#: src/ads/slides.ts:320
 #: src/auth/Moments.tsx:71
 #: src/pages/FollowersPage.tsx:306
 #: src/pages/StoriesPage.tsx:282
@@ -6068,6 +6252,10 @@ msgstr "Ubu, {0}"
 msgid "Number"
 msgstr "Nimero"
 
+#: src/papers/PaperSlot.tsx:206
+msgid "Number on it"
+msgstr "Nimero iriho"
+
 #: src/ui/RichTextField.tsx:168
 msgid "Numbered list"
 msgstr "Urutonde rufite nimero"
@@ -6084,11 +6272,11 @@ msgstr "Iratangwa"
 msgid "Offered — switch off for “not available now”"
 msgstr "Iratangwa — zimya kugira ngo ibe “ntiboneka ubu”"
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Office cleaning"
 msgstr "Gusukura ibiro"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Oil change"
 msgstr "Guhindura amavuta ya moteri"
 
@@ -6121,7 +6309,7 @@ msgstr "Ni yo igaragara"
 msgid "On the customer’s phone"
 msgstr "Kuri telefoni y’umukiriya"
 
-#: src/onboarding/Welcome.tsx:935
+#: src/onboarding/Welcome.tsx:940
 msgid "On the map"
 msgstr "Ku ikarita"
 
@@ -6145,11 +6333,11 @@ msgstr "Igihe cya gahunda kimaze kurangira, kanda “Ntiyaje” kuri yo. Avansi 
 msgid "Once their time is over, mark them as a no-show: the deposit is not refunded."
 msgstr "Igihe cyabo nikirangira, andika ko ataje: avansi ntisubizwa."
 
-#: src/onboarding/Welcome.tsx:330
+#: src/onboarding/Welcome.tsx:335
 msgid "Once your shop is posted"
 msgstr "Iduka ryawe nirimara gushyirwa ahagaragara"
 
-#: src/ui/DropZone.tsx:137
+#: src/ui/DropZone.tsx:144
 msgid "One at a time here — the first one was used."
 msgstr "Hano ni kimwe kimwe — icya mbere ni cyo cyakoreshejwe."
 
@@ -6173,11 +6361,11 @@ msgstr "Umurongo umwe utuma umuntu ayishaka — urugero: “Kogosha neza, imisat
 msgid "One more"
 msgstr "Ongeraho umwe"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "One night, double room"
 msgstr "Ijoro rimwe, icyumba cy’abantu babiri"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "One night, single room"
 msgstr "Ijoro rimwe, icyumba cy’umuntu umwe"
 
@@ -6197,12 +6385,12 @@ msgstr "Incamake imwe saa 7:00"
 msgid "One team, one payout number and one money page cover every branch."
 msgstr "Itsinda rimwe, nimero imwe yo kwishyurirwaho n’urupapuro rumwe rw’amafaranga bikorera amashami yose."
 
-#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1208
 msgid "One-hour lesson"
 msgstr "Isomo ry’isaha imwe"
 
-#: src/onboarding/Welcome.tsx:1202
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1207
+#: src/onboarding/Welcome.tsx:1209
 msgid "One-hour session"
 msgstr "Igihe cy’isaha imwe"
 
@@ -6242,7 +6430,7 @@ msgstr "Nyir’iduka wenyine ni we ushobora kongeramo abantu no guhitamo aho bak
 msgid "Only the owner can change this."
 msgstr "Nyir’iduka wenyine ni we ushobora kubihindura."
 
-#: src/onboarding/Welcome.tsx:269
+#: src/onboarding/Welcome.tsx:273
 msgid "Only the owner can set up the shop"
 msgstr "Nyir’iduka wenyine ni we ushobora gutunganya iduka"
 
@@ -6289,7 +6477,7 @@ msgid "Open {0} – {1} instead"
 msgstr "Birafunguye {0} – {1} by’umwihariko"
 
 #. placeholder {0}: branch.hours.filter((h) => !h.isClosed).length
-#: src/onboarding/Welcome.tsx:1068
+#: src/onboarding/Welcome.tsx:1073
 msgid "Open {0} days a week — change them any time in Branches & hours"
 msgstr "Bifungura iminsi {0} mu cyumweru — uyihindure igihe cyose muri “Amashami n’amasaha”"
 
@@ -6300,13 +6488,17 @@ msgstr "Birafunguye kuva {from} kugeza {until}"
 #. placeholder {0}: daysInWords(week.days)
 #. placeholder {1}: week.open
 #. placeholder {2}: week.close
-#: src/onboarding/Welcome.tsx:1119
+#: src/onboarding/Welcome.tsx:1124
 msgid "Open <0>{0}</0>, {1}–{2}"
 msgstr "Birafunguye <0>{0}</0>, {1}–{2}"
 
 #: src/components/MapPin.tsx:27
 msgid "Open a bigger map"
 msgstr "Fungura ikarita nini"
+
+#: src/ads/todaySlides.ts:252
+msgid "Open Business papers"
+msgstr "Fungura Inyandiko z’ubucuruzi"
 
 #: src/pages/AppointmentsPage.tsx:713
 msgid "Open details"
@@ -6326,7 +6518,8 @@ msgstr "Fungura Ubufasha"
 msgid "Open hours"
 msgstr "Amasaha yo gufungura"
 
-#: src/ads/slides.ts:334
+#: src/ads/slides.ts:337
+#: src/papers/PaperSlot.tsx:177
 msgid "Open it"
 msgstr "Bifungure"
 
@@ -6339,7 +6532,11 @@ msgstr "Bifungure usome impamvu, hanyuma wongere ushyireho nimero."
 msgid "Open it to read the reason."
 msgstr "Bifungure usome impamvu."
 
-#: src/ads/slides.ts:333
+#: src/ads/slides.ts:296
+msgid "Open it to read why, then upload a clearer copy under Business papers."
+msgstr "Yifungure usome impamvu, hanyuma ushyireho kopi igaragara neza muri Inyandiko z’ubucuruzi."
+
+#: src/ads/slides.ts:336
 msgid "Open it to see the details."
 msgstr "Bifungure urebe ibisobanuro."
 
@@ -6351,7 +6548,7 @@ msgstr "Uyu mugoroba dufunga bitinze"
 msgid "Open messages"
 msgstr "Fungura ubutumwa"
 
-#: src/onboarding/Welcome.tsx:1093
+#: src/onboarding/Welcome.tsx:1098
 msgid "Open on"
 msgstr "Iminsi yo gufungura"
 
@@ -6360,13 +6557,13 @@ msgstr "Iminsi yo gufungura"
 msgid "Open on {0}"
 msgstr "Birafunguye {0}"
 
-#: src/ads/todaySlides.ts:133
+#: src/ads/todaySlides.ts:134
 msgid "Open or closed? Set the day"
 msgstr "Urafungura cyangwa urafunga? Shyiraho uwo munsi"
 
-#: src/ads/todaySlides.ts:189
-#: src/ads/todaySlides.ts:202
-#: src/ads/todaySlides.ts:214
+#: src/ads/todaySlides.ts:190
+#: src/ads/todaySlides.ts:203
+#: src/ads/todaySlides.ts:215
 msgid "Open RRA"
 msgstr "Fungura RRA"
 
@@ -6401,12 +6598,12 @@ msgstr "Reba iyi tariki hejuru"
 msgid "Open, but different hours"
 msgstr "Birafunguye, ariko ku yandi masaha"
 
-#: src/onboarding/steps.ts:121
+#: src/onboarding/steps.ts:131
 #: src/pages/HoursPage.tsx:408
 msgid "Opening hours"
 msgstr "Amasaha yo gufungura"
 
-#: src/onboarding/Welcome.tsx:1067
+#: src/onboarding/Welcome.tsx:1072
 msgid "Opening hours are set"
 msgstr "Amasaha yo gufungura yashyizweho"
 
@@ -6420,16 +6617,18 @@ msgstr "Amasaha yo gufungura ya {0}"
 msgid "Opening…"
 msgstr "Birafungurwa…"
 
-#: src/onboarding/Welcome.tsx:1105
+#: src/onboarding/Welcome.tsx:1110
 #: src/pages/ClosuresPage.tsx:574
 msgid "Opens"
 msgstr "Gufungura"
 
 #: src/onboarding/GoLiveCard.tsx:234
+#: src/papers/PaperSlot.tsx:206
+#: src/papers/PaperSlot.tsx:213
 msgid "optional"
 msgstr "si ngombwa"
 
-#: src/onboarding/Welcome.tsx:352
+#: src/onboarding/Welcome.tsx:357
 msgid "Optional"
 msgstr "Si ngombwa"
 
@@ -6445,7 +6644,7 @@ msgstr "Si ngombwa — baza icyo bashaka, nk’uburyo bwo kogosha cyangwa ibyong
 msgid "Optional — customers see the old price crossed out"
 msgstr "Si ngombwa — abakiriya babona igiciro cya mbere giciyeho umurongo"
 
-#: src/onboarding/Welcome.tsx:816
+#: src/onboarding/Welcome.tsx:821
 msgid "Optional · square works best · JPG, PNG or WebP"
 msgstr "Si ngombwa · ifoto kare ni yo nziza · JPG, PNG cyangwa WebP"
 
@@ -6453,7 +6652,7 @@ msgstr "Si ngombwa · ifoto kare ni yo nziza · JPG, PNG cyangwa WebP"
 msgid "Optional. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} files, {MAX_UPLOAD_MB}MB each. A statement or an invoice helps most for anything about money."
 msgstr "Si ngombwa. {ACCEPTED_LABEL} — kugeza kuri dosiye {MAX_ATTACHMENTS}, buri imwe itarenze {MAX_UPLOAD_MB}MB. Ku kibazo cyose cy’amafaranga, raporo ya konti cyangwa fagitire ni byo bifasha cyane."
 
-#: src/onboarding/Welcome.tsx:271
+#: src/onboarding/Welcome.tsx:275
 msgid "Or a manager who looks after every branch. Ask them to finish setting it up — you can still look around."
 msgstr "Cyangwa umuyobozi ushinzwe amashami yose. Musabe arangize kuritunganya — wowe ushobora gukomeza kureba hirya no hino."
 
@@ -6495,7 +6694,11 @@ msgstr "Gutondeka"
 msgid "Other · {0}"
 msgstr "Ibindi · {0}"
 
-#: src/onboarding/GoLiveCard.tsx:415
+#: src/pages/PapersPage.tsx:126
+msgid "Other papers"
+msgstr "Izindi nyandiko"
+
+#: src/onboarding/GoLiveCard.tsx:416
 msgid "Our advice before you post"
 msgstr "Inama zacu mbere yo gushyira ahagaragara"
 
@@ -6538,6 +6741,18 @@ msgstr "Itsinda ryacu ry’ubufasha ryasomye ikiganiro cyawe"
 #: src/pages/AppointmentsPage.tsx:1005
 msgid "Our support team sent the customer a new code"
 msgstr "Itsinda ryacu ry’ubufasha ryoherereje umukiriya kode nshya"
+
+#: src/ads/slides.ts:295
+msgid "Our team checked one of your business papers and it is in order."
+msgstr "Itsinda ryacu ryagenzuye imwe mu nyandiko z’ubucuruzi bwawe kandi iri mu buryo."
+
+#: src/papers/PaperSlot.tsx:165
+msgid "Our team could not accept it:"
+msgstr "Itsinda ryacu ntiryashoboye kuyemera:"
+
+#: src/ads/todaySlides.ts:266
+msgid "Our team could not accept your {paper}. Open Business papers to read why, and upload a clear copy."
+msgstr "Itsinda ryacu ntiryashoboye kwemera {paper} yawe. Fungura Inyandiko z’ubucuruzi usome impamvu, maze ushyireho kopi igaragara neza."
 
 #: src/pages/PayoutsPage.tsx:430
 msgid "Our team is checking it. Your payments wait until then — nothing is lost."
@@ -6583,15 +6798,19 @@ msgstr "bakwishyura ubwabo, bitanyuze kuri twe"
 msgid "Paid to you so far"
 msgstr "Ayo umaze kwishyurwa"
 
-#: src/onboarding/Welcome.tsx:321
+#: src/onboarding/Welcome.tsx:326
 msgid "Paid when they book"
 msgstr "Yishyurwa iyo bafata gahunda"
+
+#: src/pages/PapersPage.tsx:63
+msgid "Papers cannot be kept on this server yet — our team has been told. Try again later."
+msgstr "Inyandiko ntizishobora kubikwa kuri iyi seriveri kugeza ubu — itsinda ryacu ryabimenyeshejwe. Ongera ugerageze nyuma."
 
 #: src/pages/ClosuresPage.tsx:540
 msgid "Part of the day"
 msgstr "Igice cy’umunsi"
 
-#: src/onboarding/Welcome.tsx:1202
+#: src/onboarding/Welcome.tsx:1207
 msgid "Partner session"
 msgstr "Imyitozo y’abantu babiri"
 
@@ -6608,7 +6827,7 @@ msgstr "Komeka linki ya Google Maps, cyangwa -1.9536, 30.0606"
 msgid "Paste a Google Maps link, or type the coordinates."
 msgstr "Komeka linki ya Google Maps, cyangwa wandike ibipimo by’aho riri."
 
-#: src/onboarding/Welcome.tsx:948
+#: src/onboarding/Welcome.tsx:953
 msgid "Paste your Google Maps link, or use your position if you are at the shop now."
 msgstr "Komeka linki yawe ya Google Maps, cyangwa ukoreshe aho uri niba ubu uri ku iduka."
 
@@ -6622,7 +6841,7 @@ msgstr "Hagarika iduka by’agateganyo"
 msgid "Pause the shop?"
 msgstr "Uhagarike iduka by’agateganyo?"
 
-#: src/onboarding/steps.ts:151
+#: src/onboarding/steps.ts:166
 #: src/pages/ServicesPage.tsx:1088
 #: src/shell/Topbar.tsx:156
 msgid "Paused"
@@ -6683,7 +6902,7 @@ msgstr "Amafaranga ya Nzeri ntaragera"
 msgid "Payouts are paused — see Getting paid for why."
 msgstr "Kwishyurwa byahagaritswe by’agateganyo — reba impamvu muri Kwishyurwa."
 
-#: src/nav.ts:134
+#: src/nav.ts:142
 msgctxt "search words"
 msgid "payouts balance momo mobile money number"
 msgstr "kwishyurwa ubwishyu amafaranga asigaye momo mobile money nimero"
@@ -6700,7 +6919,11 @@ msgstr "Kwishyurwa bitangira umugenzuzi wacu akimara kuyemeza. Nta cyo winjiza g
 msgid "Payouts start as soon as it is confirmed"
 msgstr "Kwishyurwa bitangira ikimara kwemezwa"
 
-#: src/onboarding/Welcome.tsx:1188
+#: src/papers/PaperSlot.tsx:224
+msgid "PDF or a clear photo of the whole page — up to 15 MB"
+msgstr "PDF cyangwa ifoto igaragara neza y’urupapuro rwose — kugeza kuri MB 15"
+
+#: src/onboarding/Welcome.tsx:1193
 msgid "Pedicure"
 msgstr "Gutunganya inzara z’amano"
 
@@ -6709,7 +6932,7 @@ msgstr "Gutunganya inzara z’amano"
 msgid "Pending"
 msgstr "Bitegereje"
 
-#: src/nav.ts:154
+#: src/nav.ts:162
 #: src/pages/AppointmentsPage.tsx:862
 #: src/pages/StaffPage.tsx:116
 #: src/shell/Topbar.tsx:125
@@ -6748,7 +6971,7 @@ msgstr "Telefoni"
 msgid "Phone for this branch <0>optional</0>"
 msgstr "Telefoni y’iri shami <0>si ngombwa</0>"
 
-#: src/onboarding/Welcome.tsx:797
+#: src/onboarding/Welcome.tsx:802
 msgid "Phone number"
 msgstr "Nimero ya telefoni"
 
@@ -6820,11 +7043,11 @@ msgstr "Hitamo igihe, wishyure avansi nto na MTN MoMo, maze werekane kode yawe n
 msgid "Pick one on the left to read it and reply. Replies reach the customer in their app straight away."
 msgstr "Hitamo kimwe ibumoso ugisome kandi usubize. Ibisubizo bigera ku mukiriya muri porogaramu ye ako kanya."
 
-#: src/onboarding/Welcome.tsx:1055
+#: src/onboarding/Welcome.tsx:1060
 msgid "Pick your usual week. Lunch breaks and odd days can be set later."
 msgstr "Hitamo uko icyumweru cyawe gisanzwe kimeze. Ikiruhuko cya saa sita n’iminsi idasanzwe wabishyiraho nyuma."
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Pitch for one hour"
 msgstr "Ikibuga isaha imwe"
 
@@ -6851,7 +7074,7 @@ msgstr "Soma kandi wemeze igihe ubishoboye."
 msgid "Please write at least 10 characters. This is the record of the decision."
 msgstr "Andika nibura inyuguti 10. Ibi ni byo bibika icyemezo cyafashwe."
 
-#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1217
 msgid "Pool day pass"
 msgstr "Pisine umunsi wose"
 
@@ -6863,7 +7086,7 @@ msgstr "Bikunzwe bisobanura gahunda zigereranyijwe n’amanota — ibitekerezo b
 msgid "Popular shops are shown first"
 msgstr "Amaduka akunzwe ni yo agaragara mbere"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Portrait session"
 msgstr "Gufotorwa ifoto y’isura"
 
@@ -6893,7 +7116,7 @@ msgstr "Shyiraho ifoto kugira ngo abakiriya bawe basanzwe babone porogaramu bari
 msgid "Post this service"
 msgstr "Shyira iyi serivisi ahagaragara"
 
-#: src/onboarding/GoLiveCard.tsx:495
+#: src/onboarding/GoLiveCard.tsx:496
 msgid "Posted"
 msgstr "Ryashyizwe ahagaragara"
 
@@ -6945,7 +7168,7 @@ msgstr "Kanda hano uryohereze risuzumwe"
 msgid "Previous month"
 msgstr "Ukwezi gushize"
 
-#: src/onboarding/Welcome.tsx:1344
+#: src/onboarding/Welcome.tsx:1349
 msgid "Price"
 msgstr "Igiciro"
 
@@ -7000,15 +7223,15 @@ msgstr "Ibisubizo by’ibanga ntibyishyuzwa kandi ntibyongera igihe."
 msgid "Private answers were removed 30 days after the visit."
 msgstr "Ibisubizo by’ibanga byasibwe nyuma y’iminsi 30 aje."
 
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1214
 msgid "Private class"
 msgstr "Isomo ryihariye"
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "Private lesson"
 msgstr "Isomo ry’umuntu ku giti cye"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Private room for ten"
 msgstr "Icyumba cyihariye cy’abantu icumi"
 
@@ -7017,17 +7240,25 @@ msgstr "Icyumba cyihariye cy’abantu icumi"
 msgid "Processing"
 msgstr "Birimo gukorwa"
 
+#: src/papers/words.ts:42
+msgid "Professional licence"
+msgstr "Uruhushya rw’umwuga"
+
 #: src/nav.ts:58
 msgctxt "search words"
 msgid "profile logo cover photos gallery description pause"
 msgstr "umwirondoro ikirango ifoto y’imbere amafoto ibisobanuro guhagarika"
+
+#: src/papers/words.ts:16
+msgid "Proves the business is registered. Once checked, customers see the “Registered business” mark on your page."
+msgstr "Igaragaza ko ubucuruzi bwanditse. Imaze kugenzurwa, abakiriya babona ikimenyetso “Ubucuruzi bwanditse” ku rupapuro rwawe."
 
 #: src/pages/ClosuresPage.tsx:604
 msgid "Public holiday"
 msgstr "Umunsi w’ikiruhuko rusange"
 
 #. placeholder {0}: dayWords(date)
-#: src/ads/todaySlides.ts:130
+#: src/ads/todaySlides.ts:131
 msgid "Public holiday · {0}"
 msgstr "Ikiruhuko rusange · {0}"
 
@@ -7056,7 +7287,7 @@ msgstr "Ongeraho ikintu gishya mu byo utanga"
 msgid "Put your first service on sale"
 msgstr "Shyira serivisi yawe ya mbere ku isoko"
 
-#: src/nav.ts:121
+#: src/nav.ts:129
 msgctxt "search words"
 msgid "qr code scan download app store google play install poster print counter card get customers"
 msgstr "kode qr sikana manura porogaramu app store google play shyiramo ifishi capa ikarita abakiriya"
@@ -7073,7 +7304,7 @@ msgstr "Ikibazo cya {number}: andika icyo ubaza abakiriya."
 msgid "questions"
 msgstr "ibibazo"
 
-#: src/nav.ts:100
+#: src/nav.ts:108
 msgid "Questions and replies"
 msgstr "Ibibazo n’ibisubizo"
 
@@ -7101,6 +7332,10 @@ msgstr "Subiza vuba"
 msgid "Quiet hours"
 msgstr "Amasaha y’ituze"
 
+#: src/papers/PaperSlot.tsx:34
+msgid "Ran out on {day}"
+msgstr "Yarangiye ku wa {day}"
+
 #: src/ads/AdRail.tsx:230
 msgid "Ranked the way the customer app ranks them: bookings, weighted by rating. Compare yours on <0>Services</0>."
 msgstr "Bitondekwa nk’uko porogaramu y’abakiriya ibitondeka: gahunda, zigereranyijwe n’amanota. Gereranya izawe kuri <0>Serivisi</0>."
@@ -7116,7 +7351,7 @@ msgstr "igipimo cy’ivunjisha cyakoreshejwe {0}"
 msgid "rated {0} over {1}"
 msgstr "amanota {0} mu bitekerezo {1}"
 
-#: src/ads/todaySlides.ts:237
+#: src/ads/todaySlides.ts:238
 msgid "Rates by {source}"
 msgstr "Ibiciro biva kuri {source}"
 
@@ -7124,10 +7359,14 @@ msgstr "Ibiciro biva kuri {source}"
 msgid "Rating"
 msgstr "Amanota"
 
-#: src/nav.ts:106
+#: src/nav.ts:114
 msgctxt "search words"
 msgid "ratings stars feedback reply"
 msgstr "amanota inyenyeri ibitekerezo gusubiza"
+
+#: src/papers/words.ts:14
+msgid "RDB registration certificate"
+msgstr "Icyemezo cy’iyandikwa cya RDB"
 
 #: src/pages/ReviewsPage.tsx:508
 msgid "Read all"
@@ -7171,7 +7410,7 @@ msgid "Ready to choose a time"
 msgstr "Witeguye guhitamo umwanya"
 
 #: src/auth/Moments.tsx:39
-#: src/onboarding/Welcome.tsx:1601
+#: src/onboarding/Welcome.tsx:1681
 #: src/pages/PayoutsPage.tsx:220
 #: src/shell/Sidebar.tsx:76
 msgid "Ready to send"
@@ -7186,7 +7425,7 @@ msgstr "Ibibazo biteguye bya {kindName}"
 msgid "Reason"
 msgstr "Impamvu"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Refresher lesson"
 msgstr "Isomo ryo kwibutsa"
 
@@ -7198,7 +7437,15 @@ msgstr "Yanzwe"
 msgid "Refused. Submit another number."
 msgstr "Yanzwe. Ohereza indi nimero."
 
-#: src/onboarding/Welcome.tsx:1187
+#: src/pages/PapersPage.tsx:75
+msgid "Registered business ✓"
+msgstr "Ubucuruzi bwanditse ✓"
+
+#: src/onboarding/steps.ts:50
+msgid "Registration, or your licence"
+msgstr "Iyandikwa, cyangwa uruhushya rwawe"
+
+#: src/onboarding/Welcome.tsx:1192
 msgid "Relaxer"
 msgstr "Kugorora imisatsi"
 
@@ -7216,6 +7463,7 @@ msgstr "kuramo"
 #: src/pages/ServicesPage.tsx:1945
 #: src/pages/StaffPage.tsx:535
 #: src/pages/StaffPage.tsx:550
+#: src/papers/PaperSlot.tsx:188
 msgid "Remove"
 msgstr "Kuramo"
 
@@ -7241,6 +7489,10 @@ msgstr "Kuramo {0}?"
 msgid "Remove answer {0}"
 msgstr "Kuramo igisubizo cya {0}"
 
+#: src/papers/PaperSlot.tsx:108
+msgid "Remove it"
+msgstr "Yikure"
+
 #: src/pages/choices/ChoicesEditor.tsx:402
 msgid "Remove question"
 msgstr "Kuramo ikibazo"
@@ -7252,6 +7504,10 @@ msgstr "Kuramo ifoto"
 #: src/pages/choices/ChoicesEditor.tsx:1187
 msgid "Remove this answer"
 msgstr "Kuramo iki gisubizo"
+
+#: src/papers/PaperSlot.tsx:104
+msgid "Remove this paper?"
+msgstr "Gukura iyi nyandiko?"
 
 #: src/pages/ProfilePage.tsx:695
 msgid "Remove this photo?"
@@ -7269,9 +7525,13 @@ msgstr "Kuramo iki kibazo?"
 msgid "Removing photos…"
 msgstr "Amafoto arakurwamo…"
 
-#: src/onboarding/Welcome.tsx:980
+#: src/onboarding/Welcome.tsx:985
 msgid "Rename"
 msgstr "Hindura izina"
+
+#: src/papers/words.ts:30
+msgid "Renewed every year by 31 January. Shows the shop is trading this year, and earns the mark."
+msgstr "Yongerwa buri mwaka bitarenze 31 Mutarama. Igaragaza ko iduka ricuruza uyu mwaka, kandi itanga ikimenyetso."
 
 #: src/pages/HoursPage.tsx:285
 msgid "Reopen this branch"
@@ -7285,6 +7545,14 @@ msgstr "Birongera gufungurwa…"
 #: src/auth/growWords.ts:23
 msgid "repair service"
 msgstr "serivisi yawe yo gusana"
+
+#: src/papers/PaperSlot.tsx:182
+msgid "Replace"
+msgstr "Simbuza"
+
+#: src/papers/PaperSlot.tsx:250
+msgid "Replace it"
+msgstr "Yisimbuze"
 
 #: src/pages/PayoutsPage.tsx:42
 msgid "Replaced"
@@ -7311,7 +7579,7 @@ msgid "Replies show under each review, for everyone."
 msgstr "Ibisubizo bigaragara munsi ya buri gitekerezo, kuri bose."
 
 #: src/ads/slides.ts:267
-#: src/ads/slides.ts:320
+#: src/ads/slides.ts:323
 #: src/pages/ReviewsPage.tsx:549
 msgid "Reply"
 msgstr "Subiza"
@@ -7323,6 +7591,22 @@ msgstr "Subiza ubu"
 #: src/ads/guide.ts:157
 msgid "Reply to reviews"
 msgstr "Subiza ibitekerezo"
+
+#: src/papers/words.ts:37
+msgid "Required for a clinic, a lab, a dental or eye practice before it can go live."
+msgstr "Rusabwa ku ivuriro, laboratwari, ivuriro ry’amenyo cyangwa ry’amaso mbere yo kujya ku murongo."
+
+#: src/papers/words.ts:58
+msgid "Required for tours, treks, safaris and places to stay before they can go live."
+msgstr "Rusabwa ku ngendo z’ubukerarugendo, kuzamuka imisozi, safari n’aho kurara mbere yo kujya ku murongo."
+
+#: src/pages/PapersPage.tsx:88
+msgid "Required for your kind of shop"
+msgstr "Bisabwa ku bwoko bw’iduka ryawe"
+
+#: src/papers/words.ts:65
+msgid "Required to offer legal advice before the shop can go live."
+msgstr "Gisabwa kugira ngo utange inama z’amategeko mbere y’uko iduka rijya ku murongo."
 
 #: src/pages/AppointmentsPage.tsx:856
 msgid "Reservation no."
@@ -7336,7 +7620,7 @@ msgstr "Byakemutse"
 msgid "restaurant"
 msgstr "resitora yawe"
 
-#: src/nav.ts:104
+#: src/nav.ts:112
 #: src/pages/ReviewsPage.tsx:158
 #: src/shopfront/CustomerPhone.tsx:231
 msgid "Reviews"
@@ -7363,6 +7647,10 @@ msgstr "Uruhare rwa {0}"
 msgid "Run a discount this week"
 msgstr "Shyiraho igabanywa ry’igiciro muri iki cyumweru"
 
+#: src/papers/PaperSlot.tsx:23
+msgid "Run out"
+msgstr "Yarangiye"
+
 #: src/pages/StaffPage.tsx:55
 msgid "Runs everything"
 msgstr "Acunga byose"
@@ -7370,6 +7658,14 @@ msgstr "Acunga byose"
 #: src/pages/StaffPage.tsx:40
 msgid "Runs everything at every branch: the money, the shopfront, and who works where. There is only one owner."
 msgstr "Acunga byose mu mashami yose: amafaranga, isura y’iduka, n’aho buri wese akora. Nyir’iduka ni umwe gusa."
+
+#: src/papers/PaperSlot.tsx:213
+msgid "Runs out on"
+msgstr "Irangira ku wa"
+
+#: src/papers/PaperSlot.tsx:35
+msgid "Runs out on {day} — renew it"
+msgstr "Irangira ku wa {day} — yongere"
 
 #: src/pages/StaffPage.tsx:56
 msgid "Runs their branches"
@@ -7384,11 +7680,32 @@ msgstr "Acunga amashami ye: gahunda, ihagarikwa ryazo, amasaha, iminsi ifunze n�
 msgid "Rwanda"
 msgstr "Rwanda"
 
-#: src/ads/todaySlides.ts:94
+#: src/papers/words.ts:64
+msgid "Rwanda Bar Association"
+msgstr "Urugaga rw’Abavoka mu Rwanda"
+
+#: src/papers/words.ts:15
+#: src/papers/words.ts:57
+msgid "Rwanda Development Board"
+msgstr "Rwanda Development Board (RDB)"
+
+#: src/papers/words.ts:49
+msgid "Rwanda FDA licence"
+msgstr "Uruhushya rwa Rwanda FDA"
+
+#: src/papers/words.ts:50
+msgid "Rwanda Food and Drugs Authority"
+msgstr "Rwanda FDA (Ikigo gishinzwe ibiribwa n’imiti)"
+
+#: src/ads/todaySlides.ts:95
 msgid "Rwanda remembers the Genocide against the Tutsi. Bookings work as usual."
 msgstr "U Rwanda rwibuka Jenoside yakorewe Abatutsi. Gahunda zikomeza nk’ibisanzwe."
 
-#: src/onboarding/Welcome.tsx:1343
+#: src/papers/words.ts:22
+msgid "Rwanda Revenue Authority"
+msgstr "Ikigo cy’Imisoro n’Amahoro (RRA)"
+
+#: src/onboarding/Welcome.tsx:1348
 msgid "RWF"
 msgstr "RWF"
 
@@ -7408,7 +7725,7 @@ msgstr "ubucuruzi bwawe bwa safari"
 msgid "salon"
 msgstr "saloni yawe"
 
-#: src/ads/todaySlides.ts:108
+#: src/ads/todaySlides.ts:109
 msgid "Saturday morning is Umuganda"
 msgstr "Ku wa Gatandatu mu gitondo ni Umuganda"
 
@@ -7488,9 +7805,13 @@ msgstr "Birabikwa…"
 msgid "Say what each “Other” is — customers see it in its place."
 msgstr "Vuga icyo buri “Ibindi” ari cyo — abakiriya ni cyo babona mu mwanya wacyo."
 
-#: src/onboarding/Welcome.tsx:731
+#: src/onboarding/Welcome.tsx:736
 msgid "Say what kind it is, under “Other”."
 msgstr "Vuga ubwoko bwaryo, munsi ya “Ibindi”."
+
+#: src/papers/PaperSlot.tsx:127
+msgid "Say what the paper is, in a few words."
+msgstr "Vuga icyo iyi nyandiko ari cyo, mu magambo make."
 
 #: src/appqr/cardWords.ts:27
 msgid "Scan the code"
@@ -7504,7 +7825,7 @@ msgstr "Sikana ukoresheje kamera"
 msgid "Scan with your phone’s camera to get the BwanguReservations app."
 msgstr "Sikana ukoresheje kamera ya telefoni yawe ubone porogaramu ya BwanguReservations."
 
-#: src/ads/todaySlides.ts:157
+#: src/ads/todaySlides.ts:158
 msgctxt "under a number"
 msgid "search"
 msgstr "ishakisha"
@@ -7552,12 +7873,12 @@ msgstr "Shakisha mu rutonde"
 msgid "Search the words or a name"
 msgstr "Shakisha amagambo cyangwa izina"
 
-#: src/ads/todaySlides.ts:157
+#: src/ads/todaySlides.ts:158
 msgctxt "under a number"
 msgid "searches"
 msgstr "amashakisha"
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "Seat for two"
 msgstr "Intebe y’abantu babiri"
 
@@ -7581,7 +7902,7 @@ msgstr "Ribone nk’uko abakiriya bazaribona"
 msgid "See more"
 msgstr "Reba ibindi"
 
-#: src/ads/todaySlides.ts:173
+#: src/ads/todaySlides.ts:174
 msgid "See today’s bookings"
 msgstr "Reba gahunda z’uyu munsi"
 
@@ -7648,13 +7969,13 @@ msgid "Send a new one in 0:{0}"
 msgstr "Saba indi mu 0:{0}"
 
 #: src/onboarding/GoLiveCard.tsx:188
-#: src/onboarding/Welcome.tsx:1653
+#: src/onboarding/Welcome.tsx:1733
 msgid "Send back for review"
 msgstr "Ryohereze nanone risuzumwe"
 
 #: src/onboarding/GoLiveCard.tsx:188
-#: src/onboarding/steps.ts:49
-#: src/onboarding/Welcome.tsx:1653
+#: src/onboarding/steps.ts:57
+#: src/onboarding/Welcome.tsx:1733
 msgid "Send for review"
 msgstr "Ohereza risuzumwe"
 
@@ -7666,7 +7987,7 @@ msgstr "Ohereza ubutumire"
 msgid "Send it"
 msgstr "Bwohereze"
 
-#: src/onboarding/Welcome.tsx:1601
+#: src/onboarding/Welcome.tsx:1681
 msgid "Send your shop back for review"
 msgstr "Ongera wohereze iduka ryawe risuzumwe"
 
@@ -7708,12 +8029,12 @@ msgid "Sent {0}"
 msgstr "Ryoherejwe ku ya {0}"
 
 #. placeholder {0}: formatDate(new Date(readiness.submittedAt), { day: 'numeric', month: 'long' })
-#: src/onboarding/Welcome.tsx:1520
+#: src/onboarding/Welcome.tsx:1600
 msgid "Sent {0}. "
 msgstr "Ryoherejwe ku ya {0}. "
 
-#: src/ads/slides.ts:314
-#: src/ads/slides.ts:319
+#: src/ads/slides.ts:317
+#: src/ads/slides.ts:322
 #: src/pages/MessagesPage.tsx:31
 #: src/pages/OverviewPage.tsx:714
 msgid "Sent a photo"
@@ -7731,7 +8052,7 @@ msgstr "Yoherejwe ku ya {sentOn}. Dutegereje ko MTN MoMo ibyemeza — akenshi bi
 msgid "Service"
 msgstr "Serivisi"
 
-#: src/onboarding/Welcome.tsx:1264
+#: src/onboarding/Welcome.tsx:1269
 msgid "Service name"
 msgstr "Izina rya serivisi"
 
@@ -7748,7 +8069,7 @@ msgstr "Serivisi yahagaritswe"
 msgid "Services"
 msgstr "Serivisi"
 
-#: src/nav.ts:163
+#: src/nav.ts:171
 msgctxt "search words"
 msgid "sessions devices phones signed in sign out everywhere login security lost phone"
 msgstr "aho winjiye ibikoresho telefoni winjiye sohoka ahandi hose kwinjira umutekano telefoni yabuze yibwe"
@@ -7757,7 +8078,7 @@ msgstr "aho winjiye ibikoresho telefoni winjiye sohoka ahandi hose kwinjira umut
 msgid "Set deposits on Services"
 msgstr "Shyiraho avansi muri Serivisi"
 
-#: src/ads/todaySlides.ts:134
+#: src/ads/todaySlides.ts:135
 msgid "Set the day"
 msgstr "Shyiraho uwo munsi"
 
@@ -7773,26 +8094,26 @@ msgstr "Tegura iduka ryawe"
 msgid "Set what each answer adds to the price or the time"
 msgstr "Shyiraho icyo buri gisubizo cyongera ku giciro cyangwa ku gihe"
 
-#: src/onboarding/steps.ts:156
-#: src/onboarding/Welcome.tsx:188
+#: src/onboarding/steps.ts:171
+#: src/onboarding/Welcome.tsx:192
 msgid "Setting up"
 msgstr "Riri gutegurwa"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Shoe repair"
 msgstr "Gusana inkweto"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Shoe shine"
 msgstr "Gusiga inkweto"
 
-#: src/onboarding/Welcome.tsx:511
-#: src/onboarding/Welcome.tsx:782
+#: src/onboarding/Welcome.tsx:516
+#: src/onboarding/Welcome.tsx:787
 #: src/pages/AppointmentsPage.tsx:904
 msgid "Shop"
 msgstr "Iduka"
 
-#: src/onboarding/Welcome.tsx:504
+#: src/onboarding/Welcome.tsx:509
 msgid "Shop name"
 msgstr "Izina ry’iduka"
 
@@ -7800,7 +8121,7 @@ msgstr "Izina ry’iduka"
 msgid "Shop suspended"
 msgstr "Iduka ryahagaritswe"
 
-#: src/ads/todaySlides.ts:110
+#: src/ads/todaySlides.ts:111
 msgid "Shops close 08:00–11:00, but {one} is open for bookings then."
 msgstr "Amaduka afunga saa 08:00–11:00, ariko {one} riracyafata gahunda icyo gihe."
 
@@ -7809,7 +8130,7 @@ msgid "Shops usually charge for this"
 msgstr "Ubusanzwe amaduka arabyishyuza"
 
 #. placeholder {0}: items.length
-#: src/onboarding/GoLiveCard.tsx:421
+#: src/onboarding/GoLiveCard.tsx:422
 msgid "Shops with clear, high-resolution photos and full details get booked far more often · {done} of {0} done"
 msgstr "Amaduka afite amafoto asobanutse kandi meza n’amakuru yuzuye afatirwaho gahunda kenshi cyane · {done} kuri {0} byakozwe"
 
@@ -7927,7 +8248,7 @@ msgstr "Bigaragara ku rupapuro rw’iduka ryawe muri porogaramu."
 msgid "Shown on your shop’s page in the app. The owner, or a manager of every branch, changes them."
 msgstr "Bigaragara ku rupapuro rw’iduka ryawe muri porogaramu. Nyir’iduka, cyangwa umuyobozi w’amashami yose, ni bo babihindura."
 
-#: src/onboarding/Welcome.tsx:971
+#: src/onboarding/Welcome.tsx:976
 msgid "Shown to customers as "
 msgstr "Abakiriya babona "
 
@@ -7973,7 +8294,7 @@ msgstr "Gusohoka?"
 msgid "Sign up in our customer app with your personal email"
 msgstr "Fungura konti muri porogaramu y’abakiriya ukoresheje imeyili yawe bwite"
 
-#: src/nav.ts:161
+#: src/nav.ts:169
 #: src/pages/SecurityPage.tsx:48
 msgid "Sign-in and security"
 msgstr "Kwinjira n’umutekano"
@@ -8012,7 +8333,8 @@ msgstr "Imibare itandatu, nta kindi ukanda"
 msgid "Skin fade"
 msgstr "Skin fade"
 
-#: src/onboarding/Welcome.tsx:382
+#: src/onboarding/Welcome.tsx:387
+#: src/onboarding/Welcome.tsx:1546
 msgid "Skip for now"
 msgstr "Simbuka ubu"
 
@@ -8020,7 +8342,7 @@ msgstr "Simbuka ubu"
 msgid "slide"
 msgstr "igice"
 
-#: src/onboarding/Welcome.tsx:1193
+#: src/onboarding/Welcome.tsx:1198
 msgid "Small tattoo"
 msgstr "Tatuwaje nto"
 
@@ -8032,7 +8354,7 @@ msgstr "Kugira ngo abakiriya bashobore kukuvugisha."
 msgid "So they can book you again from their phone."
 msgstr "Kugira ngo bongere bafate gahunda iwawe bakoresheje telefoni."
 
-#: src/ads/todaySlides.ts:82
+#: src/ads/todaySlides.ts:83
 msgid "Some deposits are slow or failing. Customers’ times stay held while they retry."
 msgstr "Avansi zimwe ziratinda cyangwa zikanga. Igihe umukiriya yafashe kirabikwa."
 
@@ -8048,7 +8370,7 @@ msgstr "Hari ubikurikirana"
 msgid "Someone is working on this."
 msgstr "Hari umuntu ubikoraho."
 
-#: src/ads/slides.ts:332
+#: src/ads/slides.ts:335
 #: src/pages/FollowersPage.tsx:28
 msgid "Something new"
 msgstr "Ikintu gishya"
@@ -8073,7 +8395,7 @@ msgstr "Hari ikibazo kuri ubu bwishyu? Tubaze kuri byo"
 msgid "spa"
 msgstr "spa yawe"
 
-#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1217
 msgid "Spa and pool day"
 msgstr "Umunsi wa spa na pisine"
 
@@ -8103,7 +8425,7 @@ msgstr "Umukozi"
 msgid "Staff can check customers in and handle bookings, but cannot change prices or hours."
 msgstr "Abakozi bashobora kwakira abakiriya no gucunga gahunda, ariko ntibashobora guhindura ibiciro cyangwa amasaha."
 
-#: src/nav.ts:156
+#: src/nav.ts:164
 msgctxt "search words"
 msgid "staff team colleagues invite manager"
 msgstr "abakozi itsinda bagenzi gutumira umuyobozi"
@@ -8112,7 +8434,7 @@ msgstr "abakozi itsinda bagenzi gutumira umuyobozi"
 msgid "Staff work the front desk at the branches you choose. They see only those branches’ bookings, messages and reviews."
 msgstr "Abakozi bakira abakiriya ku mashami uhitamo. Babona gusa gahunda, ubutumwa n’ibitekerezo by’ayo mashami."
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "Standard ticket"
 msgstr "Itike isanzwe"
 
@@ -8145,7 +8467,7 @@ msgstr "Tangira gucuruza.<0/><1>Kwiyandikisha ni ubuntu.</1>"
 msgid "Start typing — KG 9 Ave, Kimironko…"
 msgstr "Tangira kwandika — KG 9 Ave, Kimironko…"
 
-#: src/onboarding/Welcome.tsx:919
+#: src/onboarding/Welcome.tsx:924
 msgid "Start typing the address and pick it from the list — we put you on the map."
 msgstr "Tangira kwandika aderesi, uyihitemo ku rutonde — tukagushyira ku ikarita."
 
@@ -8176,7 +8498,7 @@ msgstr "Uko bihagaze bigaragazwa"
 msgid "Stay signed in"
 msgstr "Guma winjiye"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Steam room"
 msgstr "Icyumba cy’icyuka"
 
@@ -8206,7 +8528,7 @@ msgid "Still there?"
 msgstr "Uracyahari?"
 
 #. placeholder {0}: empty.map((g) => g.name).join(' and ')
-#: src/onboarding/Welcome.tsx:729
+#: src/onboarding/Welcome.tsx:734
 msgid "Still to choose: one in {0}."
 msgstr "Hasigaye guhitamo: ubwoko bumwe muri {0}."
 
@@ -8252,7 +8574,7 @@ msgctxt "search words"
 msgid "story photo today post 24 hours instagram status advert"
 msgstr "inkuru ifoto uyu munsi gushyiraho amasaha 24 instagram status kwamamaza"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Studio hour"
 msgstr "Isaha muri sitidiyo"
 
@@ -8264,7 +8586,7 @@ msgstr "Ohereza igenzurwe"
 msgid "Suggestions from OpenStreetMap"
 msgstr "Byatanzwe na OpenStreetMap"
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Suit made to measure"
 msgstr "Ikositimu idodwa ku gipimo"
 
@@ -8272,20 +8594,20 @@ msgstr "Ikositimu idodwa ku gipimo"
 msgid "Support"
 msgstr "Ubufasha"
 
-#: src/nav.ts:184
+#: src/nav.ts:192
 msgctxt "search words"
 msgid "support ticket problem contact"
 msgstr "ubufasha ikibazo gusaba kuvugana"
 
-#: src/onboarding/steps.ts:159
+#: src/onboarding/steps.ts:174
 msgid "Suspended"
 msgstr "Ryahagaritswe"
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Swim session"
 msgstr "Igihe cyo koga"
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Swimming lesson"
 msgstr "Isomo ryo koga"
 
@@ -8301,11 +8623,11 @@ msgstr "Fungura kugira ngo wongere ubitange."
 msgid "Switched off at every branch"
 msgstr "Yazimijwe ku mashami yose"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Table for four"
 msgstr "Ameza y’abantu bane"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Table for two"
 msgstr "Ameza y’abantu babiri"
 
@@ -8362,7 +8684,7 @@ msgstr "Bikura ku giciro"
 msgid "Talk to support"
 msgstr "Vugisha ubufasha"
 
-#: src/onboarding/Welcome.tsx:238
+#: src/onboarding/Welcome.tsx:242
 msgid "Talk to us"
 msgstr "Tuvugishe"
 
@@ -8383,11 +8705,15 @@ msgstr "Kanda ku kamenyetso ko gushakisha hejuru"
 msgid "Tapping it opens"
 msgstr "Kubikandaho bifungura"
 
-#: src/ads/todaySlides.ts:185
-#: src/ads/todaySlides.ts:198
-#: src/ads/todaySlides.ts:210
+#: src/ads/todaySlides.ts:186
+#: src/ads/todaySlides.ts:199
+#: src/ads/todaySlides.ts:211
 msgid "Taxes · RRA"
 msgstr "Imisoro · RRA"
+
+#: src/papers/words.ts:21
+msgid "Taxpayer registration (TIN)"
+msgstr "Iyandikwa ry’umusoreshwa (TIN)"
 
 #: src/pages/SupportPage.tsx:439
 msgid "Tell us what happened"
@@ -8397,7 +8723,7 @@ msgstr "Tubwire uko byagenze"
 msgid "Ten posted today"
 msgstr "Wamaze gushyiraho 10 uyu munsi"
 
-#: src/nav.ts:177
+#: src/nav.ts:185
 msgctxt "search words"
 msgid "terms agreement privacy policy documents"
 msgstr "amabwiriza amasezerano ibanga politiki inyandiko"
@@ -8406,7 +8732,7 @@ msgstr "amabwiriza amasezerano ibanga politiki inyandiko"
 msgid "Terms of Use"
 msgstr "Amabwiriza y’Imikoreshereze"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Test preparation"
 msgstr "Kwitegura ikizamini"
 
@@ -8477,9 +8803,9 @@ msgstr "Ntibyashyizweho. Reba internet yawe."
 msgid "That did not save."
 msgstr "Ntibyabitswe."
 
-#: src/onboarding/Welcome.tsx:485
-#: src/onboarding/Welcome.tsx:641
-#: src/onboarding/Welcome.tsx:779
+#: src/onboarding/Welcome.tsx:490
+#: src/onboarding/Welcome.tsx:646
+#: src/onboarding/Welcome.tsx:784
 #: src/pages/ServicesPage.tsx:563
 msgid "That did not save. Check your connection and try again."
 msgstr "Ntibyabitswe. Reba internet yawe wongere ugerageze."
@@ -8494,7 +8820,7 @@ msgid "That did not send."
 msgstr "Ntibyoherejwe."
 
 #: src/onboarding/GoLiveCard.tsx:28
-#: src/onboarding/Welcome.tsx:1633
+#: src/onboarding/Welcome.tsx:1713
 msgid "That did not send. Check your connection and try again."
 msgstr "Ntibyoherejwe. Reba internet yawe wongere ugerageze."
 
@@ -8512,6 +8838,7 @@ msgstr "Ntibyoherejwe. Reba internet yawe."
 #: src/pages/ServicesPage.tsx:643
 #: src/pages/StaffPage.tsx:448
 #: src/pages/SupportPage.tsx:653
+#: src/papers/PaperSlot.tsx:98
 msgid "That did not work."
 msgstr "Ntibyakunze."
 
@@ -8535,11 +8862,11 @@ msgstr "Izo ni kode nyinshi mu isaha imwe. Ongera ugerageze nyuma gato."
 msgid "That is a shortened link, which hides the coordinates. Open it in a browser first, then copy the full address from the bar."
 msgstr "Iyo ni link ngufi, ihisha imibare igaragaza aho hantu. Banza uyifungure muri mushakisha, hanyuma wandukure aderesi yose iri hejuru."
 
-#: src/ui/DropZone.tsx:52
+#: src/ui/DropZone.tsx:59
 msgid "That isn’t {words}."
 msgstr "Iyo si {words}."
 
-#: src/onboarding/Welcome.tsx:1395
+#: src/onboarding/Welcome.tsx:1400
 msgid "That number did not save."
 msgstr "Iyo nimero ntiyabitswe."
 
@@ -8547,11 +8874,11 @@ msgstr "Iyo nimero ntiyabitswe."
 msgid "That photo is {size} MB. A story takes one up to {MAX_MB} MB."
 msgstr "Iyo foto ifite MB {size}. Inkuru yakira ifoto itarengeje MB {MAX_MB}."
 
-#: src/onboarding/Welcome.tsx:774
+#: src/onboarding/Welcome.tsx:779
 msgid "That picture did not upload. Try a JPG or PNG under 5 MB."
 msgstr "Iyo foto ntiyashyizweho. Gerageza JPG cyangwa PNG iri munsi ya MB 5."
 
-#: src/onboarding/Welcome.tsx:1313
+#: src/onboarding/Welcome.tsx:1318
 msgid "That service did not save."
 msgstr "Iyo serivisi ntiyabitswe."
 
@@ -8567,11 +8894,11 @@ msgstr "Wageze ku ntarengwa — ibisubizo {MAX_OPTIONS}"
 msgid "The address may be mistyped, or the page has moved. Nothing of yours is lost — here is the way back."
 msgstr "Aderesi ishobora kuba yanditswe nabi, cyangwa paji yarimuwe. Nta kintu cyawe cyabuze — dore inzira yo gusubira."
 
-#: src/nav.ts:178
+#: src/nav.ts:186
 msgid "The agreements you work under"
 msgstr "Amasezerano ugenderaho"
 
-#: src/ads/todaySlides.ts:199
+#: src/ads/todaySlides.ts:200
 msgid "The annual income tax return is due by {date}"
 msgstr "Imenyekanisha ry’umusoro ku nyungu ry’umwaka ritangwa bitarenze {date}"
 
@@ -8647,7 +8974,7 @@ msgstr "Umukiriya azashobora noneho gutanga amanota ku byo yakorewe."
 msgid "The customer is told this reason, and if they have paid a deposit it is refunded in full — including our fee."
 msgstr "Umukiriya amenyeshwa iyi mpamvu, kandi niba yarishyuye avansi, ayisubizwa yose — harimo n’amafaranga ya serivisi yacu."
 
-#: src/ads/todaySlides.ts:19
+#: src/ads/todaySlides.ts:20
 msgid "The day after New Year"
 msgstr "Umunsi ukurikira Ubunani"
 
@@ -8709,7 +9036,7 @@ msgstr "Iby’amafaranga ni ibya nyir’iduka"
 msgid "The most answers a customer may pick"
 msgstr "Umubare ntarengwa w’ibisubizo umukiriya ashobora guhitamo"
 
-#: src/onboarding/Welcome.tsx:502
+#: src/onboarding/Welcome.tsx:507
 msgid "The name customers see when they find you — the one on your sign is best."
 msgstr "Izina abakiriya babona bakubonye — iriri ku cyapa cyawe ni ryo ryiza."
 
@@ -8750,6 +9077,10 @@ msgstr "Nyir’iduka, cyangwa umuyobozi w’amashami yose, ni bo barangiza ibi."
 msgid "The owner, or a manager of every branch, posts it."
 msgstr "Nyir’iduka, cyangwa umuyobozi w’amashami yose, ni bo barishyira ahagaragara."
 
+#: src/papers/PaperSlot.tsx:89
+msgid "The paper did not upload. Try again."
+msgstr "Inyandiko ntiyashyizweho. Ongera ugerageze."
+
 #: src/ads/slides.ts:284
 msgid "The payment did not go through. The customer can try again."
 msgstr "Ubwishyu ntibwakunze. Umukiriya ashobora kongera kugerageza."
@@ -8781,6 +9112,10 @@ msgstr "Ikimenyetso ku ikarita cyimuriwe kuri iyi aderesi."
 #: src/ads/guide.ts:35
 msgid "The platform’s fee ({fee} of the price) comes out of that deposit. What is left of the deposit is your share, paid out to you."
 msgstr "Amafaranga ya serivisi y’urubuga ({fee} by’igiciro) akurwa kuri iyo avansi. Igisigaye ku avansi ni umugabane wawe, ukawishyurwa."
+
+#: src/papers/words.ts:44
+msgid "The practitioner’s own licence — medical, dental, nursing, allied health or veterinary."
+msgstr "Uruhushya rw’umuganga ubwe — ubuvuzi, amenyo, ubuforomo, ubuvuzi bwunganira cyangwa ubw’amatungo."
 
 #: src/pages/ProfilePage.tsx:555
 msgid "The preview shows your changes — save to make them live."
@@ -8814,6 +9149,10 @@ msgstr "Amategeko yo gukoresha urubuga, areba buri wese."
 msgid "The rules, in plain words"
 msgstr "Amategeko, mu magambo yoroshye"
 
+#: src/components/Allowed.tsx:29
+msgid "The shop’s business papers are seen and added by the owner, and by managers who look after every branch."
+msgstr "Inyandiko z’ubucuruzi z’iduka zibonwa kandi zongerwaho na nyir’iduka, n’abayobozi bareba amashami yose."
+
 #: src/ads/slides.ts:281
 msgid "The time is free again for someone else. Who cancelled decides what happens to the deposit."
 msgstr "Umwanya wongeye kuboneka ku wundi muntu. Ibiba kuri avansi biterwa n’uwahagaritse gahunda."
@@ -8831,7 +9170,7 @@ msgstr "Igihe, serivisi n’ibisubizo byabo — bigera hano avansi ikimara kwish
 msgid "The tour is kept for you"
 msgstr "Urugendo rwo kumenyereza rurakubikiwe"
 
-#: src/ads/todaySlides.ts:186
+#: src/ads/todaySlides.ts:187
 msgid "The trading licence tax is due by {date}"
 msgstr "Umusoro w’ipatanti utangwa bitarenze {date}"
 
@@ -8863,7 +9202,7 @@ msgstr "Ibibazo byabo n’ibisubizo byawe, ibyo bavuze mu bitekerezo, n’amakur
 msgid "Then a type"
 msgstr "Hanyuma ubwoko"
 
-#: src/ads/slides.ts:295
+#: src/ads/slides.ts:298
 msgid "There is a reply to your help request."
 msgstr "Hari igisubizo ku busabe bwawe bw’ubufasha."
 
@@ -9016,6 +9355,10 @@ msgstr "Iyi imeyili ntikoreshwa muri porogaramu y’abacuruzi."
 msgid "This is a translation. If it ever differs from the English, the English applies."
 msgstr "Ubu ni ubusemuzi. Niba bugize aho butandukaniye n’Icyongereza, hakurikizwa Icyongereza."
 
+#: src/components/Allowed.tsx:28
+msgid "This is for the owner and every-branch managers"
+msgstr "Ibi ni ibya nyir’iduka n’abayobozi b’amashami yose"
+
 #: src/components/Allowed.tsx:18
 msgid "This is for the owner and managers"
 msgstr "Ibi bireba nyir’iduka n’abayobozi"
@@ -9060,7 +9403,7 @@ msgstr "Ubu busabe bwakemuwe hashize iminsi irenga {REOPEN_WINDOW_DAYS}, bityo n
 msgid "This week"
 msgstr "Iki cyumweru"
 
-#: src/onboarding/Welcome.tsx:1040
+#: src/onboarding/Welcome.tsx:1045
 msgid "Those hours did not save."
 msgstr "Ayo masaha ntiyabitswe."
 
@@ -9186,6 +9529,14 @@ msgctxt "search words"
 msgid "tour guide walkthrough new start learn how it works show me around"
 msgstr "urugendo kumenyereza ubuyobozi gutangira kwiga uko bikora nyereka gusobanurirwa"
 
+#: src/papers/words.ts:56
+msgid "Tourism operating licence"
+msgstr "Uruhushya rwo gukora mu bukerarugendo"
+
+#: src/papers/words.ts:28
+msgid "Trading licence (ipatanti)"
+msgstr "Ipatanti (uruhushya rwo gucuruza)"
+
 #. placeholder {0}: d.subcategoryName ?? ""
 #: src/ads/slides.ts:120
 msgid "Trending in {0}"
@@ -9196,11 +9547,11 @@ msgstr "Bikunzwe muri {0}"
 msgid "Trending on the app"
 msgstr "Bikunzwe muri porogaramu"
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Trouser alterations"
 msgstr "Guhindura amapantalo"
 
-#: src/onboarding/Welcome.tsx:1267
+#: src/onboarding/Welcome.tsx:1272
 msgid "Try"
 msgstr "Gerageza"
 
@@ -9317,16 +9668,16 @@ msgid "Type your email and we will send you a 6-digit code. New here? The same c
 msgstr "Andika imeyili yawe tukoherereze kode y’imibare 6. Uri mushya? Iyo kode ni yo ifungura konti y’ubucuruzi bwawe."
 
 #. placeholder {0}: group.name
-#: src/onboarding/Welcome.tsx:688
+#: src/onboarding/Welcome.tsx:693
 msgid "Types of {0}"
 msgstr "Amoko ya {0}"
 
 #. placeholder {0}: dayWords(date)
-#: src/ads/todaySlides.ts:107
+#: src/ads/todaySlides.ts:108
 msgid "Umuganda · {0}"
 msgstr "Umuganda · {0}"
 
-#: src/ads/todaySlides.ts:27
+#: src/ads/todaySlides.ts:28
 msgid "Umuganura"
 msgstr "Umuganura"
 
@@ -9380,7 +9731,7 @@ msgstr "Ibibazo bitarenze {MAX_GROUPS} kuri buri serivisi"
 msgid "Up to {MAX_KIND_CATEGORIES} categories"
 msgstr "Kugeza ku byiciro {MAX_KIND_CATEGORIES}"
 
-#: src/onboarding/Welcome.tsx:575
+#: src/onboarding/Welcome.tsx:580
 msgid "Up to {MAX_KIND_CATEGORIES} kinds — take one off first"
 msgstr "Kugeza ku moko {MAX_KIND_CATEGORIES} — banza ukuremo bumwe"
 
@@ -9400,9 +9751,31 @@ msgstr "Kugeza kuri 11 kuri buri serivisi · iya mbere ni yo foto y’imbere"
 msgid "Up to 11 photos per service and 30 per branch — JPEG, PNG or WebP, up to 15 MB each."
 msgstr "Kugeza ku mafoto 11 kuri buri serivisi na 30 kuri buri shami — JPEG, PNG cyangwa WebP, buri imwe itarenze 15 MB."
 
-#: src/onboarding/Welcome.tsx:818
+#: src/onboarding/Welcome.tsx:823
+#: src/papers/PaperSlot.tsx:250
 msgid "Upload"
 msgstr "Shyiraho"
+
+#: src/papers/PaperSlot.tsx:182
+msgid "Upload a new one"
+msgstr "Shyiraho nshya"
+
+#: src/ads/todaySlides.ts:260
+msgid "Upload your {paper} to go live"
+msgstr "Shyiraho {paper} yawe kugira ngo ujye ku murongo"
+
+#: src/onboarding/Welcome.tsx:1506
+msgid "Upload your RDB certificate, TIN or trading licence. Once our team checks it, customers see “Registered business” on your page."
+msgstr "Shyiraho icyemezo cyawe cya RDB, TIN cyangwa ipatanti. Itsinda ryacu rimaze kuyigenzura, abakiriya babona “Ubucuruzi bwanditse” ku rupapuro rwawe."
+
+#: src/pages/PapersPage.tsx:79
+msgid "Upload your RDB certificate, your TIN or your trading licence. Once our team checks it, customers see the mark on your page — and it ranks you a little higher."
+msgstr "Shyiraho icyemezo cyawe cya RDB, TIN yawe cyangwa ipatanti yawe. Itsinda ryacu rimaze kuyigenzura, abakiriya babona ikimenyetso ku rupapuro rwawe — kandi bikuzamura gato mu bisubizo."
+
+#. placeholder {0}: shortDay(doc.createdAt)
+#: src/papers/PaperSlot.tsx:155
+msgid "uploaded {0}"
+msgstr "yashyizweho {0}"
 
 #. placeholder {0}: batch.at
 #. placeholder {1}: batch.of
@@ -9421,6 +9794,7 @@ msgstr "Harashyirwaho ifoto {0} kuri {1}…"
 #: src/components/ImageButton.tsx:46
 #: src/pages/ProfilePage.tsx:192
 #: src/pages/ProfilePage.tsx:719
+#: src/papers/PaperSlot.tsx:250
 msgid "Uploading…"
 msgstr "Birashyirwaho…"
 
@@ -9454,11 +9828,15 @@ msgstr "Ubusanzwe birafunguye {0} – {1}"
 msgid "Usually within one working day. We may call your shop’s number, and you get an email at <0>{0}</0> the moment it is live."
 msgstr "Akenshi mu munsi umwe w’akazi. Dushobora guhamagara nimero y’iduka ryawe, kandi uzahabwa imeyili kuri <0>{0}</0> rikimara kujya ku murongo."
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "Vaccination"
 msgstr "Gukingira"
 
-#: src/ads/todaySlides.ts:211
+#: src/papers/PaperSlot.tsx:36
+msgid "Valid until {day}"
+msgstr "Ifite agaciro kugeza ku wa {day}"
+
+#: src/ads/todaySlides.ts:212
 msgid "VAT and PAYE are due by {date}"
 msgstr "TVA na PAYE bitangwa bitarenze {date}"
 
@@ -9539,11 +9917,11 @@ msgstr "Reba dosiye y’inyandiko"
 msgid "views"
 msgstr "bayirebye"
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "VIP seat"
 msgstr "Intebe ya VIP"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "VIP ticket"
 msgstr "Itike ya VIP"
 
@@ -9568,6 +9946,11 @@ msgstr "Irategereje"
 msgid "Waiting for a reply"
 msgstr "Bitegereje igisubizo"
 
+#: src/pages/PapersPage.tsx:17
+#: src/papers/PaperSlot.tsx:26
+msgid "Waiting for our team"
+msgstr "Itegereje itsinda ryacu"
+
 #: src/shell/Sidebar.tsx:65
 msgid "Waiting for review"
 msgstr "Ritegereje isuzuma"
@@ -9580,7 +9963,7 @@ msgstr "Butegereje ubufasha"
 msgid "Waiting for them to arrive"
 msgstr "Ategerejwe kuza"
 
-#: src/onboarding/Welcome.tsx:1413
+#: src/onboarding/Welcome.tsx:1418
 msgid "Waiting to be checked by our team"
 msgstr "Itegereje kugenzurwa n’itsinda ryacu"
 
@@ -9600,11 +9983,11 @@ msgstr "yari umukozi"
 msgid "was the owner"
 msgstr "yari nyir’iduka"
 
-#: src/onboarding/Welcome.tsx:1187
+#: src/onboarding/Welcome.tsx:1192
 msgid "Wash and blow-dry"
 msgstr "Koza no kumutsa umusatsi"
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Wash and fold"
 msgstr "Kumesa no kuzinga imyenda"
 
@@ -9620,11 +10003,11 @@ msgstr "Turimo gusuzuma iduka ryawe. Uzahabwa imeyili niryemezwa."
 msgid "We are here to help"
 msgstr "Turi hano ngo tugufashe"
 
-#: src/onboarding/Welcome.tsx:236
+#: src/onboarding/Welcome.tsx:240
 msgid "We can set it up with you."
 msgstr "Dushobora kuritegurana nawe."
 
-#: src/onboarding/Welcome.tsx:1610
+#: src/onboarding/Welcome.tsx:1690
 msgid "We check every shop before customers can book it. Send yours now — it only takes a moment."
 msgstr "Dusuzuma buri iduka mbere y’uko abakiriya barifatiramo gahunda. Ohereza iryawe nonaha — bifata akanya gato."
 
@@ -9632,7 +10015,7 @@ msgstr "Dusuzuma buri iduka mbere y’uko abakiriya barifatiramo gahunda. Oherez
 msgid "We check it"
 msgstr "Turarisuzuma"
 
-#: src/onboarding/steps.ts:50
+#: src/onboarding/steps.ts:58
 msgid "We check it, you post it"
 msgstr "Turarisuzuma, ukarishyira ahagaragara"
 
@@ -9648,7 +10031,7 @@ msgstr "Ntitwashoboye kubika ibyo wanditse bwa nyuma — reba internet yawe. Iby
 msgid "We have it. Nobody has picked it up yet."
 msgstr "Twarabubonye. Nta muntu urabwitaho."
 
-#: src/onboarding/Welcome.tsx:1451
+#: src/onboarding/Welcome.tsx:1456
 msgid "We hold it safely until they come"
 msgstr "Tuyibika neza kugeza igihe aziye"
 
@@ -9660,7 +10043,7 @@ msgstr "Tumaze kongeraho serivisi nshya. Reba ku rupapuro rwacu muri porogaramu.
 msgid "We let you know straight away"
 msgstr "Tukumenyesha ako kanya"
 
-#: src/ads/todaySlides.ts:93
+#: src/ads/todaySlides.ts:94
 msgid "We remember"
 msgstr "Turibuka"
 
@@ -9681,7 +10064,7 @@ msgid "We're sorry. That isn't the {what} we want for anyone. Please message us 
 msgstr "Tubabajwe n’ibyo. Ibyo wahuye na byo kuri {what} si byo twifuriza umuntu n’umwe. Twandikire tubikosore."
 
 #. placeholder {0}: item.district ?? ''
-#: src/ads/todaySlides.ts:169
+#: src/ads/todaySlides.ts:170
 msgid "Weather · {0}"
 msgstr "Iteganyagihe · {0}"
 
@@ -9689,11 +10072,11 @@ msgstr "Iteganyagihe · {0}"
 msgid "Week"
 msgstr "Icyumweru"
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Weekend slot"
 msgstr "Umwanya wo mu mpera z’icyumweru"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "Weekend stay"
 msgstr "Kurara mu mpera z’icyumweru"
 
@@ -9729,7 +10112,7 @@ msgstr "Ibyo umukiriya asoma ku rupapuro rwa serivisi"
 msgid "What a customer sees before they book. The photos do most of the work."
 msgstr "Ibyo umukiriya abona mbere yo gufata gahunda. Amafoto ni yo akora akazi kenshi."
 
-#: src/onboarding/Welcome.tsx:1253
+#: src/onboarding/Welcome.tsx:1258
 msgid "What can customers book first?"
 msgstr "Ni iki abakiriya bazabanza gufatira gahunda?"
 
@@ -9747,7 +10130,7 @@ msgstr "Icyahindutse: {0}"
 msgid "What customers are booking"
 msgstr "Ibyo abakiriya bafatira gahunda"
 
-#: src/onboarding/Welcome.tsx:1163
+#: src/onboarding/Welcome.tsx:1168
 msgid "What customers can book"
 msgstr "Ibyo abakiriya bashobora gufatira gahunda"
 
@@ -9755,7 +10138,7 @@ msgstr "Ibyo abakiriya bashobora gufatira gahunda"
 msgid "What customers read when they choose it"
 msgstr "Ibyo abakiriya basoma igihe bayihitamo"
 
-#: src/nav.ts:107
+#: src/nav.ts:115
 msgid "What customers said"
 msgstr "Ibyo abakiriya bavuze"
 
@@ -9803,6 +10186,10 @@ msgstr "Uko bizagenda"
 msgid "What is in it"
 msgstr "Ibiburimo"
 
+#: src/papers/PaperSlot.tsx:199
+msgid "What is it?"
+msgstr "Ni iki?"
+
 #: src/tour/steps.ts:100
 msgid "What is left of the deposit after our fee is sent to your MoMo number a couple of days after the visit."
 msgstr "Avansi isigaye nyuma yo gukuramo amafaranga yacu yoherezwa kuri nimero yawe ya MoMo, iminsi mike nyuma yo kuza k’umukiriya."
@@ -9823,7 +10210,7 @@ msgstr "Icyo ari cyo n’ibirimo — umukiriya abisoma mbere yo kuyihitamo."
 msgid "What kind exactly"
 msgstr "Ni ubuhe bwoko neza"
 
-#: src/onboarding/Welcome.tsx:714
+#: src/onboarding/Welcome.tsx:719
 #: src/pages/ProfilePage.tsx:454
 msgid "What kind exactly?"
 msgstr "Ni ubuhe bwoko neza?"
@@ -9837,15 +10224,15 @@ msgstr "Ni ubuhe bwoko neza? Urugero: Umuhanzi wa henna"
 msgid "What kind of {0} exactly"
 msgstr "Ni ubuhe bwoko bwa {0} neza"
 
-#: src/onboarding/Welcome.tsx:563
+#: src/onboarding/Welcome.tsx:568
 msgid "What kind of shop"
 msgstr "Ubwoko bw’iduka"
 
-#: src/onboarding/Welcome.tsx:559
+#: src/onboarding/Welcome.tsx:564
 msgid "What kind of shop is it?"
 msgstr "Ni iduka ry’ubuhe bwoko?"
 
-#: src/onboarding/steps.ts:101
+#: src/onboarding/steps.ts:111
 msgid "What kind of shop it is"
 msgstr "Ubwoko bw’iduka ryawe"
 
@@ -9878,12 +10265,12 @@ msgid "What we keep about you and your customers, and why."
 msgstr "Amakuru tubika kuri wowe n’abakiriya bawe, n’impamvu."
 
 #. placeholder {0}: required.length
-#: src/onboarding/Welcome.tsx:1625
+#: src/onboarding/Welcome.tsx:1705
 msgid "What we need <0>{have} of {0}</0>"
 msgstr "Ibyo dukeneye <0>{have} kuri {0}</0>"
 
 #: src/onboarding/GoLiveCard.tsx:291
-#: src/onboarding/Welcome.tsx:1618
+#: src/onboarding/Welcome.tsx:1698
 msgid "What we said"
 msgstr "Ibyo twavuze"
 
@@ -9891,7 +10278,7 @@ msgstr "Ibyo twavuze"
 msgid "What we send you"
 msgstr "Ibyo tukoherereza"
 
-#: src/nav.ts:171
+#: src/nav.ts:179
 msgid "What we send you, and how"
 msgstr "Ibyo tukoherereza, n’uburyo"
 
@@ -9912,11 +10299,11 @@ msgstr "Ibyo wemeye. Inyandiko za kera zirabikwa — ibyo wemeye biguma uko wabi
 msgid "What you sell, and for how much"
 msgstr "Ibyo ucuruza, n’ibiciro byabyo"
 
-#: src/onboarding/Welcome.tsx:502
+#: src/onboarding/Welcome.tsx:507
 msgid "What’s your shop called?"
 msgstr "Iduka ryawe ryitwa iki?"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Wheel balancing"
 msgstr "Kuringaniza amapine"
 
@@ -9949,7 +10336,7 @@ msgstr "Iyo umukiriya akubwiye kode ye, ukimara kwandika umubare wa gatandatu ah
 msgid "When a document changes, everything keeps running — agree when you have read it."
 msgstr "Iyo inyandiko ihindutse, byose bikomeza gukora — uyemere umaze kuyisoma."
 
-#: src/onboarding/Welcome.tsx:1055
+#: src/onboarding/Welcome.tsx:1060
 msgid "When are you open?"
 msgstr "Ufungura ryari?"
 
@@ -10007,8 +10394,8 @@ msgstr "Aho amamenyesha ajya"
 msgid "Where every franc of your deposits is, from a booking to your mobile money."
 msgstr "Aho buri faranga ry’avansi zawe riri, kuva kuri gahunda kugeza kuri Mobile Money yawe."
 
-#: src/onboarding/Welcome.tsx:883
-#: src/onboarding/Welcome.tsx:919
+#: src/onboarding/Welcome.tsx:888
+#: src/onboarding/Welcome.tsx:924
 msgid "Where is your shop?"
 msgstr "Iduka ryawe riherereye he?"
 
@@ -10024,8 +10411,8 @@ msgstr "Aho riherereye, ku ikarita abakiriya bakoresha"
 msgid "Where it works best"
 msgstr "Aho ikora neza kurusha"
 
-#: src/onboarding/Welcome.tsx:1408
-#: src/onboarding/Welcome.tsx:1433
+#: src/onboarding/Welcome.tsx:1413
+#: src/onboarding/Welcome.tsx:1438
 msgid "Where should we send your money?"
 msgstr "Amafaranga yawe tuyohereze he?"
 
@@ -10051,7 +10438,7 @@ msgstr "Aho uherereye n’igihe ufungura"
 msgid "Where you are signed in"
 msgstr "Aho winjiye kuri konti"
 
-#: src/nav.ts:164
+#: src/nav.ts:172
 msgid "Where you are signed in, and signing out there"
 msgstr "Aho winjiye kuri konti, no gusohokayo"
 
@@ -10068,17 +10455,21 @@ msgstr "Ishami irihe"
 msgid "Which branches"
 msgstr "Amashami ayahe"
 
-#: src/onboarding/Welcome.tsx:658
+#: src/onboarding/Welcome.tsx:663
 msgid "Which describe it best?"
 msgstr "Ni ibihe birisobanura neza?"
 
-#: src/onboarding/Welcome.tsx:658
+#: src/onboarding/Welcome.tsx:663
 msgid "Which describes it best?"
 msgstr "Ni ikihe kirisobanura neza?"
 
 #: src/pages/ReviewsPage.tsx:243
 msgid "Which ones are waiting for a reply"
 msgstr "Ibitegereje igisubizo"
+
+#: src/onboarding/Welcome.tsx:1521
+msgid "Which paper"
+msgstr "Inyandiko irihe"
 
 #: src/pages/ProfilePage.tsx:502
 msgid "Which type"
@@ -10088,7 +10479,7 @@ msgstr "Ubuhe bwoko"
 msgid "While you wait"
 msgstr "Mu gihe utegereje"
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Whitening"
 msgstr "Kweza amenyo"
 
@@ -10116,7 +10507,7 @@ msgstr "Abaza, n’igihe — ku rutonde cyangwa kuri kalendari"
 msgid "Who is coming, checking them in, and what they still owe you."
 msgstr "Abaza, kubakira, n’ayo bakigufitiye."
 
-#: src/nav.ts:157
+#: src/nav.ts:165
 msgid "Who works here with you"
 msgstr "Abo mukorana hano"
 
@@ -10132,7 +10523,7 @@ msgstr "Uwo ari we wese uyikoresha azakenera kode nshya, yoherezwa kuri imeyili 
 msgid "Why <0>optional — customers do not see this</0>"
 msgstr "Impamvu <0>si ngombwa — abakiriya ntibabibona</0>"
 
-#: src/ads/todaySlides.ts:132
+#: src/ads/todaySlides.ts:133
 msgid "Will you open? Close the day or set its hours."
 msgstr "Uzafungura? Funga uwo munsi cyangwa ushyireho amasaha yawo."
 
@@ -10192,7 +10583,7 @@ msgstr "Andika igisubizo"
 msgid "Write my own question"
 msgstr "Andika ikibazo cyanjye"
 
-#: src/nav.ts:114
+#: src/nav.ts:122
 msgid "Write to customers who follow your shop"
 msgstr "Andikira abakiriya bakurikira iduka ryawe"
 
@@ -10213,7 +10604,7 @@ msgstr "Yego, emeza ko byarangiye"
 msgid "Yesterday"
 msgstr "Ejo hashize"
 
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1214
 msgid "Yoga class"
 msgstr "Isomo rya yoga"
 
@@ -10239,7 +10630,7 @@ msgstr "Wemeye verisiyo ya {0} ku ya {1}. Iyi ni nshya kurushaho."
 msgid "You are <0>in!</0>"
 msgstr "Ubu <0>winjiye!</0>"
 
-#: src/onboarding/GoLiveCard.tsx:496
+#: src/onboarding/GoLiveCard.tsx:497
 msgid "You are live! 🎉"
 msgstr "Uri ku murongo! 🎉"
 
@@ -10331,11 +10722,31 @@ msgstr "Ukorera ku mashami yose."
 msgid "you@example.com"
 msgstr "you@example.com"
 
-#: src/onboarding/Welcome.tsx:1477
+#: src/ads/todaySlides.ts:274
+msgid "Your {paper} ran out on {day}"
+msgstr "{paper} yawe yarangiye ku wa {day}"
+
+#: src/ads/todaySlides.ts:273
+msgid "Your {paper} ran out on {day}. Upload the renewed one so your papers stay in order."
+msgstr "{paper} yawe yarangiye ku wa {day}. Shyiraho iyongerewe kugira ngo inyandiko zawe zigume mu buryo."
+
+#: src/ads/todaySlides.ts:281
+msgid "Your {paper} runs out on {day}"
+msgstr "{paper} yawe irangira ku wa {day}"
+
+#: src/ads/todaySlides.ts:280
+msgid "Your {paper} runs out on {day}. Upload the renewed one when you have it."
+msgstr "{paper} yawe irangira ku wa {day}. Shyiraho iyongerewe nuyibona."
+
+#: src/ads/todaySlides.ts:267
+msgid "Your {paper} was not accepted — upload a clear copy"
+msgstr "{paper} yawe ntiyemewe — shyiraho kopi igaragara neza"
+
+#: src/onboarding/Welcome.tsx:1557
 msgid "your address"
 msgstr "imeyili yawe"
 
-#: src/nav.ts:135
+#: src/nav.ts:143
 msgid "Your balance and payouts"
 msgstr "Amafaranga ufite n’ayo wishyuwe"
 
@@ -10356,11 +10767,11 @@ msgid "Your bookings, your money and your ratings."
 msgstr "Gahunda zawe, amafaranga yawe n’amanota yawe."
 
 #. placeholder {0}: active[0].name
-#: src/onboarding/Welcome.tsx:989
+#: src/onboarding/Welcome.tsx:994
 msgid "Your branch “{0}” has no map pin or district yet. Add them in <0>Branches & hours</0>, or add the address here."
 msgstr "Ishami ryawe “{0}” ntirirashyirwaho akamenyetso ku ikarita cyangwa akarere. Bishyireho muri <0>Amashami n’amasaha</0>, cyangwa wongereho aderesi hano."
 
-#: src/onboarding/Welcome.tsx:883
+#: src/onboarding/Welcome.tsx:888
 msgid "Your branch is on the map."
 msgstr "Ishami ryawe riri ku ikarita."
 
@@ -10383,6 +10794,10 @@ msgstr "Ubucuruzi bwawe"
 #: src/auth/LoginPage.tsx:658
 msgid "Your business account is ready. Let us set up your shop."
 msgstr "Konti y’ubucuruzi bwawe yiteguye. Reka dutunganye iduka ryawe."
+
+#: src/onboarding/steps.ts:146
+msgid "Your business papers"
+msgstr "Inyandiko z’ubucuruzi bwawe"
 
 #: src/ads/useAdData.ts:142
 msgid "Your category and type"
@@ -10407,6 +10822,10 @@ msgstr "Umunsi wawe muri make"
 msgid "Your description shows here. Say what you offer and why you are worth the trip."
 msgstr "Ibisobanuro byawe bigaragara hano. Vuga ibyo utanga n’igituma bikwiye kuza iwawe."
 
+#: src/papers/words.ts:29
+msgid "Your district"
+msgstr "Akarere kawe"
+
 #: src/pages/AppointmentsPage.tsx:961
 msgid "Your first booking will appear here"
 msgstr "Gahunda yawe ya mbere izagaragara hano"
@@ -10424,7 +10843,7 @@ msgstr "Ubwishyu bwawe bwa mbere buzagaragara hano amafaranga ya gahunda amaze k
 msgid "Your first service"
 msgstr "Serivisi yawe ya mbere"
 
-#: src/ads/slides.ts:296
+#: src/ads/slides.ts:299
 msgid "Your help request has moved on."
 msgstr "Hari icyahindutse ku busabe bwawe bw’ubufasha."
 
@@ -10432,9 +10851,21 @@ msgstr "Hari icyahindutse ku busabe bwawe bw’ubufasha."
 msgid "Your kind"
 msgstr "Ubwoko bwawe"
 
+#: src/ads/todaySlides.ts:259
+msgid "Your kind of shop cannot go live until our team has checked your {paper}. Upload it under Business papers."
+msgstr "Ubwoko bw’iduka ryawe ntibushobora kujya ku murongo itsinda ryacu ritaragenzura {paper} yawe. Yishyireho muri Inyandiko z’ubucuruzi."
+
+#: src/onboarding/Welcome.tsx:1505
+msgid "Your kind of shop cannot go live without it. Upload it here; our team checks it before you are approved."
+msgstr "Ubwoko bw’iduka ryawe ntibushobora kujya ku murongo nta yo. Yishyireho hano; itsinda ryacu riyigenzura mbere y’uko wemerwa."
+
+#: src/onboarding/Welcome.tsx:1502
+msgid "Your licence"
+msgstr "Uruhushya rwawe"
+
 #: src/ads/useAdData.ts:133
-#: src/onboarding/steps.ts:111
-#: src/onboarding/Welcome.tsx:815
+#: src/onboarding/steps.ts:121
+#: src/onboarding/Welcome.tsx:820
 msgid "Your logo"
 msgstr "Ikirango cyawe"
 
@@ -10480,7 +10911,7 @@ msgstr "Gahunda yawe itaha, mu masegonda make."
 msgid "Your numbers start with your first booking"
 msgstr "Imibare yawe itangirana na gahunda ya mbere"
 
-#: src/onboarding/Welcome.tsx:1055
+#: src/onboarding/Welcome.tsx:1060
 msgid "Your opening hours are set."
 msgstr "Amasaha yawe yo gufungura yashyizweho."
 
@@ -10500,6 +10931,10 @@ msgstr "Nimero yawe yo kwishyurirwaho irasuzumwa"
 msgid "Your payout number was not accepted"
 msgstr "Nimero yawe yo kwishyurirwaho ntiyemewe"
 
+#: src/papers/words.ts:43
+msgid "Your professional council"
+msgstr "Urugaga rw’umwuga wawe"
+
 #: src/pages/SupportPage.tsx:551
 msgid "Your question"
 msgstr "Ikibazo cyawe"
@@ -10515,6 +10950,18 @@ msgstr "Amanota yawe"
 #: src/pages/AnalyticsPage.tsx:167
 msgid "Your rating, and your busiest days"
 msgstr "Amanota yawe, n’iminsi ubona abantu benshi"
+
+#: src/pages/PapersPage.tsx:113
+msgid "Your registration"
+msgstr "Iyandikwa ryawe"
+
+#: src/nav.ts:87
+msgid "Your registration and licences"
+msgstr "Iyandikwa ryawe n’impushya"
+
+#: src/pages/PapersPage.tsx:52
+msgid "Your registration and the licences your kind of shop needs. Only you and our team can open them."
+msgstr "Iyandikwa ryawe n’impushya ubwoko bw’iduka ryawe bukeneye. Wowe n’itsinda ryacu gusa ni mwe mushobora kuzifungura."
 
 #: src/pages/ReviewsPage.tsx:519
 msgid "Your reply"
@@ -10553,7 +11000,7 @@ msgstr "Umugabane wawe ugera kuri Mobile Money yawe"
 msgid "Your share is held until you add one"
 msgstr "Umugabane wawe ubikwa kugeza ushyizeho nimero"
 
-#: src/onboarding/Welcome.tsx:1452
+#: src/onboarding/Welcome.tsx:1457
 msgid "Your share is sent to this number"
 msgstr "Umugabane wawe woherezwa kuri iyi nimero"
 
@@ -10573,7 +11020,7 @@ msgstr "Umugabane wawe kuri avansi wishyurwa kuri yo."
 msgid "Your share of deposits, paid to your mobile money"
 msgstr "Umugabane wawe kuri avansi, wishyurwa kuri Mobile Money yawe"
 
-#: src/onboarding/Welcome.tsx:1408
+#: src/onboarding/Welcome.tsx:1413
 msgid "Your share of every deposit goes to this number."
 msgstr "Umugabane wawe kuri buri avansi ujya kuri iyi nimero."
 
@@ -10598,7 +11045,7 @@ msgstr "iduka ryawe"
 #: src/nav.ts:52
 #: src/onboarding/GoLiveCard.tsx:80
 #: src/onboarding/steps.ts:20
-#: src/onboarding/Welcome.tsx:189
+#: src/onboarding/Welcome.tsx:193
 #: src/pages/FollowersPage.tsx:75
 #: src/pages/ReviewsPage.tsx:461
 #: src/pages/StoriesPage.tsx:127
@@ -10618,15 +11065,19 @@ msgstr "Iduka ryawe · ntiriri ku murongo"
 msgid "Your shop · paused"
 msgstr "Iduka ryawe · ryahagaritswe by’agateganyo"
 
-#: src/onboarding/Welcome.tsx:1434
+#: src/onboarding/Welcome.tsx:1439
 msgid "Your shop can go live without it — you are paid once it is added and checked."
 msgstr "Iduka ryawe rishobora kujya ku murongo nta yo — uzishyurwa imaze kongerwaho no kugenzurwa."
+
+#: src/pages/PapersPage.tsx:91
+msgid "Your shop cannot be sent for review without it, and goes live once our team has checked it."
+msgstr "Iduka ryawe ntirishobora koherezwa gusuzumwa nta yo, kandi rijya ku murongo itsinda ryacu rimaze kuyigenzura."
 
 #: src/onboarding/GoLiveCard.tsx:320
 msgid "Your shop is approved. Post it when you are ready"
 msgstr "Iduka ryawe ryemejwe. Rishyire ahagaragara igihe witeguye"
 
-#: src/onboarding/GoLiveCard.tsx:484
+#: src/onboarding/GoLiveCard.tsx:485
 msgid "Your shop is live"
 msgstr "Iduka ryawe riri ku murongo"
 
@@ -10651,13 +11102,17 @@ msgstr "Iduka ryawe ryiteguye koherezwa"
 msgid "Your shop is suspended"
 msgstr "Iduka ryawe ryahagaritswe"
 
-#: src/onboarding/Welcome.tsx:1517
+#: src/onboarding/Welcome.tsx:1597
 msgid "Your shop is waiting for review"
 msgstr "Iduka ryawe rirategereje gusuzumwa"
 
-#: src/onboarding/Welcome.tsx:1517
+#: src/onboarding/Welcome.tsx:1597
 msgid "Your shop is with us for review"
 msgstr "Twakiriye iduka ryawe, turarisuzuma"
+
+#: src/ads/todaySlides.ts:258
+msgid "Your shop needs its licence"
+msgstr "Iduka ryawe rikeneye uruhushya rwaryo"
 
 #: src/pages/FollowersPage.tsx:81
 msgid "Your shop needs to be live on the app first."
@@ -10667,12 +11122,12 @@ msgstr "Iduka ryawe rigomba kubanza kujya ku murongo muri porogaramu."
 msgid "Your shop window is complete"
 msgstr "Isura y’iduka ryawe yuzuye"
 
-#: src/onboarding/Welcome.tsx:971
+#: src/onboarding/Welcome.tsx:976
 msgid "your shop’s name"
 msgstr "izina ry’iduka ryawe"
 
-#: src/onboarding/steps.ts:96
-#: src/onboarding/Welcome.tsx:518
+#: src/onboarding/steps.ts:106
+#: src/onboarding/Welcome.tsx:523
 msgid "Your shop’s name"
 msgstr "Izina ry’iduka ryawe"
 

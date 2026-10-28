@@ -168,7 +168,7 @@ msgid "{0} paid with MTN Mobile Money. Your slot is confirmed."
 msgstr "{0} paidnya withikimbi MTNmwandi Mobileshya Moneyshya. Yourmwa slotikindi is confirmedzeshya."
 
 #. placeholder {0}: s.business.followers.toLocaleString()
-#: app/shop/[id].tsx:283
+#: app/shop/[id].tsx:285
 msgid "{0} people follow {displayName}"
 msgstr "{0} peoplezeshya followabanyaaba {displayName}"
 
@@ -1058,8 +1058,8 @@ msgid "Close your account?"
 msgstr "Closeshya yourmbihoiki accountabaiki?"
 
 #: app/shop/[id].tsx:220
-#: app/shop/[id].tsx:436
-#: app/shop/[id].tsx:452
+#: app/shop/[id].tsx:438
+#: app/shop/[id].tsx:454
 msgid "Closed"
 msgstr "Closedkombi"
 
@@ -1101,7 +1101,7 @@ msgstr "coachingnyandi calliki"
 msgid "Coming soon"
 msgstr "Comingzeshya soonmbi"
 
-#: app/shop/[id].tsx:446
+#: app/shop/[id].tsx:448
 msgid "Coming up"
 msgstr "Comingzeshya up"
 
@@ -1461,11 +1461,11 @@ msgstr "fittingndiaba"
 msgid "Fix"
 msgstr "Fixndi"
 
-#: app/shop/[id].tsx:253
+#: app/shop/[id].tsx:255
 msgid "Follow"
 msgstr "Followuguabandi"
 
-#: app/shop/[id].tsx:245
+#: app/shop/[id].tsx:247
 msgid "Follow {displayName}"
 msgstr "Followuguabandi {displayName}"
 
@@ -1485,7 +1485,7 @@ msgstr "Followuguabandi {shopName}?"
 msgid "Follow, and send me offers"
 msgstr "Followuguabandi, andmwa sendshya me offerszembi"
 
-#: app/shop/[id].tsx:253
+#: app/shop/[id].tsx:255
 #: src/components/FollowingCard.tsx:138
 msgid "Following"
 msgstr "Followingndiko"
@@ -1495,7 +1495,7 @@ msgctxt "how many shops you follow"
 msgid "Following"
 msgstr "Followingndiko"
 
-#: app/shop/[id].tsx:245
+#: app/shop/[id].tsx:247
 msgid "Following {displayName}. Tap to unfollow"
 msgstr "Followingndiko {displayName}. Tapze to unfollowshyambi"
 
@@ -1543,13 +1543,13 @@ msgstr "fromko"
 msgid "From"
 msgstr "Fromrwa"
 
-#: app/shop/[id].tsx:598
+#: app/shop/[id].tsx:600
 msgid "from "
 msgstr "fromko "
 
 #. placeholder {0}: s.rating.count
-#: app/shop/[id].tsx:310
-#: app/shop/[id].tsx:471
+#: app/shop/[id].tsx:312
+#: app/shop/[id].tsx:473
 msgid "from {0} reviews"
 msgstr "fromko {0} reviewsmwahorwaze"
 
@@ -1612,7 +1612,7 @@ msgid "Getting there"
 msgstr "Gettinghoho therekokokomwa"
 
 #: app/shop/[id].tsx:138
-#: app/shop/[id].tsx:533
+#: app/shop/[id].tsx:535
 #: app/thread/[id].tsx:216
 #: src/ui/TopBar.tsx:48
 msgid "Go back"
@@ -1963,7 +1963,7 @@ msgstr "matchmbiugunya"
 msgid "Message"
 msgstr "Messageabaugu"
 
-#: app/shop/[id].tsx:331
+#: app/shop/[id].tsx:333
 #: src/booking/Reservation.tsx:339
 #: src/booking/Reservation.tsx:375
 msgid "Message the shop"
@@ -2156,7 +2156,7 @@ msgstr "No timesiki leftndishya todaymbi. Pickaba anotherndimwa dayko."
 msgid "Nobody checked you in, so the booking was marked as missed a day after its time."
 msgstr "Nobodymwaikiiki checkedmwandi youugu in, so theugumbi bookinguguiki wasmwa markedkombi as missedugushya a dayko afteriki itsrwa timendi."
 
-#: app/shop/[id].tsx:477
+#: app/shop/[id].tsx:479
 msgid "Nobody has reviewed this place yet."
 msgstr "Nobodymwaikiiki hasshya reviewedndiaba thisrwaaba placendi yetiki."
 
@@ -2297,7 +2297,7 @@ msgstr "Nothingzenya herenya yetiki"
 msgid "Nothing here yet."
 msgstr "Nothingzenya herenya yetiki."
 
-#: app/shop/[id].tsx:403
+#: app/shop/[id].tsx:405
 msgid "Nothing is bookable here yet."
 msgstr "Nothingzenya is bookableabanya herenya yetiki."
 
@@ -2472,7 +2472,7 @@ msgstr "Openrwa {businessName}"
 msgid "Open a place and tap Message the shop to ask something before you book."
 msgstr "Openrwa a placendi andmwa tapmwa Messageabaugu theugumbi shopko to askzeshya somethingnyanya beforembiho youugu bookugundi."
 
-#: app/shop/[id].tsx:391
+#: app/shop/[id].tsx:393
 msgid "Open hours"
 msgstr "Openrwa hoursugu"
 
@@ -2521,7 +2521,7 @@ msgstr "Openrwa theugumbi supportndiho requestmwako"
 msgid "Opened {0}"
 msgstr "Openedabaiki {0}"
 
-#: app/shop/[id].tsx:331
+#: app/shop/[id].tsx:333
 msgid "Opening…"
 msgstr "Openingnyandi…"
 
@@ -2554,7 +2554,7 @@ msgid "Past"
 msgstr "Pastiki"
 
 #. placeholder {0}: format(depositMinor, service.currency)
-#: app/shop/[id].tsx:605
+#: app/shop/[id].tsx:607
 msgid "pay {0} now"
 msgstr "payko {0} nownya"
 
@@ -2631,7 +2631,7 @@ msgstr "Photoshyashya {0}"
 #. placeholder {0}: index + 1
 #. placeholder {1}: photos.length
 #. placeholder {1}: s.gallery.length
-#: app/shop/[id].tsx:366
+#: app/shop/[id].tsx:368
 #: src/ui/PhotoViewer.tsx:295
 msgid "Photo {0} of {1}"
 msgstr "Photoshyashya {0} of {1}"
@@ -2656,7 +2656,7 @@ msgid "Photos"
 msgstr "Photosabaze"
 
 #. placeholder {0}: s.gallery.length
-#: app/shop/[id].tsx:347
+#: app/shop/[id].tsx:349
 msgid "Photos <0>{0}</0>"
 msgstr "Photosabaze <0>{0}</0>"
 
@@ -2815,6 +2815,10 @@ msgstr "Readrwa yourmbihoiki privatendiugu answersabaiki, to helpze"
 msgid "Real shops near you, booked in a few taps."
 msgstr "Realikiiki shopsmbi nearnya youugu, bookedikiikimbi in a fewko tapsshyarwa."
 
+#: app/shop/[id].tsx:223
+msgid "Registered business"
+msgstr "Registeredkondiho businessshyarwa"
+
 #: src/booking/PaidCelebration.tsx:307
 msgid "Remind me before it"
 msgstr "Remindugumbi me beforembiho it"
@@ -2888,13 +2892,13 @@ msgstr "Reservationikimbize no."
 msgid "Review"
 msgstr "Reviewkondi"
 
-#: app/shop/[id].tsx:394
+#: app/shop/[id].tsx:396
 #: src/exportDocument.ts:200
 msgid "Reviews"
 msgstr "Reviewsmbiho"
 
 #. placeholder {0}: reviews.data.total
-#: app/shop/[id].tsx:394
+#: app/shop/[id].tsx:396
 msgid "Reviews ({0})"
 msgstr "Reviewsmbiho ({0})"
 
@@ -2988,7 +2992,7 @@ msgstr "secze"
 msgid "See all"
 msgstr "Seeabaugu allaba"
 
-#: app/shop/[id].tsx:350
+#: app/shop/[id].tsx:352
 msgid "See all →"
 msgstr "Seeabaugu allaba →"
 
@@ -3014,7 +3018,7 @@ msgstr "Seeabaugu or changekonya it"
 msgid "See the shop"
 msgstr "Seeabaugu theugumbi shopko"
 
-#: app/shop/[id].tsx:268
+#: app/shop/[id].tsx:270
 msgid "See the story from {displayName}"
 msgstr "Seeabaugu theugumbi storyzemwa fromko {displayName}"
 
@@ -3104,7 +3108,7 @@ msgstr "Servicesrwarwa"
 msgid "Services{0}"
 msgstr "Servicesrwarwa{0}"
 
-#: app/shop/[id].tsx:537
+#: app/shop/[id].tsx:539
 msgid "Share this place"
 msgstr "Shareaba thisrwaaba placendi"
 
@@ -3529,7 +3533,7 @@ msgstr "Therekoaba is no accountabaiki forabaze <0>{clean}</0> yetiki. Letze us 
 msgid "They are kept with your account, so they follow you to any phone."
 msgstr "Theynya areiki keptrwa withikimbi yourmbihoiki accountabaiki, so theynya followabanyaaba youugu to anyrwa phonehoikize."
 
-#: app/shop/[id].tsx:492
+#: app/shop/[id].tsx:494
 msgid "They replied"
 msgstr "Theynya repliedmwaze"
 
@@ -3967,7 +3971,7 @@ msgstr "Whatshya is it aboutmwa?"
 msgid "What is wrong with this story?"
 msgstr "Whatshya is wrongzembi withikimbi thisrwaaba storyzemwa?"
 
-#: app/shop/[id].tsx:390
+#: app/shop/[id].tsx:392
 msgid "What they do"
 msgstr "Whatshya theynya do"
 

@@ -428,3 +428,29 @@ export async function download(path: string, filename: string): Promise<void> {
   anchor.click();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * A file behind the sign-in (a shop's paper, §314), shown in a new tab. No
+ * plain link reaches it, so it is fetched with the token and shown from
+ * memory; the tab is opened first so the browser counts it as the click.
+ */
+export async function openFile(path: string, filename: string): Promise<void> {
+  const tab = window.open('', '_blank');
+  const response = await fetch(`${BASE_URL}${path}`, {
+    headers: { 'Accept-Language': 'en', ...(tokens.access ? { Authorization: `Bearer ${tokens.access}` } : {}) },
+  });
+  if (!response.ok) {
+    tab?.close();
+    throw new ApiError(response.status, `Could not open ${filename}.`);
+  }
+  const url = URL.createObjectURL(await response.blob());
+  if (tab) {
+    tab.location.href = url;
+  } else {
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+  }
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}

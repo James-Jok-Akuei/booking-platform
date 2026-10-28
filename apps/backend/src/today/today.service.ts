@@ -4,6 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { BusinessAccessService } from '../business/business-access.service';
 import { mayReadMoney } from '../business/branch-scope';
 import { KINDS_SELECT } from '../business/kinds';
+import { BusinessDocumentStatus, BusinessMemberRole } from '@prisma/client';
+import { EXPIRY_WARNING_DAYS, requiredPapers, ruleState } from '../business/document-rules';
 import { fold } from '../categories/taxonomy-names.service';
 import { readTyped, typedIn } from '../i18n/typed-words';
 import type { Locale } from '../i18n/locales';
@@ -87,6 +89,12 @@ export class TodayService {
     if (holiday) {
       const branches = await this.openAt(shop.locations, holiday.date, '00:00', '23:59');
       if (branches.some((b) => !b.covered)) items.push({ kind: 'holiday', date: holiday.date, holiday: holiday.key, branches });
+    }
+
+    // A paper missing, refused, run out or running out (§314) — for those who run the business.
+    if (membership.role === BusinessMemberRole.OWNER || (membership.role === BusinessMemberRole.MANAGER && membership.scope.allLocations)) {
+      const paper = await this.papers(membership.businessProfileId, now);
+      if (paper) items.push(paper);
     }
 
     // Heavy rain, for the shops it changes the day of.
@@ -214,6 +222,33 @@ export class TodayService {
       .filter(Boolean);
     const offered = names.some((name) => name.includes(term) || term.includes(name));
     return { kind: 'searches', term, count: best.count, district: best.district, offered };
+  }
+
+  /** The most pressing thing about the shop's papers (§314), if any. */
+  private async papers(businessId: string, now: Date): Promise<TodayItemDto | null> {
+    const shop = await this.prisma.businessProfile.findUniqueOrThrow({
+      where: { id: businessId },
+      select: {
+        kinds: { select: { category: { select: { name: true } }, subcategory: { select: { name: true } } } },
+        documents: {
+          where: { status: { in: [BusinessDocumentStatus.SUBMITTED, BusinessDocumentStatus.VERIFIED, BusinessDocumentStatus.REFUSED] } },
+          orderBy: { createdAt: 'desc' },
+          select: { kind: true, status: true, expiresAt: true },
+        },
+      },
+    });
+    const docs = shop.documents;
+    const missing = requiredPapers(shop.kinds).find((rule) => ruleState(rule, docs, now) === 'missing');
+    if (missing) return { kind: 'papers', state: 'missing', paper: missing.kinds[0] };
+    const refused = docs.find((d) => d.status === BusinessDocumentStatus.REFUSED);
+    if (refused) return { kind: 'papers', state: 'refused', paper: refused.kind };
+    const standing = docs.filter((d) => d.status !== BusinessDocumentStatus.REFUSED && d.expiresAt !== null);
+    const expired = standing.find((d) => d.expiresAt!.getTime() <= now.getTime());
+    if (expired) return { kind: 'papers', state: 'expired', paper: expired.kind, date: expired.expiresAt!.toISOString().slice(0, 10) };
+    const soon = new Date(now.getTime() + EXPIRY_WARNING_DAYS * 86_400_000);
+    const expiring = standing.find((d) => d.expiresAt!.getTime() <= soon.getTime());
+    if (expiring) return { kind: 'papers', state: 'expiring', paper: expiring.kind, date: expiring.expiresAt!.toISOString().slice(0, 10) };
+    return null;
   }
 
   /** What our team posted for shops to see in For you (§310), in the reader's language. */

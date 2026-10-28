@@ -1,4 +1,5 @@
-import { NotificationType } from '@prisma/client';
+import { BusinessDocumentKind, NotificationType } from '@prisma/client';
+import { KIND_WORDS } from '../business/document-rules';
 import { adviceItems, adviceLead, type AdviceShop } from '../business/shop-advice';
 import { describeDevice } from '../auth/device';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
@@ -29,12 +30,18 @@ export interface AppointmentContext {
   rating?: number;
   /** A new sign-in's phone or browser, as it describes itself (§298). */
   userAgent?: string | null;
+  /** A business paper (§314): which, and whether it has run out. */
+  document?: { kind: BusinessDocumentKind; label: string | null; expiresAt: Date | null; expired: boolean };
   /**
    * Words composed where they are raised — what our support team did (§297)
    * — written out for each reader in their own language (§308).
    */
   compose?: (locale: Locale) => { subject: string; body: string };
 }
+
+/** A paper's name in the reader's language (§314) — its own words when it is "another paper". */
+const paperName = (document: AppointmentContext['document'], l: Locale) =>
+  !document ? say(l, 'business paper') : document.kind === BusinessDocumentKind.OTHER && document.label ? document.label : say(l, KIND_WORDS[document.kind]).toLowerCase();
 
 /**
  * The advice under an approval (§303): the sentence, the list — one "• "
@@ -604,6 +611,54 @@ export function renderNotification(
           `${booking}\n\n` +
           say(l, 'Open the booking to see what they would like now.'),
       };
+
+    // Business papers (§314). To our team: English. To the shop: its language.
+    case NotificationType.BUSINESS_DOCUMENT_SUBMITTED:
+      return {
+        subject: 'A business paper to check',
+        body: (ctx.reason ? `${ctx.reason}\n\n` : '') + 'Open the shop under Businesses to read it, and mark it checked or refuse it with a reason.',
+      };
+
+    case NotificationType.BUSINESS_DOCUMENT_VERIFIED: {
+      const paper = paperName(ctx.document, l);
+      return {
+        subject: say(l, 'Your {paper} is checked', { paper }),
+        body:
+          `${say(l, 'We checked your {paper} and it is in order.', { paper })}\n\n` +
+          say(l, 'Papers that run out are asked for again a month before they do. Thank you for keeping them in order.'),
+      };
+    }
+
+    case NotificationType.BUSINESS_DOCUMENT_REFUSED: {
+      const paper = paperName(ctx.document, l);
+      return {
+        subject: say(l, 'Your {paper} was not accepted', { paper }),
+        body:
+          `${say(l, 'We could not accept the {paper} you uploaded.', { paper })}\n\n` +
+          (ctx.reason ? `${reasonLine(ctx.reason)}\n\n` : '') +
+          say(l, 'Upload it again under Business papers — a clear, complete scan or photo of the whole page.'),
+      };
+    }
+
+    case NotificationType.BUSINESS_DOCUMENT_EXPIRING: {
+      const paper = paperName(ctx.document, l);
+      const day = ctx.document?.expiresAt
+        ? formatDateIn(l, ctx.document.expiresAt, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Kigali' })
+        : '';
+      return ctx.document?.expired
+        ? {
+            subject: say(l, 'Your {paper} has run out', { paper }),
+            body:
+              `${say(l, 'Your {paper} ran out on {day}.', { paper, day })}\n\n` +
+              say(l, 'Upload the renewed one under Business papers. A shop whose licence has run out may be taken off the app until it is renewed.'),
+          }
+        : {
+            subject: say(l, 'Your {paper} runs out on {day}', { paper, day }),
+            body:
+              `${say(l, 'Your {paper} runs out on {day}.', { paper, day })}\n\n` +
+              say(l, 'Renew it in time, then upload the new one under Business papers, so nothing stops when the old one ends.'),
+          };
+    }
 
     // A sign-in on a phone or browser not seen before (§298), named in the reader's language.
     case NotificationType.NEW_SIGN_IN: {

@@ -6938,6 +6938,592 @@
         ]
       }
     },
+    "/business/documents": {
+      "get": {
+        "operationId": "BusinessDocumentsController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessDocumentsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "BusinessDocuments"
+        ]
+      },
+      "post": {
+        "operationId": "BusinessDocumentsController_upload",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessDocumentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "BusinessDocuments"
+        ]
+      }
+    },
+    "/business/documents/{id}": {
+      "delete": {
+        "operationId": "BusinessDocumentsController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessDocumentsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "BusinessDocuments"
+        ]
+      }
+    },
+    "/business/documents/{id}/file": {
+      "get": {
+        "operationId": "BusinessDocumentsController_file",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The paper itself — a PDF or an image, as uploaded.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "BusinessDocuments"
+        ]
+      }
+    },
+    "/admin/businesses/{businessId}/documents": {
+      "get": {
+        "operationId": "AdminDocumentsController_list",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessDocumentsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminDocuments"
+        ]
+      }
+    },
+    "/admin/businesses/{businessId}/documents/{id}/verify": {
+      "patch": {
+        "operationId": "AdminDocumentsController_verify",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessDocumentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminDocuments"
+        ]
+      }
+    },
+    "/admin/businesses/{businessId}/documents/{id}/refuse": {
+      "patch": {
+        "operationId": "AdminDocumentsController_refuse",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefuseDocumentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BusinessDocumentDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminDocuments"
+        ]
+      }
+    },
+    "/admin/businesses/{businessId}/documents/{id}/file": {
+      "get": {
+        "operationId": "AdminDocumentsController_file",
+        "parameters": [
+          {
+            "name": "businessId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The paper itself — a PDF or an image, as uploaded.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminDocuments"
+        ]
+      }
+    },
     "/locations/{id}/availability": {
       "get": {
         "operationId": "AvailabilityController_getAvailability",
@@ -16402,9 +16988,9 @@
             "schema": {
               "type": "string",
               "enum": [
+                "VERIFIED",
                 "REJECTED",
                 "UNVERIFIED",
-                "VERIFIED",
                 "SUPERSEDED"
               ]
             }
@@ -21518,7 +22104,8 @@
                 "where",
                 "service-photos",
                 "service-words",
-                "payout"
+                "payout",
+                "papers"
               ]
             }
           },
@@ -21549,6 +22136,7 @@
               "branch",
               "hours",
               "service",
+              "papers",
               "logo",
               "payout"
             ],
@@ -21568,6 +22156,50 @@
           "done"
         ]
       },
+      "PaperRuleDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "enum": [
+              "health",
+              "veterinary",
+              "tourism",
+              "legal"
+            ],
+            "type": "string"
+          },
+          "kinds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "RDB_CERTIFICATE",
+                "TIN_CERTIFICATE",
+                "TRADING_LICENCE",
+                "HEALTH_FACILITY_LICENCE",
+                "PROFESSIONAL_LICENCE",
+                "FDA_LICENCE",
+                "TOURISM_LICENCE",
+                "BAR_MEMBERSHIP",
+                "OTHER"
+              ]
+            }
+          },
+          "state": {
+            "enum": [
+              "checked",
+              "waiting",
+              "missing"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "kinds",
+          "state"
+        ]
+      },
       "AdviceItemDto": {
         "type": "object",
         "properties": {
@@ -21583,7 +22215,8 @@
               "where",
               "service-photos",
               "service-words",
-              "payout"
+              "payout",
+              "papers"
             ],
             "type": "string"
           },
@@ -21621,6 +22254,7 @@
                 "branch",
                 "hours",
                 "service",
+                "papers",
                 "logo",
                 "payout"
               ]
@@ -21682,6 +22316,13 @@
             "type": "boolean",
             "description": "Approved, not yet posted, and still bookable — \"Post my shop\" can be pressed."
           },
+          "papers": {
+            "description": "The licences this kind of shop must hold (§314), and where it stands on each; empty for most shops.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaperRuleDto"
+            }
+          },
           "advice": {
             "description": "What would make it easier to book, done or not (§303).",
             "type": "array",
@@ -21702,6 +22343,7 @@
           "ready",
           "canSubmit",
           "canPublish",
+          "papers",
           "advice"
         ]
       },
@@ -23440,6 +24082,17 @@
           "id": {
             "type": "string"
           },
+          "_count": {
+            "type": "object",
+            "properties": {
+              "documents": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "documents"
+            ]
+          },
           "name": {
             "type": "string",
             "nullable": true
@@ -23530,6 +24183,7 @@
         },
         "required": [
           "id",
+          "_count",
           "name",
           "description",
           "phone",
@@ -23753,6 +24407,93 @@
           "locations"
         ]
       },
+      "BusinessDocumentDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "OTHER",
+              "RDB_CERTIFICATE",
+              "TIN_CERTIFICATE",
+              "TRADING_LICENCE",
+              "HEALTH_FACILITY_LICENCE",
+              "PROFESSIONAL_LICENCE",
+              "FDA_LICENCE",
+              "TOURISM_LICENCE",
+              "BAR_MEMBERSHIP"
+            ],
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "number": {
+            "type": "string",
+            "nullable": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "SUBMITTED",
+              "VERIFIED",
+              "REFUSED",
+              "REPLACED"
+            ],
+            "type": "string"
+          },
+          "refusalReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "checkedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "expired": {
+            "type": "boolean",
+            "description": "Past its end date."
+          },
+          "uploadedBy": {
+            "type": "string",
+            "description": "Who uploaded it — for our team; the shop sees its own people's emails anyway."
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "number",
+          "expiresAt",
+          "fileName",
+          "mimeType",
+          "sizeBytes",
+          "status",
+          "refusalReason",
+          "checkedAt",
+          "createdAt",
+          "expired",
+          "uploadedBy"
+        ]
+      },
       "AdminBusinessMemberUserDto": {
         "type": "object",
         "properties": {
@@ -23803,9 +24544,9 @@
           "status": {
             "type": "string",
             "enum": [
+              "VERIFIED",
               "REJECTED",
               "UNVERIFIED",
-              "VERIFIED",
               "SUPERSEDED"
             ]
           }
@@ -23821,6 +24562,17 @@
         "properties": {
           "id": {
             "type": "string"
+          },
+          "_count": {
+            "type": "object",
+            "properties": {
+              "documents": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "documents"
+            ]
           },
           "name": {
             "type": "string",
@@ -23921,6 +24673,13 @@
               "$ref": "#/components/schemas/AdminBusinessServiceDto"
             }
           },
+          "documents": {
+            "description": "Its business papers, newest first, replaced ones left out (§314).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusinessDocumentDto"
+            }
+          },
           "members": {
             "description": "ACTIVE members only. Removed ones stay as history and grant nothing (§14).",
             "type": "array",
@@ -23946,6 +24705,7 @@
         },
         "required": [
           "id",
+          "_count",
           "name",
           "description",
           "phone",
@@ -23964,6 +24724,7 @@
           "kinds",
           "locations",
           "services",
+          "documents",
           "members",
           "payoutDestinations",
           "readiness"
@@ -23988,7 +24749,8 @@
                 "where",
                 "service-photos",
                 "service-words",
-                "payout"
+                "payout",
+                "papers"
               ]
             }
           },
@@ -24242,6 +25004,90 @@
         "required": [
           "message",
           "membership"
+        ]
+      },
+      "BusinessDocumentsDto": {
+        "type": "object",
+        "properties": {
+          "registered": {
+            "type": "boolean",
+            "description": "A registration paper checked by our team, still standing: the mark customers see."
+          },
+          "required": {
+            "description": "The licences this kind of shop must hold, and where it stands on each.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaperRuleDto"
+            }
+          },
+          "documents": {
+            "description": "Every paper not yet replaced, newest first.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BusinessDocumentDto"
+            }
+          },
+          "canUpload": {
+            "type": "boolean",
+            "description": "Whether papers can be kept here at all (private storage set up)."
+          }
+        },
+        "required": [
+          "registered",
+          "required",
+          "documents",
+          "canUpload"
+        ]
+      },
+      "UploadDocumentDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "OTHER",
+              "RDB_CERTIFICATE",
+              "TIN_CERTIFICATE",
+              "TRADING_LICENCE",
+              "HEALTH_FACILITY_LICENCE",
+              "PROFESSIONAL_LICENCE",
+              "FDA_LICENCE",
+              "TOURISM_LICENCE",
+              "BAR_MEMBERSHIP"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "What it is, when the kind is OTHER.",
+            "minLength": 3,
+            "maxLength": 80
+          },
+          "number": {
+            "type": "string",
+            "description": "The number on it, as typed.",
+            "maxLength": 60
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "When it runs out, \"YYYY-MM-DD\".",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "RefuseDocumentDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "reason"
         ]
       },
       "AvailabilityTimeDto": {
@@ -27874,7 +28720,14 @@
         "properties": {
           "kind": {
             "type": "string",
-            "description": "momo · kwibuka · umuganda · holiday · searches · rain · tax · rates · news"
+            "description": "momo · kwibuka · umuganda · holiday · papers · searches · rain · tax · rates · news"
+          },
+          "paper": {
+            "type": "string",
+            "description": "papers (§314): which paper, and what is wrong — missing · refused · expired · expiring; `date` is when it runs out."
+          },
+          "state": {
+            "type": "string"
           },
           "momo": {
             "type": "string",
@@ -28380,7 +29233,11 @@
               "SHOP_DISCOUNT",
               "SUPPORT_UPDATE",
               "NEW_SIGN_IN",
-              "BOOKING_CHOICES_CHANGED"
+              "BOOKING_CHOICES_CHANGED",
+              "BUSINESS_DOCUMENT_SUBMITTED",
+              "BUSINESS_DOCUMENT_VERIFIED",
+              "BUSINESS_DOCUMENT_REFUSED",
+              "BUSINESS_DOCUMENT_EXPIRING"
             ]
           },
           "category": {
@@ -32439,9 +33296,9 @@
           "status": {
             "type": "string",
             "enum": [
+              "VERIFIED",
               "REJECTED",
               "UNVERIFIED",
-              "VERIFIED",
               "SUPERSEDED"
             ]
           },
@@ -32497,9 +33354,9 @@
           "status": {
             "type": "string",
             "enum": [
+              "VERIFIED",
               "REJECTED",
               "UNVERIFIED",
-              "VERIFIED",
               "SUPERSEDED"
             ]
           },
@@ -32666,9 +33523,9 @@
           },
           "status": {
             "enum": [
+              "VERIFIED",
               "REJECTED",
               "UNVERIFIED",
-              "VERIFIED",
               "SUPERSEDED"
             ],
             "type": "string"
@@ -32938,6 +33795,10 @@
             "items": {
               "$ref": "#/components/schemas/DiscoveredKindDto"
             }
+          },
+          "registeredBusiness": {
+            "type": "boolean",
+            "description": "A registration paper our team checked (§314): the mark customers see."
           }
         },
         "required": [
@@ -32947,7 +33808,8 @@
           "coverImageUrl",
           "category",
           "subcategory",
-          "kinds"
+          "kinds",
+          "registeredBusiness"
         ]
       },
       "ApproxSettlementDto": {
@@ -33398,6 +34260,10 @@
           "followers": {
             "type": "number",
             "description": "How many customers follow it (§288)."
+          },
+          "registeredBusiness": {
+            "type": "boolean",
+            "description": "A registration paper our team checked (§314): the mark customers see."
           }
         },
         "required": [
@@ -33410,7 +34276,8 @@
           "category",
           "subcategory",
           "kinds",
-          "followers"
+          "followers",
+          "registeredBusiness"
         ]
       },
       "ShopfrontRatingDto": {

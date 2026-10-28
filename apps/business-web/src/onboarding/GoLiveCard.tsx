@@ -392,6 +392,7 @@ const ADVICE_AT: Record<AdviceKey, { to: string; icon: IconName }> = {
   'service-photos': { to: '/services', icon: 'image' },
   'service-words': { to: '/services', icon: 'pencil' },
   payout: { to: '/getting-paid', icon: 'wallet' },
+  papers: { to: '/papers', icon: 'legal' },
 };
 
 /**

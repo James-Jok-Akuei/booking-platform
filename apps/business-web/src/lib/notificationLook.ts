@@ -40,6 +40,10 @@ export const NOTIFICATION_LOOK: Partial<Record<string, { icon: IconName; tone: T
   SUPPORT_UPDATE: { icon: 'help', tone: 'accent', to: '/help' },
   // A phone or browser not seen before signed in (§298).
   NEW_SIGN_IN: { icon: 'shield', tone: 'warn', to: '/security' },
+  // Business papers (§314).
+  BUSINESS_DOCUMENT_VERIFIED: { icon: 'legal', tone: 'ok', to: '/papers' },
+  BUSINESS_DOCUMENT_REFUSED: { icon: 'legal', tone: 'danger', to: '/papers' },
+  BUSINESS_DOCUMENT_EXPIRING: { icon: 'legal', tone: 'warn', to: '/papers' },
 };
 
 /** News about the shop itself — drawn with the shop's own logo, its icon a badge on the corner (§231). */

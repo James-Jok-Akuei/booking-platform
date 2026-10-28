@@ -17,12 +17,15 @@ import { LegalModule } from '../legal/legal.module';
 import { MembersController } from './members.controller';
 import { MembersService } from './members.service';
 import { BusinessRolesGuard } from './guards/business-roles.guard';
+import { DocumentsService } from './documents.service';
+import { DocumentsScheduler } from './documents.scheduler';
+import { AdminDocumentsController, BusinessDocumentsController } from './documents.controller';
 
 // PrismaModule, AuthModule (guards) and StorageModule are all @Global(),
 // so none of them need importing here.
 @Module({
   imports: [UsersModule, LegalModule],
-  controllers: [BusinessController, AdminBusinessController, MembersController],
+  controllers: [BusinessController, AdminBusinessController, MembersController, BusinessDocumentsController, AdminDocumentsController],
   providers: [
     BusinessModerationService,
     BusinessAccessService,
@@ -34,11 +37,13 @@ import { BusinessRolesGuard } from './guards/business-roles.guard';
     ServiceDraftsService,
     MembersService,
     BusinessRolesGuard,
+    DocumentsService,
+    DocumentsScheduler,
   ],
   // Exported so AvailabilityModule reuses the exact same ownership check
   // rather than growing a second, drifting copy of it.
   // BusinessRolesGuard is exported alongside the access service because
   // AvailabilityModule's schedule controller uses the same guard.
-  exports: [BusinessAccessService, BusinessRolesGuard],
+  exports: [BusinessAccessService, BusinessRolesGuard, DocumentsService],
 })
 export class BusinessModule {}

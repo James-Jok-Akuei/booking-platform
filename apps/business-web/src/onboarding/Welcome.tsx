@@ -20,6 +20,7 @@ import {
   getPayoutDestination,
   getProfile,
   getReadiness,
+  listDocuments,
   listLocations,
   listServices,
   setHours,
@@ -31,6 +32,7 @@ import {
   MAX_KIND_CATEGORIES,
   OTHER,
   kindName,
+  type DocumentKind,
   type FoundAddress,
   type Readiness,
 } from '../api/business';
@@ -39,6 +41,8 @@ import { AddressField, useDistrictFrom } from '../components/AddressField';
 import { DistrictField, PlaceField, parseCoordinates } from '../components/NewBranchForm';
 import { ImageButton } from '../components/ImageButton';
 import { DropZone } from '../ui/DropZone';
+import { PaperSlot } from '../papers/PaperSlot';
+import { PAPER_WORDS, REGISTRATION_KINDS } from '../papers/words';
 import { StaticMap } from '../components/StaticMap';
 import { useMoney } from '../money';
 import { Icon, type IconName } from '../ui/Icon';
@@ -126,7 +130,7 @@ export function Welcome() {
     next: () => go(after(screen)),
     saved: async (to) => {
       await Promise.all(
-        ['readiness', 'profile', 'locations', 'services', 'payout-destination', 'me'].map((key) =>
+        ['readiness', 'profile', 'locations', 'services', 'payout-destination', 'documents', 'me'].map((key) =>
           queryClient.invalidateQueries({ queryKey: [key] }),
         ),
       );
@@ -296,6 +300,7 @@ export function Welcome() {
                 {screen === 'service' && <ServiceQ nav={nav} draft={serviceDraft} onDraft={setServiceDraft} />}
                 {screen === 'price' && <PriceQ nav={nav} draft={serviceDraft} />}
                 {screen === 'paid' && <PaidQ nav={nav} />}
+                {screen === 'papers' && <PapersQ nav={nav} readiness={readiness.data} />}
                 {screen === 'review' && <ReviewQ nav={nav} readiness={readiness.data} email={me.data?.email ?? ''} />}
               </div>
             )}
@@ -1464,6 +1469,81 @@ function PaidQ({ nav }: { nav: Nav }) {
         <Problem text={problem} />
       </Body>
       <Foot nav={nav} busy={save.isPending} ready={digits.length >= 9} skipLabel={t`Add it later`} />
+    </form>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Business papers (§314): a licensed trade's licence, or the registration that earns the mark
+
+function PapersQ({ nav, readiness }: { nav: Nav; readiness: Readiness | undefined }) {
+  const papers = useQuery({ queryKey: ['documents'], queryFn: listDocuments });
+  const [picked, setPicked] = useState<DocumentKind | null>(null);
+  const rules = readiness?.papers ?? [];
+  const docs = papers.data?.documents ?? [];
+  const docOf = (kind: DocumentKind) => docs.find((d) => d.kind === kind) ?? null;
+  // A licensed trade cannot be reviewed until its licence is uploaded; every other shop may skip.
+  const required = rules.length > 0;
+  const missing = rules.some((rule) => rule.state === 'missing');
+  // The registration slot that is open: the one chosen, else the one on record, else the first.
+  const open = picked ?? REGISTRATION_KINDS.find((kind) => docOf(kind)) ?? 'RDB_CERTIFICATE';
+
+  return (
+    <form
+      className="wz-step"
+      onSubmit={(event: FormEvent) => {
+        event.preventDefault();
+        if (!(required && missing)) nav.next();
+      }}
+    >
+      <QHead
+        screen="papers"
+        optional={!required}
+        title={required ? t`Your licence` : t`Is your business registered?`}
+        lead={
+          required
+            ? t`Your kind of shop cannot go live without it. Upload it here; our team checks it before you are approved.`
+            : t`Upload your RDB certificate, TIN or trading licence. Once our team checks it, customers see “Registered business” on your page.`
+        }
+      />
+      <Body>
+        {required &&
+          rules.map((rule) => (
+            <div key={rule.key} className="wz-papers">
+              {rule.kinds.length > 1 && <p className="wz-quiet"><Trans>Any one of these is enough.</Trans></p>}
+              {rule.kinds.map((kind) => (
+                <PaperSlot key={kind} kind={kind} doc={docOf(kind)} compact />
+              ))}
+            </div>
+          ))}
+        {!required && (
+          <div className="wz-papers">
+            <div className="wz-papers-pick" role="tablist" aria-label={t`Which paper`}>
+              {REGISTRATION_KINDS.map((kind) => (
+                <button
+                  key={kind}
+                  type="button"
+                  role="tab"
+                  aria-selected={open === kind}
+                  className={`${open === kind ? 'is-on' : ''}${docOf(kind) ? ' is-have' : ''}`}
+                  onClick={() => setPicked(kind)}
+                >
+                  {docOf(kind) && <DrawnCheck size={13} stroke={3} />}
+                  {PAPER_WORDS[kind].name}
+                </button>
+              ))}
+            </div>
+            <PaperSlot key={open} kind={open} doc={docOf(open)} compact />
+          </div>
+        )}
+        <p className="wz-quiet">
+          <Icon name="lock" size={14} />{' '}
+          {required
+            ? t`A PDF or a clear photo of the whole page. Only you and our team can open it.`
+            : t`Not registered yet? Skip this — your shop can still go live, and you can add it any time under Business papers.`}
+        </p>
+      </Body>
+      <Foot nav={nav} ready={!(required && missing)} label={t`Continue`} skipLabel={required ? t`Add it later` : t`Skip for now`} />
     </form>
   );
 }

@@ -1583,6 +1583,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/business/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BusinessDocumentsController_list"];
+        put?: never;
+        post: operations["BusinessDocumentsController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/business/documents/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["BusinessDocumentsController_remove"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/business/documents/{id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["BusinessDocumentsController_file"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminDocumentsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/documents/{id}/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminDocumentsController_verify"];
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/documents/{id}/refuse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminDocumentsController_refuse"];
+        trace?: never;
+    };
+    "/admin/businesses/{businessId}/documents/{id}/file": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminDocumentsController_file"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/locations/{id}/availability": {
         parameters: {
             query?: never;
@@ -4666,7 +4778,7 @@ export interface components {
             otherLabels?: components["schemas"]["OtherLabelDto"][];
         };
         ApprovalAdviceDto: {
-            keys: ("cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout")[];
+            keys: ("cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout" | "papers")[];
             /** @description The reviewer's own words, if they wrote any. */
             note: string | null;
             /** @description When the shop was approved with it. */
@@ -4674,14 +4786,21 @@ export interface components {
         };
         ReadinessItemDto: {
             /** @enum {string} */
-            key: "name" | "type" | "phone" | "branch" | "hours" | "service" | "logo" | "payout";
+            key: "name" | "type" | "phone" | "branch" | "hours" | "service" | "papers" | "logo" | "payout";
             /** @description Whether the shop can be sent for review without it. */
             required: boolean;
             done: boolean;
         };
+        PaperRuleDto: {
+            /** @enum {string} */
+            key: "health" | "veterinary" | "tourism" | "legal";
+            kinds: ("RDB_CERTIFICATE" | "TIN_CERTIFICATE" | "TRADING_LICENCE" | "HEALTH_FACILITY_LICENCE" | "PROFESSIONAL_LICENCE" | "FDA_LICENCE" | "TOURISM_LICENCE" | "BAR_MEMBERSHIP" | "OTHER")[];
+            /** @enum {string} */
+            state: "checked" | "waiting" | "missing";
+        };
         AdviceItemDto: {
             /** @enum {string} */
-            key: "cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout";
+            key: "cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout" | "papers";
             done: boolean;
             /** @description "Photos of Kimironko", "A description on 3 services". */
             title: string;
@@ -4690,7 +4809,7 @@ export interface components {
         };
         BusinessReadinessDto: {
             /** @description What an administrator cannot approve without; empty when it could go live. */
-            goLiveGaps: ("name" | "type" | "phone" | "branch" | "hours" | "service" | "logo" | "payout")[];
+            goLiveGaps: ("name" | "type" | "phone" | "branch" | "hours" | "service" | "papers" | "logo" | "payout")[];
             /** @description What we advised on approval; null when nothing was. */
             approvalAdvice: components["schemas"]["ApprovalAdviceDto"] | null;
             /** @enum {string} */
@@ -4709,6 +4828,8 @@ export interface components {
             canSubmit: boolean;
             /** @description Approved, not yet posted, and still bookable — "Post my shop" can be pressed. */
             canPublish: boolean;
+            /** @description The licences this kind of shop must hold (§314), and where it stands on each; empty for most shops. */
+            papers: components["schemas"]["PaperRuleDto"][];
             /** @description What would make it easier to book, done or not (§303). */
             advice: components["schemas"]["AdviceItemDto"][];
         };
@@ -5321,6 +5442,9 @@ export interface components {
         };
         AdminBusinessDto: {
             id: string;
+            _count: {
+                documents: number;
+            };
             name: string | null;
             description: string | null;
             phone: string | null;
@@ -5407,6 +5531,26 @@ export interface components {
             /** @description Price is per BRANCH since §72, so a service can cost different amounts. */
             locations: components["schemas"]["AdminServiceOfferDto"][];
         };
+        BusinessDocumentDto: {
+            id: string;
+            /** @enum {string} */
+            kind: "OTHER" | "RDB_CERTIFICATE" | "TIN_CERTIFICATE" | "TRADING_LICENCE" | "HEALTH_FACILITY_LICENCE" | "PROFESSIONAL_LICENCE" | "FDA_LICENCE" | "TOURISM_LICENCE" | "BAR_MEMBERSHIP";
+            label: string | null;
+            number: string | null;
+            expiresAt: string | null;
+            fileName: string;
+            mimeType: string;
+            sizeBytes: number;
+            /** @enum {string} */
+            status: "SUBMITTED" | "VERIFIED" | "REFUSED" | "REPLACED";
+            refusalReason: string | null;
+            checkedAt: string | null;
+            createdAt: string;
+            /** @description Past its end date. */
+            expired: boolean;
+            /** @description Who uploaded it — for our team; the shop sees its own people's emails anyway. */
+            uploadedBy: string;
+        };
         AdminBusinessMemberUserDto: {
             id: string;
             email: string;
@@ -5421,10 +5565,13 @@ export interface components {
             /** @enum {string} */
             provider: "MTN_MOMO" | "AIRTEL_MONEY";
             /** @enum {string} */
-            status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+            status: "VERIFIED" | "REJECTED" | "UNVERIFIED" | "SUPERSEDED";
         };
         AdminBusinessDetailDto: {
             id: string;
+            _count: {
+                documents: number;
+            };
             name: string | null;
             description: string | null;
             phone: string | null;
@@ -5457,6 +5604,8 @@ export interface components {
             kinds: components["schemas"]["AdminBusinessKindDto"][];
             locations: components["schemas"]["AdminBusinessLocationDto"][];
             services: components["schemas"]["AdminBusinessServiceDto"][];
+            /** @description Its business papers, newest first, replaced ones left out (§314). */
+            documents: components["schemas"]["BusinessDocumentDto"][];
             /** @description ACTIVE members only. Removed ones stay as history and grant nothing (§14). */
             members: components["schemas"]["AdminBusinessMemberDto"][];
             /** @description The latest payout number they gave, if any — at most one (§48, §244). */
@@ -5465,7 +5614,7 @@ export interface components {
             readiness: components["schemas"]["BusinessReadinessDto"];
         };
         ApproveBusinessDto: {
-            advice?: ("cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout")[];
+            advice?: ("cover" | "logo" | "about" | "type" | "phone" | "gallery" | "hours" | "where" | "service-photos" | "service-words" | "payout" | "papers")[];
             /** @description Sent to the shop as it is written, so write it for them to read. */
             note?: string;
         };
@@ -5538,6 +5687,29 @@ export interface components {
             /** @description Names the person, so the screen can say who was removed. */
             message: string;
             membership: components["schemas"]["RemovedMembershipDto"];
+        };
+        BusinessDocumentsDto: {
+            /** @description A registration paper checked by our team, still standing: the mark customers see. */
+            registered: boolean;
+            /** @description The licences this kind of shop must hold, and where it stands on each. */
+            required: components["schemas"]["PaperRuleDto"][];
+            /** @description Every paper not yet replaced, newest first. */
+            documents: components["schemas"]["BusinessDocumentDto"][];
+            /** @description Whether papers can be kept here at all (private storage set up). */
+            canUpload: boolean;
+        };
+        UploadDocumentDto: {
+            /** @enum {string} */
+            kind: "OTHER" | "RDB_CERTIFICATE" | "TIN_CERTIFICATE" | "TRADING_LICENCE" | "HEALTH_FACILITY_LICENCE" | "PROFESSIONAL_LICENCE" | "FDA_LICENCE" | "TOURISM_LICENCE" | "BAR_MEMBERSHIP";
+            /** @description What it is, when the kind is OTHER. */
+            label?: string;
+            /** @description The number on it, as typed. */
+            number?: string;
+            /** @description When it runs out, "YYYY-MM-DD". */
+            expiresAt?: string;
+        };
+        RefuseDocumentDto: {
+            reason: string;
         };
         AvailabilityTimeDto: {
             /** @description `HH:mm`, wall clock, in the answer's `timeZone`. */
@@ -6719,8 +6891,11 @@ export interface components {
             change: number | null;
         };
         TodayItemDto: {
-            /** @description momo · kwibuka · umuganda · holiday · searches · rain · tax · rates · news */
+            /** @description momo · kwibuka · umuganda · holiday · papers · searches · rain · tax · rates · news */
             kind: string;
+            /** @description papers (§314): which paper, and what is wrong — missing · refused · expired · expiring; `date` is when it runs out. */
+            paper?: string;
+            state?: string;
             /** @description momo: how mobile money is doing — "slow" or "down". */
             momo?: string;
             /** @description kwibuka: the commemoration's number (32 in 2026), and its last day. */
@@ -6854,7 +7029,7 @@ export interface components {
         NotificationDto: {
             id: string;
             /** @enum {string} */
-            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED" | "STORY_REMOVED" | "APPOINTMENT_COMPLETED" | "PAYOUT_SENT" | "PAYOUT_FAILED" | "ANNOUNCEMENT" | "SHOP_MESSAGE" | "SHOP_DISCOUNT" | "SUPPORT_UPDATE" | "NEW_SIGN_IN" | "BOOKING_CHOICES_CHANGED";
+            type: "APPOINTMENT_BOOKED" | "DEPOSIT_CONFIRMED" | "APPOINTMENT_CANCELLED" | "APPOINTMENT_NO_SHOW" | "DEPOSIT_FAILED" | "APPOINTMENT_REMINDER" | "BUSINESS_INVITATION" | "NEW_MESSAGE" | "TICKET_CREATED" | "TICKET_MESSAGE" | "TICKET_STATUS_CHANGED" | "REVIEW_CREATED" | "REVIEW_RESPONSE" | "REVIEW_HIDDEN" | "DISPLAY_NAME_CLEARED" | "EXCHANGE_RATE_STALE" | "BUSINESS_SUBMITTED" | "BUSINESS_KIND_WRITTEN" | "BUSINESS_APPROVED" | "BUSINESS_REJECTED" | "BUSINESS_SUSPENDED" | "BUSINESS_REINSTATED" | "PAYOUT_DESTINATION_SUBMITTED" | "PAYOUT_DESTINATION_VERIFIED" | "PAYOUT_DESTINATION_REJECTED" | "PAYMENT_PROVIDER_MISCONFIGURED" | "APPOINTMENT_MANUALLY_VERIFIED" | "STORY_REMOVED" | "APPOINTMENT_COMPLETED" | "PAYOUT_SENT" | "PAYOUT_FAILED" | "ANNOUNCEMENT" | "SHOP_MESSAGE" | "SHOP_DISCOUNT" | "SUPPORT_UPDATE" | "NEW_SIGN_IN" | "BOOKING_CHOICES_CHANGED" | "BUSINESS_DOCUMENT_SUBMITTED" | "BUSINESS_DOCUMENT_VERIFIED" | "BUSINESS_DOCUMENT_REFUSED" | "BUSINESS_DOCUMENT_EXPIRING";
             /**
              * @description What it is about, for choosing what you get (§287).
              * @enum {string}
@@ -7990,7 +8165,7 @@ export interface components {
             id: string;
             msisdn: string;
             /** @enum {string} */
-            status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+            status: "VERIFIED" | "REJECTED" | "UNVERIFIED" | "SUPERSEDED";
             submittedAt: string;
         };
         DestinationPersonDto: {
@@ -8011,7 +8186,7 @@ export interface components {
             /** @enum {string} */
             provider: "MTN_MOMO" | "AIRTEL_MONEY";
             /** @enum {string} */
-            status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+            status: "VERIFIED" | "REJECTED" | "UNVERIFIED" | "SUPERSEDED";
             submittedById: string;
             submittedAt: string;
             verifiedById: string | null;
@@ -8061,7 +8236,7 @@ export interface components {
             /** @enum {string} */
             provider: "MTN_MOMO" | "AIRTEL_MONEY";
             /** @enum {string} */
-            status: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+            status: "VERIFIED" | "REJECTED" | "UNVERIFIED" | "SUPERSEDED";
             submittedById: string;
             submittedAt: string;
             /** @description Null until an administrator has checked it. */
@@ -8137,6 +8312,8 @@ export interface components {
             };
             /** @description Every kind of place it is, the main one first (§265). */
             kinds: components["schemas"]["DiscoveredKindDto"][];
+            /** @description A registration paper our team checked (§314): the mark customers see. */
+            registeredBusiness: boolean;
         };
         ApproxSettlementDto: {
             currency: string;
@@ -8274,6 +8451,8 @@ export interface components {
             kinds: components["schemas"]["ShopfrontKindDto"][];
             /** @description How many customers follow it (§288). */
             followers: number;
+            /** @description A registration paper our team checked (§314): the mark customers see. */
+            registeredBusiness: boolean;
         };
         ShopfrontRatingDto: {
             /** @description Null when nothing has been reviewed. Not zero — zero is a rating. */
@@ -14125,6 +14304,471 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionMessageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessDocumentsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDocumentsDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessDocumentsController_upload: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadDocumentDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDocumentDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessDocumentsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDocumentsDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    BusinessDocumentsController_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The paper itself — a PDF or an image, as uploaded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminDocumentsController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDocumentsDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminDocumentsController_verify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDocumentDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminDocumentsController_refuse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RefuseDocumentDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BusinessDocumentDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminDocumentsController_file: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                businessId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The paper itself — a PDF or an image, as uploaded. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
@@ -21209,7 +21853,7 @@ export interface operations {
     AdminPayoutDestinationsController_list: {
         parameters: {
             query?: {
-                status?: "REJECTED" | "UNVERIFIED" | "VERIFIED" | "SUPERSEDED";
+                status?: "VERIFIED" | "REJECTED" | "UNVERIFIED" | "SUPERSEDED";
                 /**
                  * @description A word to find payout numbers by (§289): the number itself, typed any way;
                  *     a shop's name, phone or a member's email; a branch's name, street,

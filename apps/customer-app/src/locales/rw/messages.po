@@ -170,7 +170,7 @@ msgid "{0} paid with MTN Mobile Money. Your slot is confirmed."
 msgstr "Wishyuye {0} ukoresheje MTN Mobile Money. Umwanya wawe wemejwe."
 
 #. placeholder {0}: s.business.followers.toLocaleString()
-#: app/shop/[id].tsx:283
+#: app/shop/[id].tsx:285
 msgid "{0} people follow {displayName}"
 msgstr "Abantu {0} bakurikira {displayName}"
 
@@ -1060,8 +1060,8 @@ msgid "Close your account?"
 msgstr "Ufunge konti yawe?"
 
 #: app/shop/[id].tsx:220
-#: app/shop/[id].tsx:436
-#: app/shop/[id].tsx:452
+#: app/shop/[id].tsx:438
+#: app/shop/[id].tsx:454
 msgid "Closed"
 msgstr "Birafunze"
 
@@ -1103,7 +1103,7 @@ msgstr "ikiganiro n’umutoza"
 msgid "Coming soon"
 msgstr "Biraza vuba"
 
-#: app/shop/[id].tsx:446
+#: app/shop/[id].tsx:448
 msgid "Coming up"
 msgstr "Iminsi iri imbere"
 
@@ -1463,11 +1463,11 @@ msgstr "gupima imyenda"
 msgid "Fix"
 msgstr "Kosora"
 
-#: app/shop/[id].tsx:253
+#: app/shop/[id].tsx:255
 msgid "Follow"
 msgstr "Kurikira"
 
-#: app/shop/[id].tsx:245
+#: app/shop/[id].tsx:247
 msgid "Follow {displayName}"
 msgstr "Kurikira {displayName}"
 
@@ -1487,7 +1487,7 @@ msgstr "Ukurikire {shopName}?"
 msgid "Follow, and send me offers"
 msgstr "Kurikira, nohererezwe promosiyo"
 
-#: app/shop/[id].tsx:253
+#: app/shop/[id].tsx:255
 #: src/components/FollowingCard.tsx:138
 msgid "Following"
 msgstr "Ukurikira"
@@ -1497,7 +1497,7 @@ msgctxt "how many shops you follow"
 msgid "Following"
 msgstr "Amaduka ukurikira"
 
-#: app/shop/[id].tsx:245
+#: app/shop/[id].tsx:247
 msgid "Following {displayName}. Tap to unfollow"
 msgstr "Ukurikira {displayName}. Kanda ngo ureke gukurikira"
 
@@ -1545,13 +1545,13 @@ msgstr "guhera kuri"
 msgid "From"
 msgstr "Kuva"
 
-#: app/shop/[id].tsx:598
+#: app/shop/[id].tsx:600
 msgid "from "
 msgstr "guhera kuri "
 
 #. placeholder {0}: s.rating.count
-#: app/shop/[id].tsx:310
-#: app/shop/[id].tsx:471
+#: app/shop/[id].tsx:312
+#: app/shop/[id].tsx:473
 msgid "from {0} reviews"
 msgstr "mu bitekerezo {0}"
 
@@ -1614,7 +1614,7 @@ msgid "Getting there"
 msgstr "Uko wahagera"
 
 #: app/shop/[id].tsx:138
-#: app/shop/[id].tsx:533
+#: app/shop/[id].tsx:535
 #: app/thread/[id].tsx:216
 #: src/ui/TopBar.tsx:48
 msgid "Go back"
@@ -1965,7 +1965,7 @@ msgstr "umukino"
 msgid "Message"
 msgstr "Ubutumwa"
 
-#: app/shop/[id].tsx:331
+#: app/shop/[id].tsx:333
 #: src/booking/Reservation.tsx:339
 #: src/booking/Reservation.tsx:375
 msgid "Message the shop"
@@ -2158,7 +2158,7 @@ msgstr "Nta mwanya usigaye uyu munsi. Hitamo undi munsi."
 msgid "Nobody checked you in, so the booking was marked as missed a day after its time."
 msgstr "Nta wakwakiriye, bityo gahunda yanditswe nk’iyo utitabiriye umunsi umwe nyuma y’igihe cyayo."
 
-#: app/shop/[id].tsx:477
+#: app/shop/[id].tsx:479
 msgid "Nobody has reviewed this place yet."
 msgstr "Nta muntu uratanga igitekerezo kuri iri duka."
 
@@ -2299,7 +2299,7 @@ msgstr "Nta kirimo kugeza ubu"
 msgid "Nothing here yet."
 msgstr "Nta kirimo kugeza ubu."
 
-#: app/shop/[id].tsx:403
+#: app/shop/[id].tsx:405
 msgid "Nothing is bookable here yet."
 msgstr "Nta serivisi yo gufatira gahunda iri hano kugeza ubu."
 
@@ -2475,7 +2475,7 @@ msgstr "Fungura {businessName}"
 msgid "Open a place and tap Message the shop to ask something before you book."
 msgstr "Fungura iduka maze ukande “Andikira iduka” ubaze icyo ushaka mbere yo gufata gahunda."
 
-#: app/shop/[id].tsx:391
+#: app/shop/[id].tsx:393
 msgid "Open hours"
 msgstr "Amasaha"
 
@@ -2524,7 +2524,7 @@ msgstr "Fungura ubusabe bw’ubufasha"
 msgid "Opened {0}"
 msgstr "Yafunguwe ku ya {0}"
 
-#: app/shop/[id].tsx:331
+#: app/shop/[id].tsx:333
 msgid "Opening…"
 msgstr "Birafunguka…"
 
@@ -2557,7 +2557,7 @@ msgid "Past"
 msgstr "Izashize"
 
 #. placeholder {0}: format(depositMinor, service.currency)
-#: app/shop/[id].tsx:605
+#: app/shop/[id].tsx:607
 msgid "pay {0} now"
 msgstr "wishyura {0} ubu"
 
@@ -2634,7 +2634,7 @@ msgstr "Ifoto ya {0}"
 #. placeholder {0}: index + 1
 #. placeholder {1}: photos.length
 #. placeholder {1}: s.gallery.length
-#: app/shop/[id].tsx:366
+#: app/shop/[id].tsx:368
 #: src/ui/PhotoViewer.tsx:295
 msgid "Photo {0} of {1}"
 msgstr "Ifoto ya {0} kuri {1}"
@@ -2659,7 +2659,7 @@ msgid "Photos"
 msgstr "Amafoto"
 
 #. placeholder {0}: s.gallery.length
-#: app/shop/[id].tsx:347
+#: app/shop/[id].tsx:349
 msgid "Photos <0>{0}</0>"
 msgstr "Amafoto <0>{0}</0>"
 
@@ -2818,6 +2818,10 @@ msgstr "Twasomye ibisubizo byawe by’ibanga, kugira ngo tugufashe"
 msgid "Real shops near you, booked in a few taps."
 msgstr "Amaduka nyayo ari hafi yawe, ufatamo gahunda mu kanya gato."
 
+#: app/shop/[id].tsx:223
+msgid "Registered business"
+msgstr "Ubucuruzi bwanditse"
+
 #: src/booking/PaidCelebration.tsx:307
 msgid "Remind me before it"
 msgstr "Nyibutsa mbere yayo"
@@ -2891,13 +2895,13 @@ msgstr "Nimero ya gahunda"
 msgid "Review"
 msgstr "Igitekerezo"
 
-#: app/shop/[id].tsx:394
+#: app/shop/[id].tsx:396
 #: src/exportDocument.ts:200
 msgid "Reviews"
 msgstr "Ibitekerezo"
 
 #. placeholder {0}: reviews.data.total
-#: app/shop/[id].tsx:394
+#: app/shop/[id].tsx:396
 msgid "Reviews ({0})"
 msgstr "Ibitekerezo ({0})"
 
@@ -2991,7 +2995,7 @@ msgstr "amasegonda"
 msgid "See all"
 msgstr "Reba byose"
 
-#: app/shop/[id].tsx:350
+#: app/shop/[id].tsx:352
 msgid "See all →"
 msgstr "Reba byose →"
 
@@ -3017,7 +3021,7 @@ msgstr "Reba cyangwa uhindure"
 msgid "See the shop"
 msgstr "Reba iduka"
 
-#: app/shop/[id].tsx:268
+#: app/shop/[id].tsx:270
 msgid "See the story from {displayName}"
 msgstr "Reba inkuru ya {displayName}"
 
@@ -3107,7 +3111,7 @@ msgstr "Serivisi"
 msgid "Services{0}"
 msgstr "Serivisi{0}"
 
-#: app/shop/[id].tsx:537
+#: app/shop/[id].tsx:539
 msgid "Share this place"
 msgstr "Sangiza iri duka"
 
@@ -3532,7 +3536,7 @@ msgstr "Nta konti ya <0>{clean}</0> irabaho. Reka tuyifungure — bisaba kode im
 msgid "They are kept with your account, so they follow you to any phone."
 msgstr "Bibikwa kuri konti yawe, bityo bikagukurikira kuri telefoni iyo ari yo yose."
 
-#: app/shop/[id].tsx:492
+#: app/shop/[id].tsx:494
 msgid "They replied"
 msgstr "Igisubizo cyabo"
 
@@ -3977,7 +3981,7 @@ msgstr "Bijyanye n’iki?"
 msgid "What is wrong with this story?"
 msgstr "Iyi nkuru ifite ikihe kibazo?"
 
-#: app/shop/[id].tsx:390
+#: app/shop/[id].tsx:392
 msgid "What they do"
 msgstr "Ibyo bakora"
 

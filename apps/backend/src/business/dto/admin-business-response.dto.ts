@@ -1,4 +1,5 @@
-import { BusinessStatus, MediaStatus, MobileMoneyProvider, PayoutDestinationStatus, Prisma } from '@prisma/client';
+import { BusinessDocumentStatus, BusinessStatus, MediaStatus, MobileMoneyProvider, PayoutDestinationStatus, Prisma } from '@prisma/client';
+import { BusinessDocumentDto } from './documents.dto';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import { BusinessReadinessDto } from './readiness.dto';
 
@@ -31,6 +32,8 @@ export const ADMIN_BUSINESS_SELECT = {
   category: { select: { id: true, name: true } },
   subcategory: { select: { id: true, name: true } },
   // Every kind of place it is, the main one first (§265).
+  // Papers waiting for our team (§314), for the queue's rows.
+  _count: { select: { documents: { where: { status: BusinessDocumentStatus.SUBMITTED } } } },
   kinds: {
     orderBy: { position: 'asc' },
     select: {
@@ -61,6 +64,8 @@ type AdminBusinessPayload = Serialised<
 
 export class AdminBusinessDto implements AdminBusinessPayload {
   id!: string;
+  /** Papers waiting for our team (§314), counted for the queue's rows. */
+  _count!: { documents: number };
   name!: string | null;
   description!: string | null;
   phone!: string | null;
@@ -176,6 +181,8 @@ export class AdminBusinessMemberDto {
 export class AdminBusinessDetailDto extends AdminBusinessDto {
   locations!: AdminBusinessLocationDto[];
   services!: AdminBusinessServiceDto[];
+  /** Its business papers, newest first, replaced ones left out (§314). */
+  documents!: BusinessDocumentDto[];
   /** ACTIVE members only. Removed ones stay as history and grant nothing (§14). */
   members!: AdminBusinessMemberDto[];
   /** The latest payout number they gave, if any — at most one (§48, §244). */

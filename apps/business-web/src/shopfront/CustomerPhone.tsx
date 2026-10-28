@@ -577,7 +577,7 @@ function fromOwnRecords(
     longitude: branch.longitude,
     phone: branch.phone,
     capacity: branch.capacity,
-    business: { id: branch.businessId, name: null, description: null, phone: null, logoUrl: null, coverImageUrl: null, category: null, subcategory: null, kinds: [], followers: 0 },
+    business: { id: branch.businessId, name: null, description: null, phone: null, logoUrl: null, coverImageUrl: null, category: null, subcategory: null, kinds: [], followers: 0, registeredBusiness: false },
     rating: { average: branch.ratingAvg ? Number(branch.ratingAvg) : null, count: branch.ratingCount },
     services: offered,
     district: branch.district

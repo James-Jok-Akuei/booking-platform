@@ -12,3 +12,4 @@ coverage/
 
 # Local-disk upload fallback (used only when R2 is not configured).
 uploads/
+private-uploads/

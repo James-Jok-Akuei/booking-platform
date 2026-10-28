@@ -47,6 +47,8 @@ export class DiscoveredBusinessDto {
   subcategory!: { id: string; name: string } | null;
   /** Every kind of place it is, the main one first (§265). */
   kinds!: DiscoveredKindDto[];
+  /** A registration paper our team checked (§314): the mark customers see. */
+  registeredBusiness!: boolean;
 }
 
 /** One kind of place a business is (§265). */
@@ -215,6 +217,8 @@ export class ShopfrontBusinessDto {
   kinds!: ShopfrontKindDto[];
   /** How many customers follow it (§288). */
   followers!: number;
+  /** A registration paper our team checked (§314): the mark customers see. */
+  registeredBusiness!: boolean;
 }
 
 /** One kind of place a business is (§265). */
