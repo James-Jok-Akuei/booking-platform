@@ -21,11 +21,22 @@ import { OverviewPage } from './pages/OverviewPage';
 import { TicketsPage } from './pages/TicketsPage';
 import { SecurityPage } from './pages/SecurityPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { StatisticsPage } from './pages/statistics/StatisticsPage';
+import { PitchSheet } from './pages/statistics/PitchSheet';
 
 export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      {/* The pitch sheet (§316): a page to print, outside the frame. */}
+      <Route
+        path="/statistics/pitch"
+        element={
+          <RequireAuth>
+            <PitchSheet />
+          </RequireAuth>
+        }
+      />
       <Route
         element={
           <RequireAuth>
@@ -34,6 +45,7 @@ export function App() {
         }
       >
         <Route index element={<OverviewPage />} />
+        <Route path="/statistics" element={<StatisticsPage />} />
         <Route path="/businesses" element={<BusinessesPage />} />
         <Route path="/payout-destinations" element={<PayoutDestinationsPage />} />
         <Route path="/payouts" element={<PayoutsPage />} />

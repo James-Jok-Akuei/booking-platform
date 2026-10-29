@@ -106,6 +106,10 @@ export class UsersService {
           isPrimaryAdmin: true,
           // Whether an administrator has two-step sign-in on (§298).
           totpEnabledAt: true,
+          // Whether the statistics leave them out (§316).
+          isTest: true,
+          testMarkedAt: true,
+          testMarkedBy: true,
           _count: {
             select: {
               appointments: true,
@@ -142,6 +146,9 @@ export class UsersService {
         homeArea: user.homeDistrict?.name ?? null,
         isPrimaryAdmin: user.isPrimaryAdmin,
         twoStepOn: user.totpEnabledAt !== null,
+        isTest: user.isTest,
+        testMarkedAt: user.testMarkedAt?.toISOString() ?? null,
+        testMarkedBy: user.testMarkedBy,
         appointmentCount: user._count.appointments,
         reviewCount: user._count.reviews,
         ticketCount: user._count.reportedTickets,

@@ -3426,6 +3426,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/statistics/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** All time: what the platform has made, and how big it is. */
+        get: operations["AdminStatisticsController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/statistics/period": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A stretch of days, against the stretch of the same length before it. */
+        get: operations["AdminStatisticsController_period"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/statistics/months": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Month by month, and how many customers came back after their first booking. */
+        get: operations["AdminStatisticsController_months"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/statistics/left-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The test shops and test customers the numbers leave out (§316). */
+        get: operations["AdminStatisticsController_leftOut"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/statistics/test-shops/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminStatisticsController_markShop"];
+        trace?: never;
+    };
+    "/admin/statistics/test-customers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["AdminStatisticsController_markCustomer"];
+        trace?: never;
+    };
     "/admin/payouts/run": {
         parameters: {
             query?: never;
@@ -4638,6 +4738,11 @@ export interface components {
             isPrimaryAdmin: boolean;
             /** @description An administrator has two-step sign-in on (§298). False for everyone else. */
             twoStepOn: boolean;
+            /** @description A test account (§316): the statistics leave it and its bookings out. */
+            isTest: boolean;
+            /** @description When it was last marked or unmarked as one, and by whom (an email, or "automatic"). */
+            testMarkedAt: string | null;
+            testMarkedBy: string | null;
             appointmentCount: number;
             reviewCount: number;
             ticketCount: number;
@@ -5630,6 +5735,11 @@ export interface components {
             logoUrl: string | null;
             coverImageUrl: string | null;
             createdAt: string;
+            /** @description A test shop (§316): the statistics leave it and its bookings out. */
+            isTest: boolean;
+            /** @description When it was last marked or unmarked as one, and by whom (an email, or "automatic"). */
+            testMarkedAt: string | null;
+            testMarkedBy: string | null;
             /** @description Its MAIN kind (§265). */
             category: components["schemas"]["AdminBusinessCategoryDto"] | null;
             subcategory: components["schemas"]["AdminBusinessCategoryDto"] | null;
@@ -5757,6 +5867,11 @@ export interface components {
             logoUrl: string | null;
             coverImageUrl: string | null;
             createdAt: string;
+            /** @description A test shop (§316): the statistics leave it and its bookings out. */
+            isTest: boolean;
+            /** @description When it was last marked or unmarked as one, and by whom (an email, or "automatic"). */
+            testMarkedAt: string | null;
+            testMarkedBy: string | null;
             /** @description Its MAIN kind (§265). */
             category: components["schemas"]["AdminBusinessCategoryDto"] | null;
             subcategory: components["schemas"]["AdminBusinessCategoryDto"] | null;
@@ -8054,7 +8169,7 @@ export interface components {
             bookings: number;
             /** @description Those deposits, added up. */
             depositsMinor: number;
-            /** @description The platform's fees that day, less any handed back (§25). */
+            /** @description The platform's fees that day, less any handed back (§25, §316). */
             feesMinor: number;
             newBusinesses: number;
             newCustomers: number;
@@ -8086,6 +8201,276 @@ export interface components {
             /** @description The seven before them. */
             lastWeek: components["schemas"]["OverviewPeriodDto"];
             totals: components["schemas"]["OverviewTotalsDto"];
+        };
+        StatisticsRatingDto: {
+            /** @description Visible reviews' average, 1–5, to two places; null with none. */
+            average: number | null;
+            count: number;
+        };
+        StatisticsCountDto: {
+            key: string;
+            count: number;
+        };
+        StatisticsLeftOutCountDto: {
+            shops: number;
+            customers: number;
+        };
+        StatisticsMoneyCheckDto: {
+            ok: boolean;
+            /** @description Paid bookings checked. */
+            bookings: number;
+            bookingDepositsMinor: number;
+            ledgerDepositsMinor: number;
+            bookingFeesMinor: number;
+            ledgerFeesMinor: number;
+            /** @description Paid bookings with no "Deposit received" entry at all. */
+            missingEntries: number;
+        };
+        StatisticsSummaryDto: {
+            asOf: string;
+            currency: string;
+            /** @description The day of the first paid booking, YYYY-MM-DD; null before there is one. */
+            since: string | null;
+            /**
+             * @description What the platform has made, all time: platform fees taken, less every fee
+             *     handed back — when a shop cancelled (§25) or by a fee refund (§53). Before
+             *     any of our own costs.
+             */
+            madeMinor: number;
+            /** @description Paid bookings, all time. */
+            bookings: number;
+            /** @description The full price of those not cancelled — deposit and the rest paid at the shop. */
+            bookingValueMinor: number;
+            /** @description Deposits paid through the app, all time. */
+            depositsMinor: number;
+            /** @description Customer accounts open now — the whole platform. */
+            customers: number;
+            /** @description Customers who have ever paid for a booking. */
+            customersWhoBooked: number;
+            /** @description Of those, how many booked twice or more. */
+            cameBack: number;
+            liveShops: number;
+            openBranches: number;
+            /** @description Districts with at least one open branch of a live shop. */
+            areas: number;
+            /** @description Categories with at least one live shop. */
+            categories: number;
+            rating: components["schemas"]["StatisticsRatingDto"];
+            /** @description Open customer accounts by the language they chose (§308) — the whole platform. */
+            languages: components["schemas"]["StatisticsCountDto"][];
+            /** @description Test shops and customers left out (§316) — counted whether or not they are. */
+            leftOut: components["schemas"]["StatisticsLeftOutCountDto"];
+            check: components["schemas"]["StatisticsMoneyCheckDto"];
+        };
+        StatisticsTotalsDto: {
+            /** @description Bookings paid in the stretch, on the day the deposit came in. */
+            bookings: number;
+            /** @description The full price of those not cancelled. */
+            bookingValueMinor: number;
+            /** @description The full price of those already done. */
+            doneValueMinor: number;
+            depositsMinor: number;
+            /** @description Platform fees taken less fees handed back, on the day each was written. */
+            feesKeptMinor: number;
+            /** @description Average full price of a booking not cancelled; null with none. */
+            averageBookingMinor: number | null;
+            /** @description Average deposit; null with none. */
+            averageDepositMinor: number | null;
+            /** @description Customer accounts opened — the whole platform. */
+            newCustomers: number;
+            /** @description Customers who paid for at least one booking. */
+            customersBooked: number;
+            /** @description Shops that posted themselves for customers (§268). */
+            shopsWentLive: number;
+        };
+        StatisticsBucketDto: {
+            /** @description The bucket's first day and last day, YYYY-MM-DD. */
+            start: string;
+            end: string;
+            bookings: number;
+            bookingValueMinor: number;
+            depositsMinor: number;
+            feesKeptMinor: number;
+            newCustomers: number;
+            shopsWentLive: number;
+        };
+        StatisticsOutcomesDto: {
+            done: number;
+            missed: number;
+            cancelledByCustomer: number;
+            cancelledByShop: number;
+            /** @description Called off another way — by our team, say. */
+            cancelledOther: number;
+            /** @description Paid and not happened yet, or happening now. */
+            upcoming: number;
+        };
+        StatisticsLeadTimeDto: {
+            sameDay: number;
+            nextDay: number;
+            /** @description Two to seven days ahead. */
+            withinWeek: number;
+            later: number;
+        };
+        StatisticsHeatCellDto: {
+            /** @description 1 Monday … 7 Sunday, on the shop's clock. */
+            weekday: number;
+            /** @description 0–23, on the shop's clock. */
+            hour: number;
+            count: number;
+        };
+        StatisticsBookingsDto: {
+            outcomes: components["schemas"]["StatisticsOutcomesDto"];
+            /** @description Bookings started in the stretch — paid or not. */
+            started: number;
+            /** @description Of those, how many were paid. */
+            startedPaid: number;
+            leadTime: components["schemas"]["StatisticsLeadTimeDto"];
+            /** @description When booked visits happen: weekday by hour, cancelled ones left out. */
+            heat: components["schemas"]["StatisticsHeatCellDto"][];
+            refunds: number;
+            refundsMinor: number;
+            payouts: number;
+            payoutsMinor: number;
+        };
+        StatisticsCustomersDto: {
+            /** @description Of the customers who booked, those whose first booking ever was in this stretch. */
+            firstTime: number;
+            /** @description Those who had booked before it. */
+            returning: number;
+            /** @description Paid bookings per customer who booked; null with none. */
+            bookingsPerCustomer: number | null;
+            /** @description Of the accounts opened in the stretch, how many have booked since. */
+            joinedAndBooked: number;
+            /** @description Shops followed (§288). */
+            follows: number;
+        };
+        StatisticsTopShopDto: {
+            id: string;
+            name: string | null;
+            category: string | null;
+            bookings: number;
+            bookingValueMinor: number;
+            rating: number | null;
+        };
+        StatisticsSliceDto: {
+            /** @description The category or district; null for shops with none. */
+            id: string | null;
+            name: string;
+            bookings: number;
+            bookingValueMinor: number;
+            /** @description Live shops there now. */
+            liveShops: number;
+        };
+        StatisticsShopsDto: {
+            joined: number;
+            /** @description Sent for review in the stretch (§255) — the last time each one did. */
+            applied: number;
+            /** @description With at least one paid booking in the stretch. */
+            withBookings: number;
+            liveNow: number;
+            pausedNow: number;
+            suspendedNow: number;
+            /** @description For those that went live: the middle number of days from signing up. */
+            medianDaysToLive: number | null;
+            topByBookings: components["schemas"]["StatisticsTopShopDto"][];
+            topByValue: components["schemas"]["StatisticsTopShopDto"][];
+            byCategory: components["schemas"]["StatisticsSliceDto"][];
+            byDistrict: components["schemas"]["StatisticsSliceDto"][];
+        };
+        StatisticsServiceDto: {
+            name: string;
+            bookings: number;
+            /** @description How many shops offer a service by that name and were booked for it. */
+            shops: number;
+        };
+        StatisticsTermDto: {
+            term: string;
+            count: number;
+        };
+        StatisticsSearchesDto: {
+            total: number;
+            /** @description Searches that found nothing — what customers want and we do not have. */
+            empty: number;
+            top: components["schemas"]["StatisticsTermDto"][];
+            emptyTop: components["schemas"]["StatisticsTermDto"][];
+        };
+        StatisticsWantsDto: {
+            topServices: components["schemas"]["StatisticsServiceDto"][];
+            searches: components["schemas"]["StatisticsSearchesDto"];
+            reviews: components["schemas"]["StatisticsRatingDto"];
+        };
+        StatisticsPeriodDto: {
+            asOf: string;
+            currency: string;
+            from: string;
+            to: string;
+            days: number;
+            /**
+             * @description How the chart is cut: by day up to three months, by week up to two years, then by month.
+             * @enum {string}
+             */
+            bucket: "day" | "month" | "week";
+            /** @description Whether `previous` is the stretch of the same length just before; false for "since the beginning". */
+            compared: boolean;
+            totals: components["schemas"]["StatisticsTotalsDto"];
+            previous: components["schemas"]["StatisticsTotalsDto"] | null;
+            series: components["schemas"]["StatisticsBucketDto"][];
+            bookings: components["schemas"]["StatisticsBookingsDto"];
+            customers: components["schemas"]["StatisticsCustomersDto"];
+            shops: components["schemas"]["StatisticsShopsDto"];
+            wants: components["schemas"]["StatisticsWantsDto"];
+            check: components["schemas"]["StatisticsMoneyCheckDto"];
+        };
+        StatisticsMonthDto: {
+            /** @description YYYY-MM. */
+            month: string;
+            bookings: number;
+            bookingValueMinor: number;
+            depositsMinor: number;
+            feesKeptMinor: number;
+            newCustomers: number;
+            shopsWentLive: number;
+            /** @description Customers who paid for at least one booking that month. */
+            activeCustomers: number;
+        };
+        StatisticsCohortDto: {
+            month: string;
+            customers: number;
+            /** @description `back[0]` is one month later, `back[1]` two, up to this month. */
+            back: number[];
+        };
+        StatisticsMonthsDto: {
+            asOf: string;
+            currency: string;
+            months: components["schemas"]["StatisticsMonthDto"][];
+            cohorts: components["schemas"]["StatisticsCohortDto"][];
+        };
+        LeftOutShopDto: {
+            id: string;
+            name: string | null;
+            markedAt: string | null;
+            /** @description An administrator's email, or "automatic". */
+            markedBy: string | null;
+        };
+        LeftOutCustomerDto: {
+            id: string;
+            email: string;
+            displayName: string | null;
+            markedAt: string | null;
+            markedBy: string | null;
+        };
+        StatisticsLeftOutDto: {
+            shops: components["schemas"]["LeftOutShopDto"][];
+            customers: components["schemas"]["LeftOutCustomerDto"][];
+        };
+        MarkTestDto: {
+            isTest: boolean;
+        };
+        TestMarkDto: {
+            id: string;
+            isTest: boolean;
+            markedAt: string | null;
+            markedBy: string | null;
         };
         PausedBusinessDto: {
             businessId: string;
@@ -21544,6 +21929,381 @@ export interface operations {
             };
             /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminStatisticsController_summary: {
+        parameters: {
+            query?: {
+                /** @description One country's shops (§315). */
+                country?: string;
+                /** @description Shops whose MAIN category this is (§265). */
+                category?: string;
+                /** @description Branches in this district. */
+                district?: string;
+                /** @description Count test shops and test customers too (§316). Query strings are text. */
+                includeTest?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatisticsSummaryDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminStatisticsController_period: {
+        parameters: {
+            query?: {
+                /** @description One country's shops (§315). */
+                country?: string;
+                /** @description Shops whose MAIN category this is (§265). */
+                category?: string;
+                /** @description Branches in this district. */
+                district?: string;
+                /** @description Count test shops and test customers too (§316). Query strings are text. */
+                includeTest?: boolean;
+                /** @description The first day, YYYY-MM-DD, on each shop's own clock. Left out: since the beginning. */
+                from?: string;
+                /** @description The last day, YYYY-MM-DD, included. Left out: today. */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatisticsPeriodDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminStatisticsController_months: {
+        parameters: {
+            query?: {
+                /** @description One country's shops (§315). */
+                country?: string;
+                /** @description Shops whose MAIN category this is (§265). */
+                category?: string;
+                /** @description Branches in this district. */
+                district?: string;
+                /** @description Count test shops and test customers too (§316). Query strings are text. */
+                includeTest?: boolean;
+                /** @description How many months back, this one included. */
+                months?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatisticsMonthsDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminStatisticsController_leftOut: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatisticsLeftOutDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminStatisticsController_markShop: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkTestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestMarkDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminStatisticsController_markCustomer: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkTestDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TestMarkDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

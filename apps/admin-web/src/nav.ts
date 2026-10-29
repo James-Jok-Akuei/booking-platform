@@ -34,6 +34,13 @@ export const SECTIONS: NavGroup[] = [
         keywords: 'home dashboard today waiting queue summary pulse week',
         hint: 'What needs you, and how the platform is doing',
       },
+      {
+        to: '/statistics',
+        label: 'Statistics',
+        icon: 'chart',
+        keywords: 'numbers stats analytics metrics kpi report pitch investors revenue made earned income total growth customers bookings value gmv months download spreadsheet csv pdf',
+        hint: 'The whole platform in numbers — for pitching and planning',
+      },
     ],
   },
   {

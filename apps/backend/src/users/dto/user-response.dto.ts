@@ -193,6 +193,12 @@ export class AdminUserDto {
   /** An administrator has two-step sign-in on (§298). False for everyone else. */
   twoStepOn!: boolean;
 
+  /** A test account (§316): the statistics leave it and its bookings out. */
+  isTest!: boolean;
+  /** When it was last marked or unmarked as one, and by whom (an email, or "automatic"). */
+  testMarkedAt!: string | null;
+  testMarkedBy!: string | null;
+
   appointmentCount!: number;
   reviewCount!: number;
   ticketCount!: number;

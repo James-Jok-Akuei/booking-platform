@@ -92,6 +92,11 @@
 
 .bz-section h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font-size: 13px; font-weight: 750; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 .bz-section h4 svg { color: var(--accent); }
+/* Whether the statistics count the shop (§316). */
+.bz-test { display: flex; align-items: center; gap: 14px; padding: 14px; border-radius: 18px; border: 1px solid var(--line); }
+.bz-test > span { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bz-test strong { font-size: 14px; }
+.bz-test em { font-style: normal; font-size: 12.5px; line-height: 1.45; color: var(--muted); }
 .bz-about { margin: 0; line-height: 1.6; }
 
 .bz-checks { list-style: none; margin: 0; padding: 4px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; border-radius: 18px; background: var(--sunken); }

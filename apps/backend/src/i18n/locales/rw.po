@@ -4684,12 +4684,12 @@ msgid "Interpretation"
 msgstr "Ubusemuzi"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:59
+#: src/auth/auth.service.ts:60
 msgid "Invalid or expired verification code."
 msgstr "Kode yo kwemeza si yo cyangwa yarengeje igihe."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:777
+#: src/auth/auth.service.ts:780
 msgid "Invalid refresh token."
 msgstr "Token yo kuvugurura ntiyemewe."
 
@@ -5756,7 +5756,7 @@ msgid "Not good with other dogs"
 msgstr "Ntiyumvikana n’izindi mbwa"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:828
+#: src/auth/auth.service.ts:831
 msgid "Not signed in."
 msgstr "Ntabwo winjiye."
 
@@ -5810,7 +5810,7 @@ msgid "Notification not found."
 msgstr "Imenyesha ntiryabonetse."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:363
+#: src/auth/auth.service.ts:364
 msgid "Now the 6-digit code from your authenticator app."
 msgstr "Noneho, kode y’imibare 6 yo muri porogaramu yawe ya authenticator."
 
@@ -6042,7 +6042,7 @@ msgid "Only administrators can read this."
 msgstr "Abashinzwe urubuga ni bo bonyine bashobora gusoma ibi."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/users/users.service.ts:164
+#: src/users/users.service.ts:171
 msgid "Only an administrator can clear a display name."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora gusiba izina rigaragara."
 
@@ -6666,7 +6666,7 @@ msgstr "Banza usome kandi wemere {title} (verisiyo {version}). Biri kuri paji y�
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: waitSeconds.
-#: src/auth/auth.service.ts:215
+#: src/auth/auth.service.ts:216
 msgid "Please wait {waitSeconds}s before requesting another code."
 msgstr "Tegereza amasegonda {waitSeconds} mbere yo gusaba indi kode."
 
@@ -6971,7 +6971,7 @@ msgid "Reformer"
 msgstr "Reformer"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:784
+#: src/auth/auth.service.ts:787
 msgid "Refresh token is no longer valid."
 msgstr "Token yo kuvugurura ntigikora."
 
@@ -7444,7 +7444,7 @@ msgstr "Injira wemere"
 msgid "Sign-in code"
 msgstr "Kode yo kwinjira"
 
-#: src/auth/auth.service.ts:971
+#: src/auth/auth.service.ts:974
 msgid "Signed out there."
 msgstr "Wasohotse kuri icyo gikoresho."
 
@@ -8024,7 +8024,7 @@ msgid "That shop is not open on the app."
 msgstr "Iryo duka ntiriri ku murongo muri porogaramu."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:970
+#: src/auth/auth.service.ts:973
 msgid "That sign-in has already ended."
 msgstr "Uko kwinjira kwamaze kurangira."
 
@@ -8321,7 +8321,7 @@ msgid "this"
 msgstr "ibi"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:161
+#: src/auth/auth.service.ts:162
 msgid "This account has been closed. Sign up again to start a new one."
 msgstr "Iyi konti yarafunzwe. Fungura indi konti nshya kugira ngo wongere utangire."
 
@@ -8479,7 +8479,7 @@ msgid "This cancellation had no paid deposit, so there is nothing to give back."
 msgstr "Kuri iyi gahunda yahagaritswe nta avansi yari yishyuwe, bityo nta mafaranga yo gusubiza."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:496
+#: src/auth/auth.service.ts:497
 msgid "This code was issued for an account that no longer exists. Request a new one."
 msgstr "Iyi kode yatanzwe ku konti itakibaho. Saba indi nshya."
 
@@ -8489,17 +8489,17 @@ msgid "This email already has a pending invitation from another business."
 msgstr "Iyi imeyili isanzwe ifite ubutumire butarasubizwa buturutse ku bundi bucuruzi."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:144
+#: src/auth/auth.service.ts:145
 msgid "This email has no account yet. Send `role` as BUSINESS or CUSTOMER to create one."
 msgstr "Iyi imeyili nta konti iragira. Ohereza `role` ari BUSINESS cyangwa CUSTOMER kugira ngo uyifungure."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:342
+#: src/auth/auth.service.ts:343
 msgid "This email is a business account. To book as a customer, sign in with a different email. Your shop is managed in the business app."
 msgstr "Iyi imeyili ni konti y’ubucuruzi. Kugira ngo ufate gahunda nk’umukiriya, injira ukoresheje indi imeyili. Iduka ryawe ricungirwa muri porogaramu y’abacuruzi."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:333
+#: src/auth/auth.service.ts:334
 msgid "This email is a customer account. To sell on BwanguReservations, sign in with your business email, or use a new email to add your business."
 msgstr "Iyi imeyili ni konti y’umukiriya. Kugira ngo ucururize kuri BwanguReservations, injira ukoresheje imeyili y’ubucuruzi bwawe, cyangwa ukoreshe imeyili nshya wongeremo ubucuruzi bwawe."
 
@@ -8540,7 +8540,7 @@ msgid "This invitation is already {value0}."
 msgstr "Ubu butumire ntibukiri gutegereza ({value0})."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:323
+#: src/auth/auth.service.ts:324
 msgid "This is an administrator account. Administrators sign in to the admin console, not here."
 msgstr "Iyi ni konti y’umuyobozi w’urubuga. Abayobozi b’urubuga binjirira muri admin console, si hano."
 
@@ -8638,7 +8638,7 @@ msgid "This service no longer takes a note. Send the shop a message instead."
 msgstr "Ubu iyi serivisi ntiyemera ubutumwa bugufi. Ahubwo andikira iduka."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:793
+#: src/auth/auth.service.ts:796
 #: src/auth/guards/roles.guard.ts:61
 msgid "This sign-in was ended. Please sign in again."
 msgstr "Uku kwinjira kwahagaritswe. Ongera winjire."
@@ -8731,7 +8731,7 @@ msgid "Too many incorrect attempts. Contact support to verify this appointment."
 msgstr "Kode itari yo yanditswe inshuro nyinshi. Vugana n’ubufasha kugira ngo iyi gahunda igenzurwe."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:911
+#: src/auth/auth.service.ts:914
 msgid "Too many incorrect attempts. Please request a new code."
 msgstr "Kode itari yo yanditswe inshuro nyinshi. Saba kode nshya."
 
@@ -8752,7 +8752,7 @@ msgid "Too many requests. Try again later."
 msgstr "Hari ibisabwa byinshi cyane. Ongera ugerageze nyuma."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:230
+#: src/auth/auth.service.ts:231
 msgid "Too many verification code requests. Please try again later."
 msgstr "Wasabye kode inshuro nyinshi. Ongera ugerageze nyuma."
 
@@ -8965,7 +8965,7 @@ msgid "Use yours"
 msgstr "Nkoresha ibyanyu"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/users/users.service.ts:171
+#: src/users/users.service.ts:178
 msgid "User not found."
 msgstr "Umukoresha ntiyabonetse."
 

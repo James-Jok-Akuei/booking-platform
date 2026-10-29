@@ -33,6 +33,7 @@ import { describeDevice, trimUserAgent } from './device';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 import { say } from '../i18n/say';
 import { CountriesService } from '../countries/countries.service';
+import { testMarkFor } from '../users/test-accounts';
 
 /** The refusal the console answers by asking for the authenticator code (§298). */
 export const TWO_STEP_REQUIRED = 'TWO_STEP_REQUIRED';
@@ -500,7 +501,8 @@ export class AuthService {
     if (role !== UserRole.BUSINESS) {
       // A new customer is shown around once, wherever they first sign in (§307).
       return this.prisma.user.create({
-        data: { email, role, ...(role === UserRole.CUSTOMER ? { toursDue: [TOURS.customer] } : {}) },
+        // An address no real person holds is a test account (§316).
+        data: { email, role, ...testMarkFor(email), ...(role === UserRole.CUSTOMER ? { toursDue: [TOURS.customer] } : {}) },
       });
     }
 
@@ -516,7 +518,7 @@ export class AuthService {
     if (invitation) {
       return this.prisma.$transaction(async (tx) => {
         // A new team member is shown around too (§307), the parts they can use.
-        const user = await tx.user.create({ data: { email, role, toursDue: [TOURS.seller] } });
+        const user = await tx.user.create({ data: { email, role, ...testMarkFor(email), toursDue: [TOURS.seller] } });
         await tx.businessMembership.create({
           data: {
             userId: user.id,
@@ -542,8 +544,9 @@ export class AuthService {
     // It is in the default country (§315) — the one the app is offered in.
     const country = await this.countries.defaultCountry();
     return this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.create({ data: { email, role, toursDue: [TOURS.seller] } });
-      const business = await tx.businessProfile.create({ data: { countryCode: country.code } });
+      const user = await tx.user.create({ data: { email, role, ...testMarkFor(email), toursDue: [TOURS.seller] } });
+      // A test owner's shop is a test shop (§316).
+      const business = await tx.businessProfile.create({ data: { countryCode: country.code, ...testMarkFor(email) } });
       await tx.businessMembership.create({
         data: {
           userId: user.id,

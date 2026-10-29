@@ -848,3 +848,38 @@ export const listAdminCountries = () => api<AdminCountry[]>('/admin/countries');
 /** A country's own fee (null takes the platform's), or switching it on or off. */
 export const updateCountry = (code: string, body: { platformFeePercentage?: number | null; isLive?: boolean }) =>
   api<AdminCountry>(`/admin/countries/${code}`, { method: 'PATCH', body });
+
+// ---------------------------------------------------------------------------
+// Statistics (§316): the whole platform added up, test accounts left out
+
+export type StatisticsSummary = components['schemas']['StatisticsSummaryDto'];
+export type StatisticsPeriod = components['schemas']['StatisticsPeriodDto'];
+export type StatisticsTotals = components['schemas']['StatisticsTotalsDto'];
+export type StatisticsBucket = components['schemas']['StatisticsBucketDto'];
+export type StatisticsTopShop = components['schemas']['StatisticsTopShopDto'];
+export type StatisticsSlice = components['schemas']['StatisticsSliceDto'];
+export type StatisticsMoneyCheck = components['schemas']['StatisticsMoneyCheckDto'];
+export type StatisticsMonths = components['schemas']['StatisticsMonthsDto'];
+export type StatisticsLeftOut = components['schemas']['StatisticsLeftOutDto'];
+
+/** Part of the platform, and whether test accounts are counted. */
+export type StatisticsScope = { country?: string; category?: string; district?: string; includeTest?: boolean };
+
+export const getStatisticsSummary = (scope: StatisticsScope) =>
+  api<StatisticsSummary>('/admin/statistics/summary', { query: scope });
+
+/** A stretch of days; no `from` means since the beginning, compared with nothing. */
+export const getStatisticsPeriod = (scope: StatisticsScope & { from?: string; to?: string }) =>
+  api<StatisticsPeriod>('/admin/statistics/period', { query: scope });
+
+export const getStatisticsMonths = (scope: StatisticsScope & { months?: number }) =>
+  api<StatisticsMonths>('/admin/statistics/months', { query: scope });
+
+export const getStatisticsLeftOut = () => api<StatisticsLeftOut>('/admin/statistics/left-out');
+
+/** A test shop or customer is left out of the statistics, and only of them. */
+export const markTestShop = (id: string, isTest: boolean) =>
+  api<components['schemas']['TestMarkDto']>(`/admin/statistics/test-shops/${id}`, { method: 'PATCH', body: { isTest } });
+
+export const markTestCustomer = (id: string, isTest: boolean) =>
+  api<components['schemas']['TestMarkDto']>(`/admin/statistics/test-customers/${id}`, { method: 'PATCH', body: { isTest } });

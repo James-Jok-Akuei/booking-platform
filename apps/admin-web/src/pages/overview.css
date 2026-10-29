@@ -50,6 +50,10 @@
 
 .ao-section { margin: 26px 0 12px; font-size: 13px; font-weight: 750; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .ao > .ao-section:first-of-type { margin-top: 14px; }
+/* A section heading with a way to see more beside it (§316). */
+.ao-section-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 20px 0 6px; }
+.ao-section-row .ao-section { margin: 0; }
+.ao-section-row .ao-link { height: 28px; }
 
 /* ---- what needs you: one card per queue ---- */
 

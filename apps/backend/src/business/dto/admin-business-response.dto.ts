@@ -29,6 +29,10 @@ export const ADMIN_BUSINESS_SELECT = {
   logoUrl: true,
   coverImageUrl: true,
   createdAt: true,
+  // Whether the statistics leave it out (§316), and who said so.
+  isTest: true,
+  testMarkedAt: true,
+  testMarkedBy: true,
   category: { select: { id: true, name: true } },
   subcategory: { select: { id: true, name: true } },
   // Every kind of place it is, the main one first (§265).
@@ -90,6 +94,11 @@ export class AdminBusinessDto implements AdminBusinessPayload {
   logoUrl!: string | null;
   coverImageUrl!: string | null;
   createdAt!: string;
+  /** A test shop (§316): the statistics leave it and its bookings out. */
+  isTest!: boolean;
+  /** When it was last marked or unmarked as one, and by whom (an email, or "automatic"). */
+  testMarkedAt!: string | null;
+  testMarkedBy!: string | null;
   /** Its MAIN kind (§265). */
   category!: AdminBusinessCategoryDto | null;
   subcategory!: AdminBusinessCategoryDto | null;

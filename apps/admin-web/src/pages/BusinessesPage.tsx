@@ -6,6 +6,7 @@ import { useMoney } from '../money';
 import {
   getBusiness,
   listBusinesses,
+  markTestShop,
   reinstateBusiness,
   rejectBusiness,
   suspendBusiness,
@@ -26,6 +27,8 @@ import { NetworkMark } from '../ui/NetworkMark';
 import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import { StaticMap } from '../ui/StaticMap';
+import { Switch } from '../ui/Switch';
+import { markedWords } from '../lib/statsWords';
 import { ShopActPanel, ShopSupportSection, type ShopAct } from './ShopSupport';
 import { AdviceSent, ApprovePanel } from './ApproveShop';
 import './businesses.css';
@@ -812,6 +815,8 @@ function ReviewPanel({
 
           <PapersSection business={b} />
 
+          <TestMarkSection business={b} shopName={name ?? 'This shop'} />
+
           {/* Support acting for the shop (§297). */}
           <ShopSupportSection businessId={b.id} onAct={setAct} onClose={onClose} />
         </div>
@@ -969,6 +974,65 @@ function PapersSection({ business: b }: { business: AdminBusinessDetail }) {
       {problem && (
         <p className="error" role="alert">
           {problem}
+        </p>
+      )}
+    </Section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// The statistics (§316)
+
+/**
+ * Whether the statistics count this shop (§316). A test shop — ours, or a
+ * demo — and everything it did are left out of the numbers; nothing else
+ * about it changes, and the money pages still count every franc.
+ */
+function TestMarkSection({ business: b, shopName }: { business: AdminBusinessDetail; shopName: string }) {
+  const queryClient = useQueryClient();
+  const mark = useMutation({
+    mutationFn: (isTest: boolean) => markTestShop(b.id, isTest),
+    onSuccess: () =>
+      Promise.all(
+        [['business', b.id], ['businesses'], ['statistics'], ['admin-overview']].map((queryKey) => queryClient.invalidateQueries({ queryKey })),
+      ),
+  });
+  const flip = async (isTest: boolean) => {
+    if (
+      isTest &&
+      !(await confirmDialog({
+        title: `Leave ${shopName} out of the statistics?`,
+        body: (
+          <p>
+            Its bookings and money stop counting in every number on the statistics page and the Overview. Nothing else changes: it stays as it is
+            for customers, and it is paid out as before. You can count it again at any time.
+          </p>
+        ),
+        tone: 'warn',
+        icon: 'chart',
+        confirmLabel: 'Mark as a test shop',
+        cancelLabel: 'Keep counting it',
+      }))
+    )
+      return;
+    mark.mutate(isTest);
+  };
+  return (
+    <Section icon="chart" title="In the statistics">
+      <div className="bz-test">
+        <span>
+          <strong>{b.isTest ? 'A test shop — left out' : 'Counted'}</strong>
+          <em>
+            {b.isTest
+              ? `Its bookings and money are left out of the statistics. ${markedWords(b.testMarkedBy, b.testMarkedAt)}`
+              : 'If it is ours or a demo, mark it as a test shop: its bookings and money are then left out of the statistics, and nothing else changes.'}
+          </em>
+        </span>
+        <Switch checked={b.isTest} disabled={mark.isPending} onChange={(on) => void flip(on)} label="A test shop, left out of the statistics" />
+      </div>
+      {mark.error && (
+        <p className="error" role="alert">
+          {mark.error instanceof ApiError ? mark.error.message : 'That did not work.'}
         </p>
       )}
     </Section>

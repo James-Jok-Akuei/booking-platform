@@ -104,7 +104,12 @@ export function OverviewPage() {
 
       <div className="ao-cols">
         <div className="ao-main">
-          <h2 className="ao-section">The last seven days</h2>
+          <div className="ao-section-row">
+            <h2 className="ao-section">The last seven days</h2>
+            <Link to="/statistics" className="ao-link">
+              All statistics <Icon name="arrowRight" size={15} stroke={2.2} />
+            </Link>
+          </div>
           <div className="ao-stats">
             <Stat
               icon="calendarCheck"
@@ -162,7 +167,7 @@ export function OverviewPage() {
             <header className="ao-card-head">
               <div>
                 <h2>On the platform</h2>
-                <p>What customers can find right now</p>
+                <p>What customers can find right now — test shops left out</p>
               </div>
             </header>
             <dl className="ao-size-list">

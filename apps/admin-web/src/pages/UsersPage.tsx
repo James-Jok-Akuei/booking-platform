@@ -8,6 +8,7 @@ import {
   inviteAdmin,
   listAdminInvitations,
   listUsers,
+  markTestCustomer,
   resetTwoStep,
   revokeAdminAccess,
   revokeAdminInvitation,
@@ -19,6 +20,8 @@ import { confirmDialog, promptDialog } from '../ui/Dialog';
 import { Icon, type IconName } from '../ui/Icon';
 import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
+import { Switch } from '../ui/Switch';
+import { markedWords } from '../lib/statsWords';
 import { PersonActPanel, PersonSupportSection, type PersonAct } from './PersonSupport';
 import './users.css';
 import { WriteFirst } from '../components/WriteFirst';
@@ -422,7 +425,36 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
   const clear = useMutation({ mutationFn: (reason: string) => clearDisplayName(u.id, reason), onSuccess: refresh });
   const revoke = useMutation({ mutationFn: () => revokeAdminAccess(u.id), onSuccess: refresh });
   const reset = useMutation({ mutationFn: () => resetTwoStep(u.id), onSuccess: refresh });
-  const error = clear.error ?? revoke.error ?? reset.error;
+  // Whether the statistics count them (§316).
+  const test = useMutation({
+    mutationFn: (isTest: boolean) => markTestCustomer(u.id, isTest),
+    onSuccess: () => {
+      refresh();
+      void queryClient.invalidateQueries({ queryKey: ['statistics'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin-overview'] });
+    },
+  });
+  const error = clear.error ?? revoke.error ?? reset.error ?? test.error;
+  const flipTest = async (isTest: boolean) => {
+    if (
+      isTest &&
+      !(await confirmDialog({
+        title: 'Leave them out of the statistics?',
+        body: (
+          <p>
+            <strong>{u.email}</strong> and their bookings stop counting in every number on the statistics page and the Overview. Nothing else
+            changes for them. You can count them again at any time.
+          </p>
+        ),
+        tone: 'warn',
+        icon: 'chart',
+        confirmLabel: 'Mark as a test account',
+        cancelLabel: 'Keep counting them',
+      }))
+    )
+      return;
+    test.mutate(isTest);
+  };
   const self = u.id === me;
   const [act, setAct] = useState<PersonAct | null>(null);
 
@@ -560,6 +592,20 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
             </div>
           ) : (
             <p className="up-quiet">They have not chosen a name, so their reviews show as “Anonymous”.</p>
+          )}
+
+          {u.role === 'CUSTOMER' && (
+            <div className="up-decision">
+              <span>
+                <strong>{u.isTest ? 'A test account — left out' : 'Counted in the statistics'}</strong>
+                <em>
+                  {u.isTest
+                    ? `Their bookings are left out of the statistics. ${markedWords(u.testMarkedBy, u.testMarkedAt)}`
+                    : 'If it is ours or a demo, mark it as a test account: its bookings are then left out of the statistics, and nothing else changes.'}
+                </em>
+              </span>
+              <Switch checked={u.isTest} disabled={test.isPending} onChange={(on) => void flipTest(on)} label="A test account, left out of the statistics" />
+            </div>
           )}
 
           {u.role === 'ADMIN' && (

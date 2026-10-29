@@ -16325,6 +16325,567 @@
         ]
       }
     },
+    "/admin/statistics/summary": {
+      "get": {
+        "operationId": "AdminStatisticsController_summary",
+        "parameters": [
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "One country's shops (§315).",
+            "schema": {
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Shops whose MAIN category this is (§265).",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "district",
+            "required": false,
+            "in": "query",
+            "description": "Branches in this district.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeTest",
+            "required": false,
+            "in": "query",
+            "description": "Count test shops and test customers too (§316). Query strings are text.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatisticsSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "All time: what the platform has made, and how big it is.",
+        "tags": [
+          "AdminStatistics"
+        ]
+      }
+    },
+    "/admin/statistics/period": {
+      "get": {
+        "operationId": "AdminStatisticsController_period",
+        "parameters": [
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "One country's shops (§315).",
+            "schema": {
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Shops whose MAIN category this is (§265).",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "district",
+            "required": false,
+            "in": "query",
+            "description": "Branches in this district.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeTest",
+            "required": false,
+            "in": "query",
+            "description": "Count test shops and test customers too (§316). Query strings are text.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "The first day, YYYY-MM-DD, on each shop's own clock. Left out: since the beginning.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "The last day, YYYY-MM-DD, included. Left out: today.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatisticsPeriodDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "A stretch of days, against the stretch of the same length before it.",
+        "tags": [
+          "AdminStatistics"
+        ]
+      }
+    },
+    "/admin/statistics/months": {
+      "get": {
+        "operationId": "AdminStatisticsController_months",
+        "parameters": [
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "One country's shops (§315).",
+            "schema": {
+              "pattern": "^[A-Z]{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "description": "Shops whose MAIN category this is (§265).",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "district",
+            "required": false,
+            "in": "query",
+            "description": "Branches in this district.",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeTest",
+            "required": false,
+            "in": "query",
+            "description": "Count test shops and test customers too (§316). Query strings are text.",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "months",
+            "required": false,
+            "in": "query",
+            "description": "How many months back, this one included.",
+            "schema": {
+              "minimum": 1,
+              "maximum": 36,
+              "default": 12,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatisticsMonthsDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Month by month, and how many customers came back after their first booking.",
+        "tags": [
+          "AdminStatistics"
+        ]
+      }
+    },
+    "/admin/statistics/left-out": {
+      "get": {
+        "operationId": "AdminStatisticsController_leftOut",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatisticsLeftOutDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "The test shops and test customers the numbers leave out (§316).",
+        "tags": [
+          "AdminStatistics"
+        ]
+      }
+    },
+    "/admin/statistics/test-shops/{id}": {
+      "patch": {
+        "operationId": "AdminStatisticsController_markShop",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkTestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestMarkDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminStatistics"
+        ]
+      }
+    },
+    "/admin/statistics/test-customers/{id}": {
+      "patch": {
+        "operationId": "AdminStatisticsController_markCustomer",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkTestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestMarkDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminStatistics"
+        ]
+      }
+    },
     "/admin/payouts/run": {
       "post": {
         "operationId": "AdminPayoutsController_run",
@@ -21562,6 +22123,19 @@
             "type": "boolean",
             "description": "An administrator has two-step sign-in on (§298). False for everyone else."
           },
+          "isTest": {
+            "type": "boolean",
+            "description": "A test account (§316): the statistics leave it and its bookings out."
+          },
+          "testMarkedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When it was last marked or unmarked as one, and by whom (an email, or \"automatic\")."
+          },
+          "testMarkedBy": {
+            "type": "string",
+            "nullable": true
+          },
           "appointmentCount": {
             "type": "number"
           },
@@ -21591,6 +22165,9 @@
           "homeArea",
           "isPrimaryAdmin",
           "twoStepOn",
+          "isTest",
+          "testMarkedAt",
+          "testMarkedBy",
           "appointmentCount",
           "reviewCount",
           "ticketCount",
@@ -24682,6 +25259,19 @@
           "createdAt": {
             "type": "string"
           },
+          "isTest": {
+            "type": "boolean",
+            "description": "A test shop (§316): the statistics leave it and its bookings out."
+          },
+          "testMarkedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When it was last marked or unmarked as one, and by whom (an email, or \"automatic\")."
+          },
+          "testMarkedBy": {
+            "type": "string",
+            "nullable": true
+          },
           "category": {
             "nullable": true,
             "description": "Its MAIN kind (§265).",
@@ -24725,6 +25315,9 @@
           "logoUrl",
           "coverImageUrl",
           "createdAt",
+          "isTest",
+          "testMarkedAt",
+          "testMarkedBy",
           "category",
           "subcategory",
           "kinds"
@@ -25163,6 +25756,19 @@
           "createdAt": {
             "type": "string"
           },
+          "isTest": {
+            "type": "boolean",
+            "description": "A test shop (§316): the statistics leave it and its bookings out."
+          },
+          "testMarkedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When it was last marked or unmarked as one, and by whom (an email, or \"automatic\")."
+          },
+          "testMarkedBy": {
+            "type": "string",
+            "nullable": true
+          },
           "category": {
             "nullable": true,
             "description": "Its MAIN kind (§265).",
@@ -25247,6 +25853,9 @@
           "logoUrl",
           "coverImageUrl",
           "createdAt",
+          "isTest",
+          "testMarkedAt",
+          "testMarkedBy",
           "category",
           "subcategory",
           "kinds",
@@ -32896,7 +33505,7 @@
           },
           "feesMinor": {
             "type": "number",
-            "description": "The platform's fees that day, less any handed back (§25)."
+            "description": "The platform's fees that day, less any handed back (§25, §316)."
           },
           "newBusinesses": {
             "type": "number"
@@ -33014,6 +33623,955 @@
           "thisWeek",
           "lastWeek",
           "totals"
+        ]
+      },
+      "StatisticsRatingDto": {
+        "type": "object",
+        "properties": {
+          "average": {
+            "type": "number",
+            "nullable": true,
+            "description": "Visible reviews' average, 1–5, to two places; null with none."
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "average",
+          "count"
+        ]
+      },
+      "StatisticsCountDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "count"
+        ]
+      },
+      "StatisticsLeftOutCountDto": {
+        "type": "object",
+        "properties": {
+          "shops": {
+            "type": "number"
+          },
+          "customers": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "shops",
+          "customers"
+        ]
+      },
+      "StatisticsMoneyCheckDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "bookings": {
+            "type": "number",
+            "description": "Paid bookings checked."
+          },
+          "bookingDepositsMinor": {
+            "type": "number"
+          },
+          "ledgerDepositsMinor": {
+            "type": "number"
+          },
+          "bookingFeesMinor": {
+            "type": "number"
+          },
+          "ledgerFeesMinor": {
+            "type": "number"
+          },
+          "missingEntries": {
+            "type": "number",
+            "description": "Paid bookings with no \"Deposit received\" entry at all."
+          }
+        },
+        "required": [
+          "ok",
+          "bookings",
+          "bookingDepositsMinor",
+          "ledgerDepositsMinor",
+          "bookingFeesMinor",
+          "ledgerFeesMinor",
+          "missingEntries"
+        ]
+      },
+      "StatisticsSummaryDto": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "since": {
+            "type": "string",
+            "nullable": true,
+            "description": "The day of the first paid booking, YYYY-MM-DD; null before there is one."
+          },
+          "madeMinor": {
+            "type": "number",
+            "description": "What the platform has made, all time: platform fees taken, less every fee\nhanded back — when a shop cancelled (§25) or by a fee refund (§53). Before\nany of our own costs."
+          },
+          "bookings": {
+            "type": "number",
+            "description": "Paid bookings, all time."
+          },
+          "bookingValueMinor": {
+            "type": "number",
+            "description": "The full price of those not cancelled — deposit and the rest paid at the shop."
+          },
+          "depositsMinor": {
+            "type": "number",
+            "description": "Deposits paid through the app, all time."
+          },
+          "customers": {
+            "type": "number",
+            "description": "Customer accounts open now — the whole platform."
+          },
+          "customersWhoBooked": {
+            "type": "number",
+            "description": "Customers who have ever paid for a booking."
+          },
+          "cameBack": {
+            "type": "number",
+            "description": "Of those, how many booked twice or more."
+          },
+          "liveShops": {
+            "type": "number"
+          },
+          "openBranches": {
+            "type": "number"
+          },
+          "areas": {
+            "type": "number",
+            "description": "Districts with at least one open branch of a live shop."
+          },
+          "categories": {
+            "type": "number",
+            "description": "Categories with at least one live shop."
+          },
+          "rating": {
+            "$ref": "#/components/schemas/StatisticsRatingDto"
+          },
+          "languages": {
+            "description": "Open customer accounts by the language they chose (§308) — the whole platform.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsCountDto"
+            }
+          },
+          "leftOut": {
+            "description": "Test shops and customers left out (§316) — counted whether or not they are.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StatisticsLeftOutCountDto"
+              }
+            ]
+          },
+          "check": {
+            "$ref": "#/components/schemas/StatisticsMoneyCheckDto"
+          }
+        },
+        "required": [
+          "asOf",
+          "currency",
+          "since",
+          "madeMinor",
+          "bookings",
+          "bookingValueMinor",
+          "depositsMinor",
+          "customers",
+          "customersWhoBooked",
+          "cameBack",
+          "liveShops",
+          "openBranches",
+          "areas",
+          "categories",
+          "rating",
+          "languages",
+          "leftOut",
+          "check"
+        ]
+      },
+      "StatisticsTotalsDto": {
+        "type": "object",
+        "properties": {
+          "bookings": {
+            "type": "number",
+            "description": "Bookings paid in the stretch, on the day the deposit came in."
+          },
+          "bookingValueMinor": {
+            "type": "number",
+            "description": "The full price of those not cancelled."
+          },
+          "doneValueMinor": {
+            "type": "number",
+            "description": "The full price of those already done."
+          },
+          "depositsMinor": {
+            "type": "number"
+          },
+          "feesKeptMinor": {
+            "type": "number",
+            "description": "Platform fees taken less fees handed back, on the day each was written."
+          },
+          "averageBookingMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "Average full price of a booking not cancelled; null with none."
+          },
+          "averageDepositMinor": {
+            "type": "number",
+            "nullable": true,
+            "description": "Average deposit; null with none."
+          },
+          "newCustomers": {
+            "type": "number",
+            "description": "Customer accounts opened — the whole platform."
+          },
+          "customersBooked": {
+            "type": "number",
+            "description": "Customers who paid for at least one booking."
+          },
+          "shopsWentLive": {
+            "type": "number",
+            "description": "Shops that posted themselves for customers (§268)."
+          }
+        },
+        "required": [
+          "bookings",
+          "bookingValueMinor",
+          "doneValueMinor",
+          "depositsMinor",
+          "feesKeptMinor",
+          "averageBookingMinor",
+          "averageDepositMinor",
+          "newCustomers",
+          "customersBooked",
+          "shopsWentLive"
+        ]
+      },
+      "StatisticsBucketDto": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "description": "The bucket's first day and last day, YYYY-MM-DD."
+          },
+          "end": {
+            "type": "string"
+          },
+          "bookings": {
+            "type": "number"
+          },
+          "bookingValueMinor": {
+            "type": "number"
+          },
+          "depositsMinor": {
+            "type": "number"
+          },
+          "feesKeptMinor": {
+            "type": "number"
+          },
+          "newCustomers": {
+            "type": "number"
+          },
+          "shopsWentLive": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "start",
+          "end",
+          "bookings",
+          "bookingValueMinor",
+          "depositsMinor",
+          "feesKeptMinor",
+          "newCustomers",
+          "shopsWentLive"
+        ]
+      },
+      "StatisticsOutcomesDto": {
+        "type": "object",
+        "properties": {
+          "done": {
+            "type": "number"
+          },
+          "missed": {
+            "type": "number"
+          },
+          "cancelledByCustomer": {
+            "type": "number"
+          },
+          "cancelledByShop": {
+            "type": "number"
+          },
+          "cancelledOther": {
+            "type": "number",
+            "description": "Called off another way — by our team, say."
+          },
+          "upcoming": {
+            "type": "number",
+            "description": "Paid and not happened yet, or happening now."
+          }
+        },
+        "required": [
+          "done",
+          "missed",
+          "cancelledByCustomer",
+          "cancelledByShop",
+          "cancelledOther",
+          "upcoming"
+        ]
+      },
+      "StatisticsLeadTimeDto": {
+        "type": "object",
+        "properties": {
+          "sameDay": {
+            "type": "number"
+          },
+          "nextDay": {
+            "type": "number"
+          },
+          "withinWeek": {
+            "type": "number",
+            "description": "Two to seven days ahead."
+          },
+          "later": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "sameDay",
+          "nextDay",
+          "withinWeek",
+          "later"
+        ]
+      },
+      "StatisticsHeatCellDto": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number",
+            "description": "1 Monday … 7 Sunday, on the shop's clock."
+          },
+          "hour": {
+            "type": "number",
+            "description": "0–23, on the shop's clock."
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "weekday",
+          "hour",
+          "count"
+        ]
+      },
+      "StatisticsBookingsDto": {
+        "type": "object",
+        "properties": {
+          "outcomes": {
+            "$ref": "#/components/schemas/StatisticsOutcomesDto"
+          },
+          "started": {
+            "type": "number",
+            "description": "Bookings started in the stretch — paid or not."
+          },
+          "startedPaid": {
+            "type": "number",
+            "description": "Of those, how many were paid."
+          },
+          "leadTime": {
+            "$ref": "#/components/schemas/StatisticsLeadTimeDto"
+          },
+          "heat": {
+            "description": "When booked visits happen: weekday by hour, cancelled ones left out.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsHeatCellDto"
+            }
+          },
+          "refunds": {
+            "type": "number"
+          },
+          "refundsMinor": {
+            "type": "number"
+          },
+          "payouts": {
+            "type": "number"
+          },
+          "payoutsMinor": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "outcomes",
+          "started",
+          "startedPaid",
+          "leadTime",
+          "heat",
+          "refunds",
+          "refundsMinor",
+          "payouts",
+          "payoutsMinor"
+        ]
+      },
+      "StatisticsCustomersDto": {
+        "type": "object",
+        "properties": {
+          "firstTime": {
+            "type": "number",
+            "description": "Of the customers who booked, those whose first booking ever was in this stretch."
+          },
+          "returning": {
+            "type": "number",
+            "description": "Those who had booked before it."
+          },
+          "bookingsPerCustomer": {
+            "type": "number",
+            "nullable": true,
+            "description": "Paid bookings per customer who booked; null with none."
+          },
+          "joinedAndBooked": {
+            "type": "number",
+            "description": "Of the accounts opened in the stretch, how many have booked since."
+          },
+          "follows": {
+            "type": "number",
+            "description": "Shops followed (§288)."
+          }
+        },
+        "required": [
+          "firstTime",
+          "returning",
+          "bookingsPerCustomer",
+          "joinedAndBooked",
+          "follows"
+        ]
+      },
+      "StatisticsTopShopDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "bookings": {
+            "type": "number"
+          },
+          "bookingValueMinor": {
+            "type": "number"
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "category",
+          "bookings",
+          "bookingValueMinor",
+          "rating"
+        ]
+      },
+      "StatisticsSliceDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "nullable": true,
+            "description": "The category or district; null for shops with none."
+          },
+          "name": {
+            "type": "string"
+          },
+          "bookings": {
+            "type": "number"
+          },
+          "bookingValueMinor": {
+            "type": "number"
+          },
+          "liveShops": {
+            "type": "number",
+            "description": "Live shops there now."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "bookings",
+          "bookingValueMinor",
+          "liveShops"
+        ]
+      },
+      "StatisticsShopsDto": {
+        "type": "object",
+        "properties": {
+          "joined": {
+            "type": "number"
+          },
+          "applied": {
+            "type": "number",
+            "description": "Sent for review in the stretch (§255) — the last time each one did."
+          },
+          "withBookings": {
+            "type": "number",
+            "description": "With at least one paid booking in the stretch."
+          },
+          "liveNow": {
+            "type": "number"
+          },
+          "pausedNow": {
+            "type": "number"
+          },
+          "suspendedNow": {
+            "type": "number"
+          },
+          "medianDaysToLive": {
+            "type": "number",
+            "nullable": true,
+            "description": "For those that went live: the middle number of days from signing up."
+          },
+          "topByBookings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsTopShopDto"
+            }
+          },
+          "topByValue": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsTopShopDto"
+            }
+          },
+          "byCategory": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsSliceDto"
+            }
+          },
+          "byDistrict": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsSliceDto"
+            }
+          }
+        },
+        "required": [
+          "joined",
+          "applied",
+          "withBookings",
+          "liveNow",
+          "pausedNow",
+          "suspendedNow",
+          "medianDaysToLive",
+          "topByBookings",
+          "topByValue",
+          "byCategory",
+          "byDistrict"
+        ]
+      },
+      "StatisticsServiceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "bookings": {
+            "type": "number"
+          },
+          "shops": {
+            "type": "number",
+            "description": "How many shops offer a service by that name and were booked for it."
+          }
+        },
+        "required": [
+          "name",
+          "bookings",
+          "shops"
+        ]
+      },
+      "StatisticsTermDto": {
+        "type": "object",
+        "properties": {
+          "term": {
+            "type": "string"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "term",
+          "count"
+        ]
+      },
+      "StatisticsSearchesDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "empty": {
+            "type": "number",
+            "description": "Searches that found nothing — what customers want and we do not have."
+          },
+          "top": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsTermDto"
+            }
+          },
+          "emptyTop": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsTermDto"
+            }
+          }
+        },
+        "required": [
+          "total",
+          "empty",
+          "top",
+          "emptyTop"
+        ]
+      },
+      "StatisticsWantsDto": {
+        "type": "object",
+        "properties": {
+          "topServices": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsServiceDto"
+            }
+          },
+          "searches": {
+            "$ref": "#/components/schemas/StatisticsSearchesDto"
+          },
+          "reviews": {
+            "$ref": "#/components/schemas/StatisticsRatingDto"
+          }
+        },
+        "required": [
+          "topServices",
+          "searches",
+          "reviews"
+        ]
+      },
+      "StatisticsPeriodDto": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "days": {
+            "type": "number"
+          },
+          "bucket": {
+            "type": "string",
+            "description": "How the chart is cut: by day up to three months, by week up to two years, then by month.",
+            "enum": [
+              "day",
+              "month",
+              "week"
+            ]
+          },
+          "compared": {
+            "type": "boolean",
+            "description": "Whether `previous` is the stretch of the same length just before; false for \"since the beginning\"."
+          },
+          "totals": {
+            "$ref": "#/components/schemas/StatisticsTotalsDto"
+          },
+          "previous": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StatisticsTotalsDto"
+              }
+            ]
+          },
+          "series": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsBucketDto"
+            }
+          },
+          "bookings": {
+            "$ref": "#/components/schemas/StatisticsBookingsDto"
+          },
+          "customers": {
+            "$ref": "#/components/schemas/StatisticsCustomersDto"
+          },
+          "shops": {
+            "$ref": "#/components/schemas/StatisticsShopsDto"
+          },
+          "wants": {
+            "$ref": "#/components/schemas/StatisticsWantsDto"
+          },
+          "check": {
+            "$ref": "#/components/schemas/StatisticsMoneyCheckDto"
+          }
+        },
+        "required": [
+          "asOf",
+          "currency",
+          "from",
+          "to",
+          "days",
+          "bucket",
+          "compared",
+          "totals",
+          "previous",
+          "series",
+          "bookings",
+          "customers",
+          "shops",
+          "wants",
+          "check"
+        ]
+      },
+      "StatisticsMonthDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "description": "YYYY-MM."
+          },
+          "bookings": {
+            "type": "number"
+          },
+          "bookingValueMinor": {
+            "type": "number"
+          },
+          "depositsMinor": {
+            "type": "number"
+          },
+          "feesKeptMinor": {
+            "type": "number"
+          },
+          "newCustomers": {
+            "type": "number"
+          },
+          "shopsWentLive": {
+            "type": "number"
+          },
+          "activeCustomers": {
+            "type": "number",
+            "description": "Customers who paid for at least one booking that month."
+          }
+        },
+        "required": [
+          "month",
+          "bookings",
+          "bookingValueMinor",
+          "depositsMinor",
+          "feesKeptMinor",
+          "newCustomers",
+          "shopsWentLive",
+          "activeCustomers"
+        ]
+      },
+      "StatisticsCohortDto": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string"
+          },
+          "customers": {
+            "type": "number"
+          },
+          "back": {
+            "description": "`back[0]` is one month later, `back[1]` two, up to this month.",
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "required": [
+          "month",
+          "customers",
+          "back"
+        ]
+      },
+      "StatisticsMonthsDto": {
+        "type": "object",
+        "properties": {
+          "asOf": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "months": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsMonthDto"
+            }
+          },
+          "cohorts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsCohortDto"
+            }
+          }
+        },
+        "required": [
+          "asOf",
+          "currency",
+          "months",
+          "cohorts"
+        ]
+      },
+      "LeftOutShopDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "markedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "markedBy": {
+            "type": "string",
+            "nullable": true,
+            "description": "An administrator's email, or \"automatic\"."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "markedAt",
+          "markedBy"
+        ]
+      },
+      "LeftOutCustomerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "markedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "markedBy": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "displayName",
+          "markedAt",
+          "markedBy"
+        ]
+      },
+      "StatisticsLeftOutDto": {
+        "type": "object",
+        "properties": {
+          "shops": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeftOutShopDto"
+            }
+          },
+          "customers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeftOutCustomerDto"
+            }
+          }
+        },
+        "required": [
+          "shops",
+          "customers"
+        ]
+      },
+      "MarkTestDto": {
+        "type": "object",
+        "properties": {
+          "isTest": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "isTest"
+        ]
+      },
+      "TestMarkDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "isTest": {
+            "type": "boolean"
+          },
+          "markedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "markedBy": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "isTest",
+          "markedAt",
+          "markedBy"
         ]
       },
       "PausedBusinessDto": {

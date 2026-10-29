@@ -4684,12 +4684,12 @@ msgid "Interpretation"
 msgstr "Interprétation"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:59
+#: src/auth/auth.service.ts:60
 msgid "Invalid or expired verification code."
 msgstr "Code de vérification invalide ou expiré."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:777
+#: src/auth/auth.service.ts:780
 msgid "Invalid refresh token."
 msgstr "Jeton d’actualisation invalide."
 
@@ -5756,7 +5756,7 @@ msgid "Not good with other dogs"
 msgstr "N’aime pas les autres chiens"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:828
+#: src/auth/auth.service.ts:831
 msgid "Not signed in."
 msgstr "Vous n’êtes pas connecté."
 
@@ -5810,7 +5810,7 @@ msgid "Notification not found."
 msgstr "Notification introuvable."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:363
+#: src/auth/auth.service.ts:364
 msgid "Now the 6-digit code from your authenticator app."
 msgstr "Maintenant, le code à 6 chiffres de votre application d’authentification."
 
@@ -6042,7 +6042,7 @@ msgid "Only administrators can read this."
 msgstr "Seuls les administrateurs peuvent lire ceci."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/users/users.service.ts:164
+#: src/users/users.service.ts:171
 msgid "Only an administrator can clear a display name."
 msgstr "Seul un administrateur peut effacer un nom affiché."
 
@@ -6666,7 +6666,7 @@ msgstr "Veuillez d’abord lire et accepter « {title} » (version {version}).
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: waitSeconds.
-#: src/auth/auth.service.ts:215
+#: src/auth/auth.service.ts:216
 msgid "Please wait {waitSeconds}s before requesting another code."
 msgstr "Veuillez patienter {waitSeconds} s avant de demander un autre code."
 
@@ -6971,7 +6971,7 @@ msgid "Reformer"
 msgstr "Reformer"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:784
+#: src/auth/auth.service.ts:787
 msgid "Refresh token is no longer valid."
 msgstr "Le jeton d’actualisation n’est plus valide."
 
@@ -7444,7 +7444,7 @@ msgstr "Connectez-vous pour accepter"
 msgid "Sign-in code"
 msgstr "Code de connexion"
 
-#: src/auth/auth.service.ts:971
+#: src/auth/auth.service.ts:974
 msgid "Signed out there."
 msgstr "Déconnecté de cet appareil."
 
@@ -8024,7 +8024,7 @@ msgid "That shop is not open on the app."
 msgstr "Cet établissement n’est pas ouvert sur l’application."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:970
+#: src/auth/auth.service.ts:973
 msgid "That sign-in has already ended."
 msgstr "Cette connexion est déjà terminée."
 
@@ -8321,7 +8321,7 @@ msgid "this"
 msgstr "ce sujet"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:161
+#: src/auth/auth.service.ts:162
 msgid "This account has been closed. Sign up again to start a new one."
 msgstr "Ce compte a été fermé. Créez un nouveau compte pour recommencer."
 
@@ -8479,7 +8479,7 @@ msgid "This cancellation had no paid deposit, so there is nothing to give back."
 msgstr "Aucun acompte n’avait été payé pour cette annulation : il n’y a donc rien à rembourser."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:496
+#: src/auth/auth.service.ts:497
 msgid "This code was issued for an account that no longer exists. Request a new one."
 msgstr "Ce code a été émis pour un compte qui n’existe plus. Demandez-en un nouveau."
 
@@ -8489,17 +8489,17 @@ msgid "This email already has a pending invitation from another business."
 msgstr "Cette adresse e-mail a déjà une invitation en attente d’une autre entreprise."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:144
+#: src/auth/auth.service.ts:145
 msgid "This email has no account yet. Send `role` as BUSINESS or CUSTOMER to create one."
 msgstr "Cette adresse e-mail n’a pas encore de compte. Envoyez `role` avec BUSINESS ou CUSTOMER pour en créer un."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:342
+#: src/auth/auth.service.ts:343
 msgid "This email is a business account. To book as a customer, sign in with a different email. Your shop is managed in the business app."
 msgstr "Cette adresse e-mail est un compte professionnel. Pour réserver en tant que client, connectez-vous avec une autre adresse e-mail. Votre établissement se gère dans l’application professionnelle."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:333
+#: src/auth/auth.service.ts:334
 msgid "This email is a customer account. To sell on BwanguReservations, sign in with your business email, or use a new email to add your business."
 msgstr "Cette adresse e-mail est un compte client. Pour vendre sur BwanguReservations, connectez-vous avec votre adresse e-mail professionnelle, ou utilisez une nouvelle adresse pour ajouter votre entreprise."
 
@@ -8540,7 +8540,7 @@ msgid "This invitation is already {value0}."
 msgstr "Cette invitation n’est plus en attente ({value0})."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:323
+#: src/auth/auth.service.ts:324
 msgid "This is an administrator account. Administrators sign in to the admin console, not here."
 msgstr "Ceci est un compte administrateur. Les administrateurs se connectent à la console d’administration, pas ici."
 
@@ -8638,7 +8638,7 @@ msgid "This service no longer takes a note. Send the shop a message instead."
 msgstr "Ce service n’accepte plus de note. Envoyez plutôt un message à l’établissement."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:793
+#: src/auth/auth.service.ts:796
 #: src/auth/guards/roles.guard.ts:61
 msgid "This sign-in was ended. Please sign in again."
 msgstr "Cette connexion a été fermée. Veuillez vous reconnecter."
@@ -8731,7 +8731,7 @@ msgid "Too many incorrect attempts. Contact support to verify this appointment."
 msgstr "Trop de tentatives incorrectes. Contactez l’assistance pour vérifier ce rendez-vous."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:911
+#: src/auth/auth.service.ts:914
 msgid "Too many incorrect attempts. Please request a new code."
 msgstr "Trop de tentatives incorrectes. Veuillez demander un nouveau code."
 
@@ -8752,7 +8752,7 @@ msgid "Too many requests. Try again later."
 msgstr "Trop de demandes. Réessayez plus tard."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/auth.service.ts:230
+#: src/auth/auth.service.ts:231
 msgid "Too many verification code requests. Please try again later."
 msgstr "Trop de demandes de code de vérification. Veuillez réessayer plus tard."
 
@@ -8965,7 +8965,7 @@ msgid "Use yours"
 msgstr "J’utilise les vôtres"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/users/users.service.ts:171
+#: src/users/users.service.ts:178
 msgid "User not found."
 msgstr "Utilisateur introuvable."
 

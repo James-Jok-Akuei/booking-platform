@@ -138,6 +138,9 @@ const HOUR = 3_600_000;
 
 const email = (name: string) => `${DEMO_PREFIX}${name}@example.com`;
 
+/** Every demo account and shop is a test one (§316): the statistics leave them out. */
+const TEST_MARK = { isTest: true, testMarkedAt: new Date(), testMarkedBy: 'automatic' } as const;
+
 /**
  * A future slot at a given local hour, skipping days every seeded location is
  * shut.
@@ -265,7 +268,7 @@ async function main() {
   // Platform settings
   // -------------------------------------------------------------------------
   const admin = await prisma.user.create({
-    data: { email: email('admin'), role: UserRole.ADMIN },
+    data: { email: email('admin'), role: UserRole.ADMIN, ...TEST_MARK },
   });
   ADMIN_ACTOR.userId = admin.id;
 
@@ -348,11 +351,13 @@ async function main() {
     note: string;
   }): Promise<SeededBusiness> {
     const owner = await prisma.user.create({
-      data: { email: email(options.handle), role: UserRole.BUSINESS },
+      data: { email: email(options.handle), role: UserRole.BUSINESS, ...TEST_MARK },
     });
     const profile = await prisma.businessProfile.create({
       data: {
         name: options.label,
+        // Demo shops are left out of the console's statistics (§316).
+        ...TEST_MARK,
         // The demo shops are all in Kigali (§315).
         countryCode: 'RW',
         members: {
@@ -684,6 +689,7 @@ async function main() {
           email: email(c.handle),
           role: UserRole.CUSTOMER,
           displayName: c.displayName,
+          ...TEST_MARK,
         },
       }),
     ),

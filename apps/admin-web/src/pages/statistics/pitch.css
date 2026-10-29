@@ -1,0 +1,110 @@
+/* The pitch sheet (§316): one page of the platform's numbers, to print or
+   save as a PDF. A sheet on the console's porcelain; on paper, just the sheet. */
+
+.ps { min-height: 100vh; padding: 0 16px 48px; background: var(--canvas); }
+
+.ps-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 14px; max-width: 900px; margin: 0 auto; padding: 14px 0; background: var(--canvas-glass); backdrop-filter: blur(10px); }
+.ps-back { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0 14px 0 8px; border-radius: 99px; background: var(--panel); border: 1px solid rgba(31, 42, 31, 0.07); box-shadow: var(--shadow-xs); color: var(--ink); font-size: 13.5px; font-weight: 700; text-decoration: none; }
+.ps-note { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.ps-print { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 18px; border: none; border-radius: 99px; background: var(--night); color: #fff; font: inherit; font-size: 13.5px; font-weight: 700; cursor: pointer; box-shadow: 0 12px 24px -12px rgba(31, 42, 31, 0.6); }
+.ps-print:disabled { opacity: 0.5; cursor: default; }
+
+.ps-sheet {
+  max-width: 900px;
+  margin: 6px auto 0;
+  padding: 40px 44px 30px;
+  border-radius: 28px;
+  background: var(--panel);
+  border: 1px solid rgba(31, 42, 31, 0.05);
+  box-shadow: 0 30px 70px -40px rgba(31, 42, 31, 0.45);
+  color: var(--ink);
+  animation: rise-in 520ms var(--ease) both;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.ps-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.ps-brand { display: flex; align-items: center; gap: 12px; }
+.ps-brand svg { border-radius: 13px; box-shadow: 0 0 0 1px var(--line-strong); }
+.ps-brand .wordmark { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; }
+.ps-brand .wordmark b { color: var(--accent); font-weight: 800; }
+.ps-when { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.ps-when strong { font-size: 13px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-deep); }
+.ps-when span { font-size: 13px; font-weight: 600; color: var(--muted); }
+
+.ps-wait { display: flex; flex-direction: column; gap: 14px; padding: 28px 0; }
+.ps-wait .skeleton { height: 90px; border-radius: 18px; }
+
+.ps-hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; margin-top: 24px; }
+.ps-made {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px 26px;
+  border-radius: 24px;
+  color: #fff;
+  background:
+    radial-gradient(360px 220px at 0% 0%, rgba(255, 138, 92, 0.45), transparent 65%),
+    var(--night);
+}
+.ps-made span { font-size: 14px; font-weight: 700; color: rgba(255, 255, 255, 0.75); }
+.ps-made strong { font-size: clamp(30px, 5vw, 46px); font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ps-made em { font-style: normal; font-size: 13px; color: rgba(255, 255, 255, 0.62); }
+.ps-pair { display: flex; flex-direction: column; gap: 12px; }
+.ps-pair > div { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 14px 18px; border-radius: 20px; background: var(--accent-tint); border: 1px solid rgba(240, 83, 45, 0.12); }
+.ps-pair span { font-size: 12.5px; font-weight: 700; color: var(--accent-deep); }
+.ps-pair strong { font-size: 25px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ps-pair em { font-style: normal; font-size: 12px; color: var(--muted); font-weight: 550; }
+
+.ps-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.ps-fig { display: flex; flex-direction: column; gap: 2px; padding: 16px 18px; border-radius: 18px; background: var(--sunken); min-width: 0; }
+.ps-fig span { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.ps-fig strong { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ps-fig em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--muted); }
+
+.ps-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; }
+.ps-row h2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; font-size: 14.5px; letter-spacing: -0.01em; }
+.ps-chart, .ps-cats { padding: 18px 20px; border-radius: 20px; border: 1px solid var(--line); min-width: 0; }
+.ps-growth { padding: 3px 9px; border-radius: 99px; font-size: 11.5px; font-weight: 800; }
+.ps-growth.is-up { background: var(--ok-soft); color: var(--ok-deep); }
+.ps-growth.is-down { background: var(--danger-soft); color: var(--danger); }
+.ps-bars { display: flex; align-items: stretch; gap: 6px; height: 170px; }
+.ps-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; }
+.ps-col b { font-size: 11px; font-weight: 800; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ps-col i { display: block; width: min(100%, 34px); border-radius: 7px 7px 3px 3px; background: linear-gradient(180deg, #ff8a5c, var(--accent)); transform-origin: bottom; animation: ps-grow 700ms var(--ease) both; }
+@keyframes ps-grow { from { transform: scaleY(0); } to { transform: none; } }
+.ps-col span { font-size: 10.5px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.ps-cats ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+.ps-cats li { display: grid; grid-template-columns: minmax(0, 1fr) 40px; grid-template-areas: 'name pct' 'bar bar'; gap: 4px 8px; align-items: center; font-size: 13px; }
+.ps-cats li span { grid-area: name; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ps-cats li strong { grid-area: pct; text-align: right; font-weight: 800; }
+.ps-cats li i { grid-area: bar; display: block; height: 8px; border-radius: 99px; background: var(--sunken); overflow: hidden; }
+.ps-cats li b { display: block; height: 100%; border-radius: 99px; background: var(--night-3); }
+.ps-none { margin: 0; font-size: 13px; color: var(--muted); }
+
+.ps-foot { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
+.ps-foot p { margin: 0 0 6px; font-size: 11.5px; line-height: 1.55; color: var(--muted); }
+.ps-foot strong { color: var(--ink-2); }
+
+@media (max-width: 720px) {
+  .ps-note { display: none; }
+  .ps-bar { justify-content: space-between; }
+  .ps-sheet { padding: 24px 18px 20px; border-radius: 24px; }
+  .ps-head { flex-direction: column; align-items: flex-start; }
+  .ps-when { align-items: flex-start; text-align: left; }
+  .ps-hero, .ps-row { grid-template-columns: minmax(0, 1fr); }
+  .ps-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ps-fig { padding: 14px; }
+  .ps-fig strong { font-size: 20px; overflow-wrap: normal; white-space: nowrap; }
+}
+
+@page { size: A4; margin: 12mm; }
+@media print {
+  html, body, #root { background: #fff !important; min-height: 0 !important; }
+  .ps { padding: 0; background: #fff; min-height: 0; }
+  .ps-bar { display: none; }
+  .ps-sheet { max-width: none; margin: 0; padding: 0; border: none; border-radius: 0; box-shadow: none; animation: none; }
+  .ps-col i { animation: none; }
+  .ps-hero, .ps-grid, .ps-row { break-inside: avoid; }
+}

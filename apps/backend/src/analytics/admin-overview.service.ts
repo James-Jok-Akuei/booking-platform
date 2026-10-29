@@ -1,7 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import {
   BusinessStatus,
-  LedgerEntryType,
   PayoutDestinationStatus,
   PayoutStatus,
   TicketStatus,
@@ -16,6 +15,10 @@ import type {
 } from './dto/admin-overview.dto';
 import { PUBLIC_BUSINESS } from '../business/business-status';
 import { CountriesService } from '../countries/countries.service';
+import { BOOKINGS, FEES, FEES_KEPT, bookingScope } from './statistics-sql';
+
+/** Test shops and test customers left out, as on the statistics page (§316). */
+const REAL = bookingScope({ includeTest: false });
 
 /** The chart's length; the two weeks compared are its halves. */
 export const OVERVIEW_DAYS = 14;
@@ -33,11 +36,15 @@ const shiftDay = (ymd: string, by: number) => {
  * last fourteen days, and its size — counted by the database in one round
  * trip, so the page that says "nothing is waiting" is never guessing.
  *
- * Days are the platform's own (PLATFORM_TIMEZONE), so "today" is Kigali's
- * today, not the server's. A booking counts on the day its deposit was paid:
- * that is when it became real — an unpaid hold that lapses never counts.
- * Fees come from the ledger, so a fee handed back when a business cancelled
- * (§25) is not counted as earned.
+ * Days are the platform's own (the default country's clock, §315), so
+ * "today" is Kigali's today, not the server's. A booking counts on the day its
+ * deposit was paid: that is when it became real — an unpaid hold that lapses
+ * never counts. Fees come from the ledger, so a fee handed back — when a
+ * business cancelled (§25), or by a fee refund — is not counted as earned.
+ *
+ * The figures about how the platform is doing follow the statistics' rules
+ * (§316), so the two pages never disagree: test shops and test customers are
+ * left out. The queues are not — a test shop waiting for approval still waits.
  */
 @Injectable()
 export class AdminOverviewService {
@@ -76,46 +83,43 @@ export class AdminOverviewService {
     ] = await Promise.all([
       this.waiting(),
       this.prisma.$queryRaw<DayRow[]>`
-        SELECT to_char(("depositPaidAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
+        SELECT to_char((a."depositPaidAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
                COUNT(*)::bigint AS n,
-               SUM("depositAmountMinor")::bigint AS minor
-        FROM "appointments"
-        WHERE "depositPaidAt" >= ${since}
+               SUM(a."depositAmountMinor")::bigint AS minor
+        ${BOOKINGS}
+        WHERE a."depositPaidAt" >= ${since} ${REAL}
         GROUP BY 1
       `,
-      // PLATFORM_FEE is negative and its reversal positive (§34); their sum,
-      // turned round, is what the platform kept.
+      // Fees taken less fees handed back (§316's `FEES`): what the platform kept.
       this.prisma.$queryRaw<DayRow[]>`
-        SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
+        SELECT to_char((e."createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
                COUNT(*)::bigint AS n,
-               (-SUM("amountMinor"))::bigint AS minor
-        FROM "ledger_entries"
-        WHERE "createdAt" >= ${since}
-          AND "type" IN (${LedgerEntryType.PLATFORM_FEE}::"LedgerEntryType", ${LedgerEntryType.PLATFORM_FEE_REVERSAL}::"LedgerEntryType")
+               ${FEES_KEPT} AS minor
+        ${FEES} AND e."createdAt" >= ${since} ${REAL}
         GROUP BY 1
       `,
       this.prisma.$queryRaw<DayRow[]>`
         SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
                COUNT(*)::bigint AS n, NULL::bigint AS minor
         FROM "business_profiles"
-        WHERE "createdAt" >= ${since}
+        WHERE "createdAt" >= ${since} AND NOT "isTest"
         GROUP BY 1
       `,
       this.prisma.$queryRaw<DayRow[]>`
         SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
                COUNT(*)::bigint AS n, NULL::bigint AS minor
         FROM "users"
-        WHERE "createdAt" >= ${since}
+        WHERE "createdAt" >= ${since} AND NOT "isTest"
           AND "role" = ${UserRole.CUSTOMER}::"UserRole"
         GROUP BY 1
       `,
       this.prisma.businessProfile.count({
-        where: PUBLIC_BUSINESS,
+        where: { ...PUBLIC_BUSINESS, isTest: false },
       }),
       this.prisma.location.count({
-        where: { isActive: true, business: PUBLIC_BUSINESS },
+        where: { isActive: true, business: { ...PUBLIC_BUSINESS, isTest: false } },
       }),
-      this.prisma.user.count({ where: { role: UserRole.CUSTOMER, closedAt: null } }),
+      this.prisma.user.count({ where: { role: UserRole.CUSTOMER, closedAt: null, isTest: false } }),
     ]);
 
     const byDay = (rows: DayRow[]) => new Map(rows.map((r) => [r.day, r]));

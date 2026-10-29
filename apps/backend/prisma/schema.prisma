@@ -399,6 +399,17 @@ model User {
   /// depends on keep their shape while the identity behind them is gone.
   closedAt DateTime?
 
+  /// A test account (§316) — our own, or the demo's — so the console's
+  /// statistics leave it and its bookings out. Set by the demo data, at
+  /// sign-up for an address no real person can hold (`isTestEmail`), and by
+  /// an administrator on the person's panel. Nothing else reads it: a test
+  /// account books, pays and is paid exactly like any other.
+  isTest       Boolean   @default(false)
+  /// When it was last marked or unmarked, and by whom — an administrator's
+  /// email, or "automatic" — so a number that drops can be explained.
+  testMarkedAt DateTime?
+  testMarkedBy String?
+
   // A business user reaches their BusinessProfile through BusinessMembership,
   // never directly.
   //
@@ -588,6 +599,14 @@ model BusinessProfile {
   /// happen, money owed is still paid out. It only stops NEW ones and takes the
   /// shop out of search.
   pausedAt DateTime?
+
+  /// A test shop (§316) — ours, or the demo's — so the console's statistics
+  /// leave it, its bookings and its money out. Only the statistics read it:
+  /// the money book, payouts and the wallet check count every franc.
+  isTest       Boolean   @default(false)
+  /// When it was last marked or unmarked, and by whom (an email, or "automatic").
+  testMarkedAt DateTime?
+  testMarkedBy String?
 
   /// When the shop POSTED itself for customers to see (§268). Null until it
   /// does.
@@ -1726,6 +1745,9 @@ model Appointment {
   // Drives the payment-confirmation poll and the PENDING_PAYMENT expiry sweep,
   // both of which scan by status and creation time.
   @@index([status, createdAt])
+  // The statistics (§316): every figure about bookings is counted by the day
+  // its deposit was paid.
+  @@index([depositPaidAt])
   @@map("appointments")
 }
 

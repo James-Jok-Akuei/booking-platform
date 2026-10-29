@@ -20615,7 +20615,15 @@ move the provider currency and exchange rate onto the country; let
 before the second country: its legal documents and company (`LegalDocument`
 gains a country; Terms and the Seller Agreement are Rwanda's), its
 connection keys, its Swahili or other words, and a country chooser in the
-customer app (the server already answers `X-Country`).
+customer app (the server already answers `X-Country`). Missed from this list
+at first: a country question at seller sign-up — `auth.service` puts every
+new shop in the default country, and nothing changes a shop's country after.
+Only MTN MoMo has a connection written (a new MTN country is new keys on the
+same connection); Airtel Money is told apart by its numbers but has no
+connection yet, here or anywhere. A country whose people pay another way
+(M-Pesa, Orange Money, Wave, cards) needs that network added to
+`MobileMoneyProvider` and its own connection written; a right-to-left language (Arabic) needs the apps'
+layouts to turn around, which none of them do yet.
 
 ### 315.4 Found on the way
 
@@ -20643,3 +20651,130 @@ deposit there, charged at booking; papers by country; a person's country;
 connections serving only their country; local hours. Full suite: **1677
 passing in 87 suites**. Screenshots of the console's Countries (1440, 390),
 Places and Settings, and the seller app's contact step and Getting paid.
+
+## 316. Statistics — the whole platform in numbers, for pitching and for planning (2026-10-29)
+
+The user asked for a console section "where our team can rely on numbers":
+transactions across all businesses and all buyers, for pitching and for seeing
+how the business is going. Asked first for anything an investor had already
+wanted, they named one: **how much the platform has made in total**. They
+agreed the pitch sheet names **no shop** — totals only.
+
+### 316.1 What every number means
+
+One set of rules, in `src/analytics/statistics-sql.ts`, so two numbers on the
+page can never mean different things by the same word:
+
+- **A booking** counts on the day its deposit was paid (`depositPaidAt`), on
+  its shop's clock (§315). An unpaid hold never counts; "started" bookings are
+  counted separately, by the day they were made, to show how many were paid.
+- **Booking value** is a booking's full agreed price (`servicePriceMinor`:
+  the deposit and the rest paid at the shop, choices and sale prices
+  included). A cancelled booking has none. "Done value" is the part already
+  taken place.
+- **Made by the platform / platform fees kept** come from the ledger: every
+  PLATFORM_FEE taken, less every PLATFORM_FEE_REVERSAL (a shop cancelled,
+  §25) and every executed FEE_REFUND adjustment (§53), on the day each entry
+  was written. Before any of our own costs. The Overview's "Fees kept" now
+  uses the same rule — it used to forget fee refunds.
+- **Customers** belong to no country or category, so sign-ups are always the
+  whole platform's, on the chosen country's clock (the default's when none).
+- **Narrowing**: a country (the shop's), a category (the shop's MAIN one,
+  §265), an area (the district of the branch booked at). Payouts are a whole
+  shop's, so an area does not narrow them; a search is narrowed by a country
+  only when it named a place, and one that named none counts for the default
+  country.
+- Every figure is counted by the database from the records; nothing is
+  sampled or converted. Money is in the platform's one unit (§315.3).
+
+### 316.2 Test accounts
+
+`User.isTest` and `BusinessProfile.isTest`, with `testMarkedAt` and
+`testMarkedBy` (an administrator's email, or "automatic"), so a number that
+drops can always be explained. A test shop or customer, and everything they
+did, is left out of the statistics **and of the Overview's figures**; the
+queues, the money book, payouts and the wallet check still count every franc,
+because a test shop's money is real money in the wallet.
+
+- Marked automatically: the demo data (`seed-demo.ts`), and at sign-up any
+  address no real person can hold (`isTestEmail`: example.com/.net/.org and
+  the .test/.example/.localhost names, RFC 2606 — not `.invalid`, where a
+  closed account's address goes, §122). A test owner's new shop is a test
+  shop. The migration marked what was already there the same way.
+- Marked by hand: a switch on a shop's panel (Businesses) and on a customer's
+  (Users), asking first before leaving one out; "Test accounts" on the
+  statistics page lists them all, with who marked each, and counts any one
+  again. The page can count them too, for a look at the demo.
+- Only customers are marked as people — a seller's or an administrator's
+  account is never counted as a customer anyway.
+
+### 316.3 The page
+
+Console → **Statistics** (under Overview; `/statistics`; the Overview links to
+it). The stretch (7 days, 30 days, 3 months, 12 months, all time, or chosen
+dates), the narrowing and the test switch live in the address. Then:
+
+- **All time**, a dark band: made by the platform, with whether the bookings
+  and the money book agree — beside bookings, booking value, customers who
+  booked (and how many booked again), live shops (areas, branches), rating,
+  customers.
+- **The stretch**: six figures against the same length before, each with its
+  own small bars; a chart by day (up to 92 days), week (up to two years) or
+  month, switchable between six measures; how bookings ended; money that moved
+  (deposits, fees kept, paid out, refunded, the averages); when visits happen
+  (weekday by hour); how far ahead people book; started then paid.
+- **Customers and shops**: sign-ups and how many booked since, first booking
+  or back again, follows, reviews, languages; shops joined, went live (and the
+  middle number of days it took), had bookings, live today; the top ten shops
+  by bookings and by value (named — for our team only); bookings by category
+  and by district beside the live shops there.
+- **What people want**: most searched, and searched-but-found-nothing — "shops
+  to sign up next"; the most booked services by name across shops.
+- **Month by month**, newest first, and **customers coming back**: customers
+  grouped by the month of their first booking, and the share who booked again
+  each month after.
+- Every number has an ⓘ saying what it counts and what it does not
+  (`admin-web/src/lib/statsWords.ts`); the download and the pitch sheet use the
+  same words.
+- **The money check**: for the same paid bookings, the deposits and fees the
+  bookings recorded against what the ledger wrote for them, plus bookings with
+  no deposit entry. When they disagree a red notice says by how much and links
+  the money book, rather than showing numbers that might be wrong.
+- **Download**: one spreadsheet file (CSV, opened by Excel and Google Sheets)
+  of everything shown — each part under its heading, each number with its
+  meaning, money in whole francs.
+- **Pitch sheet** (`/statistics/pitch`, outside the frame): one A4 page — made
+  by the platform, booking value, bookings, customers, booked again, live
+  shops, areas, rating, deposits, bookings month by month, where people book
+  by category — with how each is counted and when. Never a shop's name, and
+  test accounts always left out, whatever the page was showing. "Print or
+  save as PDF".
+
+### 316.4 Server
+
+`GET /admin/statistics/summary` (all time), `/period?from&to` (no `from`:
+since the first thing that happened, compared with nothing), `/months`,
+`/left-out`; `PATCH /admin/statistics/test-shops/:id` and
+`/test-customers/:id` `{ isTest }`. Admin only, asserted twice (§27.1). Each
+takes `country`, `category`, `district`, `includeTest`. An index on
+`appointments.depositPaidAt`; each query narrows by a day either side of the
+stretch first, then works out each row's own day on its own clock.
+Everything is counted on each request — fast enough for years at this size; a
+nightly summary table is the step if it ever is not.
+
+### 316.5 Verified
+
+`test/admin-statistics.spec.ts` (16) builds bookings by hand — paid,
+cancelled by the shop with its fee handed back, a fee refund, one forty days
+back, one paid half an hour after Kigali's midnight, a test customer at a real
+shop, a real customer at a test shop, an unpaid hold — and proves every
+figure: totals and the stretch before, the shop's day, outcomes, started and
+paid, first-time and returning, top shops and slices, all time with what was
+made, test accounts left out and counted when asked, narrowing, since the
+beginning, months and cohorts, the Overview agreeing, marking and unmarking
+with who did, the test addresses, and the money check catching a paid booking
+with no ledger entry. Full suite: **1693 passing in 88 suites**. Screenshots
+of the page at 1440, 820, 390 and 320 (no sideways scroll), the ⓘ on a phone
+and on desktop, the test accounts panel, the switches on a shop and a person,
+the Overview, and the pitch sheet on screen, on a phone and printed to PDF
+(one A4 page).

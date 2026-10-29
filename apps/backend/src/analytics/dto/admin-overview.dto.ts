@@ -41,7 +41,7 @@ export class OverviewWaitingDto {
   tickets!: OverviewTicketQueueDto;
 }
 
-/** One day on the platform, in its own time zone. */
+/** One day on the platform, in its own time zone. Test shops and customers left out (§316). */
 export class OverviewDayDto {
   /** YYYY-MM-DD, in `timeZone`. */
   day!: string;
@@ -49,7 +49,7 @@ export class OverviewDayDto {
   bookings!: number;
   /** Those deposits, added up. */
   depositsMinor!: number;
-  /** The platform's fees that day, less any handed back (§25). */
+  /** The platform's fees that day, less any handed back (§25, §316). */
   feesMinor!: number;
   newBusinesses!: number;
   newCustomers!: number;
@@ -64,6 +64,7 @@ export class OverviewPeriodDto {
   newCustomers!: number;
 }
 
+/** Test shops and test customers left out (§316), as on the statistics page. */
 export class OverviewTotalsDto {
   /** Approved and not paused: what customers can find. */
   liveBusinesses!: number;
