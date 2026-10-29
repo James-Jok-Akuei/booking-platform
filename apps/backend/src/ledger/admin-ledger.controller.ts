@@ -35,6 +35,7 @@ import {
   WalletBalanceOkDto,
   WalletBalanceUnavailableDto,
 } from './dto/ledger-response.dto';
+import { MoneyAccess } from '../common/decorators/money-access.decorator';
 
 /**
  * Reconciliation, and turning a recorded decision into money.
@@ -48,6 +49,8 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
+// Money access (§317): only the primary administrator and those they trust with money.
+@MoneyAccess()
 export class AdminLedgerController {
   constructor(
     private readonly ledger: LedgerService,

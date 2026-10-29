@@ -13,6 +13,7 @@ import {
   AdminUserPageDto,
   ClearedDisplayNameDto,
 } from './dto/user-response.dto';
+import { hasMoneyAccess } from './money-access';
 
 @Injectable()
 export class UsersService {
@@ -106,6 +107,10 @@ export class UsersService {
           isPrimaryAdmin: true,
           // Whether an administrator has two-step sign-in on (§298).
           totpEnabledAt: true,
+          // Money access (§317).
+          moneyAccess: true,
+          moneyAccessAt: true,
+          moneyAccessBy: true,
           // Whether the statistics leave them out (§316).
           isTest: true,
           testMarkedAt: true,
@@ -146,6 +151,9 @@ export class UsersService {
         homeArea: user.homeDistrict?.name ?? null,
         isPrimaryAdmin: user.isPrimaryAdmin,
         twoStepOn: user.totpEnabledAt !== null,
+        moneyAccess: hasMoneyAccess(user),
+        moneyAccessAt: user.moneyAccessAt?.toISOString() ?? null,
+        moneyAccessBy: user.moneyAccessBy,
         isTest: user.isTest,
         testMarkedAt: user.testMarkedAt?.toISOString() ?? null,
         testMarkedBy: user.testMarkedBy,

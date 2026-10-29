@@ -883,3 +883,15 @@ export const markTestShop = (id: string, isTest: boolean) =>
 
 export const markTestCustomer = (id: string, isTest: boolean) =>
   api<components['schemas']['TestMarkDto']>(`/admin/statistics/test-customers/${id}`, { method: 'PATCH', body: { isTest } });
+
+// ---------------------------------------------------------------------------
+// Money access (§317): who may see and move the platform's money
+
+export type MyAccess = components['schemas']['AdminAccessDto'];
+
+/** What the signed-in administrator may see; the console draws its menu by it. */
+export const getMyAccess = () => api<MyAccess>('/admin/users/me');
+
+/** The primary administrator gives or takes money access. Asks for a fresh code first. */
+export const setMoneyAccess = (userId: string, on: boolean) =>
+  api<components['schemas']['MoneyAccessDto']>(`/admin/users/${userId}/money-access`, { method: 'PATCH', body: { on } });

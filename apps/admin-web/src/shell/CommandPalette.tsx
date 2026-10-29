@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '../nav';
+import { useMyAccess } from '../lib/access';
 import { Icon, type IconName } from '../ui/Icon';
 import { EmptyState } from '../ui/EmptyState';
 
@@ -30,6 +31,7 @@ export function CommandPalette({ onClose, onSignOut }: { onClose: () => void; on
   const [active, setActive] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
 
+  const { money } = useMyAccess();
   const entries = useMemo<Entry[]>(() => {
     const go = (to: string) => () => {
       onClose();
@@ -45,7 +47,8 @@ export function CommandPalette({ onClose, onSignOut }: { onClose: () => void; on
         words: 'approval queue pending application',
         run: go('/businesses'),
       },
-      {
+      // Money access only (§317), like the pages it leads to.
+      ...(!money ? [] : [{
         id: 'run-payouts',
         label: 'Run payouts',
         hint: 'Work out what each shop is owed',
@@ -53,7 +56,7 @@ export function CommandPalette({ onClose, onSignOut }: { onClose: () => void; on
         section: 'Actions',
         words: 'pay businesses money owed',
         run: go('/payouts'),
-      },
+      } satisfies Entry]),
       {
         id: 'invite-admin',
         label: 'Invite an administrator',
@@ -63,7 +66,7 @@ export function CommandPalette({ onClose, onSignOut }: { onClose: () => void; on
         words: 'admin invite team colleague access',
         run: go('/users'),
       },
-      ...NAV_ITEMS.map<Entry>((item) => ({
+      ...NAV_ITEMS.filter((item) => money || !item.money).map<Entry>((item) => ({
         id: item.to,
         label: item.label,
         hint: item.hint,
@@ -86,7 +89,7 @@ export function CommandPalette({ onClose, onSignOut }: { onClose: () => void; on
         },
       },
     ];
-  }, [navigate, onClose, onSignOut]);
+  }, [navigate, onClose, onSignOut, money]);
 
   const shown = useMemo(() => {
     const words = query.toLowerCase().trim().split(/\s+/).filter(Boolean);

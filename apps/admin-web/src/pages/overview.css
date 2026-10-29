@@ -108,6 +108,8 @@
 .ao-side { padding-top: 51px; }
 
 .ao-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+/* Without money access (§317): two queues and two figures, each half the row. */
+.ao-queues.is-two, .ao-stats.is-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .ao-stat {
   position: relative;
   overflow: hidden;

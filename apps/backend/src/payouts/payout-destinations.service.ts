@@ -27,6 +27,7 @@ import { ListPayoutDestinationsDto } from './dto/list-payout-destinations.dto';
 import { numberPart, placesOf, shopMatching } from './payout-search';
 import { MEMBERSHIP_SCOPE_SELECT, MONEY_READERS_ONLY, mayReadMoney, scopeOf } from '../business/branch-scope';
 import { CountriesService, type CountryRow } from '../countries/countries.service';
+import { MONEY_ADMINS } from '../users/money-access';
 
 /**
  * What a caller gets back about a destination.
@@ -543,8 +544,9 @@ export class PayoutDestinationsService {
   }
 
   private async notifyAdmins(businessId: string, msisdn: string) {
+    // Only those who can check it (§317).
     const admins = await this.prisma.user.findMany({
-      where: { role: UserRole.ADMIN, closedAt: null },
+      where: MONEY_ADMINS,
       select: { id: true },
     });
 

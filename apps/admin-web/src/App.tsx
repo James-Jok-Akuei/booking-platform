@@ -23,6 +23,7 @@ import { SecurityPage } from './pages/SecurityPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { StatisticsPage } from './pages/statistics/StatisticsPage';
 import { PitchSheet } from './pages/statistics/PitchSheet';
+import { MoneyOnly } from './components/MoneyOnly';
 
 export function App() {
   return (
@@ -33,7 +34,9 @@ export function App() {
         path="/statistics/pitch"
         element={
           <RequireAuth>
-            <PitchSheet />
+            <MoneyOnly>
+              <PitchSheet />
+            </MoneyOnly>
           </RequireAuth>
         }
       />
@@ -45,11 +48,12 @@ export function App() {
         }
       >
         <Route index element={<OverviewPage />} />
-        <Route path="/statistics" element={<StatisticsPage />} />
+        {/* Money pages (§317): for the primary administrator and those they trust with money. */}
+        <Route path="/statistics" element={<MoneyOnly><StatisticsPage /></MoneyOnly>} />
         <Route path="/businesses" element={<BusinessesPage />} />
-        <Route path="/payout-destinations" element={<PayoutDestinationsPage />} />
-        <Route path="/payouts" element={<PayoutsPage />} />
-        <Route path="/ledger" element={<LedgerPage />} />
+        <Route path="/payout-destinations" element={<MoneyOnly><PayoutDestinationsPage /></MoneyOnly>} />
+        <Route path="/payouts" element={<MoneyOnly><PayoutsPage /></MoneyOnly>} />
+        <Route path="/ledger" element={<MoneyOnly><LedgerPage /></MoneyOnly>} />
         <Route path="/reviews" element={<ReviewsPage />} />
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/announcements" element={<AnnouncementsPage />} />
@@ -61,7 +65,7 @@ export function App() {
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/countries" element={<CountriesPage />} />
         <Route path="/places" element={<PlacesPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/settings" element={<MoneyOnly><SettingsPage /></MoneyOnly>} />
         <Route path="/legal" element={<LegalPage />} />
         {/* An address that is no page says so, inside the frame (§311). */}
         <Route path="*" element={<NotFoundPage />} />

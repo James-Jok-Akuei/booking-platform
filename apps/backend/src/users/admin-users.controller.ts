@@ -23,6 +23,7 @@ import { UsersService } from './users.service';
 import { ClearDisplayNameDto } from './dto/clear-display-name.dto';
 import { ListUsersDto } from './dto/list-users.dto';
 import { InviteAdminDto } from './dto/invite-admin.dto';
+import { AdminAccessDto, MoneyAccessDto, SetMoneyAccessDto } from './dto/money-access.dto';
 import { AdminInvitationsService } from './admin-invitations.service';
 import { ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
@@ -105,6 +106,25 @@ export class AdminUsersController {
     @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.invitations.revokeAdmin(user, id);
+  }
+
+  /** What the signed-in administrator may see (§317): the console draws its menu by it. */
+  @Get('me')
+  @ApiOkResponse({ type: AdminAccessDto })
+  me(@CurrentUser() user: AuthenticatedUser) {
+    return this.invitations.accessOf(user);
+  }
+
+  /** The primary administrator gives or takes money access (§317). Asks for a fresh code first. */
+  @Patch(':id/money-access')
+  @RecentAuth()
+  @ApiOkResponse({ type: MoneyAccessDto })
+  setMoneyAccess(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SetMoneyAccessDto,
+  ) {
+    return this.invitations.setMoneyAccess(user, id, dto.on);
   }
 
   @Patch(':id/display-name/clear')

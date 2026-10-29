@@ -59,6 +59,8 @@ describe('The admin overview (§243)', () => {
     await resetDatabase(prisma);
 
     admin = await createAdmin(prisma);
+    // The money figures are for administrators with money access (§317).
+    await prisma.user.update({ where: { id: admin.userId }, data: { moneyAccess: true } });
     // A live shop, and one waiting for approval with an unverified number.
     shop = await createBusiness(prisma);
     await createBusiness(prisma, { status: BusinessStatus.PENDING, payoutDestination: 'UNVERIFIED' });
@@ -105,7 +107,7 @@ describe('The admin overview (§243)', () => {
     const { waiting } = await overview.overview(asUser(admin.userId, UserRole.ADMIN));
     expect(waiting.businesses.count).toBe(1);
     expect(waiting.businesses.oldestAt).not.toBeNull();
-    expect(waiting.destinations.count).toBe(1);
+    expect(waiting.destinations?.count).toBe(1);
     expect(waiting.tickets).toMatchObject({ count: 1, unassigned: 1 });
     expect(waiting.payouts).toMatchObject({ count: 0, oldestAt: null, amounts: [] });
   });
@@ -121,6 +123,17 @@ describe('The admin overview (§243)', () => {
     const { thisWeek, lastWeek } = await overview.overview(asUser(admin.userId, UserRole.ADMIN));
     expect(thisWeek).toMatchObject({ bookings: 2, depositsMinor: 4000, feesMinor: 300 });
     expect(lastWeek).toMatchObject({ bookings: 1, depositsMinor: 5000, feesMinor: 500 });
+  });
+
+  it('leaves the money out for an administrator without money access (§317)', async () => {
+    const helper = await createAdmin(prisma);
+    const result = await overview.overview(asUser(helper.userId, UserRole.ADMIN));
+    expect(result.moneyAccess).toBe(false);
+    expect(result.waiting.payouts).toBeNull();
+    expect(result.waiting.destinations).toBeNull();
+    expect(result.waiting.businesses.count).toBe(1);
+    expect(result.thisWeek).toMatchObject({ bookings: 2, depositsMinor: null, feesMinor: null });
+    expect(result.days.every((d) => d.depositsMinor === null && d.feesMinor === null)).toBe(true);
   });
 
   it('counts what customers can find', async () => {

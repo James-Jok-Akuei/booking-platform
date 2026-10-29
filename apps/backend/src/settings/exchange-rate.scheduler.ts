@@ -4,6 +4,7 @@ import { NotificationType, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { PlatformSettingsService } from './platform-settings.service';
+import { MONEY_ADMINS } from '../users/money-access';
 
 /** Hours between reminders while the rate stays stale. */
 export const STALE_REMINDER_INTERVAL_HOURS = 24;
@@ -43,8 +44,9 @@ export class ExchangeRateScheduler {
 
     if (!dueAgain) return { stale: true, notified: 0 };
 
+    // Only those who can set the rate (§317).
     const admins = await this.prisma.user.findMany({
-      where: { role: UserRole.ADMIN, closedAt: null },
+      where: MONEY_ADMINS,
       select: { id: true },
     });
 

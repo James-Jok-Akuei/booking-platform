@@ -20778,3 +20778,93 @@ of the page at 1440, 820, 390 and 320 (no sideways scroll), the ⓘ on a phone
 and on desktop, the test accounts panel, the switches on a shop and a person,
 the Overview, and the pitch sheet on screen, on a phone and printed to PDF
 (one A4 page).
+
+## 317. Money access — the platform's money is the primary administrator's, and theirs to share (2026-10-29)
+
+The user asked that the statistics (§316) be seen by the primary
+administrator only. Asked for a recommendation, the answer agreed: hiding one
+page would not keep the earnings private — every administrator could open the
+money book and add the fees up — and the more dangerous gap was moving money
+(any administrator could approve a payout number and send payouts). So: one
+switch, **money access**, covering everything that shows or moves money.
+
+### 317.1 What it covers
+
+- **With it** (the primary administrator always; others once the primary
+  turns it on): Statistics, the pitch sheet and download; the Money page (the
+  ledger, adjustments, the wallet check) and Refunds; Payouts; Payout numbers;
+  Settings (the platform fee, exchange rate, payout hold); a country's own fee
+  (Countries); a shop's balance and payouts read by an administrator; the
+  Overview's money (deposits, fees kept, the payout queues, held money and
+  the wallet check); marking test accounts (it changes the statistics).
+- **Without it** an administrator does the daily work — shops, reviews,
+  stories, appointments, users, support, announcements, categories, places,
+  legal — and still sees a single booking's deposit, because helping a
+  customer needs it. Settling an appointment (§23) stays open: it follows the
+  refund rules (§313), it does not choose an amount. Recording a billing
+  adjustment on a ticket stays open too — it is intent; executing it is on the
+  Money page. The platform fee's figure stays readable by everyone (sellers see
+  it; Countries shows it).
+
+### 317.2 How
+
+- `User.moneyAccess` with `moneyAccessAt` and `moneyAccessBy` (the primary's
+  email, or "automatic"). `hasMoneyAccess` = an administrator who is primary
+  or has it (`src/users/money-access.ts`).
+- `@MoneyAccess()` tags a controller (Statistics, Ledger, Refunds, Payouts,
+  Payout numbers, Settings, and the shop-balance controller — there only for
+  administrators; a seller reads their own as before); `@MoneyAccess(false)`
+  reopens one route (the fee's figure). `RolesGuard` already reads every
+  administrator from the database on each request (§298), so it checks the
+  tag there: taking access away works on the next request, no signing out.
+  A refusal is 403 with `code: MONEY_ACCESS_REQUIRED` and a sentence saying
+  who can change it. A country's fee is checked in its service, since the same
+  route switches a country on, which is not money.
+- `GET /admin/users/me` says what the signed-in administrator may see;
+  `PATCH /admin/users/:id/money-access { on }` is the primary's alone, asks for
+  a fresh code (`@RecentAuth`, §279), never touches the primary (always on),
+  only ever an administrator. Removing someone's administrator access removes
+  money access with it.
+- The two notices about money — a payout number to check (§48) and the
+  exchange rate going stale (§37) — go only to administrators with money
+  access (`MONEY_ADMINS`), who are the ones who can act on them.
+- The Overview answers everyone, with every money figure `null` (said as
+  nothing, never as a zero) and `moneyAccess: false` for those without.
+
+### 317.3 The console
+
+The menu, the search, the "Waiting" list and the not-found page offer money
+pages only with money access (`money: true` in `nav.ts`); a money page reached
+by its address says plainly it is for money access and who can give it
+(`MoneyOnly`). Without it the Overview shows two queues and two figures — no
+payouts, no fees, no "Run payouts". On an administrator's panel under Users,
+"Money access" says on or off and, for the primary administrator only, a
+switch; turning it on asks first ("Trust … with money?"), then for a code.
+Administrators trusted with money carry a small "Money" tag in the list.
+`useMyAccess` (`lib/access.ts`) asks again when the window comes back.
+
+### 317.4 Who has it on day one
+
+Nobody but the primary administrator — except where there is no primary at
+all (a copy seeded for development, like the user's): nobody there could ever
+turn it on, so the migration let the administrators already there keep it, and
+the demo data gives its administrator money access for the same reason.
+
+### 317.5 Verified
+
+`test/money-access.spec.ts` (8): every money controller carries the tag and
+the fee's figure does not; the primary always has it and nobody else until
+given; given and taken by the primary, saying who; refused to anyone else;
+never switched for the primary, only given to an administrator; gone with
+administrator access; money notices only to money administrators; needed for a
+country's fee and not to read the countries. Over HTTP (`guard-chain`): eight
+money routes refuse an administrator without it with `MONEY_ACCESS_REQUIRED`
+and open with it; the daily routes and the fee's figure stay open; sending
+payouts refused; a seller still reads their own balance; `/admin/users/me`;
+the Overview without money; taken away, refused on the very next request. The
+Overview, payout-number and exchange-rate suites updated to the rule. Full
+suite: **1724 passing in 89 suites**. Screenshots of the console as an
+administrator without money access (menu, Overview at 1440 and 390, a money
+page by its address, Countries) and as the primary (Users, the switch and its
+question) — drawn from the new server's answers, because the user's API
+watcher had stopped restarting the API.

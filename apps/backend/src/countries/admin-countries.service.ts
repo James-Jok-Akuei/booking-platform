@@ -6,6 +6,7 @@ import type { AuthenticatedUser } from '../common/decorators/current-user.decora
 import { CountriesService, type CountryRow } from './countries.service';
 import { countryChecks } from './country-readiness';
 import { countryView } from './country-view';
+import { assertMoneyAccess } from '../users/money-access';
 import type { AdminCountryDto, UpdateCountryDto } from './dto/countries.dto';
 
 /**
@@ -33,6 +34,8 @@ export class AdminCountriesService {
     const country = await this.countries.get(code);
 
     if (dto.platformFeePercentage !== undefined) {
+      // The fee is money (§317); switching a country on or off is not.
+      await assertMoneyAccess(this.prisma, user.userId);
       await this.settings.setCountryFee(country.code, dto.platformFeePercentage, user);
     }
 

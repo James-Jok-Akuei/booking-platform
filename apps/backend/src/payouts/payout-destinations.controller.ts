@@ -34,6 +34,7 @@ import {
   BusinessPayoutDestinationDto,
   PayoutDestinationDto,
 } from './dto/payout-destination-response.dto';
+import { MoneyAccess } from '../common/decorators/money-access.decorator';
 
 /**
  * The business's own payout number.
@@ -85,6 +86,8 @@ export class BusinessPayoutDestinationController {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
+// Money access (§317): only the primary administrator and those they trust with money.
+@MoneyAccess()
 export class AdminPayoutDestinationsController {
   constructor(private readonly destinations: PayoutDestinationsService) {}
 

@@ -37,6 +37,7 @@ import {
   PayoutDto,
   PayoutRunSummaryDto,
 } from './dto/payout-response.dto';
+import { MoneyAccess } from '../common/decorators/money-access.decorator';
 
 /**
  * Running payouts and recording their outcome. API-only, like every other admin
@@ -50,6 +51,8 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
+// Money access (§317): only the primary administrator and those they trust with money.
+@MoneyAccess()
 export class AdminPayoutsController {
   constructor(private readonly payouts: PayoutsService) {}
 
@@ -131,6 +134,8 @@ export class AdminPayoutsController {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.BUSINESS, UserRole.ADMIN)
 @ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
+// Money access (§317) for an administrator reading a shop's money; a seller reads their own as before.
+@MoneyAccess()
 export class BusinessPayoutsController {
   constructor(private readonly payouts: PayoutsService) {}
 

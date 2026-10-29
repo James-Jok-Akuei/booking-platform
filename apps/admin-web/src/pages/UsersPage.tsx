@@ -10,6 +10,7 @@ import {
   listUsers,
   markTestCustomer,
   resetTwoStep,
+  setMoneyAccess,
   revokeAdminAccess,
   revokeAdminInvitation,
   type DirectoryUser,
@@ -22,6 +23,7 @@ import { Panel } from '../ui/Panel';
 import { ShopMark } from '../ui/ShopMark';
 import { Switch } from '../ui/Switch';
 import { markedWords } from '../lib/statsWords';
+import { useMyAccess } from '../lib/access';
 import { PersonActPanel, PersonSupportSection, type PersonAct } from './PersonSupport';
 import './users.css';
 import { WriteFirst } from '../components/WriteFirst';
@@ -268,6 +270,12 @@ function Row({ u, me, picked, onOpen }: { u: DirectoryUser; me?: string; picked:
           {u.role === 'ADMIN' && <Icon name="shield" size={12} />}
           {u.isPrimaryAdmin ? 'Primary administrator' : ROLE_WORD[u.role]}
         </span>
+        {u.role === 'ADMIN' && u.moneyAccess && !u.isPrimaryAdmin && (
+          <span className="us-money" title="Trusted with money: sees and moves the platform’s money">
+            <Icon name="coins" size={12} />
+            Money
+          </span>
+        )}
         {closed && <span className="us-closed">Closed {u.closedAt && ago(u.closedAt)}</span>}
       </span>
 
@@ -434,7 +442,36 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
       void queryClient.invalidateQueries({ queryKey: ['admin-overview'] });
     },
   });
-  const error = clear.error ?? revoke.error ?? reset.error ?? test.error;
+  // Money access (§317): the primary administrator's to give.
+  const access = useMyAccess();
+  const moneyAccess = useMutation({
+    mutationFn: (on: boolean) => setMoneyAccess(u.id, on),
+    onSuccess: () => {
+      refresh();
+      void queryClient.invalidateQueries({ queryKey: ['my-access'] });
+    },
+  });
+  const flipMoney = async (on: boolean) => {
+    if (
+      on &&
+      !(await confirmDialog({
+        title: `Trust ${u.displayName ?? u.email} with money?`,
+        body: (
+          <p>
+            They will see the statistics and the money book, send payouts, check payout numbers, deal with refunds and change the fees. You can
+            take it back at any time, and it stops at once. You will be asked for a code first.
+          </p>
+        ),
+        tone: 'warn',
+        icon: 'coins',
+        confirmLabel: 'Give money access',
+        cancelLabel: 'Not now',
+      }))
+    )
+      return;
+    moneyAccess.mutate(on);
+  };
+  const error = clear.error ?? revoke.error ?? reset.error ?? test.error ?? moneyAccess.error;
   const flipTest = async (isTest: boolean) => {
     if (
       isTest &&
@@ -594,7 +631,8 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
             <p className="up-quiet">They have not chosen a name, so their reviews show as “Anonymous”.</p>
           )}
 
-          {u.role === 'CUSTOMER' && (
+          {/* Only those with money access mark test accounts: it changes the statistics (§316, §317). */}
+          {u.role === 'CUSTOMER' && access.money && (
             <div className="up-decision">
               <span>
                 <strong>{u.isTest ? 'A test account — left out' : 'Counted in the statistics'}</strong>
@@ -605,6 +643,28 @@ function Person({ u, me, canManage, onClose }: { u: DirectoryUser; me?: string; 
                 </em>
               </span>
               <Switch checked={u.isTest} disabled={test.isPending} onChange={(on) => void flipTest(on)} label="A test account, left out of the statistics" />
+            </div>
+          )}
+
+          {u.role === 'ADMIN' && (
+            <div className="up-decision">
+              <span>
+                <strong>Money access</strong>
+                <em>
+                  {u.isPrimaryAdmin
+                    ? 'Always on — the primary administrator sees and moves all of the platform’s money.'
+                    : u.moneyAccess
+                      ? `On — they see the statistics and the money book, and send payouts.${
+                          u.moneyAccessBy && u.moneyAccessBy !== 'automatic' ? ` Given by ${u.moneyAccessBy}.` : ''
+                        }`
+                      : `Off — they do the daily work without seeing the platform’s money.${
+                          canManage ? '' : ' Only the primary administrator can turn it on.'
+                        }`}
+                </em>
+              </span>
+              {canManage && !u.isPrimaryAdmin && (
+                <Switch checked={u.moneyAccess} disabled={moneyAccess.isPending} onChange={(on) => void flipMoney(on)} label="Money access" />
+              )}
             </div>
           )}
 

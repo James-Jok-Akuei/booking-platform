@@ -18,6 +18,8 @@ export type NavItem = {
   hint: string;
   /** Which "waiting" count, if any, this page's badge shows (§242). */
   badge?: 'businesses' | 'destinations' | 'payouts' | 'tickets' | 'stories';
+  /** A money page (§317): offered only to an administrator with money access. */
+  money?: true;
 };
 
 export type NavGroup = { group: string | null; items: NavItem[] };
@@ -36,6 +38,7 @@ export const SECTIONS: NavGroup[] = [
       },
       {
         to: '/statistics',
+        money: true,
         label: 'Statistics',
         icon: 'chart',
         keywords: 'numbers stats analytics metrics kpi report pitch investors revenue made earned income total growth customers bookings value gmv months download spreadsheet csv pdf',
@@ -112,6 +115,7 @@ export const SECTIONS: NavGroup[] = [
     items: [
       {
         to: '/payouts',
+        money: true,
         label: 'Payouts',
         icon: 'send',
         keywords: 'pay businesses run send transfer mark paid failed',
@@ -120,6 +124,7 @@ export const SECTIONS: NavGroup[] = [
       },
       {
         to: '/payout-destinations',
+        money: true,
         label: 'Payout numbers',
         icon: 'wallet',
         keywords: 'payout destinations momo mtn airtel verify numbers check',
@@ -128,6 +133,7 @@ export const SECTIONS: NavGroup[] = [
       },
       {
         to: '/ledger',
+        money: true,
         label: 'Money',
         icon: 'banknote',
         keywords: 'ledger entries reconciliation adjustments fees deposits held balance',
@@ -183,6 +189,7 @@ export const SECTIONS: NavGroup[] = [
       },
       {
         to: '/settings',
+        money: true,
         label: 'Settings',
         icon: 'sliders',
         keywords: 'platform fee exchange rate payout hold configuration',
@@ -195,6 +202,12 @@ export const SECTIONS: NavGroup[] = [
 export const NAV_ITEMS: Array<NavItem & { group: string | null }> = SECTIONS.flatMap((section) =>
   section.items.map((item) => ({ ...item, group: section.group })),
 );
+
+/** The menu as this administrator sees it: money pages only with money access (§317), empty groups dropped. */
+export const sectionsFor = (money: boolean): NavGroup[] =>
+  SECTIONS.map((section) => ({ ...section, items: section.items.filter((item) => money || !item.money) })).filter(
+    (section) => section.items.length > 0,
+  );
 
 /** The page an address belongs to, for the top bar's title. */
 export const navItemFor = (pathname: string) =>

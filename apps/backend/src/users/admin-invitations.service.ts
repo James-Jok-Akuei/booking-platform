@@ -11,6 +11,9 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { InviteAdminDto } from './dto/invite-admin.dto';
 import { ActionMessageDto } from '../common/dto/action-message.dto';
 import { ADMIN_INVITATION_SELECT } from './dto/user-response.dto';
+import { hasMoneyAccess } from './money-access';
+import type { AdminAccessDto, MoneyAccessDto } from './dto/money-access.dto';
+import type { AuthenticatedUser } from '../common/decorators/current-user.decorator';
 
 /** How long an administrator invitation stays open. */
 export const ADMIN_INVITATION_TTL_DAYS = 7;
@@ -36,7 +39,10 @@ export class AdminInvitationsService {
     private readonly notifications: NotificationsService,
   ) {}
 
-  private async assertPrimary(actor: { userId: string; role: UserRole | string }) {
+  private async assertPrimary(
+    actor: { userId: string; role: UserRole | string },
+    refusal = 'Only the primary administrator can invite or remove administrators.',
+  ) {
     if (actor.role !== UserRole.ADMIN) {
       throw new ForbiddenException('Only an administrator can do this.');
     }
@@ -45,10 +51,50 @@ export class AdminInvitationsService {
       select: { isPrimaryAdmin: true },
     });
     if (!me?.isPrimaryAdmin) {
-      throw new ForbiddenException(
-        'Only the primary administrator can invite or remove administrators.',
-      );
+      throw new ForbiddenException(refusal);
     }
+  }
+
+  /** What the signed-in administrator may see (§317). */
+  async accessOf(actor: { userId: string; role: UserRole | string }): Promise<AdminAccessDto> {
+    const me = await this.prisma.user.findUnique({
+      where: { id: actor.userId },
+      select: { id: true, email: true, role: true, isPrimaryAdmin: true, moneyAccess: true },
+    });
+    if (!me || me.role !== UserRole.ADMIN) throw new ForbiddenException('Only an administrator can do this.');
+    return { id: me.id, email: me.email, isPrimaryAdmin: me.isPrimaryAdmin, moneyAccess: hasMoneyAccess(me) };
+  }
+
+  /**
+   * Money access (§317): the primary administrator trusts another with the
+   * platform's money — or stops. Theirs is never switched: it is always on.
+   * Takes effect on the other's next request, since the guard reads the row.
+   */
+  async setMoneyAccess(actor: AuthenticatedUser, targetUserId: string, on: boolean): Promise<MoneyAccessDto> {
+    await this.assertPrimary(actor, 'Only the primary administrator decides who has money access.');
+    const target = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { id: true, email: true, role: true, isPrimaryAdmin: true },
+    });
+    if (!target) throw new NotFoundException('User not found.');
+    if (target.role !== UserRole.ADMIN) {
+      throw new BadRequestException('Only an administrator can have money access.');
+    }
+    if (target.isPrimaryAdmin) {
+      throw new BadRequestException('The primary administrator always has money access.');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id: targetUserId },
+      data: { moneyAccess: on, moneyAccessAt: new Date(), moneyAccessBy: actor.email },
+      select: { id: true, moneyAccess: true, moneyAccessAt: true, moneyAccessBy: true },
+    });
+    this.logger.warn(`Money access ${on ? 'given to' : 'taken from'} ${target.email} by ${actor.email}.`);
+    return {
+      id: updated.id,
+      moneyAccess: updated.moneyAccess,
+      moneyAccessAt: updated.moneyAccessAt?.toISOString() ?? null,
+      moneyAccessBy: updated.moneyAccessBy,
+    };
   }
 
   /**
@@ -188,9 +234,10 @@ export class AdminInvitationsService {
       );
     }
 
+    // Money access goes with it (§317): invited back, they would start without.
     await this.prisma.user.update({
       where: { id: targetUserId },
-      data: { role: UserRole.CUSTOMER },
+      data: { role: UserRole.CUSTOMER, moneyAccess: false, moneyAccessAt: new Date(), moneyAccessBy: null },
     });
 
     this.logger.warn(

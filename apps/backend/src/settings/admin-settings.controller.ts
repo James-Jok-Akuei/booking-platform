@@ -19,6 +19,7 @@ import {
   AuthenticatedUser,
   CurrentUser,
 } from '../common/decorators/current-user.decorator';
+import { MoneyAccess } from '../common/decorators/money-access.decorator';
 
 /**
  * Admin-only platform configuration.
@@ -36,9 +37,13 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @ApiErrors({ auth: true, roles: true, validation: true })
+// Money access (§317): only the primary administrator and those they trust with money.
+@MoneyAccess()
 export class AdminSettingsController {
   constructor(private readonly settings: PlatformSettingsService) {}
 
+  // The fee itself is no secret — sellers see it, and Countries shows it to every administrator.
+  @MoneyAccess(false)
   @Get('platform-fee')
   @ApiOkResponse({ type: PlatformFeeDto })
   getPlatformFee(@CurrentUser() user: AuthenticatedUser) {

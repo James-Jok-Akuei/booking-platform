@@ -11,6 +11,7 @@ import { NotificationsService } from '../src/notifications/notifications.service
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import { createAdmin } from './setup/factories';
+import { MONEY_ADMINS } from '../src/users/money-access';
 
 const HOUR = 3_600_000;
 
@@ -41,6 +42,8 @@ describe('Exchange-rate staleness (§37)', () => {
     notifications = moduleRef.get(NotificationsService) as never;
     await resetDatabase(prisma);
     admin = await createAdmin(prisma);
+    // Setting the rate is money work (§317): this admin is trusted with it.
+    await prisma.user.update({ where: { id: admin.userId }, data: { moneyAccess: true } });
   });
 
   afterAll(async () => {
@@ -155,8 +158,10 @@ describe('Exchange-rate staleness (§37)', () => {
   });
 
   describe('the reminder is loud, not fatal', () => {
-    it('notifies every admin once when the rate goes stale', async () => {
+    it('notifies every admin with money access once when the rate goes stale, and nobody else (§317)', async () => {
       const secondAdmin = await createAdmin(prisma);
+      await prisma.user.update({ where: { id: secondAdmin.userId }, data: { moneyAccess: true } });
+      await createAdmin(prisma); // a helper without money access: not told
       await rateAgedHours(30);
 
       const result = await scheduler.checkStaleness();
@@ -193,9 +198,9 @@ describe('Exchange-rate staleness (§37)', () => {
 
       const again = await scheduler.checkStaleness();
 
-      // Every admin, however many exist by now — the point is that it fired
-      // again, not how many accounts are in the database.
-      const adminCount = await prisma.user.count({ where: { role: UserRole.ADMIN } });
+      // Every admin with money access, however many exist by now — the point
+      // is that it fired again, not how many accounts are in the database.
+      const adminCount = await prisma.user.count({ where: MONEY_ADMINS });
       expect(again.notified).toBe(adminCount);
       expect(adminCount).toBeGreaterThan(0);
     });

@@ -55,6 +55,8 @@ describe('Guard chain over HTTP (§23.3)', () => {
     await resetDatabase(prisma);
 
     admin = await createAdmin(prisma);
+    // Most money routes below are exercised by an administrator trusted with money (§317).
+    await prisma.user.update({ where: { id: admin.userId }, data: { moneyAccess: true } });
     alpha = await createBusiness(prisma);
     beta = await createBusiness(prisma);
     alphaStaff = await addMember(prisma, alpha.businessId, BusinessMemberRole.STAFF);
@@ -1358,6 +1360,74 @@ describe('Guard chain over HTTP (§23.3)', () => {
       const res = await request(url, '/tickets/not-a-uuid', { token: tokenCustomerA });
 
       expect(res.status).toBe(400);
+    });
+  });
+
+  describe('money access (§317)', () => {
+    let tokenHelper: string;
+    beforeAll(async () => {
+      const helper = await createAdmin(prisma);
+      tokenHelper = ctx.token(helper.userId, helper.email, 'ADMIN');
+    });
+
+    const MONEY_ROUTES = [
+      '/admin/statistics/summary',
+      '/admin/ledger/held',
+      '/admin/ledger/entries',
+      '/admin/payouts',
+      '/admin/payout-destinations',
+      '/admin/refunds',
+      '/admin/settings/exchange-rate',
+      '/admin/settings/payout-hold',
+    ];
+
+    it.each(MONEY_ROUTES)('%s refuses an administrator without money access, saying why', async (path) => {
+      const res = await request(url, path, { token: tokenHelper });
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe('MONEY_ACCESS_REQUIRED');
+    });
+
+    it.each(MONEY_ROUTES)('%s opens for an administrator with money access', async (path) => {
+      const res = await request(url, path, { token: tokenAdmin });
+      expect(res.status).toBe(200);
+    });
+
+    it('leaves the daily work, and the fee everyone sees, open to every administrator', async () => {
+      for (const path of ['/admin/tickets', '/admin/settings/platform-fee', '/admin/businesses', '/admin/countries']) {
+        expect((await request(url, path, { token: tokenHelper })).status).toBe(200);
+      }
+    });
+
+    it('refuses sending payouts without it', async () => {
+      const res = await request(url, '/admin/payouts/run', { method: 'POST', token: tokenHelper });
+      expect(res.status).toBe(403);
+    });
+
+    it("lets a seller read their own shop's money as before, and not an administrator without it", async () => {
+      expect((await request(url, `/businesses/${alpha.businessId}/balance`, { token: tokenAlpha })).status).toBe(200);
+      expect((await request(url, `/businesses/${alpha.businessId}/balance`, { token: tokenHelper })).status).toBe(403);
+    });
+
+    it('says who may see the money', async () => {
+      const helper = await request(url, '/admin/users/me', { token: tokenHelper });
+      expect(helper.body).toMatchObject({ isPrimaryAdmin: false, moneyAccess: false });
+      const trusted = await request(url, '/admin/users/me', { token: tokenAdmin });
+      expect(trusted.body).toMatchObject({ moneyAccess: true });
+    });
+
+    it('hides the money on the Overview without it', async () => {
+      const res = await request(url, '/admin/overview', { token: tokenHelper });
+      expect(res.status).toBe(200);
+      expect(res.body.moneyAccess).toBe(false);
+      expect((res.body.waiting as Record<string, unknown>).payouts).toBeNull();
+      expect((res.body.thisWeek as Record<string, unknown>).feesMinor).toBeNull();
+    });
+
+    it('takes effect at once when it is taken away', async () => {
+      await prisma.user.update({ where: { id: admin.userId }, data: { moneyAccess: false } });
+      expect((await request(url, '/admin/ledger/held', { token: tokenAdmin })).status).toBe(403);
+      await prisma.user.update({ where: { id: admin.userId }, data: { moneyAccess: true } });
+      expect((await request(url, '/admin/ledger/held', { token: tokenAdmin })).status).toBe(200);
     });
   });
 });

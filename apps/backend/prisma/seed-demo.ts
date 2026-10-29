@@ -268,7 +268,8 @@ async function main() {
   // Platform settings
   // -------------------------------------------------------------------------
   const admin = await prisma.user.create({
-    data: { email: email('admin'), role: UserRole.ADMIN, ...TEST_MARK },
+    // Money access (§317): the demo has no primary administrator to give it.
+    data: { email: email('admin'), role: UserRole.ADMIN, ...TEST_MARK, moneyAccess: true, moneyAccessAt: new Date(), moneyAccessBy: 'automatic' },
   });
   ADMIN_ACTOR.userId = admin.id;
 

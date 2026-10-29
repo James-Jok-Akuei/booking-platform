@@ -1,5 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS } from '../nav';
+import { useMyAccess } from '../lib/access';
 import { EmptyState } from '../ui/EmptyState';
 import { Icon } from '../ui/Icon';
 import './not-found.css';
@@ -15,7 +16,11 @@ const USUAL = ['/', '/businesses', '/tickets', '/payouts', '/appointments', '/us
 export function NotFoundPage() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const places = USUAL.map((to) => NAV_ITEMS.find((item) => item.to === to)).filter((item) => item !== undefined);
+  // Money pages only for those with money access (§317).
+  const { money } = useMyAccess();
+  const places = USUAL.map((to) => NAV_ITEMS.find((item) => item.to === to))
+    .filter((item) => item !== undefined)
+    .filter((item) => money || !item.money);
   const canGoBack = window.history.length > 1;
 
   return (

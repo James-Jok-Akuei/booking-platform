@@ -33,10 +33,10 @@ export class OverviewTicketQueueDto extends OverviewQueueDto {
 export class OverviewWaitingDto {
   /** Applications waiting for a decision (§42). */
   businesses!: OverviewQueueDto;
-  /** Payout numbers waiting to be checked (§48). */
-  destinations!: OverviewQueueDto;
-  /** Payouts created and not yet sent (§36). */
-  payouts!: OverviewPayoutQueueDto;
+  /** Payout numbers waiting to be checked (§48). Null without money access (§317). */
+  destinations!: OverviewQueueDto | null;
+  /** Payouts created and not yet sent (§36). Null without money access (§317). */
+  payouts!: OverviewPayoutQueueDto | null;
   /** New tickets (§24). */
   tickets!: OverviewTicketQueueDto;
 }
@@ -47,10 +47,10 @@ export class OverviewDayDto {
   day!: string;
   /** Bookings whose deposit was paid that day. */
   bookings!: number;
-  /** Those deposits, added up. */
-  depositsMinor!: number;
-  /** The platform's fees that day, less any handed back (§25, §316). */
-  feesMinor!: number;
+  /** Those deposits, added up. Null without money access (§317). */
+  depositsMinor!: number | null;
+  /** The platform's fees that day, less any handed back (§25, §316). Null without money access (§317). */
+  feesMinor!: number | null;
   newBusinesses!: number;
   newCustomers!: number;
 }
@@ -58,8 +58,10 @@ export class OverviewDayDto {
 /** Seven days added up. */
 export class OverviewPeriodDto {
   bookings!: number;
-  depositsMinor!: number;
-  feesMinor!: number;
+  /** Null without money access (§317). */
+  depositsMinor!: number | null;
+  /** Null without money access (§317). */
+  feesMinor!: number | null;
   newBusinesses!: number;
   newCustomers!: number;
 }
@@ -76,6 +78,8 @@ export class OverviewTotalsDto {
 
 export class AdminOverviewDto {
   asOf!: string;
+  /** Whether the reader has money access (§317): without it, every money figure is null. */
+  moneyAccess!: boolean;
   timeZone!: string;
   currency!: string;
   waiting!: OverviewWaitingDto;

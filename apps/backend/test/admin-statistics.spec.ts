@@ -94,6 +94,8 @@ describe('The console statistics (§316)', () => {
     await resetDatabase(prisma);
 
     const a = await createAdmin(prisma);
+    // Reads the Overview's money below (§317).
+    await prisma.user.update({ where: { id: a.userId }, data: { moneyAccess: true } });
     admin = { userId: a.userId, email: a.email, role: 'ADMIN' };
 
     categoryId = (await prisma.category.create({ data: { name: 'Statistics test category' } })).id;

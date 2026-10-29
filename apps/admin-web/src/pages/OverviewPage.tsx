@@ -87,16 +87,19 @@ export function OverviewPage() {
               <span className="ao-long">Invite an administrator</span>
               <span className="ao-short">Invite an admin</span>
             </Link>
-            <Link to="/payouts" className="btn-dark">
-              <Icon name="send" size={18} />
-              Run payouts
-            </Link>
+            {/* Money access only (§317). */}
+            {data?.moneyAccess && (
+              <Link to="/payouts" className="btn-dark">
+                <Icon name="send" size={18} />
+                Run payouts
+              </Link>
+            )}
           </div>
         </header>
       </div>
 
       <h2 className="ao-section">What needs you</h2>
-      <div className="ao-queues">
+      <div className={`ao-queues${queues && queues.length === 2 ? ' is-two' : ''}`}>
         {queues
           ? queues.map((q) => <QueueCard key={q.to} queue={q} now={now} />)
           : [0, 1, 2, 3].map((i) => <div key={i} className="ao-queue skeleton" />)}
@@ -106,11 +109,13 @@ export function OverviewPage() {
         <div className="ao-main">
           <div className="ao-section-row">
             <h2 className="ao-section">The last seven days</h2>
-            <Link to="/statistics" className="ao-link">
-              All statistics <Icon name="arrowRight" size={15} stroke={2.2} />
-            </Link>
+            {data?.moneyAccess && (
+              <Link to="/statistics" className="ao-link">
+                All statistics <Icon name="arrowRight" size={15} stroke={2.2} />
+              </Link>
+            )}
           </div>
-          <div className="ao-stats">
+          <div className={`ao-stats${data && !data.moneyAccess ? ' is-two' : ''}`}>
             <Stat
               icon="calendarCheck"
               label="Bookings paid"
@@ -119,21 +124,26 @@ export function OverviewPage() {
               before={data?.lastWeek.bookings}
               accent
             />
-            <Stat
-              icon="banknote"
-              label="Deposits taken"
-              value={data ? money.format(data.thisWeek.depositsMinor, data.currency) : null}
-              now={data?.thisWeek.depositsMinor}
-              before={data?.lastWeek.depositsMinor}
-            />
-            <Stat
-              icon="coins"
-              label="Fees kept"
-              hint="The platform's share, less any handed back"
-              value={data ? money.format(data.thisWeek.feesMinor, data.currency) : null}
-              now={data?.thisWeek.feesMinor}
-              before={data?.lastWeek.feesMinor}
-            />
+            {/* The money (§317): only for an administrator with money access. */}
+            {(!data || data.moneyAccess) && (
+              <>
+                <Stat
+                  icon="banknote"
+                  label="Deposits taken"
+                  value={data ? money.format(data.thisWeek.depositsMinor, data.currency) : null}
+                  now={data?.thisWeek.depositsMinor ?? undefined}
+                  before={data?.lastWeek.depositsMinor ?? undefined}
+                />
+                <Stat
+                  icon="coins"
+                  label="Fees kept"
+                  hint="The platform's share, less any handed back"
+                  value={data ? money.format(data.thisWeek.feesMinor, data.currency) : null}
+                  now={data?.thisWeek.feesMinor ?? undefined}
+                  before={data?.lastWeek.feesMinor ?? undefined}
+                />
+              </>
+            )}
             <Stat
               icon="sparkles"
               label="Joined"
@@ -162,7 +172,9 @@ export function OverviewPage() {
         </div>
 
         <aside className="ao-side">
-          <MoneyCard currency={data?.currency ?? null} format={money.format} payouts={data?.waiting.payouts ?? null} />
+          {(!data || data.moneyAccess) && (
+            <MoneyCard currency={data?.currency ?? null} format={money.format} payouts={data?.waiting.payouts ?? null} />
+          )}
           <article className="ao-card ao-size">
             <header className="ao-card-head">
               <div>
@@ -214,7 +226,8 @@ type Queue = {
 
 function queueCards(data: AdminOverview, format: (minor: number, code?: string | null) => string): Queue[] {
   const { businesses, destinations, payouts, tickets } = data.waiting;
-  return [
+  // The payout queues are null without money access (§317): not shown at all.
+  const cards: Array<Queue | null> = [
     {
       to: '/businesses',
       icon: 'store',
@@ -224,7 +237,7 @@ function queueCards(data: AdminOverview, format: (minor: number, code?: string |
       short: 'a shop’s application',
       why: 'Customers cannot find them until you decide.',
     },
-    {
+    destinations && {
       to: '/payout-destinations',
       icon: 'wallet',
       count: destinations.count,
@@ -233,7 +246,7 @@ function queueCards(data: AdminOverview, format: (minor: number, code?: string |
       short: 'a payout number',
       why: 'A shop is not paid until its number is checked.',
     },
-    {
+    payouts && {
       to: '/payouts',
       icon: 'send',
       count: payouts.count,
@@ -254,6 +267,7 @@ function queueCards(data: AdminOverview, format: (minor: number, code?: string |
       extra: tickets.unassigned > 0 ? `${tickets.unassigned} not taken by anyone` : undefined,
     },
   ];
+  return cards.filter((card): card is Queue => card !== null);
 }
 
 function QueueCard({ queue, now }: { queue: Queue; now: Date }) {
@@ -386,7 +400,8 @@ function Chart({
                 >
                   {d && (
                     <span className="bar-tip">
-                      {d.bookings} {d.bookings === 1 ? 'booking' : 'bookings'} · {format(d.depositsMinor)}
+                      {d.bookings} {d.bookings === 1 ? 'booking' : 'bookings'}
+                      {d.depositsMinor !== null && ` · ${format(d.depositsMinor)}`}
                       <em>{dayOf(d.day).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })}</em>
                     </span>
                   )}

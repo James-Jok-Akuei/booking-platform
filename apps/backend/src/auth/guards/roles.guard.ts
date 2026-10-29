@@ -2,6 +2,8 @@ import { CanActivate, ExecutionContext, ForbiddenException, Injectable, Unauthor
 import { Reflector } from '@nestjs/core';
 import { UserRole } from '@prisma/client';
 import { ROLES_KEY } from '../../common/decorators/roles.decorator';
+import { MONEY_ACCESS_KEY } from '../../common/decorators/money-access.decorator';
+import { hasMoneyAccess, moneyRefusal } from '../../users/money-access';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TWO_STEP_SETUP_REQUIRED, TwoStepService } from '../two-step.service';
 
@@ -48,7 +50,7 @@ export class RolesGuard implements CanActivate {
     if (user?.role === UserRole.ADMIN) {
       const live = await this.prisma.user.findUnique({
         where: { id: user.userId },
-        select: { role: true, totpEnabledAt: true },
+        select: { role: true, totpEnabledAt: true, isPrimaryAdmin: true, moneyAccess: true },
       });
       if (live?.role !== UserRole.ADMIN) return false;
 
@@ -73,6 +75,9 @@ export class RolesGuard implements CanActivate {
           message: 'Set up two-step sign-in first: administrators use an authenticator app as well as the emailed code.',
         });
       }
+      // Money access (§317): read from the row, so taking it away works at once.
+      const money = this.reflector.getAllAndOverride<boolean>(MONEY_ACCESS_KEY, [context.getHandler(), context.getClass()]);
+      if (money && !hasMoneyAccess(live)) throw moneyRefusal();
       return true;
     }
 

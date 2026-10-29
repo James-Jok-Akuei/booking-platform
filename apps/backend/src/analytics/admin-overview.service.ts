@@ -16,6 +16,7 @@ import type {
 import { PUBLIC_BUSINESS } from '../business/business-status';
 import { CountriesService } from '../countries/countries.service';
 import { BOOKINGS, FEES, FEES_KEPT, bookingScope } from './statistics-sql';
+import { moneyAccessOf } from '../users/money-access';
 
 /** Test shops and test customers left out, as on the statistics page (§316). */
 const REAL = bookingScope({ includeTest: false });
@@ -140,22 +141,30 @@ export class AdminOverviewService {
       rows.reduce(
         (sum, d) => ({
           bookings: sum.bookings + d.bookings,
-          depositsMinor: sum.depositsMinor + d.depositsMinor,
-          feesMinor: sum.feesMinor + d.feesMinor,
+          // The days are counted in full here; hiding comes after.
+          depositsMinor: (sum.depositsMinor ?? 0) + (d.depositsMinor ?? 0),
+          feesMinor: (sum.feesMinor ?? 0) + (d.feesMinor ?? 0),
           newBusinesses: sum.newBusinesses + d.newBusinesses,
           newCustomers: sum.newCustomers + d.newCustomers,
         }),
         { bookings: 0, depositsMinor: 0, feesMinor: 0, newBusinesses: 0, newCustomers: 0 },
       );
 
+    // Without money access (§317) the money is left out — said as nothing,
+    // never as a zero that would read as "nothing happened".
+    const money = await moneyAccessOf(this.prisma, actor.userId);
+    const hide = <T extends { depositsMinor: number | null; feesMinor: number | null }>(row: T): T =>
+      money ? row : { ...row, depositsMinor: null, feesMinor: null };
+
     return {
       asOf: new Date().toISOString(),
+      moneyAccess: money,
       timeZone,
       currency: INTERNAL_CURRENCY,
-      waiting,
-      days: series,
-      thisWeek: add(series.slice(OVERVIEW_DAYS - 7)),
-      lastWeek: add(series.slice(0, OVERVIEW_DAYS - 7)),
+      waiting: money ? waiting : { ...waiting, destinations: null, payouts: null },
+      days: series.map(hide),
+      thisWeek: hide(add(series.slice(OVERVIEW_DAYS - 7))),
+      lastWeek: hide(add(series.slice(0, OVERVIEW_DAYS - 7))),
       totals: { liveBusinesses, liveBranches, customers: customerTotal },
     };
   }

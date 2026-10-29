@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError } from '../api/client';
 import { getPlatformFee, listAdminCountries, updateCountry, type AdminCountry } from '../api/admin';
+import { useMyAccess } from '../lib/access';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { NETWORK_NAME, NetworkMark, type Network } from '../ui/NetworkMark';
@@ -97,6 +98,8 @@ function CountryCard({
   onChanged: () => void;
 }) {
   const queryClient = useQueryClient();
+  // Changing a fee is money work (§317); seeing it is not.
+  const { money } = useMyAccess();
   const [editing, setEditing] = useState(false);
   const failing = c.checks.filter((check) => !check.ok);
   const update = useMutation({
@@ -200,7 +203,7 @@ function CountryCard({
               : 'Set under Settings, for every country without a fee of its own.'}
           </span>
         </div>
-        {!editing && (
+        {!editing && money && (
           <span className="cn-fee-actions">
             {own && (
               <button type="button" disabled={update.isPending} onClick={() => update.mutate({ platformFeePercentage: null })}>

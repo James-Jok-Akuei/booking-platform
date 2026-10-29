@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
-import { SECTIONS } from '../nav';
+import { sectionsFor } from '../nav';
+import { useMyAccess } from '../lib/access';
 import { Avatar } from '../ui/Avatar';
 import { Icon } from '../ui/Icon';
 import { Logo } from '../ui/Logo';
@@ -33,6 +34,7 @@ export function Sidebar({
   onNavigate?: () => void;
   onSignOut: () => void;
 }) {
+  const access = useMyAccess();
   // The rail's labels, drawn fixed to the window so the rail can still scroll
   // on a short screen without cutting them off.
   const [tip, setTip] = useState<{ label: string; top: number; left: number } | null>(null);
@@ -74,7 +76,7 @@ export function Sidebar({
       </div>
 
       <nav className="sb-nav" aria-label="Main">
-        {SECTIONS.map((section) => (
+        {sectionsFor(access.money).map((section) => (
           <div className="sb-group" key={section.group ?? 'top'}>
             {section.group && <p className="sb-group-title">{section.group}</p>}
             {section.items.map((item) => {

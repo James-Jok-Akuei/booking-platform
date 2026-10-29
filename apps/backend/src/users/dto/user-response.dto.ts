@@ -193,6 +193,12 @@ export class AdminUserDto {
   /** An administrator has two-step sign-in on (§298). False for everyone else. */
   twoStepOn!: boolean;
 
+  /** Money access (§317): always for the primary administrator, else as they set it. False for everyone else. */
+  moneyAccess!: boolean;
+  moneyAccessAt!: string | null;
+  /** Who last turned it on or off: the primary administrator's email, or "automatic". */
+  moneyAccessBy!: string | null;
+
   /** A test account (§316): the statistics leave it and its bookings out. */
   isTest!: boolean;
   /** When it was last marked or unmarked as one, and by whom (an email, or "automatic"). */

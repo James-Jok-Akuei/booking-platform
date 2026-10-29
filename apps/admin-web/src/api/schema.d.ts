@@ -710,6 +710,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What the signed-in administrator may see (§317): the console draws its menu by it. */
+        get: operations["AdminUsersController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/users/{id}/money-access": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** The primary administrator gives or takes money access (§317). Asks for a fresh code first. */
+        patch: operations["AdminUsersController_setMoneyAccess"];
+        trace?: never;
+    };
     "/admin/users/{id}/display-name/clear": {
         parameters: {
             query?: never;
@@ -4738,6 +4772,11 @@ export interface components {
             isPrimaryAdmin: boolean;
             /** @description An administrator has two-step sign-in on (§298). False for everyone else. */
             twoStepOn: boolean;
+            /** @description Money access (§317): always for the primary administrator, else as they set it. False for everyone else. */
+            moneyAccess: boolean;
+            moneyAccessAt: string | null;
+            /** @description Who last turned it on or off: the primary administrator's email, or "automatic". */
+            moneyAccessBy: string | null;
             /** @description A test account (§316): the statistics leave it and its bookings out. */
             isTest: boolean;
             /** @description When it was last marked or unmarked as one, and by whom (an email, or "automatic"). */
@@ -4770,6 +4809,23 @@ export interface components {
             createdAt: string;
             expiresAt: string;
             invitedBy: components["schemas"]["InviterDto"];
+        };
+        AdminAccessDto: {
+            id: string;
+            email: string;
+            isPrimaryAdmin: boolean;
+            /** @description The primary administrator always; others once the primary turned it on. */
+            moneyAccess: boolean;
+        };
+        SetMoneyAccessDto: {
+            on: boolean;
+        };
+        MoneyAccessDto: {
+            id: string;
+            moneyAccess: boolean;
+            moneyAccessAt: string | null;
+            /** @description The primary administrator's email, or "automatic". */
+            moneyAccessBy: string | null;
         };
         ClearDisplayNameDto: {
             /**
@@ -8155,10 +8211,10 @@ export interface components {
         OverviewWaitingDto: {
             /** @description Applications waiting for a decision (§42). */
             businesses: components["schemas"]["OverviewQueueDto"];
-            /** @description Payout numbers waiting to be checked (§48). */
-            destinations: components["schemas"]["OverviewQueueDto"];
-            /** @description Payouts created and not yet sent (§36). */
-            payouts: components["schemas"]["OverviewPayoutQueueDto"];
+            /** @description Payout numbers waiting to be checked (§48). Null without money access (§317). */
+            destinations: components["schemas"]["OverviewQueueDto"] | null;
+            /** @description Payouts created and not yet sent (§36). Null without money access (§317). */
+            payouts: components["schemas"]["OverviewPayoutQueueDto"] | null;
             /** @description New tickets (§24). */
             tickets: components["schemas"]["OverviewTicketQueueDto"];
         };
@@ -8167,17 +8223,19 @@ export interface components {
             day: string;
             /** @description Bookings whose deposit was paid that day. */
             bookings: number;
-            /** @description Those deposits, added up. */
-            depositsMinor: number;
-            /** @description The platform's fees that day, less any handed back (§25, §316). */
-            feesMinor: number;
+            /** @description Those deposits, added up. Null without money access (§317). */
+            depositsMinor: number | null;
+            /** @description The platform's fees that day, less any handed back (§25, §316). Null without money access (§317). */
+            feesMinor: number | null;
             newBusinesses: number;
             newCustomers: number;
         };
         OverviewPeriodDto: {
             bookings: number;
-            depositsMinor: number;
-            feesMinor: number;
+            /** @description Null without money access (§317). */
+            depositsMinor: number | null;
+            /** @description Null without money access (§317). */
+            feesMinor: number | null;
             newBusinesses: number;
             newCustomers: number;
         };
@@ -8191,6 +8249,8 @@ export interface components {
         };
         AdminOverviewDto: {
             asOf: string;
+            /** @description Whether the reader has money access (§317): without it, every money figure is null. */
+            moneyAccess: boolean;
             timeZone: string;
             currency: string;
             waiting: components["schemas"]["OverviewWaitingDto"];
@@ -11261,6 +11321,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActionMessageDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminUsersController_me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAccessDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminUsersController_setMoneyAccess: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetMoneyAccessDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MoneyAccessDto"];
                 };
             };
             /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */

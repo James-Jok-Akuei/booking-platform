@@ -18,6 +18,7 @@ import {
   StatisticsSummaryDto,
   TestMarkDto,
 } from './dto/admin-statistics.dto';
+import { MoneyAccess } from '../common/decorators/money-access.decorator';
 
 /**
  * The console's statistics (§316): the whole platform added up. Reads only,
@@ -31,6 +32,8 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN)
 @ApiErrors({ auth: true, roles: true, validation: true, notFound: true })
+// Money access (§317): only the primary administrator and those they trust with money.
+@MoneyAccess()
 export class AdminStatisticsController {
   constructor(private readonly statistics: AdminStatisticsService) {}
 

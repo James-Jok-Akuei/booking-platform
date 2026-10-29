@@ -29,6 +29,7 @@ import { ShopMark } from '../ui/ShopMark';
 import { StaticMap } from '../ui/StaticMap';
 import { Switch } from '../ui/Switch';
 import { markedWords } from '../lib/statsWords';
+import { useMyAccess } from '../lib/access';
 import { ShopActPanel, ShopSupportSection, type ShopAct } from './ShopSupport';
 import { AdviceSent, ApprovePanel } from './ApproveShop';
 import './businesses.css';
@@ -552,6 +553,7 @@ function ReviewPanel({
 }) {
   const money = useMoney();
   const business = useQuery({ queryKey: ['business', id], queryFn: () => getBusiness(id) });
+  const access = useMyAccess();
   const [act, setAct] = useState<ShopAct | null>(null);
   const b = business.data;
   const name = b ? nameOf(b) : null;
@@ -815,7 +817,8 @@ function ReviewPanel({
 
           <PapersSection business={b} />
 
-          <TestMarkSection business={b} shopName={name ?? 'This shop'} />
+          {/* Marking a test shop changes the statistics: money access only (§316, §317). */}
+          {access.money && <TestMarkSection business={b} shopName={name ?? 'This shop'} />}
 
           {/* Support acting for the shop (§297). */}
           <ShopSupportSection businessId={b.id} onAct={setAct} onClose={onClose} />

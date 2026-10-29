@@ -433,6 +433,16 @@ model User {
   /// false" too, which would allow a single administrator and nobody else.
   isPrimaryAdmin Boolean @default(false)
 
+  /// Money access (§317): this administrator may see and move money — the
+  /// statistics, the money book, refunds, payouts and payout numbers, the
+  /// fee and rate settings. The primary administrator always may, whatever
+  /// this says; only they turn it on or off for anyone else. Without it an
+  /// administrator does the daily work and never sees the platform's money.
+  moneyAccess   Boolean   @default(false)
+  /// When it was last turned on or off, and by whom (the primary's email).
+  moneyAccessAt DateTime?
+  moneyAccessBy String?
+
   /// Two-step sign-in with an authenticator app (§298) — administrators. The
   /// secret is sealed (AES-256-GCM) before it is stored; the pending one waits
   /// for its first code during setup. `totpLastStep` is the 30-second step of

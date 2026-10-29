@@ -90,13 +90,16 @@ function WaitingMenu({ data }: { data: ShellData }) {
   useDismiss(open, ref, close);
 
   const { waiting } = data;
-  const rows: Array<{ to: string; icon: IconName; n: number; one: string; many: string }> = [
-    { to: '/businesses', icon: 'store', n: waiting.businesses, one: 'shop to approve', many: 'shops to approve' },
-    { to: '/payout-destinations', icon: 'wallet', n: waiting.destinations, one: 'payout number to check', many: 'payout numbers to check' },
-    { to: '/payouts', icon: 'send', n: waiting.payouts, one: 'payout to send', many: 'payouts to send' },
-    { to: '/tickets', icon: 'help', n: waiting.tickets, one: 'new support ticket', many: 'new support tickets' },
-    { to: '/stories', icon: 'stories', n: waiting.stories, one: 'reported story', many: 'reported stories' },
-  ];
+  type Row = { to: string; icon: IconName; n: number; one: string; many: string; money?: true };
+  const rows = (
+    [
+      { to: '/businesses', icon: 'store', n: waiting.businesses, one: 'shop to approve', many: 'shops to approve' },
+      { to: '/payout-destinations', icon: 'wallet', n: waiting.destinations, one: 'payout number to check', many: 'payout numbers to check', money: true },
+      { to: '/payouts', icon: 'send', n: waiting.payouts, one: 'payout to send', many: 'payouts to send', money: true },
+      { to: '/tickets', icon: 'help', n: waiting.tickets, one: 'new support ticket', many: 'new support tickets' },
+      { to: '/stories', icon: 'stories', n: waiting.stories, one: 'reported story', many: 'reported stories' },
+    ] satisfies Row[]
+  ).filter((row: Row) => data.money || !row.money);
   const total = rows.reduce((sum, row) => sum + row.n, 0);
 
   if (!data.known) {

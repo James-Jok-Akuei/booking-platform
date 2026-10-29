@@ -72,6 +72,8 @@ describe('Payout destinations (§48)', () => {
     notifications = moduleRef.get(NotificationsService) as never;
     await resetDatabase(prisma);
     admin = await createAdmin(prisma);
+    // Checking payout numbers is money work (§317): this admin is trusted with it.
+    await prisma.user.update({ where: { id: admin.userId }, data: { moneyAccess: true } });
   });
 
   afterAll(async () => {
@@ -121,14 +123,18 @@ describe('Payout destinations (§48)', () => {
       expect(created.verifiedAt).toBeNull();
     });
 
-    it('tells every admin there is something to verify', async () => {
-      await createAdmin(prisma);
+    it('tells every admin with money access there is something to verify, and nobody else (§317)', async () => {
+      const trusted = await createAdmin(prisma);
+      await prisma.user.update({ where: { id: trusted.userId }, data: { moneyAccess: true } });
+      const helper = await createAdmin(prisma);
 
       await submit(shop);
 
-      const types = notifications.notify.mock.calls.map((c) => c[0].type);
-      expect(types).toContain(NotificationType.PAYOUT_DESTINATION_SUBMITTED);
-      expect(notifications.notify.mock.calls.length).toBeGreaterThanOrEqual(2);
+      const told = notifications.notify.mock.calls
+        .filter((c) => c[0].type === NotificationType.PAYOUT_DESTINATION_SUBMITTED)
+        .map((c) => c[0].recipientId);
+      expect(told).toEqual(expect.arrayContaining([admin.userId, trusted.userId]));
+      expect(told).not.toContain(helper.userId);
     });
 
     it('masks the number even in the admin notification', async () => {
