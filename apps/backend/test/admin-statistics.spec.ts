@@ -207,9 +207,12 @@ describe('The console statistics (§316)', () => {
     expect(result.series.reduce((sum, bar) => sum + bar.bookings, 0)).toBe(3);
   });
 
-  it('compares with the thirty days before', async () => {
-    const { previous } = await statistics.period(admin, { from, to: today });
+  it('compares with the thirty days before, day by day as well', async () => {
+    const { previous, previousSeries, series } = await statistics.period(admin, { from, to: today });
     expect(previous).toMatchObject({ bookings: 1, bookingValueMinor: 7_000, depositsMinor: 1_400, feesKeptMinor: 140 });
+    expect(previousSeries).toHaveLength(series.length);
+    expect(previousSeries!.reduce((sum, bar) => sum + bar.bookings, 0)).toBe(1);
+    expect(previousSeries![0].start).toBe(shiftDay(from, -30));
   });
 
   it('puts a booking on its shop’s day, not the server’s', async () => {
@@ -272,6 +275,7 @@ describe('The console statistics (§316)', () => {
     const result = await statistics.period(admin, {});
     expect(result.compared).toBe(false);
     expect(result.previous).toBeNull();
+    expect(result.previousSeries).toBeNull();
     expect(result.from <= shiftDay(today, -39)).toBe(true);
     expect(result.totals.bookings).toBe(4);
   });

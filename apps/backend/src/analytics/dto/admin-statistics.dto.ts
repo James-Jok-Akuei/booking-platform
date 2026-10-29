@@ -321,6 +321,11 @@ export class StatisticsPeriodDto {
   totals!: StatisticsTotalsDto;
   previous!: StatisticsTotalsDto | null;
   series!: StatisticsBucketDto[];
+  /**
+   * The stretch before, cut the same way, for the chart's faint bars: bar i
+   * of each is the same place in its stretch. Null when nothing is compared.
+   */
+  previousSeries!: StatisticsBucketDto[] | null;
   bookings!: StatisticsBookingsDto;
   customers!: StatisticsCustomersDto;
   shops!: StatisticsShopsDto;

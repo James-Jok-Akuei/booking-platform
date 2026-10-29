@@ -8475,6 +8475,11 @@ export interface components {
             totals: components["schemas"]["StatisticsTotalsDto"];
             previous: components["schemas"]["StatisticsTotalsDto"] | null;
             series: components["schemas"]["StatisticsBucketDto"][];
+            /**
+             * @description The stretch before, cut the same way, for the chart's faint bars: bar i
+             *     of each is the same place in its stretch. Null when nothing is compared.
+             */
+            previousSeries: components["schemas"]["StatisticsBucketDto"][] | null;
             bookings: components["schemas"]["StatisticsBookingsDto"];
             customers: components["schemas"]["StatisticsCustomersDto"];
             shops: components["schemas"]["StatisticsShopsDto"];

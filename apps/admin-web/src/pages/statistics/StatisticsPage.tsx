@@ -23,7 +23,10 @@ import { ShopMark } from '../../ui/ShopMark';
 import { Stars } from '../../ui/Stars';
 import { categoryLook } from '../../ui/CategoryMark';
 import { MEANING, markedWords as by, type MeaningKey } from '../../lib/statsWords';
-import { Bars, Heat, Hint, Ranked, Ring, Spark, Split, busiest, type Part } from './charts';
+import { Bars, Heat, Hint, MadeLine, Ranked, Ring, Spark, Split, busiest, type Part } from './charts';
+import { SectionBar, goToSection } from './SectionBar';
+import { insightsOf, type Insight } from './insights';
+import { EmptyState } from '../../ui/EmptyState';
 import { download, statisticsCsv } from './csv';
 import {
   PERIODS,
@@ -129,6 +132,7 @@ export function StatisticsPage() {
           </div>
         </header>
         <Filters view={view} choices={choices} summary={s} onLeftOut={() => setLeftOut(true)} />
+        <SectionBar />
       </div>
 
       {error && (
@@ -140,24 +144,38 @@ export function StatisticsPage() {
 
       <MoneyCheckWarning checks={[s?.check, p?.check]} fig={fig} />
 
-      <Hero s={s} fig={fig} />
-
-      <div className="st-section-row">
-        <h2 className="st-section">{p ? periodWords(view, p) : 'This stretch'}</h2>
-        {p?.compared && <span className="st-section-note">Each figure against the {p.days} days before</span>}
-      </div>
-      <Kpis p={p} fig={fig} />
-      <TrendCard p={p} fig={fig} />
-
-      <div className="st-cols">
-        <OutcomesCard p={p} />
-        <MoneyCard p={p} fig={fig} />
-      </div>
-      <div className="st-cols is-wide-first">
-        <WhenCard p={p} />
-        <AheadCard p={p} />
+      <div id="st-all">
+        <Hero s={s} mo={mo} fig={fig} />
       </div>
 
+      <section id="st-stretch" className="st-block">
+        <div className="st-section-row">
+          <h2 className="st-section">{p ? periodWords(view, p) : 'This stretch'}</h2>
+          {p && (
+            <span className="st-section-note">
+              {!p.compared
+                ? 'Since the first thing that happened'
+                : hadBefore(p)
+                  ? `Each figure against the ${p.days} days before`
+                  : `Nothing to compare with yet — the ${p.days} days before had nothing in them`}
+            </span>
+          )}
+        </div>
+        <WhatChanged p={p} fig={fig} stretch={p ? periodWords(view, p, true) : ''} />
+        <Kpis p={p} fig={fig} />
+        <TrendCard p={p} fig={fig} />
+
+        <div className="st-cols">
+          <OutcomesCard p={p} />
+          <MoneyCard p={p} fig={fig} />
+        </div>
+        <div className="st-cols is-wide-first">
+          <WhenCard p={p} />
+          <AheadCard p={p} />
+        </div>
+      </section>
+
+      <section id="st-people" className="st-block">
       <h2 className="st-section">Customers and shops</h2>
       <div className="st-cols">
         <CustomersCard p={p} s={s} />
@@ -174,16 +192,21 @@ export function StatisticsPage() {
         />
         <SliceCard title="By district" hint="byDistrict" rows={p?.shops.byDistrict ?? null} fig={fig} />
       </div>
+      </section>
 
-      <h2 className="st-section">What people want</h2>
-      <div className="st-cols is-wide-first">
-        <SearchesCard p={p} />
-        <ServicesCard p={p} />
-      </div>
+      <section id="st-wants" className="st-block">
+        <h2 className="st-section">What people want</h2>
+        <div className="st-cols is-wide-first">
+          <SearchesCard p={p} />
+          <ServicesCard p={p} />
+        </div>
+      </section>
 
-      <h2 className="st-section">Month by month</h2>
-      <MonthsCard mo={mo} fig={fig} />
-      <CohortsCard mo={mo} />
+      <section id="st-months" className="st-block">
+        <h2 className="st-section">Month by month</h2>
+        <MonthsCard mo={mo} fig={fig} />
+        <CohortsCard mo={mo} />
+      </section>
 
       {leftOut && <LeftOutPanel onClose={() => setLeftOut(false)} />}
     </section>
@@ -194,11 +217,22 @@ export function StatisticsPage() {
 // The stretch and the part of the platform
 
 /** "The 30 days to 29 Oct", "Since 4 Oct 2026", "1 Oct – 15 Oct 2026". */
-function periodWords(view: StatsView, p: StatisticsPeriod) {
-  if (view.period === 'all') return `Since ${dayWords(p.from, true)}`;
-  if (view.period === 'custom') return p.from === p.to ? dayWords(p.from, true) : `${dayWords(p.from)} – ${dayWords(p.to, true)}`;
-  return `The ${PERIODS.find((x) => x.key === view.period)?.label.toLowerCase()} to ${dayWords(p.to)}`;
+function periodWords(view: StatsView, p: StatisticsPeriod, inSentence = false) {
+  const words =
+    view.period === 'all'
+      ? `Since ${dayWords(p.from, true)}`
+      : view.period === 'custom'
+        ? p.from === p.to
+          ? `On ${dayWords(p.from, true)}`
+          : `From ${dayWords(p.from)} to ${dayWords(p.to, true)}`
+        : `The ${PERIODS.find((x) => x.key === view.period)?.label.toLowerCase()} to ${dayWords(p.to)}`;
+  if (!inSentence) return view.period === 'custom' && p.from !== p.to ? `${dayWords(p.from)} – ${dayWords(p.to, true)}` : words;
+  return words.charAt(0).toLowerCase() + words.slice(1).replace(/^the /, 'in the ');
 }
+
+/** Whether the stretch before had anything in it to compare with. */
+const hadBefore = (p: StatisticsPeriod) =>
+  p.compared && !!p.previous && METRICS.some((m) => (m.total(p.previous!) ?? 0) !== 0);
 
 function useScopeWords(view: StatsView, choices: ReturnType<typeof useScopeChoices>) {
   const parts: string[] = [];
@@ -226,8 +260,8 @@ function Filters({
   const provinces = choices.provinces.filter((p) => !view.scope.country || p.countryCode === view.scope.country);
   const left = summary?.leftOut;
   return (
-    <div className="st-filters pin-from">
-      <div className="st-periods pin-phone" role="tablist" aria-label="Which stretch of time">
+    <div className="st-filters">
+      <div className="st-periods" role="tablist" aria-label="Which stretch of time">
         {PERIODS.map((p) => (
           <button
             key={p.key}
@@ -324,7 +358,7 @@ function MoneyCheckWarning({ checks, fig }: { checks: Array<StatisticsMoneyCheck
 // ---------------------------------------------------------------------------
 // All time
 
-function Hero({ s, fig }: { s: StatisticsSummary | undefined; fig: Figures }) {
+function Hero({ s, mo, fig }: { s: StatisticsSummary | undefined; mo: StatisticsMonths | undefined; fig: Figures }) {
   const made = useCountUp(s?.madeMinor);
   return (
     <article className="st-hero">
@@ -340,6 +374,7 @@ function Hero({ s, fig }: { s: StatisticsSummary | undefined; fig: Figures }) {
         <span className="st-hero-sub">
           {s ? (s.since ? `Platform fees kept since ${dayWords(s.since, true)}, every fee handed back already taken off.` : 'Nothing yet — from the first booking.') : ' '}
         </span>
+        {s && mo && s.bookings > 0 && <MadeLine months={mo.months} format={(m) => fig.full(m)} />}
         {s && (
           <span className={`st-hero-check${s.check.ok ? '' : ' is-bad'}`}>
             <Icon name={s.check.ok ? 'checkCircle' : 'alert'} size={15} />
@@ -397,15 +432,35 @@ type Metric = {
   total: (t: StatisticsTotals) => number | null;
   bar: (b: StatisticsBucket) => number;
   money: boolean;
+  /** What the card says under its figure when there is nothing before to compare with. */
+  alone: (p: StatisticsPeriod, fig: Figures) => string;
 };
 
 const METRICS: Metric[] = [
-  { key: 'bookings', label: 'Bookings', icon: 'calendarCheck', hint: 'bookings', total: (t) => t.bookings, bar: (b) => b.bookings, money: false },
-  { key: 'value', label: 'Booking value', icon: 'banknote', hint: 'bookingValue', total: (t) => t.bookingValueMinor, bar: (b) => b.bookingValueMinor, money: true },
-  { key: 'fees', label: 'Platform fees kept', icon: 'coins', hint: 'feesKept', total: (t) => t.feesKeptMinor, bar: (b) => b.feesKeptMinor, money: true },
-  { key: 'deposits', label: 'Deposits', icon: 'wallet', hint: 'deposits', total: (t) => t.depositsMinor, bar: (b) => b.depositsMinor, money: true },
-  { key: 'customers', label: 'New customers', icon: 'user', hint: 'newCustomers', total: (t) => t.newCustomers, bar: (b) => b.newCustomers, money: false },
-  { key: 'shops', label: 'Shops went live', icon: 'store', hint: 'shopsWentLive', total: (t) => t.shopsWentLive, bar: (b) => b.shopsWentLive, money: false },
+  {
+    key: 'bookings', label: 'Bookings', icon: 'calendarCheck', hint: 'bookings', total: (t) => t.bookings, bar: (b) => b.bookings, money: false,
+    alone: (p) => `by ${p.totals.customersBooked} ${p.totals.customersBooked === 1 ? 'customer' : 'customers'}`,
+  },
+  {
+    key: 'value', label: 'Booking value', icon: 'banknote', hint: 'bookingValue', total: (t) => t.bookingValueMinor, bar: (b) => b.bookingValueMinor, money: true,
+    alone: (p, fig) => (p.totals.averageBookingMinor === null ? 'no bookings yet' : `${fig.short(p.totals.averageBookingMinor)} a booking`),
+  },
+  {
+    key: 'fees', label: 'Platform fees kept', icon: 'coins', hint: 'feesKept', total: (t) => t.feesKeptMinor, bar: (b) => b.feesKeptMinor, money: true,
+    alone: (p) => (p.totals.depositsMinor ? `${share(p.totals.feesKeptMinor, p.totals.depositsMinor)} of deposits` : 'no deposits yet'),
+  },
+  {
+    key: 'deposits', label: 'Deposits', icon: 'wallet', hint: 'deposits', total: (t) => t.depositsMinor, bar: (b) => b.depositsMinor, money: true,
+    alone: (p, fig) => (p.totals.averageDepositMinor === null ? 'none yet' : `${fig.short(p.totals.averageDepositMinor)} a booking`),
+  },
+  {
+    key: 'customers', label: 'New customers', icon: 'user', hint: 'newCustomers', total: (t) => t.newCustomers, bar: (b) => b.newCustomers, money: false,
+    alone: (p) => `${p.customers.joinedAndBooked} have booked since`,
+  },
+  {
+    key: 'shops', label: 'Shops went live', icon: 'store', hint: 'shopsWentLive', total: (t) => t.shopsWentLive, bar: (b) => b.shopsWentLive, money: false,
+    alone: (p) => `${p.shops.liveNow} live today`,
+  },
 ];
 
 function Kpis({ p, fig }: { p: StatisticsPeriod | undefined; fig: Figures }) {
@@ -422,7 +477,9 @@ function Kpi({ metric, p, fig, accent, index }: { metric: Metric; p: StatisticsP
   const total = p ? metric.total(p.totals) : null;
   const before = p?.previous ? metric.total(p.previous) : null;
   const shown = useCountUp(total);
-  const trend = p?.compared ? change(total, before) : null;
+  // With nothing before to compare with, no "New" on every card: each says something of its own instead.
+  const compared = p ? hadBefore(p) : false;
+  const trend = compared ? change(total, before) : null;
   const say = (n: number | null) => (n === null ? '—' : metric.money ? fig.short(n) : fig.count(n));
   return (
     <div className={`st-kpi${accent ? ' is-accent' : ''}`} style={{ animationDelay: `${index * 50}ms` }} title={metric.money && total !== null ? fig.full(total) : undefined}>
@@ -437,7 +494,7 @@ function Kpi({ metric, p, fig, accent, index }: { metric: Metric; p: StatisticsP
         <Hint k={metric.hint} />
       </span>
       <strong className="st-kpi-value">{p ? say(shown) : <span className="skeleton st-skel" />}</strong>
-      <span className="st-kpi-sub">{p?.compared ? `${say(before)} the ${p.days} days before` : p ? 'Since the beginning' : ' '}</span>
+      <span className="st-kpi-sub">{!p ? ' ' : compared ? `${say(before)} the ${p.days} days before` : metric.alone(p, fig)}</span>
       {p && <Spark values={p.series.map(metric.bar)} tone={accent ? 'dark' : 'light'} />}
     </div>
   );
@@ -455,7 +512,7 @@ function TrendCard({ p, fig }: { p: StatisticsPeriod | undefined; fig: Figures }
           <h3>{by === 'day' ? 'Day by day' : by === 'week' ? 'Week by week' : 'Month by month'}</h3>
           <p>
             {total === null ? ' ' : metric.money ? fig.full(total) : `${fig.count(total)} ${metric.label.toLowerCase()}`}
-            {p?.previous && total !== null && (
+            {p?.previous && hadBefore(p) && total !== null && (
               <span className="st-muted">
                 {' '}
                 · {metric.money ? fig.full(metric.total(p.previous)) : fig.count(metric.total(p.previous) ?? 0)} the {p.days} days before
@@ -471,8 +528,20 @@ function TrendCard({ p, fig }: { p: StatisticsPeriod | undefined; fig: Figures }
           ))}
         </div>
       </header>
+      {p && hadBefore(p) && (
+        <div className="st-legend-row" aria-hidden="true">
+          <span>
+            <i className="is-now" /> This stretch
+          </span>
+          <span>
+            <i className="is-before" /> The {p.days} days before
+          </span>
+        </div>
+      )}
       <Bars
         bars={p?.series ?? null}
+        before={p && hadBefore(p) ? p.previousSeries : null}
+        beforeWords={p ? `the ${p.days} days before` : undefined}
         value={metric.bar}
         bucket={by}
         format={(n) => (metric.money ? fig.full(n) : `${fig.count(n)} ${metric.label.toLowerCase()}`)}
@@ -480,6 +549,55 @@ function TrendCard({ p, fig }: { p: StatisticsPeriod | undefined; fig: Figures }
         label={`${metric.label}, ${by === 'day' ? 'day by day' : by === 'week' ? 'week by week' : 'month by month'}`}
       />
     </article>
+  );
+}
+
+/**
+ * "What changed" (§316): the three things in the stretch most worth saying,
+ * in a sentence each, worked out from the page's own numbers
+ * (`insights.ts`). Each leads to where its figures are.
+ */
+function WhatChanged({ p, fig, stretch }: { p: StatisticsPeriod | undefined; fig: Figures; stretch: string }) {
+  if (!p) {
+    return (
+      <div className="st-insights">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="skeleton st-insight-skel" />
+        ))}
+      </div>
+    );
+  }
+  const found: Insight[] = insightsOf(p, { full: (m) => fig.full(m), count: fig.count }, stretch);
+  if (found.length === 0) {
+    return (
+      <div className="st-insights is-quiet">
+        <div className="st-insight tone-info">
+          <span className="st-insight-icon">
+            <Icon name="sparkles" size={18} />
+          </span>
+          <p>
+            <strong>Nothing happened in this stretch yet.</strong> The first bookings will tell the story here.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="st-insights" aria-label="What changed">
+      {found.map((insight, i) => (
+        <div key={insight.key} className={`st-insight tone-${insight.tone}`} style={{ animationDelay: `${i * 70}ms` }}>
+          <span className="st-insight-icon">
+            <Icon name={insight.icon} size={18} />
+          </span>
+          <p>
+            <strong>{insight.lead}</strong> {insight.rest}
+          </p>
+          <button type="button" className="st-insight-go" onClick={() => goToSection(insight.to)} aria-label="See the figures">
+            <Icon name="arrowRight" size={15} stroke={2.2} />
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -503,6 +621,24 @@ function Card({ title, hint, sub, children, className = '', aside }: { title: st
 
 const Loading = () => <div className="skeleton st-skel-card" />;
 
+/** A part with nothing in it yet (§311): the console's drawing, and when it fills in. */
+const Nothing = ({ art, title, text }: { art: 'calendar' | 'chart' | 'search' | 'people' | 'box' | 'pin'; title: string; text?: string }) => (
+  <EmptyState size="row" art={art} title={title} text={text} className="st-nothing" />
+);
+
+/** Lists start at five, so the page stays short on a phone; the rest is one tap away. */
+const FIRST = 5;
+
+function ShowAll({ total, all, onToggle }: { total: number; all: boolean; onToggle: () => void }) {
+  if (total <= FIRST) return null;
+  return (
+    <button type="button" className="st-more" onClick={onToggle}>
+      <Icon name={all ? 'chevronUp' : 'chevronDown'} size={15} />
+      {all ? 'Show fewer' : `Show all ${total}`}
+    </button>
+  );
+}
+
 function OutcomesCard({ p }: { p: StatisticsPeriod | undefined }) {
   if (!p)
     return (
@@ -521,6 +657,12 @@ function OutcomesCard({ p }: { p: StatisticsPeriod | undefined }) {
   ];
   const total = parts.reduce((sum, x) => sum + x.value, 0);
   const due = o.done + o.missed;
+  if (total === 0)
+    return (
+      <Card title="How bookings ended" hint="outcomes">
+        <Nothing art="calendar" title="No bookings paid for in this time" text="How they ended — done, missed or cancelled — shows here once there are some." />
+      </Card>
+    );
   return (
     <Card title="How bookings ended" hint="outcomes" sub={`${total} ${total === 1 ? 'booking' : 'bookings'} paid for in this time`}>
       <div className="st-outcomes">
@@ -592,7 +734,9 @@ function WhenCard({ p }: { p: StatisticsPeriod | undefined }) {
   const said = p ? busiest(p.bookings.heat) : null;
   return (
     <Card title="When visits happen" hint="heat" sub={p ? (said ? `Busiest: ${said}` : 'No visits booked in this time') : ' '}>
-      {p ? (
+      {p && !said ? (
+        <Nothing art="calendar" title="No visits booked in this time" text="The busiest days and hours show here once there are bookings." />
+      ) : p ? (
         <>
           <Heat cells={p.bookings.heat} />
           <div className="st-heat-key" aria-hidden="true">
@@ -764,7 +908,9 @@ const daysWords = (days: number) => (days < 1 ? 'under a day' : `${days % 1 === 
 
 function TopShopsCard({ p, fig }: { p: StatisticsPeriod | undefined; fig: Figures }) {
   const [by, setBy] = useState<'bookings' | 'value'>('bookings');
-  const rows: StatisticsTopShop[] = p ? (by === 'bookings' ? p.shops.topByBookings : p.shops.topByValue) : [];
+  const [all, setAll] = useState(false);
+  const ranked: StatisticsTopShop[] = p ? (by === 'bookings' ? p.shops.topByBookings : p.shops.topByValue) : [];
+  const rows = all ? ranked : ranked.slice(0, FIRST);
   return (
     <Card
       title="Top shops"
@@ -785,8 +931,9 @@ function TopShopsCard({ p, fig }: { p: StatisticsPeriod | undefined; fig: Figure
       {!p ? (
         <Loading />
       ) : rows.length === 0 ? (
-        <p className="st-none">No shop had a booking in this time.</p>
+        <Nothing art="chart" title="No shop had a booking in this time" text="The busiest shops show here, by bookings and by value." />
       ) : (
+        <>
         <ol className="st-shops">
           {rows.map((r, i) => (
             <li key={r.id} style={{ animationDelay: `${i * 35}ms` }}>
@@ -810,6 +957,8 @@ function TopShopsCard({ p, fig }: { p: StatisticsPeriod | undefined; fig: Figure
             </li>
           ))}
         </ol>
+        <ShowAll total={ranked.length} all={all} onToggle={() => setAll((was) => !was)} />
+        </>
       )}
     </Card>
   );
@@ -829,7 +978,7 @@ function SliceCard({
   color?: (row: StatisticsSlice) => string;
 }) {
   const [all, setAll] = useState(false);
-  const shown = rows ? (all ? rows : rows.slice(0, 7)) : null;
+  const shown = rows ? (all ? rows : rows.slice(0, FIRST)) : null;
   return (
     <Card title={title} hint={hint}>
       {!shown ? (
@@ -848,11 +997,7 @@ function SliceCard({
               mark: color ? <span className="st-dot" style={{ background: color(r) }} /> : undefined,
             }))}
           />
-          {rows && rows.length > 7 && (
-            <button type="button" className="st-more" onClick={() => setAll((was) => !was)}>
-              {all ? 'Show fewer' : `Show all ${rows.length}`}
-            </button>
-          )}
+          <ShowAll total={rows?.length ?? 0} all={all} onToggle={() => setAll((was) => !was)} />
         </>
       )}
     </Card>
@@ -870,6 +1015,16 @@ function SearchesCard({ p }: { p: StatisticsPeriod | undefined }) {
       </Card>
     );
   const se = p.wants.searches;
+  if (se.total === 0)
+    return (
+      <Card title="What they searched for" hint="searches">
+        <Nothing
+          art="search"
+          title="No searches in this time"
+          text="What customers type into search shows here — and what found nothing, which is the kind of shop to sign up next."
+        />
+      </Card>
+    );
   return (
     <Card
       title="What they searched for"
@@ -910,14 +1065,19 @@ function Terms({ terms, empty }: { terms: Array<{ term: string; count: number }>
 }
 
 function ServicesCard({ p }: { p: StatisticsPeriod | undefined }) {
+  const [all, setAll] = useState(false);
+  const services = p?.wants.topServices ?? [];
   return (
     <Card title="Most booked services" hint="services">
       {!p ? (
         <Loading />
+      ) : services.length === 0 ? (
+        <Nothing art="box" title="Nothing booked in this time" text="The services customers book most, across every shop, show here." />
       ) : (
+        <>
         <Ranked
           empty="Nothing booked in this time."
-          rows={p.wants.topServices.map((sv) => ({
+          rows={(all ? services : services.slice(0, FIRST)).map((sv) => ({
             key: sv.name,
             label: sv.name,
             value: sv.bookings,
@@ -925,6 +1085,8 @@ function ServicesCard({ p }: { p: StatisticsPeriod | undefined }) {
             sub: `at ${sv.shops} ${sv.shops === 1 ? 'shop' : 'shops'}`,
           }))}
         />
+        <ShowAll total={services.length} all={all} onToggle={() => setAll((was) => !was)} />
+        </>
       )}
     </Card>
   );
@@ -992,7 +1154,13 @@ function CohortsCard({ mo }: { mo: StatisticsMonths | undefined }) {
       {!mo ? (
         <Loading />
       ) : cohorts.length === 0 ? (
-        <p className="st-none">This fills in from the first booking.</p>
+        <Nothing art="people" title="This fills in from the first booking" text="Customers are grouped by the month of their first booking, then followed month by month." />
+      ) : width === 0 ? (
+        <Nothing
+          art="people"
+          title="Coming back shows from next month"
+          text={`${cohorts[0].customers} ${cohorts[0].customers === 1 ? 'customer' : 'customers'} made a first booking in ${monthWords(cohorts[0].month, true)}. Next month shows how many came back.`}
+        />
       ) : (
         <>
           <div className="st-table-wrap">
@@ -1026,7 +1194,6 @@ function CohortsCard({ mo }: { mo: StatisticsMonths | undefined }) {
               </tbody>
             </table>
           </div>
-          {width === 0 && <p className="st-caption">The months after fill in as they come: this is the platform’s first month.</p>}
         </>
       )}
     </Card>

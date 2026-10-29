@@ -462,3 +462,124 @@
   .st-hero-glow { animation: none; }
 }
 .st-table tbody th, .st-cohorts tbody th { color: var(--ink); font-size: 13.5px; }
+
+/* ======================================================================
+   Fine-tuning (§316): sections to jump between, what changed, the stretch
+   before behind the bars, the made line, and parts with nothing yet.
+   ====================================================================== */
+
+.st-block { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+/* ---- the sections, pinned with the head ---- */
+
+.st-jump { margin-top: -4px; padding-bottom: 2px; }
+.st-jump-track { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding: 2px; mask-image: linear-gradient(90deg, #000 92%, transparent); }
+.st-jump-track::-webkit-scrollbar { display: none; }
+.st-jump button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 99px;
+  background: transparent;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background 160ms var(--ease), color 160ms var(--ease), border-color 160ms var(--ease);
+}
+.st-jump button svg { color: var(--faint); transition: color 160ms var(--ease); }
+.st-jump button:hover { color: var(--ink); background: var(--panel); border-color: var(--line); }
+.st-jump button.is-on { color: var(--accent-deep); background: var(--accent-soft); border-color: rgba(240, 83, 45, 0.18); }
+.st-jump button.is-on svg { color: var(--accent); }
+
+/* ---- what changed ---- */
+
+.st-insights { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.st-insights.is-quiet { grid-template-columns: minmax(0, 1fr); }
+.st-insight-skel { height: 92px; border-radius: 20px; }
+.st-insight {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+  padding: 15px 14px 15px 15px;
+  border-radius: 20px;
+  background: var(--panel);
+  border: 1px solid rgba(31, 42, 31, 0.06);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: rise-in 520ms var(--ease) both;
+}
+/* A thin edge in the finding's colour, so the three read at a glance. */
+.st-insight::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--tone, var(--night)); }
+.st-insight.tone-up { --tone: var(--ok); --tone-soft: var(--ok-soft); --tone-ink: var(--ok-deep); }
+.st-insight.tone-down { --tone: var(--danger); --tone-soft: var(--danger-soft); --tone-ink: var(--danger); }
+.st-insight.tone-act { --tone: var(--accent); --tone-soft: var(--accent-soft); --tone-ink: var(--accent-deep); }
+.st-insight.tone-info { --tone: var(--night-3); --tone-soft: var(--sunken); --tone-ink: var(--ink); }
+.st-insight-icon { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--tone-soft); color: var(--tone-ink); }
+.st-insight p { flex: 1; min-width: 0; margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+.st-insight p strong { display: block; margin-bottom: 1px; font-size: 14.5px; line-height: 1.35; letter-spacing: -0.01em; color: var(--ink); }
+.st-insight-go { flex: none; align-self: center; width: 32px; height: 32px; min-height: 0; display: grid; place-items: center; padding: 0; border: none; border-radius: 50%; background: var(--sunken); color: var(--ink-2); cursor: pointer; transition: background 160ms var(--ease), color 160ms var(--ease), transform 200ms var(--ease); }
+.st-insight-go:hover { background: var(--tone-soft); color: var(--tone-ink); transform: translateX(2px); }
+
+/* ---- the stretch before, behind the bars ---- */
+
+.st-legend-row { display: flex; gap: 16px; margin: -6px 0 12px; font-size: 12px; font-weight: 650; color: var(--muted); }
+.st-legend-row span { display: inline-flex; align-items: center; gap: 6px; }
+.st-legend-row i { width: 12px; height: 10px; border-radius: 3px; }
+.st-legend-row i.is-now { background: var(--night); }
+.st-legend-row i.is-before { background: repeating-linear-gradient(135deg, rgba(43, 53, 44, 0.16) 0 2px, rgba(43, 53, 44, 0.05) 2px 4px); box-shadow: inset 0 0 0 1px rgba(43, 53, 44, 0.22); }
+.st-ghost {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: min(100%, 36px);
+  transform: translateX(-50%);
+  border-radius: 9px 9px 4px 4px;
+  background: repeating-linear-gradient(135deg, rgba(43, 53, 44, 0.12) 0 3px, rgba(43, 53, 44, 0.04) 3px 6px);
+  box-shadow: inset 0 0 0 1px rgba(43, 53, 44, 0.18);
+  transform-origin: bottom;
+  animation: st-ghost-in 700ms var(--ease) both;
+}
+@keyframes st-ghost-in { from { opacity: 0; } to { opacity: 1; } }
+.st-bars.is-dense .st-ghost { border-radius: 3px 3px 1px 1px; }
+.st-bar { position: relative; z-index: 1; }
+.st-tip { z-index: 3; }
+.st-tip .st-tip-before { margin-top: 2px; padding-top: 3px; border-top: 1px solid rgba(255, 255, 255, 0.14); color: rgba(255, 255, 255, 0.72); }
+
+/* ---- the made line, in the dark band ---- */
+
+.st-made { position: relative; width: 100%; max-width: 380px; margin: 12px 0 4px; }
+.st-made svg { display: block; width: 100%; height: auto; overflow: visible; }
+.st-made-line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: st-draw 1400ms var(--ease) 200ms forwards; }
+.st-made-area { opacity: 0; animation: st-fade 900ms var(--ease) 700ms forwards; }
+@keyframes st-draw { to { stroke-dashoffset: 0; } }
+@keyframes st-fade { to { opacity: 1; } }
+.st-made-dot { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(255, 138, 92, 0.35); animation: st-fade 400ms var(--ease) 1400ms both; }
+.st-made-foot { display: flex; justify-content: space-between; gap: 10px; margin-top: 6px; font-size: 11.5px; font-weight: 650; color: rgba(255, 255, 255, 0.5); }
+.st-made-foot b { color: #fff; font-weight: 800; }
+.st-made-one { display: inline-flex; align-items: center; gap: 9px; font-size: 12.5px; font-weight: 650; color: rgba(255, 255, 255, 0.7); }
+.st-made-one i { width: 8px; height: 8px; border-radius: 50%; background: #ffb08a; box-shadow: 0 0 0 4px rgba(255, 138, 92, 0.25); }
+
+/* ---- nothing yet, and showing all ---- */
+
+.st-nothing { margin: 2px 0; }
+.st-more { display: inline-flex; align-items: center; gap: 6px; }
+
+@container page (max-width: 980px) {
+  .st-insights { grid-template-columns: minmax(0, 1fr); }
+}
+@container page (max-width: 640px) {
+  .st-jump { margin-top: 0; }
+  .st-insight { padding: 13px 12px 13px 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .st-made-line { animation: none; stroke-dashoffset: 0; }
+  .st-made-area, .st-made-dot { animation: none; opacity: 1; }
+}

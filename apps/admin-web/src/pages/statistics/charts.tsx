@@ -104,6 +104,8 @@ const niceTop = (max: number) => {
 
 export function Bars({
   bars,
+  before,
+  beforeWords,
   value,
   bucket,
   format,
@@ -111,6 +113,10 @@ export function Bars({
   label,
 }: {
   bars: StatisticsBucket[] | null;
+  /** The stretch before, the same length (§316): drawn faint behind, bar for bar. */
+  before?: StatisticsBucket[] | null;
+  /** How the stretch before is said in a tooltip: "the 30 days before". */
+  beforeWords?: string;
   value: (bar: StatisticsBucket) => number;
   bucket: 'day' | 'week' | 'month';
   format: (n: number) => string;
@@ -119,7 +125,8 @@ export function Bars({
   label: string;
 }) {
   const values = (bars ?? []).map(value);
-  const top = niceTop(Math.max(0, ...values));
+  const ghosts = (before ?? []).map(value);
+  const top = niceTop(Math.max(0, ...values, ...ghosts));
   const dense = (bars?.length ?? 0) > 40;
   const peak = values.length ? values.indexOf(Math.max(...values)) : -1;
   const last = (bars?.length ?? 0) - 1;
@@ -137,9 +144,13 @@ export function Bars({
       <div className={`st-bars${dense ? ' is-dense' : ''}`}>
         {(bars ?? Array.from({ length: 14 }, () => null)).map((bar, i) => {
           const v = bar ? value(bar) : 0;
+          const g = before?.[i] ? ghosts[i] : null;
           return (
             <div key={bar?.start ?? i} className={`st-col${i === peak && v > 0 ? ' is-peak' : ''}${i === last ? ' is-last' : ''}`}>
               <div className="st-track">
+                {g !== null && g > 0 && (
+                  <div className="st-ghost" style={{ height: `${Math.max(4, (g / top) * 100)}%`, animationDelay: `${Math.min(i, 60) * 14}ms` }} />
+                )}
                 <div
                   className={`st-bar${v === 0 ? ' is-zero' : ''}`}
                   style={{ height: `${!bar ? 0 : v === 0 ? 0 : Math.max(4, (v / top) * 100)}%`, animationDelay: `${Math.min(i, 60) * 14}ms` }}
@@ -148,6 +159,11 @@ export function Bars({
                   <span className="st-tip">
                     {format(v)}
                     <em>{bucketWords(bar, bucket)}</em>
+                    {g !== null && (
+                      <em className="st-tip-before">
+                        {format(g)} {beforeWords ?? 'the stretch before'}
+                      </em>
+                    )}
                   </span>
                 )}
               </div>
@@ -338,5 +354,65 @@ export function Ranked({
         </li>
       ))}
     </ol>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// What the platform made, month by month
+
+/**
+ * The hero's line (§316): platform fees kept each month, so "made by the
+ * platform" shows its growth as well as its size. A gentle curve through the
+ * months, the area under it fading out, the last month marked.
+ */
+export function MadeLine({ months, format }: { months: Array<{ month: string; feesKeptMinor: number }>; format: (minor: number) => string }) {
+  const id = useId().replace(/:/g, '');
+  if (months.length === 0) return null;
+  const last = months[months.length - 1];
+  if (months.length === 1) {
+    return (
+      <div className="st-made">
+        <span className="st-made-one">
+          <i />
+          {monthWords(last.month, true)}: {format(last.feesKeptMinor)} — the first month
+        </span>
+      </div>
+    );
+  }
+  const W = 320;
+  const H = 70;
+  const pad = 6;
+  const max = Math.max(1, ...months.map((m) => m.feesKeptMinor));
+  const x = (i: number) => pad + (i * (W - pad * 2)) / (months.length - 1);
+  const y = (v: number) => H - pad - (Math.max(0, v) / max) * (H - pad * 2);
+  const points = months.map((m, i) => [x(i), y(m.feesKeptMinor)] as const);
+  // A smooth path: each step a curve whose handles sit a third of the way along.
+  const line = points.reduce((d, [px, py], i) => {
+    if (i === 0) return `M${px},${py}`;
+    const [qx, qy] = points[i - 1];
+    const dx = (px - qx) / 3;
+    return `${d} C${qx + dx},${qy} ${px - dx},${py} ${px},${py}`;
+  }, '');
+  const area = `${line} L${points[points.length - 1][0]},${H} L${points[0][0]},${H} Z`;
+  return (
+    <div className="st-made">
+      <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
+        <defs>
+          <linearGradient id={`made-${id}`} x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="#ff8a5c" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#ff8a5c" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill={`url(#made-${id})`} className="st-made-area" />
+        <path d={line} fill="none" stroke="#ffb08a" strokeWidth="2.4" strokeLinecap="round" pathLength={1} className="st-made-line" />
+      </svg>
+      <span className="st-made-dot" style={{ left: `${(points[points.length - 1][0] / W) * 100}%`, top: `${(points[points.length - 1][1] / H) * 100}%` }} />
+      <div className="st-made-foot">
+        <span>{monthWords(months[0].month)}</span>
+        <span>
+          This month <b>{format(last.feesKeptMinor)}</b>
+        </span>
+      </div>
+    </div>
   );
 }

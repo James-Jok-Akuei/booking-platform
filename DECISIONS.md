@@ -20779,6 +20779,32 @@ and on desktop, the test accounts panel, the switches on a shop and a person,
 the Overview, and the pitch sheet on screen, on a phone and printed to PDF
 (one A4 page).
 
+### 316.6 Fine-tuned (2026-10-29, after the user asked whether it could be better)
+
+- **Sections to jump between** — All time · This stretch · Customers & shops ·
+  What people want · Month by month — the one row of the head that stays
+  pinned (on a computer too: the stretch and the narrowing are a scroll away,
+  and changed far less often), the section in view lit.
+- **What changed**: three sentences, worked out in the console from the page's
+  own numbers (`insights.ts`): growth against the stretch before (at most two),
+  then what to act on — searches that found nothing, bookings started and never
+  paid, customers not turning up, one shop carrying the platform — then what is
+  good to know (a category's share, customers coming back, same-day booking,
+  the busiest time). Each leads to its figures.
+- **The stretch before, behind the bars**: the server sends it cut the same way
+  (`previousSeries`); faint striped bars, and each bar's tooltip says both.
+- **Made by the platform, month by month**: a line under the figure in the dark
+  band (the last twelve months; one month is said as the first).
+- **Quiet when there is nothing to compare**: if the stretch before had nothing
+  in it, no card says "New" — each says something of its own (by how many
+  customers, per booking, share of deposits, live today), and the heading says
+  there is nothing to compare with yet.
+- **Nothing yet** said with the console's drawings (§311), each saying what will
+  appear: bookings, visits, searches, services, top shops, customers coming
+  back (and in the first month, how many made a first booking).
+- **Lists start at five** — top shops, categories, districts, services — with
+  "Show all".
+
 ## 317. Money access — the platform's money is the primary administrator's, and theirs to share (2026-10-29)
 
 The user asked that the statistics (§316) be seen by the primary

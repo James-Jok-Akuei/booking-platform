@@ -198,6 +198,7 @@ export class AdminStatisticsService {
       totals: totalsOf(daily, booked),
       previous: previousDaily && previousBooked !== null ? totalsOf(previousDaily, previousBooked) : null,
       series: seriesOf(daily, from, to, bucket),
+      previousSeries: previousDaily && before ? seriesOf(previousDaily, before.from, before.to, bucket) : null,
       bookings,
       customers,
       shops,

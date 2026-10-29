@@ -34568,6 +34568,14 @@
               "$ref": "#/components/schemas/StatisticsBucketDto"
             }
           },
+          "previousSeries": {
+            "nullable": true,
+            "description": "The stretch before, cut the same way, for the chart's faint bars: bar i\nof each is the same place in its stretch. Null when nothing is compared.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatisticsBucketDto"
+            }
+          },
           "bookings": {
             "$ref": "#/components/schemas/StatisticsBookingsDto"
           },
@@ -34595,6 +34603,7 @@
           "totals",
           "previous",
           "series",
+          "previousSeries",
           "bookings",
           "customers",
           "shops",
