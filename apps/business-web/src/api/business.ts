@@ -568,6 +568,7 @@ export const createLocation = (body: {
   longitude: number;
   districtId?: string;
   phone?: string;
+  findUs?: string;
 }) => api<Location>('/business/locations', { method: 'POST', body });
 
 export const updateLocation = (
@@ -579,6 +580,8 @@ export const updateLocation = (
     latitude?: number;
     longitude?: number;
     districtId?: string;
+    /** How to find the door (§318); null takes it away. */
+    findUs?: string | null;
   },
 ) => api<Location>(`/business/locations/${id}`, { method: 'PATCH', body });
 

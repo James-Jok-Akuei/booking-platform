@@ -784,6 +784,12 @@ model Location {
   latitude  Float?
   longitude Float?
 
+  /// How to find the door once the pin has found the building (§318), in the
+  /// shop's own words: "2nd floor of Kigali Heights, opposite the MTN shop.
+  /// Ask the guard." Shown under the map, on the booking and in its email.
+  /// Null when the shop has said nothing.
+  findUs String?
+
   // Optional per-location override of BusinessProfile.phone.
   phone String?
 

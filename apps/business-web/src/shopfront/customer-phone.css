@@ -125,6 +125,22 @@
 .csp-button { min-height: 54px; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 0 22px; border-radius: 999px; background: var(--csp-accent-soft); color: var(--csp-accent); font-size: 15.5px; font-weight: 700; }
 
 .csp-section { display: flex; flex-direction: column; gap: 12px; }
+
+/* Where it is (§318): the address line with its Directions chip, and the map card. */
+.csp-where { display: flex; align-items: flex-start; gap: 6px; }
+.csp-where .csp-ion { flex: none; margin-top: 2px; }
+.csp-where-text { flex: 1; min-width: 0; }
+.csp-where-text .csp-small { margin-top: 2px; }
+.csp-where-go { flex: none; display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; padding: 5px 10px; border-radius: 999px; background: var(--csp-accent-soft); color: var(--csp-accent-deep); font-size: 12.5px; line-height: 16px; font-weight: 700; }
+.csp-screen .csp-heading { font-size: 18px; line-height: 24px; font-weight: 700; letter-spacing: -0.2px; color: var(--csp-ink); }
+.csp-where-card { padding: 0; overflow: hidden; }
+.csp-map { position: relative; height: 172px; }
+.csp-where-body { display: flex; flex-direction: column; gap: 14px; padding: 16px; }
+.csp-where-name { display: block; font-size: 15.5px; line-height: 21px; font-weight: 700; color: var(--csp-ink); }
+.csp-findus { display: flex; gap: 12px; padding: 12px; border-radius: 16px; background: var(--csp-sunken); }
+.csp-findus-icon { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: var(--csp-accent-soft); }
+.csp-findus-text { margin-top: 3px; font-size: 14.5px; line-height: 21px; font-weight: 500; color: var(--csp-ink); white-space: pre-line; }
+.csp-button-solid { background: var(--csp-accent); color: #fff; box-shadow: 0 10px 24px rgba(27, 29, 34, 0.1); }
 .csp-gallery-head { display: flex; align-items: baseline; justify-content: space-between; }
 .csp-screen .csp-gallery-head h4 { font-size: 18px; line-height: 24px; font-weight: 700; letter-spacing: -0.2px; color: var(--csp-ink); }
 .csp-gallery-head h4 span { color: var(--csp-muted); font-weight: 600; }

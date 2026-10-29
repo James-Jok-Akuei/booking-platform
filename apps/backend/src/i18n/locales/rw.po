@@ -18,7 +18,7 @@ msgstr "“{date}” si itariki ibaho."
 msgid "\"{value}\" is not a valid calendar date."
 msgstr "“{value}” si itariki ibaho."
 
-#: src/mail/email-kit.ts:569
+#: src/mail/email-kit.ts:585
 msgid "({off}% off, was {was})"
 msgstr "(igabanywa rya {off}%, cyari {was})"
 
@@ -153,7 +153,7 @@ msgstr "{onSale, plural, =0 {Ibyo abantu bo hafi ya {place} barimo gufatira gahu
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: provider, name.
-#: src/payouts/payout-destinations.service.ts:138
+#: src/payouts/payout-destinations.service.ts:139
 msgid "{provider} is not a mobile money network in {name}."
 msgstr "{provider} si umuyoboro wa mobile money muri {name}."
 
@@ -161,7 +161,7 @@ msgstr "{provider} si umuyoboro wa mobile money muri {name}."
 msgid "{rating, plural, one {A customer left a #-star review.} other {A customer left a #-star review.}}"
 msgstr "{rating, plural, one {Umukiriya yatanze igitekerezo cy’inyenyeri #.} other {Umukiriya yatanze igitekerezo cy’inyenyeri #.}}"
 
-#: src/mail/booking-email.ts:215
+#: src/mail/booking-email.ts:220
 msgid "{serviceName} in an hour"
 msgstr "{serviceName} hasigaye isaha imwe"
 
@@ -488,7 +488,7 @@ msgstr "Umunuko w’ibiri gushya cyangwa ibishashi"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status, to.
-#: src/business/business-moderation.service.ts:219
+#: src/business/business-moderation.service.ts:220
 msgid "A business cannot move from {status} to {to}."
 msgstr "Ubucuruzi ntibushobora kuva kuri {status} ngo bujye kuri {to}."
 
@@ -1005,7 +1005,7 @@ msgstr "Urukingo rw’ibisazi mu mezi 12 ashize?"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: to.
-#: src/business/business-moderation.service.ts:271
+#: src/business/business-moderation.service.ts:272
 msgid "A reason is required to move a business to {to}. The business is told what it says, and cannot act on a decision it has not been given."
 msgstr "Impamvu irakenewe kugira ngo ubucuruzi bujyanwe kuri {to}. Ubucuruzi bubwirwa ibyo ivuga, kandi ntibwakora ku cyemezo butabwiwe."
 
@@ -1387,7 +1387,7 @@ msgstr "Wongeraho kurumika?"
 msgid "Add false lashes?"
 msgstr "Wongeraho ibitsike by’ibikorano?"
 
-#: src/mail/booking-email.ts:308
+#: src/mail/booking-email.ts:315
 msgid "Add to calendar"
 msgstr "Shyira kuri kalendari"
 
@@ -2239,15 +2239,15 @@ msgstr "Gahunda yahagaritswe"
 msgid "Booking confirmed"
 msgstr "Gahunda yemejwe"
 
-#: src/mail/email-kit.ts:414
+#: src/mail/email-kit.ts:416
 msgid "Booking no."
 msgstr "Nimero ya gahunda"
 
-#: src/mail/booking-email.ts:181
+#: src/mail/booking-email.ts:186
 msgid "Booking no. {number}. Give the shop your arrival code when you arrive."
 msgstr "Gahunda nimero {number}. Ha iduka kode yawe yo kugera nugerayo."
 
-#: src/mail/email-kit.ts:497
+#: src/mail/email-kit.ts:513
 msgid "Booking no.: {number}"
 msgstr "Nimero ya gahunda: {number}"
 
@@ -2390,8 +2390,8 @@ msgid "Business meal"
 msgstr "Ifunguro ry’akazi"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/business/business-moderation.service.ts:148
-#: src/business/business-moderation.service.ts:214
+#: src/business/business-moderation.service.ts:149
+#: src/business/business-moderation.service.ts:215
 #: src/business/business-profile.service.ts:46
 #: src/business/business-profile.service.ts:64
 msgid "Business not found."
@@ -2433,7 +2433,7 @@ msgstr "C: ikamyo"
 msgid "Calm and soothe"
 msgstr "Gutuza uruhu"
 
-#: src/mail/booking-email.ts:243
+#: src/mail/booking-email.ts:248
 #: src/payouts/payouts.service.ts:1154
 msgid "Cancelled"
 msgstr "Yahagaritswe"
@@ -2794,7 +2794,7 @@ msgstr "Emeza ko ari wowe"
 msgid "Confirm it is you: {code}"
 msgstr "Emeza ko ari wowe: {code}"
 
-#: src/mail/booking-email.ts:235
+#: src/mail/booking-email.ts:240
 msgid "Confirmed"
 msgstr "Byemejwe"
 
@@ -3023,7 +3023,7 @@ msgstr "Avansi"
 msgid "Deposit not paid: {serviceName}, {short}"
 msgstr "Avansi ntiyishyuwe: {serviceName}, {short}"
 
-#: src/mail/booking-email.ts:262
+#: src/mail/booking-email.ts:267
 #: src/notifications/notification-email.ts:44
 msgid "Deposit paid"
 msgstr "Avansi yishyuwe"
@@ -3038,7 +3038,7 @@ msgstr "Avansi yishyuwe: {amount}"
 msgid "Deposit percentage must be at least {value0}% — the platform fee is {value1}% of the service price and is taken out of the deposit. A smaller deposit would leave you owing money on every booking."
 msgstr "Ijanisha ry’avansi rigomba kuba nibura {value0}% — amafaranga ya serivisi y’urubuga ni {value1}% by’igiciro cya serivisi, kandi akurwa kuri avansi. Avansi nto kurushaho yatuma ugira umwenda kuri buri gahunda."
 
-#: src/mail/booking-email.ts:262
+#: src/mail/booking-email.ts:267
 msgid "Deposit to pay"
 msgstr "Avansi yo kwishyura"
 
@@ -3236,7 +3236,7 @@ msgstr "Gutoza imbwa"
 msgid "Dog Walking"
 msgstr "Gutembereza imbwa"
 
-#: src/mail/booking-email.ts:239
+#: src/mail/booking-email.ts:244
 #: src/payouts/payouts.service.ts:1152
 msgid "Done"
 msgstr "Byarangiye"
@@ -3281,7 +3281,7 @@ msgstr "Kunjyana ku kibuga"
 msgid "Dry cleaning"
 msgstr "Pressing"
 
-#: src/mail/booking-email.ts:268
+#: src/mail/booking-email.ts:273
 msgid "Due at the shop"
 msgstr "Yishyurirwa ku iduka"
 
@@ -3752,7 +3752,7 @@ msgstr "Ku kibazo cyihutirwa, abakiriya bagomba kuguhamagara — nimero yawe iri
 msgid "For your safety, confirm it is you first. We will email you a code."
 msgstr "Ku bw’umutekano wawe, banza wemeze ko ari wowe. Turakoherereza kode kuri imeyili."
 
-#: src/mail/email-kit.ts:664
+#: src/mail/email-kit.ts:680
 msgid "For your shop"
 msgstr "Iby’iduka ryawe"
 
@@ -3868,7 +3868,7 @@ msgstr "Gel"
 msgid "General Clinic"
 msgstr "Ivuriro rusange"
 
-#: src/mail/booking-email.ts:307
+#: src/mail/booking-email.ts:314
 msgid "Get directions"
 msgstr "Reba inzira"
 
@@ -4393,6 +4393,14 @@ msgstr "Ubikeneye ryari?"
 msgid "How the business is going is for the owner and managers."
 msgstr "Uko ubucuruzi bwifashe bireba nyir’iduka n’abayobozi gusa."
 
+#: src/mail/email-kit.ts:454
+msgid "How to find it"
+msgstr "Uko wahagera"
+
+#: src/mail/email-kit.ts:512
+msgid "How to find it: {note}"
+msgstr "Uko wahagera: {note}"
+
 #: src/notifications/notification-templates.ts:573
 msgid "How was {serviceName} at {businessName}?"
 msgstr "{serviceName} kuri {businessName} byagenze bite?"
@@ -4570,7 +4578,7 @@ msgstr "Mu nteruro imwe, ikibazo ni ikihe? Amakuru y’ibanga uzayavuge muri gah
 msgid "In person"
 msgstr "Imbonankubone"
 
-#: src/mail/booking-email.ts:237
+#: src/mail/booking-email.ts:242
 #: src/payouts/payouts.service.ts:1151
 msgid "In progress"
 msgstr "Biri gukorwa"
@@ -4907,7 +4915,7 @@ msgid "Lashes"
 msgstr "Ibitsike"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/discovery/discovery.service.ts:838
+#: src/discovery/discovery.service.ts:840
 msgid "lat and lng must be supplied together."
 msgstr "lat na lng bigomba gutangirwa hamwe."
 
@@ -5322,7 +5330,7 @@ msgstr "Amata"
 msgid "Minibus"
 msgstr "Minibisi"
 
-#: src/mail/booking-email.ts:241
+#: src/mail/booking-email.ts:246
 msgid "Missed"
 msgstr "Yabuze"
 
@@ -5402,7 +5410,7 @@ msgstr "Kwimukira cyangwa kwimuka"
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: name, phoneExample.
-#: src/payouts/payout-destinations.service.ts:448
+#: src/payouts/payout-destinations.service.ts:449
 msgid "msisdn must be a {name} mobile number, like {phoneExample}. Payouts are sent through a local mobile-money provider, and a number outside that country cannot receive them."
 msgstr "msisdn igomba kuba nimero ya telefoni igendanwa yo muri {name}, nka {phoneExample}. Amafaranga yoherezwa binyuze kuri mobile money yo muri icyo gihugu, kandi nimero yo hanze yacyo ntishobora kuyakira."
 
@@ -5781,7 +5789,7 @@ msgstr "Ntibikorwa kuri konti yawe — koresha Umutekano kugira ngo ubyimurire k
 msgid "note must say what the customer recalled (10-500 characters). It is recorded and reviewed by support."
 msgstr "note igomba kuvuga ibyo umukiriya yibutse (inyuguti 10-500). Irabikwa kandi igasuzumwa n’itsinda ry’ubufasha."
 
-#: src/mail/email-kit.ts:501
+#: src/mail/email-kit.ts:517
 msgid "Note: “{note}”"
 msgstr "Icyitonderwa: “{note}”"
 
@@ -6007,7 +6015,7 @@ msgstr "Ticket iri kuri RESOLVED ni yo yonyine ishobora kongera gufungurwa. Iyi 
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/business/business-moderation.service.ts:227
+#: src/business/business-moderation.service.ts:228
 msgid "Only a SUSPENDED business can be reinstated. This one is {status}."
 msgstr "Ubucuruzi buri kuri SUSPENDED ni bwo bwonyine bushobora gusubizwaho. Ubu bucuruzi buri kuri {status}."
 
@@ -6042,14 +6050,14 @@ msgid "Only administrators can read this."
 msgstr "Abashinzwe urubuga ni bo bonyine bashobora gusoma ibi."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/users/users.service.ts:171
+#: src/users/users.service.ts:179
 msgid "Only an administrator can clear a display name."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora gusiba izina rigaragara."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/business/business-moderation.service.ts:353
+#: src/business/business-moderation.service.ts:354
 #: src/ledger/ledger.service.ts:697
-#: src/payouts/payout-destinations.service.ts:541
+#: src/payouts/payout-destinations.service.ts:542
 #: src/payouts/payouts.service.ts:1266
 msgid "Only an administrator can do that."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora kubikora."
@@ -6065,7 +6073,7 @@ msgid "Only an administrator can list appointments."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora kureba urutonde rwa gahunda."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/users/users.service.ts:58
+#: src/users/users.service.ts:59
 msgid "Only an administrator can list users."
 msgstr "Ushinzwe urubuga ni we wenyine ushobora kureba urutonde rw’abakoresha."
 
@@ -6087,13 +6095,13 @@ msgstr "Gahunda iri kuri IN_PROGRESS ni yo yonyine ishobora kwemezwa ko yarangiy
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/payouts/payout-destinations.service.ts:387
+#: src/payouts/payout-destinations.service.ts:388
 msgid "Only an UNVERIFIED destination can be rejected. This one is {status}."
 msgstr "Nimero iri kuri UNVERIFIED ni yo yonyine ishobora kwangwa. Iyi iri kuri {status}."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: status.
-#: src/payouts/payout-destinations.service.ts:345
+#: src/payouts/payout-destinations.service.ts:346
 msgid "Only an UNVERIFIED destination can be verified. This one is {status}."
 msgstr "Nimero iri kuri UNVERIFIED ni yo yonyine ishobora kugenzurwa. Iyi iri kuri {status}."
 
@@ -6122,7 +6130,7 @@ msgid "Only someone in the team can become the owner. Ask the shop to invite the
 msgstr "Umuntu uri mu itsinda ni we wenyine ushobora kuba nyir’iduka. Banza usabe iduka kumutumira."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/payouts/payout-destinations.service.ts:532
+#: src/payouts/payout-destinations.service.ts:533
 msgid "Only the business owner can set the payout destination."
 msgstr "Nyir’iduka ni we wenyine ushobora gushyiraho nimero yo kwishyurirwaho."
 
@@ -6453,7 +6461,7 @@ msgid "Payments are temporarily unavailable. You have NOT been charged, and your
 msgstr "Ubwishyu ntibuboneka by’agateganyo. NTA mafaranga wakuweho, kandi gahunda yawe iracyakubikiwe — ongera ugerageze mu kanya. Itsinda ryacu ryabimenyeshejwe."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/payouts/payout-destinations.service.ts:503
+#: src/payouts/payout-destinations.service.ts:504
 msgid "Payout destination not found."
 msgstr "Nimero yo kwishyurirwaho ntiyabonetse."
 
@@ -6771,7 +6779,7 @@ msgstr "Amafoto acapye"
 msgid "Private"
 msgstr "Byihariye"
 
-#: src/mail/booking-email.ts:298
+#: src/mail/booking-email.ts:305
 msgid "Private answers — open the booking to read them."
 msgstr "Ibisubizo by’ibanga — fungura gahunda ubisome."
 
@@ -6864,7 +6872,7 @@ msgid "Rackets for 4"
 msgstr "Rakete z’abantu 4"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/discovery/discovery.service.ts:832
+#: src/discovery/discovery.service.ts:834
 msgid "radiusKm needs lat and lng — a radius has to be a radius around something."
 msgstr "radiusKm ikenera lat na lng — intera igomba kubarirwa uhereye ahantu runaka."
 
@@ -7314,7 +7322,7 @@ msgid "Set the service’s own length to 30 minutes when using this."
 msgstr "Niba ukoresha iki kibazo, shyira igihe cya serivisi ubwayo ku minota 30."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/guards/roles.guard.ts:73
+#: src/auth/guards/roles.guard.ts:75
 msgid "Set up two-step sign-in first: administrators use an authenticator app as well as the emailed code."
 msgstr "Banza ushyireho kwinjira mu ntambwe ebyiri: abayobozi b’urubuga bakoresha porogaramu yo kwemeza (authenticator) hamwe na kode yoherezwa kuri imeyili."
 
@@ -7432,7 +7440,7 @@ msgid "Sick or injured"
 msgstr "Irarwaye cyangwa yakomeretse"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/auth/guards/roles.guard.ts:65
+#: src/auth/guards/roles.guard.ts:67
 msgid "Sign in again, with the code from your authenticator app."
 msgstr "Ongera winjire, ukoresheje kode iri muri porogaramu yawe yo kwemeza (authenticator)."
 
@@ -7686,7 +7694,7 @@ msgstr "startTime igomba kwandikwa nka HH:mm (amasaha 24)"
 msgid "status must be one of: {value0}"
 msgstr "status igomba kuba kimwe muri ibi: {value0}"
 
-#: src/mail/email-kit.ts:494
+#: src/mail/email-kit.ts:509
 msgid "Status: {status}"
 msgstr "Uko ihagaze: {status}"
 
@@ -7700,7 +7708,7 @@ msgstr "Stiletto"
 msgid "Stitching"
 msgstr "Kudoda"
 
-#: src/mail/email-kit.ts:665
+#: src/mail/email-kit.ts:681
 #: src/mail/mail.service.ts:86
 msgid "Stop emails like this"
 msgstr "Hagarika imeyili nk’izi"
@@ -8339,7 +8347,7 @@ msgstr "Iyi konti irafunze."
 #: src/appointments/appointments.service.ts:2633
 #: src/appointments/appointments.service.ts:2730
 #: src/business/business-access.service.ts:41
-#: src/payouts/payout-destinations.service.ts:515
+#: src/payouts/payout-destinations.service.ts:516
 msgid "This account is not an active member of any business."
 msgstr "Iyi konti ntiri mu itsinda ry’ubucuruzi na bumwe."
 
@@ -8443,12 +8451,12 @@ msgstr "Iri shami ryakira umuntu umwe gusa icyarimwe."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: value0.
-#: src/business/business-moderation.service.ts:255
+#: src/business/business-moderation.service.ts:256
 msgid "This business cannot go live yet: it still needs {value0}. Listed without that, no customer could book it — ask the business to finish setting up."
 msgstr "Ubu bucuruzi ntiburashobora kujya ku murongo: buracyakeneye {value0}. Bushyizwe ku rutonde bitarakorwa, nta mukiriya washobora kubufataho gahunda — saba ubucuruzi kurangiza gutunganya konti yabwo."
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/business/business-moderation.service.ts:249
+#: src/business/business-moderation.service.ts:250
 msgid "This business has no name, so it cannot be approved — it would appear in search as a blank. Ask the business to complete its profile first."
 msgstr "Ubu bucuruzi nta zina bufite, bityo ntibushobora kwemezwa — bwagaragara mu ishakisha nta zina. Banza usabe ubucuruzi kuzuza umwirondoro wabwo."
 
@@ -8464,7 +8472,7 @@ msgstr "Ubu bucuruzi busanzwe bwahagaritswe by’agateganyo."
 
 #. A refusal: the app shows it as the reason something did not work.
 #. The names in {braces} are filled in by the server: name.
-#: src/business/business-moderation.service.ts:263
+#: src/business/business-moderation.service.ts:264
 msgid "This business is in {name}, which is not switched on yet, so it cannot be approved. Switch the country on under Countries first."
 msgstr "Ubu bucuruzi buri muri {name}, igihugu kitarafungurwa, bityo ntibushobora kwemezwa. Banza ufungure icyo gihugu muri Ibihugu."
 
@@ -8639,7 +8647,7 @@ msgstr "Ubu iyi serivisi ntiyemera ubutumwa bugufi. Ahubwo andikira iduka."
 
 #. A refusal: the app shows it as the reason something did not work.
 #: src/auth/auth.service.ts:796
-#: src/auth/guards/roles.guard.ts:61
+#: src/auth/guards/roles.guard.ts:63
 msgid "This sign-in was ended. Please sign in again."
 msgstr "Uku kwinjira kwahagaritswe. Ongera winjire."
 
@@ -8705,7 +8713,7 @@ msgstr "Kugira ngo wemere, injira ukoresheje iyi imeyili — ni ibyo gusa."
 msgid "to must be an ISO-8601 date-time string."
 msgstr "to igomba kuba itariki n’isaha byanditse mu buryo bwa ISO-8601."
 
-#: src/mail/booking-email.ts:268
+#: src/mail/booking-email.ts:273
 msgid "To pay at the shop"
 msgstr "Uzishyura ku iduka"
 
@@ -8965,7 +8973,7 @@ msgid "Use yours"
 msgstr "Nkoresha ibyanyu"
 
 #. A refusal: the app shows it as the reason something did not work.
-#: src/users/users.service.ts:178
+#: src/users/users.service.ts:186
 msgid "User not found."
 msgstr "Umukoresha ntiyabonetse."
 
@@ -9057,11 +9065,11 @@ msgstr "Ku rukenyerero"
 msgid "Wait or leave"
 msgstr "Gutegereza cyangwa kugenda"
 
-#: src/mail/booking-email.ts:231
+#: src/mail/booking-email.ts:236
 msgid "Waiting for the deposit"
 msgstr "Hategerejwe avansi"
 
-#: src/mail/booking-email.ts:231
+#: src/mail/booking-email.ts:236
 msgid "Waiting for your deposit"
 msgstr "Hategerejwe avansi yawe"
 
@@ -9386,7 +9394,7 @@ msgstr "Hakorwa iki?"
 msgid "What pace suits you?"
 msgstr "Ni uwuhe muvuduko ukubereye?"
 
-#: src/mail/booking-email.ts:293
+#: src/mail/booking-email.ts:300
 msgid "What they chose"
 msgstr "Ibyo yahisemo"
 
@@ -9469,13 +9477,13 @@ msgstr "Wifuza kubihabwa ryari?"
 msgid "When you arrive, give the shop your 6-digit arrival code. It is in the app, on the booking."
 msgstr "Nugerayo, ha iduka kode yawe yo kugera y’imibare 6. Iri muri porogaramu, kuri gahunda."
 
-#: src/mail/email-kit.ts:495
+#: src/mail/email-kit.ts:510
 #: src/notifications/notification-templates.ts:68
 msgid "When: {when}"
 msgstr "Igihe: {when}"
 
 #. A ready-made question, answer or note a shop can add to a service (the shop may edit it). Answers are short choices on a phone.
-#: src/mail/email-kit.ts:413
+#: src/mail/email-kit.ts:415
 #: src/business/choice-suggestions.ts:1263
 #: src/business/choice-suggestions.ts:1367
 #: src/business/choice-suggestions.ts:1410
@@ -9518,7 +9526,7 @@ msgstr "Twibande he?"
 msgid "Where would you like to sit?"
 msgstr "Wifuza kwicara he?"
 
-#: src/mail/email-kit.ts:496
+#: src/mail/email-kit.ts:511
 #: src/notifications/notification-templates.ts:67
 msgid "Where: {locationName}"
 msgstr "Ahantu: {locationName}"
@@ -10303,7 +10311,7 @@ msgstr "Ibyangombwa byawe by’ubucuruzi"
 msgid "Your category and type"
 msgstr "Icyiciro cyawe n’ubwoko"
 
-#: src/mail/booking-email.ts:293
+#: src/mail/booking-email.ts:300
 msgid "Your choices"
 msgstr "Ibyo wahisemo"
 
@@ -10353,7 +10361,7 @@ msgstr "Ibipfunyika byanyu"
 msgid "Your payment did not go through"
 msgstr "Ubwishyu bwawe ntibwakunze"
 
-#: src/mail/booking-email.ts:297
+#: src/mail/booking-email.ts:304
 msgid "Your private answers are with the shop — see them in the app."
 msgstr "Ibisubizo byawe by’ibanga byagejejwe ku iduka — ubirebe muri porogaramu."
 

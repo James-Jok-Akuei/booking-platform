@@ -350,6 +350,8 @@ export interface Ticket {
   when: string;
   branch: string;
   address?: string | null;
+  /** How to find the door (§318), under the stub: the shop's own words. */
+  findUs?: string | null;
   reservation: string;
   status?: { label: string; tone: Exclude<Tone, 'night'> } | null;
   money?: Array<{ label: string; value: string }>;
@@ -445,6 +447,18 @@ export function ticket(t: Ticket): Block {
     );
   }
   const stub = `<tr><td style="padding:18px 22px 4px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${pairs.join('')}</table></td></tr>`;
+  const findUs = t.findUs
+    ? `<tr><td style="padding:0 22px 18px;font-family:${FONT}">` +
+      p(
+        `font-size:11.5px;line-height:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:${C.faint}`,
+        esc(say(l, 'How to find it')),
+      ) +
+      p(
+        `font-size:14.5px;line-height:22px;font-weight:600;color:${C.ink};padding-top:3px`,
+        `<span class="em-ink">${esc(t.findUs).replace(/\n/g, '<br>')}</span>`,
+      ) +
+      '</td></tr>'
+    : '';
   const extras = t.extras
     ? `<tr><td style="padding:0 22px 18px;font-family:${FONT}">` +
       p(
@@ -485,6 +499,7 @@ export function ticket(t: Ticket): Block {
       head +
       tear +
       stub +
+      findUs +
       extras +
       links +
       '</table>',
@@ -494,6 +509,7 @@ export function ticket(t: Ticket): Block {
     t.status ? say(l, 'Status: {status}', { status: t.status.label }) : null,
     say(l, 'When: {when}', { when: t.when }),
     say(l, 'Where: {locationName}', { locationName: `${t.branch}${t.address ? `, ${t.address}` : ''}` }),
+    t.findUs ? say(l, 'How to find it: {note}', { note: t.findUs }) : null,
     say(l, 'Booking no.: {number}', { number: t.reservation }),
     ...(t.money ?? []).map((m) => `${m.label}: ${m.value}`),
     ...(t.extras ? [`${t.extras.label}:`, ...t.extras.lines.map((line) => `  ${line}`)] : []),

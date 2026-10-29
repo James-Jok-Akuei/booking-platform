@@ -353,6 +353,8 @@ export class ShopfrontDto {
   address!: string;
   latitude!: number | null;
   longitude!: number | null;
+  /** How to find the door once the pin has found the building, in the shop's words (§318). */
+  findUs!: string | null;
   phone!: string | null;
   /** Concurrent appointments this branch can run. */
   capacity!: number;

@@ -12636,7 +12636,8 @@ done) — then the details, the payment, and the cancelling rules in words.
   shown as `0440-A141`. Not a second identifier: support can find the booking
   from it and there is nothing to keep in step.
 - **Directions** hands the shop's pin (or its address, without one) to the
-  phone's own maps app.
+  phone's own maps app. ~~Straight to one app~~ — since §318 through a menu
+  of maps apps, with a map card on the page.
 - **"Balance at the shop"**, never "paid at the shop": nothing here records
   what happens at the till.
 
@@ -20894,3 +20895,96 @@ administrator without money access (menu, Overview at 1440 and 390, a money
 page by its address, Countries) and as the primary (Users, the switch and its
 question) — drawn from the new server's answers, because the user's API
 watcher had stopped restarting the API.
+
+## 318. Where it is — the map, how to find the door, and the way there (2026-10-29)
+
+The user asked for a link on the shop page that takes a buyer to the exact
+place, "the professional way", and thought it had been started. It had been,
+in pieces: every branch has had an exact pin since §43.2 (pasted map link, a
+suggested address or "use my current position", checked on a map before
+saving, §157); the reservation had a **Directions** button (§137.3) and the
+booking email **Get directions** (§292); the shop page said the road time
+(§157). What was missing was the moment that matters most — before booking:
+the shop page showed the address as words only, and the service page did not
+say where at all.
+
+### 318.1 What a customer sees
+
+- **On the shop page**, the address line is a button with a small
+  **Directions** chip at its end, and the page ends — under whichever tab is
+  open — with **Where it is**: a map picture with the coral pin dropped on the
+  spot (a ripple on the ground; still when the phone asks for less motion), the
+  drive time on the map once the phone's position is known, the branch, its
+  address and area, the shop's **How to find it** note, and **Get directions**.
+- **On the service page**, the place has its own line under the length, with
+  the same chip — no card of its own, keeping §278's uncluttered page. (First
+  drawn on the same line as the length; at 390 wide the branch name was cut to
+  "Nyarugen…" and at 320 it vanished, so it moved.)
+- **On a reservation** still to happen, the same card follows "Before you
+  come"; the round **Directions** button opens the same menu (§137.3's direct
+  hand-off to one maps app is replaced by the menu below).
+- **Get directions** opens a sheet: Apple Maps (only on Apple devices, and
+  first there), Google Maps and Waze — each a web address the app answers when
+  installed and a browser answers when not, so nothing has to be asked of the
+  phone first — then **Send this place** (the share sheet, which has Copy; a
+  browser that cannot share copies the name, address, note and a map link).
+  Every route goes to the exact pin; a branch with no pin searches its name and
+  address instead, and shows no map.
+- We never ask for the person's position for this (§107.3): their maps app
+  works out the way from where they are, and nothing about it reaches us.
+
+### 318.2 The map is a picture, not a live map
+
+Drawn from map tiles like the seller app's and the console's (§195): inside a
+page that scrolls, a live map catches the finger meant to scroll, it needs a
+paid key per view, and it is heavy on weak data. Tapping it opens directions.
+`EXPO_PUBLIC_MAP_TILES` / `EXPO_PUBLIC_MAP_CREDIT` name a provider before
+launch, as `VITE_MAP_TILES` does on the web (§299); until then OpenStreetMap's
+own servers, credit kept on the map and linked. A phone app must say who it is
+when it asks OpenStreetMap for tiles, so the app sends its name.
+
+### 318.3 How to find us — the shop's own words
+
+A pin finds the building; in a building of twenty shops that is not the door.
+`Location.findUs` (optional, up to 280 letters, trimmed, an empty box stored
+as nothing) is written on the branch's add and edit forms in the seller app,
+"How to find us", with an example ("2nd floor of Kigali Heights, opposite the
+MTN shop. Ask the guard at the door.") and a count. It is saved with the
+form's Save like everything else (§281). It shows:
+- to customers: under the map (shop page and reservation), in what **Send this
+  place** sends, and on the booking email's ticket as "How to find it" — the
+  customer's copy only, and only while the visit is ahead;
+- to the seller: on the branch card, or, while there is none, a dashed
+  "Tell customers how to find your door" that opens the edit form; the
+  shopfront preview (§208) draws the new card and chip too;
+- to our team: on each branch in the console's shop review — shop text
+  customers read, so a reviewer reads it.
+It is not part of the go-live wizard: that asks only what is vital (§255).
+
+### 318.4 Pieces
+
+Server: the column (migration `20261029160000_find_us`), the branch DTOs,
+the shop page (`ShopfrontDto.findUs`), the console's branch, the booking
+facts and the email ticket (`findUs`, "How to find it", rw "Uko wahagera",
+fr "Comment le trouver"). Customer app: `src/directions.ts` (the links, which
+apps, sending), `src/ui/StaticMap.tsx`, `src/components/WhereCard.tsx`
+(`WhereCard`, `DirectionsSheet`), `shortRouteLabel` in `routeLabel.ts`.
+Seller app: `FindUsField` in `NewBranchForm.tsx`, the branch card, a
+`footsteps` icon, and the preview's `navigate` and `footsteps-outline` glyphs
+taken from the app's own Ionicons font. Every new sentence in Kinyarwanda and
+French.
+
+### 318.5 Verified
+
+`test/find-us.spec.ts` (6): trimmed and blank-as-nothing; more than 280
+refused; saved on a new branch, changed, kept by an unrelated edit, emptied;
+on the shop page and the console's review; on the customer's booking email
+while ahead and never on the shop's copy or after; said in Kinyarwanda with
+the shop's words escaped. The email previews carry a note. Full suite:
+**1730 passing in 90 suites**. Screenshots of the customer app (web build) at
+320, 390 and 820 in English, and at 320/390 in Kinyarwanda and French: the
+chip, the map card, the sheet, the service page; of the seller app at 1440 and
+390: the branch card with a note and with the prompt, the edit and new-branch
+forms, the shopfront preview. The note in the pictures was added to the
+answers in the browser only — no demo branch was changed. Not checked in a
+browser: opening the maps apps and the share sheet on a real phone.

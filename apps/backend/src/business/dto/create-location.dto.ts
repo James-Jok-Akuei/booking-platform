@@ -6,10 +6,14 @@ import {
   IsUUID,
   Length,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsNotNullIsland } from '../../common/validators/not-null-island.validator';
+
+/** How long "How to find us" may be (§318) — about three lines on a phone. */
+export const FIND_US_MAX = 280;
 
 export class CreateLocationDto {
   /**
@@ -53,6 +57,17 @@ export class CreateLocationDto {
   @Min(-180)
   @Max(180)
   longitude!: number;
+
+  /**
+   * How to find the door (§318): the floor, the entrance, what it is
+   * opposite. Short, because it is read on a phone in the street. An empty
+   * box is "nothing to say", stored as null.
+   */
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() || null : value))
+  @IsString()
+  @MaxLength(FIND_US_MAX)
+  findUs?: string | null;
 
   // Overrides BusinessProfile.phone for this location when set.
   @IsOptional()

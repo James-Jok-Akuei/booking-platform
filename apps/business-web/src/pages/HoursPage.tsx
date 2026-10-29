@@ -14,7 +14,7 @@ import {
 } from '../api/business';
 import { useMoney } from '../money';
 import { StaticMap } from '../components/StaticMap';
-import { DistrictField, NewBranchPanel, PlaceField, parseCoordinates } from '../components/NewBranchForm';
+import { DistrictField, FindUsField, NewBranchPanel, PlaceField, parseCoordinates } from '../components/NewBranchForm';
 import { AddressField, useDistrictFrom } from '../components/AddressField';
 import { confirmDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
@@ -314,6 +314,28 @@ function BranchCard({
         )}
       </div>
 
+      {/* How to find the door (§318) — what customers read under the map —
+          or, while there is none, the way to say it. */}
+      {location.findUs ? (
+        <p className="hr-findus">
+          <Icon name="footsteps" size={16} />
+          <span>
+            <b><Trans>How to find us</Trans></b>
+            {location.findUs}
+          </span>
+        </p>
+      ) : (
+        canChange &&
+        location.isActive && (
+          <div className="hr-findus-row">
+            <button type="button" className="hr-findus-add" onClick={onEdit}>
+              <Icon name="footsteps" size={15} />
+              <Trans>Tell customers how to find your door</Trans>
+            </button>
+          </div>
+        )
+      )}
+
       {problem && (
         <p className="notice hr-problem" role="alert">
           {problem}
@@ -595,6 +617,7 @@ function EditBranchPanel({ location, onClose }: { location: Location; onClose: (
   const [address, setAddress] = useState(location.address);
   const [phone, setPhone] = useState(location.phone ?? '');
   const [districtId, setDistrictId] = useState(location.district?.id ?? '');
+  const [findUs, setFindUs] = useState(location.findUs ?? '');
   const [problem, setProblem] = useState<string | null>(null);
   // The pin (§157). Shown as it is stored; changed by pasting a map link or
   // by standing in the shop and pressing the button.
@@ -611,6 +634,7 @@ function EditBranchPanel({ location, onClose }: { location: Location; onClose: (
         name: name.trim(),
         address: address.trim(),
         phone: phone.trim() === '' ? null : phone.trim(),
+        findUs: findUs.trim() === '' ? null : findUs.trim(),
         ...(districtId ? { districtId } : {}),
         ...(coordinates && !('error' in coordinates)
           ? { latitude: coordinates.latitude, longitude: coordinates.longitude }
@@ -689,6 +713,7 @@ function EditBranchPanel({ location, onClose }: { location: Location; onClose: (
           onChange={setDistrictId}
           hint={t`Customers filter by this. Without it, this branch does not appear when someone searches their area.`}
         />
+        <FindUsField id="eb-findus" value={findUs} onChange={setFindUs} />
         {problem && (
           <p className="error small" role="alert">
             {problem}

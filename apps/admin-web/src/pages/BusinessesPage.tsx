@@ -735,6 +735,13 @@ function ReviewPanel({
                       <span className="muted small">
                         {l.district ? `${l.district.name}, ${l.district.province.name}` : 'No district'} · {l.capacity} at a time
                       </span>
+                      {/* How to find the door (§318): shop text customers read, so a reviewer reads it too. */}
+                      {l.findUs && (
+                        <p className="bz-findus">
+                          <b>How to find us</b>
+                          {l.findUs}
+                        </p>
+                      )}
                     </div>
                     {l.media.length > 0 && (
                       <div className="bz-photos">

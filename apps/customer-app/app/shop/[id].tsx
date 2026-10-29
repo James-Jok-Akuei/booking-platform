@@ -4,7 +4,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getRoute, getShop, getShopReviews, type ShopService } from '../../src/api/discovery';
-import { routeLabel } from '../../src/routeLabel';
+import { routeLabel, shortRouteLabel } from '../../src/routeLabel';
+import { DirectionsSheet, WhereCard } from '../../src/components/WhereCard';
+import type { Place } from '../../src/directions';
 import { useNearMe } from '../../src/useNearMe';
 import { openInquiry } from '../../src/api/chat';
 import { useSavedService } from '../../src/useSavedService';
@@ -82,6 +84,7 @@ export default function Shop() {
     openOn === 'reviews' || openOn === 'hours' ? openOn : 'services',
   );
   const [photo, setPhoto] = useState<number | null>(null);
+  const [directionsOpen, setDirectionsOpen] = useState(false);
   /** The shop's stories today (§285), from the same list as Home's row. */
   const stories = useQuery({ queryKey: ['story-feed'], queryFn: listStories, staleTime: 60_000 });
   const seenStories = useSeenStories();
@@ -154,7 +157,15 @@ export default function Shop() {
   const today = new Date().getDay();
   const displayName = s.business.name ?? s.name;
   const storyShop = stories.data?.shops.find((x) => x.business.id === s.business.id);
-
+  const place: Place = {
+    shopName: displayName,
+    branchName: s.name,
+    address: s.address,
+    latitude: s.latitude,
+    longitude: s.longitude,
+    findUs: s.findUs,
+  };
+  const area = s.district ? `${s.district.name}, ${s.district.provinceName}` : null;
 
   const share = () =>
     shareShop({
@@ -285,17 +296,28 @@ export default function Shop() {
                 <Text style={styles.followers}><Trans>{s.business.followers.toLocaleString()} people follow {displayName}</Trans></Text>
               )}
 
-              <View style={styles.line}>
+              {/* Where it is, and the way there in one tap (§318) — the map
+                  itself waits at the foot of the page, under any tab. */}
+              <PressableScale
+                onPress={() => setDirectionsOpen(true)}
+                haptic
+                scaleTo={0.985}
+                accessibilityRole="button"
+                accessibilityLabel={t`${s.name}, ${s.address}. Directions`}
+                style={styles.where}
+              >
                 <Icon name="location-outline" size={16} color={theme.muted} />
-                <Text style={[type.body, styles.flex]}>
-                  {s.name} · {s.address}
-                </Text>
-              </View>
-              {s.district && (
-                <Text style={[type.small, styles.indent]}>
-                  {s.district.name}, {s.district.provinceName}
-                </Text>
-              )}
+                <View style={styles.flex}>
+                  <Text style={type.body}>
+                    {s.name} · {s.address}
+                  </Text>
+                  {area && <Text style={[type.small, styles.area]}>{area}</Text>}
+                </View>
+                <View style={styles.whereGo}>
+                  <Icon name="navigate" size={13} color={theme.accentDeep} />
+                  <Text style={styles.whereGoText}><Trans>Directions</Trans></Text>
+                </View>
+              </PressableScale>
               {way && (
                 <View style={[styles.line, styles.wayLine]}>
                   <Icon name="car-outline" size={16} color={theme.accent} />
@@ -499,11 +521,20 @@ export default function Shop() {
               ))}
             </FadeIn>
             )}
+
+            <WhereCard
+              place={place}
+              area={area}
+              way={shortRouteLabel(route.data)}
+              onDirections={() => setDirectionsOpen(true)}
+              delay={200}
+            />
           </View>
         </View>
       </Animated.ScrollView>
 
       <PhotoViewer photos={s.gallery} openAt={photo} onClose={() => setPhoto(null)} />
+      <DirectionsSheet place={place} open={directionsOpen} onClose={() => setDirectionsOpen(false)} />
 
       {storyShop && (
         <StoryPlayer
@@ -658,7 +689,19 @@ const styles = StyleSheet.create({
   followTextOn: { color: theme.accentDeep },
   followers: { fontFamily: font.semibold, fontSize: 13, color: theme.muted, marginTop: -4, marginBottom: 8 },
   line: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  indent: { marginLeft: 22, marginTop: 2 },
+  where: { flexDirection: 'row', alignItems: 'flex-start', gap: 6 },
+  area: { marginTop: 2 },
+  whereGo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    backgroundColor: theme.accentSoft,
+  },
+  whereGoText: { fontFamily: font.bold, fontSize: 12.5, color: theme.accentDeep },
   ratingLine: { marginTop: 10 },
   wayLine: { marginTop: 8 },
   way: { fontFamily: font.bold, color: theme.ink2 },

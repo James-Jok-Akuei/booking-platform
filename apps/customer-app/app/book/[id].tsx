@@ -23,9 +23,11 @@ import { PhotoMosaic } from '../../src/components/PhotoMosaic';
 import { SaleBadge, saleUntil } from '../../src/components/Sale';
 import { SaleCountdown } from '../../src/components/SaleCountdown';
 import { SaveButton } from '../../src/components/SaveButton';
-import { distanceLabel } from '../../src/distance';
+import { DirectionsSheet } from '../../src/components/WhereCard';
+import type { Place } from '../../src/directions';
 import { duration } from '../../src/duration';
 import { useMoney } from '../../src/money';
+import { shortRouteLabel } from '../../src/routeLabel';
 import { shareService } from '../../src/share';
 import { font, radius, shadow, theme, type } from '../../src/theme';
 import { holidayName, useRwandaToday } from '../../src/today';
@@ -138,6 +140,7 @@ export default function Book() {
   const keys = useKeyboardScroll({ pad: true });
 
   const [viewer, setViewer] = useState<{ index: number; origin: ViewerOrigin | null } | null>(null);
+  const [directionsOpen, setDirectionsOpen] = useState(false);
   const days = useMemo(() => nextDays(14), []);
   const [date, setDate] = useState(days[0]);
   const [slot, setSlot] = useState<string | null>(null);
@@ -172,11 +175,7 @@ export default function Book() {
     enabled: position !== null && shop.data?.latitude !== null && shop.data !== undefined,
   });
   // Short, for one line under the photos: "14 min by car", or the distance.
-  const way = route.data
-    ? route.data.by === 'road' && route.data.minutes !== null
-      ? t`${route.data.minutes} min by car`
-      : distanceLabel(route.data.distanceKm)
-    : null;
+  const way = shortRouteLabel(route.data);
 
   /**
    * Opened after closing time, today is done. Rather than open on a day that
@@ -281,6 +280,14 @@ export default function Book() {
   const businessName = s.business.name ?? s.name;
   const district = s.district?.name ?? null;
   const category = s.business.category;
+  const place: Place = {
+    shopName: businessName,
+    branchName: s.name,
+    address: s.address,
+    latitude: s.latitude,
+    longitude: s.longitude,
+    findUs: s.findUs,
+  };
 
   // How many people one booking can be for is the BRANCH's to say (§189): as
   // many as it serves at once. A branch serving one asks nothing.
@@ -408,6 +415,7 @@ export default function Book() {
         origin={viewer?.origin}
         onClose={() => setViewer(null)}
       />
+      <DirectionsSheet place={place} open={directionsOpen} onClose={() => setDirectionsOpen(false)} />
 
       <TopBar
         title={service.name}
@@ -552,12 +560,28 @@ export default function Book() {
             <View style={styles.meta}>
               <Icon name="time-outline" size={15} color={theme.muted} />
               <Text style={type.small}>{duration(service.durationMinutes, true)}</Text>
-              <Text style={styles.metaDot}>·</Text>
+            </View>
+            {/* Where, on a line of its own so the name is never squeezed out,
+                with the way there before paying for it (§318) — without a
+                card of its own (§278). */}
+            <View style={styles.meta}>
               <Icon name="location-outline" size={15} color={theme.muted} />
-              <Text style={[type.small, styles.flex]} numberOfLines={1}>
+              <Text style={[type.small, styles.flex]} numberOfLines={3}>
                 {s.name}
                 {district ? `, ${district}` : ''}
               </Text>
+              <PressableScale
+                onPress={() => setDirectionsOpen(true)}
+                haptic
+                scaleTo={0.94}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel={t`Directions to ${businessName}`}
+                style={styles.metaGo}
+              >
+                <Icon name="navigate" size={13} color={theme.accentDeep} />
+                <Text style={styles.metaGoText}><Trans>Directions</Trans></Text>
+              </PressableScale>
             </View>
 
             <View style={styles.rule} />
@@ -1051,6 +1075,17 @@ const styles = StyleSheet.create({
   pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   meta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   metaDot: { fontFamily: font.bold, color: theme.muted, marginHorizontal: 2 },
+  metaGo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginLeft: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
+    backgroundColor: theme.accentSoft,
+  },
+  metaGoText: { fontFamily: font.bold, fontSize: 12.5, color: theme.accentDeep },
   priceRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'baseline', gap: 8 },
   price: { fontFamily: font.extrabold, fontSize: 30, color: theme.ink, letterSpacing: -0.7 },
   priceCompact: { fontSize: 26 },

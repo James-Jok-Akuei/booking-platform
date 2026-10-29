@@ -17,3 +17,14 @@ export const routeLabel = (route: Route | undefined, fallbackKm?: number | null)
   const away = distanceLabel(km);
   return away ? t`${away} away in a straight line` : null;
 };
+
+/**
+ * "14 min by car", or the distance — short, for one line under a service's
+ * photos (§278) and the chip on a map (§318).
+ */
+export const shortRouteLabel = (route: Route | undefined): string | null => {
+  if (!route) return null;
+  return route.by === 'road' && route.minutes !== null
+    ? t`${route.minutes} min by car`
+    : distanceLabel(route.distanceKm);
+};

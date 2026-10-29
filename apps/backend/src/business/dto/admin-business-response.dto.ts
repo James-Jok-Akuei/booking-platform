@@ -140,6 +140,8 @@ export class AdminBusinessLocationDto {
   /** The pin, when they have placed one (§157). */
   latitude!: number | null;
   longitude!: number | null;
+  /** How to find the door, in the shop's words (§318) — read by a reviewer like any shop text. */
+  findUs!: string | null;
   /** False once the branch is closed (§89). */
   isActive!: boolean;
   district!: AdminLocationDistrictDto | null;

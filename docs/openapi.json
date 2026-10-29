@@ -24160,6 +24160,12 @@
             "minimum": -180,
             "maximum": 180
           },
+          "findUs": {
+            "type": "string",
+            "nullable": true,
+            "description": "How to find the door (§318): the floor, the entrance, what it is\nopposite. Short, because it is read on a phone in the street. An empty\nbox is \"nothing to say\", stored as null.",
+            "maxLength": 280
+          },
           "phone": {
             "type": "string",
             "minLength": 5,
@@ -24286,6 +24292,11 @@
             "type": "number",
             "nullable": true
           },
+          "findUs": {
+            "type": "string",
+            "nullable": true,
+            "description": "How to find the door, in the shop's words (§318). Null when it has said nothing."
+          },
           "phone": {
             "type": "string",
             "nullable": true,
@@ -24348,6 +24359,7 @@
           "address",
           "latitude",
           "longitude",
+          "findUs",
           "phone",
           "capacity",
           "ratingAvg",
@@ -24390,6 +24402,12 @@
             "type": "number",
             "minimum": -180,
             "maximum": 180
+          },
+          "findUs": {
+            "type": "string",
+            "nullable": true,
+            "description": "How to find the door (§318): the floor, the entrance, what it is\nopposite. Short, because it is read on a phone in the street. An empty\nbox is \"nothing to say\", stored as null.",
+            "maxLength": 280
           },
           "phone": {
             "type": "string",
@@ -25640,6 +25658,11 @@
             "type": "number",
             "nullable": true
           },
+          "findUs": {
+            "type": "string",
+            "nullable": true,
+            "description": "How to find the door, in the shop's words (§318) — read by a reviewer like any shop text."
+          },
           "isActive": {
             "type": "boolean",
             "description": "False once the branch is closed (§89)."
@@ -25668,6 +25691,7 @@
           "capacity",
           "latitude",
           "longitude",
+          "findUs",
           "isActive",
           "district",
           "media"
@@ -36868,6 +36892,11 @@
             "type": "number",
             "nullable": true
           },
+          "findUs": {
+            "type": "string",
+            "nullable": true,
+            "description": "How to find the door once the pin has found the building, in the shop's words (§318)."
+          },
           "phone": {
             "type": "string",
             "nullable": true
@@ -36929,6 +36958,7 @@
           "address",
           "latitude",
           "longitude",
+          "findUs",
           "phone",
           "capacity",
           "business",

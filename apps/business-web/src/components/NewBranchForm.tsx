@@ -190,6 +190,41 @@ export function DistrictField({
   );
 }
 
+/** As long as the server takes (§318's FIND_US_MAX): about three lines on a phone. */
+const FIND_US_MAX = 280;
+
+/**
+ * How to find the door (§318). The pin finds the building, and in a building
+ * of twenty shops that is not the door — so the shop says the rest in its own
+ * words: the floor, the entrance, what it is opposite. Customers read it under
+ * the map, on their booking and in its email.
+ */
+export function FindUsField({ id, value, onChange }: { id: string; value: string; onChange: (next: string) => void }) {
+  return (
+    <div className="bf-field">
+      <label htmlFor={id}>
+        <Trans>How to find us <em>optional</em></Trans>
+      </label>
+      <textarea
+        id={id}
+        rows={3}
+        value={value}
+        maxLength={FIND_US_MAX}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={t`2nd floor of Kigali Heights, opposite the MTN shop. Ask the guard at the door.`}
+      />
+      <span className="bf-help bf-findus">
+        <span>
+          <Trans>The pin finds the building; this finds your door. Customers read it under the map and on their booking.</Trans>
+        </span>
+        <span className="bf-count" aria-hidden="true">
+          {value.length}/{FIND_US_MAX}
+        </span>
+      </span>
+    </div>
+  );
+}
+
 /**
  * Opening a branch (§117), in the panel from the right (§195).
  *
@@ -203,6 +238,7 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
   const [phone, setPhone] = useState('');
   const [districtId, setDistrictId] = useState('');
   const [place, setPlace] = useState('');
+  const [findUs, setFindUs] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
   const [fromAddress, setFromAddress] = useState<string | null>(null);
   const districtFrom = useDistrictFrom();
@@ -270,6 +306,7 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
             longitude: parsed.longitude,
             ...(districtId ? { districtId } : {}),
             ...(phone.trim() ? { phone: phone.trim() } : {}),
+            ...(findUs.trim() ? { findUs: findUs.trim() } : {}),
           });
         }}
       >
@@ -327,6 +364,8 @@ export function NewBranchPanel({ onClose, onCreated }: { onClose: () => void; on
           onChange={setDistrictId}
           hint={t`Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen.`}
         />
+
+        <FindUsField id="bf-findus" value={findUs} onChange={setFindUs} />
 
         {problem && (
           <p className="error small" role="alert">

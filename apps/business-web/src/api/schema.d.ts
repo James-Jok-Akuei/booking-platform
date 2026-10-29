@@ -5302,6 +5302,12 @@ export interface components {
              */
             latitude: number;
             longitude: number;
+            /**
+             * @description How to find the door (§318): the floor, the entrance, what it is
+             *     opposite. Short, because it is read on a phone in the street. An empty
+             *     box is "nothing to say", stored as null.
+             */
+            findUs?: string | null;
             phone?: string;
         };
         LocationProvinceDto: {
@@ -5339,6 +5345,8 @@ export interface components {
              */
             latitude: number | null;
             longitude: number | null;
+            /** @description How to find the door, in the shop's words (§318). Null when it has said nothing. */
+            findUs: string | null;
             /** @description Overrides the business phone for this branch when set. */
             phone: string | null;
             capacity: number;
@@ -5381,6 +5389,12 @@ export interface components {
              */
             latitude?: number;
             longitude?: number;
+            /**
+             * @description How to find the door (§318): the floor, the entrance, what it is
+             *     opposite. Short, because it is read on a phone in the street. An empty
+             *     box is "nothing to say", stored as null.
+             */
+            findUs?: string | null;
             phone?: string;
         };
         UpdateLocationCapacityDto: {
@@ -5831,6 +5845,8 @@ export interface components {
             /** @description The pin, when they have placed one (§157). */
             latitude: number | null;
             longitude: number | null;
+            /** @description How to find the door, in the shop's words (§318) — read by a reviewer like any shop text. */
+            findUs: string | null;
             /** @description False once the branch is closed (§89). */
             isActive: boolean;
             district: components["schemas"]["AdminLocationDistrictDto"] | null;
@@ -9151,6 +9167,8 @@ export interface components {
             address: string;
             latitude: number | null;
             longitude: number | null;
+            /** @description How to find the door once the pin has found the building, in the shop's words (§318). */
+            findUs: string | null;
             phone: string | null;
             /** @description Concurrent appointments this branch can run. */
             capacity: number;

@@ -23,6 +23,8 @@ import {
   type Bought,
 } from './format';
 import { BeforeYouCome } from './BeforeYouCome';
+import { WhereCard } from '../components/WhereCard';
+import type { Place } from '../directions';
 import { canCancelNow, freeNow, freeUntil, missedByItself } from './cancelRules';
 import { BookedChoices } from './BookedChoices';
 import { Trans } from '@lingui/react/macro';
@@ -62,6 +64,9 @@ export function Reservation({
   onOpenPhoto,
   onShop,
   way,
+  place,
+  area,
+  shortWay,
   onMessage,
   messageBusy,
   onDirections,
@@ -81,6 +86,11 @@ export function Reservation({
   onShop: () => void;
   /** "4.1 km by road · about 12 min by car", once the phone's position is known. */
   way: string | null;
+  /** Where it is (§318), for the map while the visit is ahead. */
+  place: Place;
+  area: string | null;
+  /** "14 min by car", for the map. */
+  shortWay: string | null;
   onMessage: () => void;
   messageBusy: boolean;
   onDirections: () => void;
@@ -204,6 +214,12 @@ export function Reservation({
           it is here until the visit is over. */}
       {a.service.instructions && (live || canCancel) && (
         <BeforeYouCome text={a.service.instructions} delay={120} />
+      )}
+
+      {/* WHERE IT IS (§318): the map, how to find the door, the way there —
+          while there is still a visit to go to. */}
+      {(live || canCancel) && (
+        <WhereCard place={place} area={area} way={shortWay} onDirections={onDirections} delay={125} mapHeight={150} />
       )}
 
       {/* WHAT YOU CHOSE (§300): the answers as the booking keeps them, the

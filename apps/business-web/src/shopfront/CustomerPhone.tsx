@@ -4,6 +4,7 @@ import { getGallery, listServices, type Location, type Service } from '../api/bu
 import { getShopfront, getShopReviews, type Shopfront, type ShopfrontService } from '../api/discovery';
 import { useMoney } from '../money';
 import { LineArt } from '../onboarding/LineArt';
+import { StaticMap } from '../components/StaticMap';
 import { ION, type IonName } from './ionicons';
 import './customer-phone.css';
 import { RichText } from '../ui/RichText';
@@ -268,17 +269,24 @@ function ShopScreen({
               {live.logoUrl && <img className="csp-logo" src={live.logoUrl} alt="" />}
             </div>
 
-            <div className="csp-line">
+            {/* Where it is, with the way there in one tap (§318). */}
+            <div className="csp-where">
               <Ion name="location-outline" size={16} color="#8B909B" />
-              <span className="csp-body">
-                {s.name} · {s.address}
+              <div className="csp-where-text">
+                <span className="csp-body">
+                  {s.name} · {s.address}
+                </span>
+                {s.district && (
+                  <p className="csp-small">
+                    {s.district.name}, {s.district.provinceName}
+                  </p>
+                )}
+              </div>
+              <span className="csp-where-go">
+                <Ion name="navigate" size={13} color="currentColor" />
+                <Trans>Directions</Trans>
               </span>
             </div>
-            {s.district && (
-              <p className="csp-small csp-indent">
-                {s.district.name}, {s.district.provinceName}
-              </p>
-            )}
 
             {s.rating.count > 0 && (
               <div className="csp-line csp-rating">
@@ -414,6 +422,47 @@ function ShopScreen({
               })}
             </div>
           )}
+
+          {/* WHERE IT IS (§318): under any tab — the map, how to find the
+              door in the shop's words, and the way there. */}
+          <div className="csp-section csp-fade" style={{ animationDelay: '200ms' }}>
+            <h4 className="csp-heading"><Trans>Where it is</Trans></h4>
+            <div className="csp-card csp-where-card">
+              {s.latitude !== null && s.longitude !== null && (
+                <div className="csp-map">
+                  <StaticMap latitude={s.latitude} longitude={s.longitude} spanX={260} spanY={120} />
+                </div>
+              )}
+              <div className="csp-where-body">
+                <div>
+                  <b className="csp-where-name">{s.name}</b>
+                  <p className="csp-body">{s.address}</p>
+                  {s.district && (
+                    <p className="csp-small">
+                      {s.district.name}, {s.district.provinceName}
+                    </p>
+                  )}
+                </div>
+                {s.findUs ? (
+                  <div className="csp-findus">
+                    <span className="csp-findus-icon">
+                      <Ion name="footsteps-outline" size={16} color="#D7421E" />
+                    </span>
+                    <div>
+                      <p className="csp-label"><Trans>How to find it</Trans></p>
+                      <p className="csp-findus-text">{s.findUs}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="csp-hint"><Trans>How to find your door shows here — add it to the branch under Branches &amp; hours.</Trans></p>
+                )}
+                <div className="csp-button csp-button-solid">
+                  <Ion name="navigate" size={18} color="#FFFFFF" />
+                  <Trans>Get directions</Trans>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -589,6 +638,7 @@ function fromOwnRecords(
     address: branch.address,
     latitude: branch.latitude,
     longitude: branch.longitude,
+    findUs: branch.findUs,
     phone: branch.phone,
     capacity: branch.capacity,
     business: { id: branch.businessId, name: null, description: null, phone: null, logoUrl: null, coverImageUrl: null, category: null, subcategory: null, kinds: [], followers: 0, registeredBusiness: false },

@@ -117,6 +117,8 @@
 .bz-branch-text { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
 .bz-branch-text strong { display: flex; align-items: center; gap: 8px; font-size: 15px; }
 .bz-branch-text > span { font-size: 13.5px; color: var(--ink-2); }
+.bz-findus { margin: 8px 0 0; padding: 9px 12px; border-radius: 12px; background: var(--sunken); font-size: 13.5px; line-height: 1.5; color: var(--ink-2); white-space: pre-line; }
+.bz-findus b { display: block; font-size: 11.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
 .bz-photos { display: flex; gap: 8px; padding: 0 14px 14px; overflow-x: auto; }
 .bz-photos img { width: 92px; height: 70px; flex: none; object-fit: cover; border-radius: 12px; }
 

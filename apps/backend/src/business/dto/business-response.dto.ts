@@ -63,6 +63,9 @@ export class BusinessLocationDto implements LocationPayload {
   latitude!: number | null;
   longitude!: number | null;
 
+  /** How to find the door, in the shop's words (§318). Null when it has said nothing. */
+  findUs!: string | null;
+
   /** Overrides the business phone for this branch when set. */
   phone!: string | null;
   capacity!: number;

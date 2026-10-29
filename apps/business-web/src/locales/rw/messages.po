@@ -417,7 +417,7 @@ msgid "{0} bookings · {1}–{2}"
 msgstr "Gahunda {0} · {1}–{2}"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:457
+#: src/pages/HoursPage.tsx:479
 msgid "{0} closes"
 msgstr "{0}: isaha yo gufunga"
 
@@ -496,7 +496,7 @@ msgid "{0} open · {1} finished"
 msgstr "Ibifunguye: {0} · Ibyarangiye: {1}"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:448
+#: src/pages/HoursPage.tsx:470
 msgid "{0} opens"
 msgstr "{0}: isaha yo gufungura"
 
@@ -695,15 +695,15 @@ msgstr "{followUps} cyabazwaga gusa nyuma y’igisubizo hano, none kizajya kibaz
 msgid "{followUps} were asked only after an answer here, so they will be asked every time."
 msgstr "{followUps} byabazwaga gusa nyuma y’igisubizo hano, none bizajya bibazwa buri gihe."
 
-#: src/pages/HoursPage.tsx:679
+#: src/pages/HoursPage.tsx:703
 msgid "{fromAddress} Check it below before saving."
 msgstr "{fromAddress} Bigenzure hasi mbere yo kubika."
 
-#: src/components/NewBranchForm.tsx:314
+#: src/components/NewBranchForm.tsx:351
 msgid "{fromAddress} Check the pin below is on your shop."
 msgstr "{fromAddress} Reba ko akamenyetso kari hasi kari ku iduka ryawe."
 
-#: src/shopfront/CustomerPhone.tsx:73
+#: src/shopfront/CustomerPhone.tsx:74
 msgid "{h, plural, one {# hour} other {# hours}}"
 msgstr "{h, plural, one {isaha #} other {amasaha #}}"
 
@@ -765,7 +765,7 @@ msgstr "Kode y’imibare {length}"
 msgid "{longitude} is not a longitude — it has to be between -180 and 180."
 msgstr "{longitude} si longitude nyayo — igomba kuba iri hagati ya -180 na 180."
 
-#: src/shopfront/CustomerPhone.tsx:74
+#: src/shopfront/CustomerPhone.tsx:75
 msgid "{m, plural, one {# minute} other {# minutes}}"
 msgstr "{m, plural, one {umunota #} other {iminota #}}"
 
@@ -832,7 +832,7 @@ msgstr "Izidafite amafoto: {noPhotos}"
 msgid "{noShow} no-show"
 msgstr "Abataje: {noShow}"
 
-#: src/pages/HoursPage.tsx:410
+#: src/pages/HoursPage.tsx:432
 msgid "{openDays, plural, one {Open # day a week} other {Open # days a week}}"
 msgstr "{openDays, plural, one {Bifungura umunsi # mu cyumweru} other {Bifungura iminsi # mu cyumweru}}"
 
@@ -877,7 +877,7 @@ msgstr "Inkuru {postedToday} kuri {dailyLimit} zashyizweho uyu munsi"
 msgid "{postedToday} of {dailyLimit} today"
 msgstr "{postedToday} kuri {dailyLimit} uyu munsi"
 
-#: src/shopfront/CustomerPhone.tsx:489
+#: src/shopfront/CustomerPhone.tsx:538
 msgid "{rating} out of 5"
 msgstr "{rating} kuri 5"
 
@@ -1008,7 +1008,7 @@ msgstr "<0/>Biraboneka<1/>Birafunze<2/>Ikiruhuko"
 msgid "<0/>On their phone, to book"
 msgstr "<0/>Kuri telefoni ye, afata gahunda"
 
-#: src/shopfront/CustomerPhone.tsx:253
+#: src/shopfront/CustomerPhone.tsx:254
 msgid "<0/>Open now"
 msgstr "<0/>Birafunguye ubu"
 
@@ -1093,7 +1093,7 @@ msgstr "<0>1</0> Hitamo umunsi"
 msgid "<0>2</0> Change that day"
 msgstr "<0>2</0> Hindura uwo munsi"
 
-#: src/shopfront/CustomerPhone.tsx:174
+#: src/shopfront/CustomerPhone.tsx:175
 msgid "<0>Customers cannot see this right now</0> — your shop is not posted yet, paused, or not yet approved. This is how it will look."
 msgstr "<0>Abakiriya ntibashobora kubibona ubu</0> — iduka ryawe ntirirashyirwa ahagaragara, ryahagaritswe by’agateganyo, cyangwa ntiriremezwa. Uku ni ko rizagaragara."
 
@@ -1165,6 +1165,10 @@ msgstr "Igabanywa rya 1–90%, kugeza ku munsi uhitamo cyangwa kugeza urihagarit
 #: src/pages/FollowersPage.tsx:162
 msgid "15% off this week"
 msgstr "Igabanywa rya 15% muri iki cyumweru"
+
+#: src/components/NewBranchForm.tsx:214
+msgid "2nd floor of Kigali Heights, opposite the MTN shop. Ask the guard at the door."
+msgstr "Igorofa rya 2 rya Kigali Heights, imbere y’iduka rya MTN. Baza umuzamu ku muryango."
 
 #: src/pages/AnalyticsPage.tsx:36
 msgid "30 days"
@@ -1328,7 +1332,7 @@ msgstr "Izina, igihe imara, igiciro kuri buri shami — n’ifoto imwe cyangwa e
 msgid "A new booking holds its time while the customer approves the deposit on their phone."
 msgstr "Gahunda nshya ifata umwanya wayo mu gihe umukiriya yemeza avansi kuri telefoni ye."
 
-#: src/components/NewBranchForm.tsx:242
+#: src/components/NewBranchForm.tsx:278
 msgid "A new branch"
 msgstr "Ishami rishya"
 
@@ -1336,7 +1340,7 @@ msgstr "Ishami rishya"
 msgid "A new branch starts closed and offers nothing. Set its hours and choose its services, and customers can book it."
 msgstr "Ishami rishya ritangira rifunze kandi nta cyo ritanga. Shyiraho amasaha yaryo, uhitemo serivisi zaryo, maze abakiriya bashobore kurifatiramo gahunda."
 
-#: src/components/NewBranchForm.tsx:342
+#: src/components/NewBranchForm.tsx:381
 msgid "A new branch starts closed every day. Set its hours once it is open, or customers will see nothing bookable."
 msgstr "Ishami rishya ritangira rifunze buri munsi. Shyiraho amasaha yaryo rimaze gufungura, bitabaye ibyo abakiriya nta cyo bazabona cyo gufatira gahunda."
 
@@ -1565,7 +1569,7 @@ msgstr "Ongeraho {0}"
 
 #: src/ads/guide.ts:174
 #: src/ads/slides.ts:175
-#: src/components/NewBranchForm.tsx:241
+#: src/components/NewBranchForm.tsx:277
 #: src/pages/HoursPage.tsx:88
 #: src/pages/HoursPage.tsx:132
 msgid "Add a branch"
@@ -1714,8 +1718,8 @@ msgstr "Cyongeweho"
 msgid "Added to the price for answer {0}"
 msgstr "Byongerwa ku giciro ku gisubizo cya {0}"
 
-#: src/components/NewBranchForm.tsx:302
-#: src/pages/HoursPage.tsx:662
+#: src/components/NewBranchForm.tsx:339
+#: src/pages/HoursPage.tsx:686
 msgid "Address"
 msgstr "Aderesi"
 
@@ -1999,7 +2003,7 @@ msgid "Anything that shows the problem"
 msgstr "Icyerekana ikibazo"
 
 #: src/pages/choices/ChoicesEditor.tsx:610
-#: src/shopfront/CustomerPhone.tsx:566
+#: src/shopfront/CustomerPhone.tsx:615
 msgid "Anything the shop should know?"
 msgstr "Hari icyo iduka rikwiye kumenya?"
 
@@ -2378,9 +2382,9 @@ msgstr "ishami"
 msgid "Branch"
 msgstr "Ishami"
 
-#: src/components/NewBranchForm.tsx:278
+#: src/components/NewBranchForm.tsx:315
 #: src/onboarding/Welcome.tsx:977
-#: src/pages/HoursPage.tsx:652
+#: src/pages/HoursPage.tsx:676
 msgid "Branch name"
 msgstr "Izina ry’ishami"
 
@@ -2509,9 +2513,9 @@ msgstr "bashobora kugisimbuka"
 msgid "Can’t find it? Paste a map link or use where you are"
 msgstr "Ntiwaribonye? Shyiramo umurongo w’ikarita cyangwa ukoreshe aho uri"
 
-#: src/components/NewBranchForm.tsx:247
+#: src/components/NewBranchForm.tsx:283
 #: src/pages/AppointmentsPage.tsx:1271
-#: src/pages/HoursPage.tsx:634
+#: src/pages/HoursPage.tsx:658
 #: src/pages/PayoutsPage.tsx:476
 #: src/pages/ReviewsPage.tsx:598
 #: src/pages/ServicesPage.tsx:1859
@@ -2952,11 +2956,11 @@ msgstr "rirafunze"
 #: src/pages/calendar/model.ts:73
 #: src/pages/calendar/model.ts:99
 #: src/pages/HoursPage.tsx:257
-#: src/pages/HoursPage.tsx:441
+#: src/pages/HoursPage.tsx:463
 #: src/pages/SupportPage.tsx:80
-#: src/shopfront/CustomerPhone.tsx:256
-#: src/shopfront/CustomerPhone.tsx:358
-#: src/shopfront/CustomerPhone.tsx:370
+#: src/shopfront/CustomerPhone.tsx:257
+#: src/shopfront/CustomerPhone.tsx:366
+#: src/shopfront/CustomerPhone.tsx:378
 msgid "Closed"
 msgstr "Birafunze"
 
@@ -2971,7 +2975,7 @@ msgstr "Birafunze — {why}"
 msgid "Closed all day"
 msgstr "Birafunze umunsi wose"
 
-#: src/pages/HoursPage.tsx:410
+#: src/pages/HoursPage.tsx:432
 msgid "Closed every day — nothing can be booked"
 msgstr "Birafunze buri munsi — nta gahunda ishobora gufatwa"
 
@@ -3002,7 +3006,7 @@ msgid "Coming to you"
 msgstr "Ayo uzahabwa"
 
 #: src/checkin/CheckIn.tsx:296
-#: src/shopfront/CustomerPhone.tsx:365
+#: src/shopfront/CustomerPhone.tsx:373
 msgid "Coming up"
 msgstr "Iminsi iri imbere"
 
@@ -3092,7 +3096,7 @@ msgid "Copy"
 msgstr "Koporora"
 
 #. placeholder {0}: DAYS()[firstOpen.dayOfWeek]
-#: src/pages/HoursPage.tsx:416
+#: src/pages/HoursPage.tsx:438
 msgid "Copy {0}’s hours to every open day"
 msgstr "Koporora amasaha ya {0} ku minsi yose ifunguye"
 
@@ -3124,8 +3128,8 @@ msgstr "Ntitwashoboye kuzana gahunda."
 msgid "Could not open it."
 msgstr "Ntibyashobotse kuyifungura."
 
-#: src/pages/HoursPage.tsx:486
-#: src/pages/HoursPage.tsx:574
+#: src/pages/HoursPage.tsx:508
+#: src/pages/HoursPage.tsx:596
 #: src/pages/PayoutsPage.tsx:489
 msgid "Could not save."
 msgstr "Ntibyabitswe."
@@ -3294,15 +3298,15 @@ msgstr "Abakiriya ntibararibona — shyira iduka ryawe ahagaragara uhereye muri 
 msgid "Customers cannot see your shop until you post it. Take your time — everything you change is saved, and nobody sees it until you post."
 msgstr "Abakiriya ntibabona iduka ryawe kugeza urishyize ahagaragara. Fata umwanya — ibyo uhinduye byose birabikwa, kandi nta muntu ubibona kugeza urishyize ahagaragara."
 
-#: src/components/NewBranchForm.tsx:328
+#: src/components/NewBranchForm.tsx:365
 msgid "Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen."
 msgstr "Abakiriya bayungurura bakoresheje ibi. Ni byo bituma iri shami rigaragara iyo umuntu ashakishije mu gace ke, ni yo mpamvu ugomba kubihitamo."
 
-#: src/pages/HoursPage.tsx:690
+#: src/pages/HoursPage.tsx:714
 msgid "Customers filter by this. Without it, this branch does not appear when someone searches their area."
 msgstr "Abakiriya bayungurura bakoresheje ibi. Utabishyizeho, iri shami ntirigaragara iyo umuntu ashakishije mu gace ke."
 
-#: src/components/NewBranchForm.tsx:322
+#: src/components/NewBranchForm.tsx:359
 msgid "Customers find you by how near you are. Choose a suggested address above, paste the shop's Google Maps link, or press the button if you are there now."
 msgstr "Abakiriya bakubona bitewe n’uko ubegereye. Hitamo aderesi yatanzwe hejuru, shyiramo link ya Google Maps y’iduka, cyangwa ukande buto niba uri yo ubu."
 
@@ -3409,7 +3413,7 @@ msgstr "Abakiriya babisabye bakira imeyili buri wa Gatanu irimo serivisi ziri ha
 msgid "Customers who follow your shop see your new services, discounts and messages in the app. Those who also said yes to your offers get your message as an alert. They chose to — and can stop with one tap — so one good message a week keeps them following."
 msgstr "Abakiriya bakurikira iduka ryawe babona serivisi zawe nshya, amagabanywa yawe n’ubutumwa bwawe muri porogaramu. Abemeye no kwakira promosiyo zawe babona ubutumwa bwawe nk’imenyesha. Ni bo babihisemo — kandi bashobora kubihagarika bakanze rimwe — bityo ubutumwa bumwe bwiza mu cyumweru butuma bakomeza kugukurikira."
 
-#: src/pages/HoursPage.tsx:685
+#: src/pages/HoursPage.tsx:709
 msgid "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 msgstr "Intera y’abakiriya ibarwa uhereye kuri iki kimenyetso. Shyiramo link ya Google Maps y’iduka, cyangwa ukande kuri buto niba uri ku iduka ubu."
 
@@ -3601,6 +3605,10 @@ msgstr "Umubare wa {0}"
 #: src/onboarding/Welcome.tsx:1205
 msgid "Dinner to collect"
 msgstr "Ifunguro rya nimugoroba ryo gutwara"
+
+#: src/shopfront/CustomerPhone.tsx:287
+msgid "Directions"
+msgstr "Inzira"
 
 #: src/pages/ServicesPage.tsx:691
 #: src/pages/ServicesPage.tsx:698
@@ -3938,7 +3946,7 @@ msgid "Edit"
 msgstr "Hindura"
 
 #: src/pages/HoursPage.tsx:275
-#: src/pages/HoursPage.tsx:628
+#: src/pages/HoursPage.tsx:652
 msgid "Edit details"
 msgstr "Hindura amakuru"
 
@@ -4260,7 +4268,7 @@ msgstr "Zinga Ibikugenewe"
 msgid "Fold the menu"
 msgstr "Zinga menu"
 
-#: src/shopfront/CustomerPhone.tsx:262
+#: src/shopfront/CustomerPhone.tsx:263
 msgid "Follow"
 msgstr "Kurikira"
 
@@ -4391,8 +4399,8 @@ msgstr "Guhera"
 #. placeholder {0}: s.rating.count
 #: src/pages/AnalyticsPage.tsx:194
 #: src/pages/ReviewsPage.tsx:337
-#: src/shopfront/CustomerPhone.tsx:287
-#: src/shopfront/CustomerPhone.tsx:387
+#: src/shopfront/CustomerPhone.tsx:295
+#: src/shopfront/CustomerPhone.tsx:395
 msgid "from {0} reviews"
 msgstr "mu bitekerezo {0}"
 
@@ -4470,6 +4478,10 @@ msgstr "Umunsi wo Kwibuka Jenoside yakorewe Abatutsi"
 #: src/auth/LoginPage.tsx:501
 msgid "Get booked online"
 msgstr "Akira gahunda kuri interineti"
+
+#: src/shopfront/CustomerPhone.tsx:461
+msgid "Get directions"
+msgstr "Reba inzira"
 
 #: src/ads/slides.ts:190
 msgid "Get our customer app and book any shop on the platform. Sign up there with your personal email."
@@ -4841,7 +4853,7 @@ msgstr "Bashobora guhitamo ibisubizo bingahe?"
 msgid "How many answers they can pick"
 msgstr "Umubare w’ibisubizo bashobora guhitamo"
 
-#: src/pages/HoursPage.tsx:565
+#: src/pages/HoursPage.tsx:587
 msgid "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 msgstr "Umubare w’abakiriya iri shami rishobora kwakira icyarimwe — umubare umwe kuri serivisi zose zaho. Gahunda y’abantu 3 ifata imyanya 3 kuri icyo gihe; iyo imyanya yose yafashwe, abakiriya babona icyo gihe nk’icyafashwe. Ni na wo mubare munini w’abantu gahunda imwe ishobora kugenerwa. Kuwugabanya ntibihagarika gahunda zamaze gufatwa."
 
@@ -4869,6 +4881,22 @@ msgstr "Uko porogaramu igushyira ku rutonde"
 #: src/components/Allowed.tsx:19
 msgid "How the business is going — bookings, takings and ratings over time — is seen by the owner and by managers."
 msgstr "Uko ubucuruzi bugenda — gahunda, amafaranga yinjiye n’amanota uko igihe gihita — bireberwa na nyir’iduka n’abayobozi."
+
+#: src/shopfront/CustomerPhone.tsx:452
+msgid "How to find it"
+msgstr "Uko wahagera"
+
+#: src/pages/HoursPage.tsx:323
+msgid "How to find us"
+msgstr "Uko watugeraho"
+
+#: src/components/NewBranchForm.tsx:206
+msgid "How to find us <0>optional</0>"
+msgstr "Uko watugeraho <0>si ngombwa</0>"
+
+#: src/shopfront/CustomerPhone.tsx:457
+msgid "How to find your door shows here — add it to the branch under Branches & hours."
+msgstr "Uko bagera ku muryango wawe bigaragara hano — bishyire ku ishami muri Amashami n’amasaha."
 
 #: src/pages/LegalPage.tsx:19
 msgid "How you get paid, and what happens when a booking is cancelled."
@@ -5152,7 +5180,7 @@ msgstr "Kigali Barbers — Kimironko"
 msgid "Kigali city tour"
 msgstr "Gutembera umujyi wa Kigali"
 
-#: src/components/NewBranchForm.tsx:284
+#: src/components/NewBranchForm.tsx:321
 msgid "Kimironko Branch"
 msgstr "Ishami rya Kimironko"
 
@@ -5237,7 +5265,7 @@ msgstr "Nyuma yaho (→)"
 msgid "Latest reviews"
 msgstr "Ibitekerezo biheruka"
 
-#: src/components/NewBranchForm.tsx:296
+#: src/components/NewBranchForm.tsx:333
 msgid "Leave empty to use the business phone"
 msgstr "Siga ubusa hakoreshwe telefoni y’ubucuruzi"
 
@@ -5510,7 +5538,7 @@ msgstr "Menyu"
 msgid "Message <0>{0}/{BODY_MAX}</0>"
 msgstr "Ubutumwa <0>{0}/{BODY_MAX}</0>"
 
-#: src/shopfront/CustomerPhone.tsx:300
+#: src/shopfront/CustomerPhone.tsx:308
 msgid "Message the shop"
 msgstr "Andikira iduka"
 
@@ -5982,7 +6010,7 @@ msgstr "Nta muntu urakurikira iduka ryawe."
 msgid "Nobody has picked it up yet"
 msgstr "Nta muntu urabwitaho"
 
-#: src/shopfront/CustomerPhone.tsx:391
+#: src/shopfront/CustomerPhone.tsx:399
 msgid "Nobody has reviewed this place yet."
 msgstr "Nta muntu uratanga igitekerezo kuri iri duka."
 
@@ -6164,7 +6192,7 @@ msgstr "Hashize igihe nta gikorwa hano. Kugira ngo konti irindwe, urasohorwa mu 
 msgid "Nothing in this conversation yet."
 msgstr "Nta kirimo muri iki kiganiro kugeza ubu."
 
-#: src/shopfront/CustomerPhone.tsx:342
+#: src/shopfront/CustomerPhone.tsx:350
 msgid "Nothing is bookable here yet."
 msgstr "Nta serivisi yo gufatira gahunda iri hano kugeza ubu."
 
@@ -6353,7 +6381,7 @@ msgstr "Hano ni kimwe kimwe — icya mbere ni cyo cyakoreshejwe."
 msgid "One email.<0/><1>No password.</1>"
 msgstr "Imeyili imwe.<0/><1>Nta jambo ry’ibanga.</1>"
 
-#: src/pages/HoursPage.tsx:535
+#: src/pages/HoursPage.tsx:557
 msgid "One fewer"
 msgstr "Gabanya umwe"
 
@@ -6365,7 +6393,7 @@ msgstr "Incamake mu murongo umwe"
 msgid "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 msgstr "Umurongo umwe utuma umuntu ayishaka — urugero: “Kogosha neza, imisatsi itunganye”"
 
-#: src/pages/HoursPage.tsx:549
+#: src/pages/HoursPage.tsx:571
 msgid "One more"
 msgstr "Ongeraho umwe"
 
@@ -6522,7 +6550,7 @@ msgid "Open Help"
 msgstr "Fungura Ubufasha"
 
 #: src/pages/calendar/AppointmentCalendar.tsx:570
-#: src/shopfront/CustomerPhone.tsx:232
+#: src/shopfront/CustomerPhone.tsx:233
 msgid "Open hours"
 msgstr "Amasaha yo gufungura"
 
@@ -6561,7 +6589,7 @@ msgid "Open on"
 msgstr "Iminsi yo gufungura"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:436
+#: src/pages/HoursPage.tsx:458
 msgid "Open on {0}"
 msgstr "Birafunguye {0}"
 
@@ -6590,7 +6618,7 @@ msgstr "Ongera ufungure iduka"
 msgid "Open this booking"
 msgstr "Fungura iyi gahunda"
 
-#: src/components/NewBranchForm.tsx:250
+#: src/components/NewBranchForm.tsx:286
 msgid "Open this branch"
 msgstr "Fungura iri shami"
 
@@ -6607,7 +6635,7 @@ msgid "Open, but different hours"
 msgstr "Birafunguye, ariko ku yandi masaha"
 
 #: src/onboarding/steps.ts:131
-#: src/pages/HoursPage.tsx:408
+#: src/pages/HoursPage.tsx:430
 msgid "Opening hours"
 msgstr "Amasaha yo gufungura"
 
@@ -6620,7 +6648,7 @@ msgstr "Amasaha yo gufungura yashyizweho"
 msgid "Opening hours at {0}"
 msgstr "Amasaha yo gufungura ya {0}"
 
-#: src/components/NewBranchForm.tsx:250
+#: src/components/NewBranchForm.tsx:286
 #: src/pages/ProfilePage.tsx:865
 msgid "Opening…"
 msgstr "Birafungurwa…"
@@ -6864,7 +6892,7 @@ msgid "Pausing…"
 msgstr "Birahagarikwa…"
 
 #. placeholder {0}: format(deposit, service.currency)
-#: src/shopfront/CustomerPhone.tsx:472
+#: src/shopfront/CustomerPhone.tsx:521
 msgid "pay {0} now"
 msgstr "wishyura {0} ubu"
 
@@ -6952,8 +6980,8 @@ msgid "People close to you see you first"
 msgstr "Abantu bari hafi yawe ni bo bakubona mbere"
 
 #: src/ads/tips.ts:34
-#: src/pages/HoursPage.tsx:532
-#: src/pages/HoursPage.tsx:546
+#: src/pages/HoursPage.tsx:554
+#: src/pages/HoursPage.tsx:568
 msgid "People served at once"
 msgstr "Abantu bakirwa icyarimwe"
 
@@ -6974,8 +7002,8 @@ msgstr "saloni yawe y’amatungo"
 msgid "Phone"
 msgstr "Telefoni"
 
-#: src/components/NewBranchForm.tsx:289
-#: src/pages/HoursPage.tsx:656
+#: src/components/NewBranchForm.tsx:326
+#: src/pages/HoursPage.tsx:680
 msgid "Phone for this branch <0>optional</0>"
 msgstr "Telefoni y’iri shami <0>si ngombwa</0>"
 
@@ -7003,7 +7031,7 @@ msgid "Photos"
 msgstr "Amafoto"
 
 #. placeholder {0}: s.gallery.length
-#: src/shopfront/CustomerPhone.tsx:306
+#: src/shopfront/CustomerPhone.tsx:314
 msgid "Photos <0>{0}</0>"
 msgstr "Amafoto <0>{0}</0>"
 
@@ -7039,7 +7067,7 @@ msgstr "Amafoto, amagambo, amasaha no kwishyurwa — byose biteguye."
 msgid "Pick 1"
 msgstr "Hitamo 1"
 
-#: src/components/NewBranchForm.tsx:314
+#: src/components/NewBranchForm.tsx:351
 msgid "Pick a suggestion to drop the pin on the map for you."
 msgstr "Hitamo kimwe mu byo tukwereka, tugushyirire akamenyetso ku ikarita."
 
@@ -7630,11 +7658,11 @@ msgstr "resitora yawe"
 
 #: src/nav.ts:112
 #: src/pages/ReviewsPage.tsx:158
-#: src/shopfront/CustomerPhone.tsx:233
+#: src/shopfront/CustomerPhone.tsx:234
 msgid "Reviews"
 msgstr "Ibitekerezo"
 
-#: src/shopfront/CustomerPhone.tsx:233
+#: src/shopfront/CustomerPhone.tsx:234
 msgid "Reviews ({reviewTotal})"
 msgstr "Ibitekerezo ({reviewTotal})"
 
@@ -7737,9 +7765,9 @@ msgstr "saloni yawe"
 msgid "Saturday morning is Umuganda"
 msgstr "Ku wa Gatandatu mu gitondo ni Umuganda"
 
-#: src/pages/HoursPage.tsx:584
-#: src/pages/HoursPage.tsx:584
-#: src/pages/HoursPage.tsx:637
+#: src/pages/HoursPage.tsx:606
+#: src/pages/HoursPage.tsx:606
+#: src/pages/HoursPage.tsx:661
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/StaffPage.tsx:317
 #: src/ui/Dialog.tsx:144
@@ -7766,12 +7794,12 @@ msgstr "Bika igisubizo"
 msgid "Save the service — customers see it when they book"
 msgstr "Bika serivisi — abakiriya babibona iyo bafata gahunda"
 
-#: src/pages/HoursPage.tsx:510
+#: src/pages/HoursPage.tsx:532
 msgid "Save the week"
 msgstr "Bika amasaha y’icyumweru"
 
-#: src/pages/HoursPage.tsx:496
-#: src/pages/HoursPage.tsx:584
+#: src/pages/HoursPage.tsx:518
+#: src/pages/HoursPage.tsx:606
 msgid "Saved"
 msgstr "Byabitswe"
 
@@ -7794,9 +7822,9 @@ msgstr "Birabikwa mu bitarangiye…"
 #: src/components/LegalGate.tsx:113
 #: src/pages/AppointmentsPage.tsx:802
 #: src/pages/ClosuresPage.tsx:626
-#: src/pages/HoursPage.tsx:510
-#: src/pages/HoursPage.tsx:584
-#: src/pages/HoursPage.tsx:637
+#: src/pages/HoursPage.tsx:532
+#: src/pages/HoursPage.tsx:606
+#: src/pages/HoursPage.tsx:661
 #: src/pages/LegalPage.tsx:166
 #: src/pages/LegalPage.tsx:193
 #: src/pages/OverviewPage.tsx:586
@@ -7894,7 +7922,7 @@ msgstr "Intebe y’abantu babiri"
 msgid "See all "
 msgstr "Reba byose "
 
-#: src/shopfront/CustomerPhone.tsx:308
+#: src/shopfront/CustomerPhone.tsx:316
 msgid "See all →"
 msgstr "Reba byose →"
 
@@ -8471,7 +8499,7 @@ msgstr "Hera ku rugero"
 msgid "Start selling.<0/><1>Free to join.</1>"
 msgstr "Tangira gucuruza.<0/><1>Kwiyandikisha ni ubuntu.</1>"
 
-#: src/components/NewBranchForm.tsx:311
+#: src/components/NewBranchForm.tsx:348
 msgid "Start typing — KG 9 Ave, Kimironko…"
 msgstr "Tangira kwandika — KG 9 Ave, Kimironko…"
 
@@ -8723,6 +8751,10 @@ msgstr "Imisoro · RRA"
 msgid "Taxpayer registration (TIN)"
 msgstr "Iyandikwa ry’umusoreshwa (TIN)"
 
+#: src/pages/HoursPage.tsx:333
+msgid "Tell customers how to find your door"
+msgstr "Bwira abakiriya uko bagera ku muryango wawe"
+
 #: src/pages/SupportPage.tsx:439
 msgid "Tell us what happened"
 msgstr "Tubwire uko byagenze"
@@ -8838,7 +8870,7 @@ msgstr "Ntibyoherejwe. Reba internet yawe."
 
 #: src/pages/AppointmentsPage.tsx:499
 #: src/pages/HoursPage.tsx:192
-#: src/pages/HoursPage.tsx:623
+#: src/pages/HoursPage.tsx:647
 #: src/pages/OverviewPage.tsx:293
 #: src/pages/ProfilePage.tsx:777
 #: src/pages/ProfilePage.tsx:808
@@ -9101,19 +9133,23 @@ msgstr "Telefoni iri iruhande rw’amakuru yawe yerekana ipaji yawe uko abakiriy
 msgid "The picture could not be made"
 msgstr "Ifoto ntiyashoboye gukorwa"
 
-#: src/components/NewBranchForm.tsx:216
+#: src/components/NewBranchForm.tsx:252
 msgid "The pin and the district were filled in from this address."
 msgstr "Ikimenyetso ku ikarita n’akarere byuzujwe hakurikijwe iyi aderesi."
 
-#: src/pages/HoursPage.tsx:676
+#: src/pages/HoursPage.tsx:700
 msgid "The pin and the district were moved to this address."
 msgstr "Ikimenyetso ku ikarita n’akarere byimuriwe kuri iyi aderesi."
 
-#: src/components/NewBranchForm.tsx:216
+#: src/components/NewBranchForm.tsx:218
+msgid "The pin finds the building; this finds your door. Customers read it under the map and on their booking."
+msgstr "Ikimenyetso ku ikarita kerekana inyubako; ibi byerekana umuryango wawe. Abakiriya babisoma munsi y’ikarita no kuri gahunda bafashe."
+
+#: src/components/NewBranchForm.tsx:252
 msgid "The pin was filled in from this address."
 msgstr "Ikimenyetso ku ikarita cyuzujwe hakurikijwe iyi aderesi."
 
-#: src/pages/HoursPage.tsx:676
+#: src/pages/HoursPage.tsx:700
 msgid "The pin was moved to this address."
 msgstr "Ikimenyetso ku ikarita cyimuriwe kuri iyi aderesi."
 
@@ -9137,7 +9173,7 @@ msgstr "Igiciro ni icy’umuntu umwe. Siga ishami ubusa kugira ngo uhagarike kuy
 msgid "The question customers see"
 msgstr "Ikibazo abakiriya babona"
 
-#: src/shopfront/CustomerPhone.tsx:180
+#: src/shopfront/CustomerPhone.tsx:181
 msgid "The real page from the app, with what you have typed. Scroll it, and try the tabs."
 msgstr "Ipaji nyayo yo muri porogaramu, irimo ibyo wanditse. Yimanure, kandi ugerageze ibice byayo."
 
@@ -9190,7 +9226,7 @@ msgstr "Umunsi wose"
 msgid "The whole shop"
 msgstr "Iduka ryose"
 
-#: src/pages/HoursPage.tsx:501
+#: src/pages/HoursPage.tsx:523
 msgid "The whole week is saved together"
 msgstr "Icyumweru cyose kibikwa icyarimwe"
 
@@ -9267,7 +9303,7 @@ msgstr "Bahitamo kimwe cyangwa byinshi"
 msgid "They pick up to {picks}"
 msgstr "Bahitamo bitarenze {picks}"
 
-#: src/shopfront/CustomerPhone.tsx:408
+#: src/shopfront/CustomerPhone.tsx:416
 msgid "They replied"
 msgstr "Igisubizo cyabo"
 
@@ -9315,7 +9351,7 @@ msgstr "Iyi gahunda ntiyashoboye gufunguka"
 msgid "This branch is at its {limit} photo limit."
 msgstr "Iri shami rigeze ku mafoto {limit} ntarengwa."
 
-#: src/pages/HoursPage.tsx:325
+#: src/pages/HoursPage.tsx:347
 msgid "This branch is closed. It takes no new bookings and customers cannot find it. Everything that happened here is kept."
 msgstr "Iri shami rirafunze. Ntiryakira gahunda nshya kandi abakiriya ntibashobora kuribona. Ibyabereye hano byose birabitswe."
 
@@ -9476,7 +9512,7 @@ msgstr "Azakwishyura ku iduka"
 msgid "To your MoMo number"
 msgstr "Kuri nimero yawe ya MoMo"
 
-#: src/pages/HoursPage.tsx:432
+#: src/pages/HoursPage.tsx:454
 msgid "today"
 msgstr "uyu munsi"
 
@@ -10252,7 +10288,7 @@ msgstr "Ibyo ashobora gukora"
 msgid "What they chose"
 msgstr "Ibyo yahisemo"
 
-#: src/shopfront/CustomerPhone.tsx:231
+#: src/shopfront/CustomerPhone.tsx:232
 msgid "What they do"
 msgstr "Ibyo bakora"
 
@@ -10408,6 +10444,7 @@ msgid "Where is your shop?"
 msgstr "Iduka ryawe riherereye he?"
 
 #: src/components/NewBranchForm.tsx:118
+#: src/shopfront/CustomerPhone.tsx:429
 msgid "Where it is"
 msgstr "Aho riherereye"
 
@@ -10455,7 +10492,7 @@ msgid "Where your money goes"
 msgstr "Aho amafaranga yawe ajya"
 
 #: src/pages/StoriesPage.tsx:333
-#: src/shopfront/CustomerPhone.tsx:134
+#: src/shopfront/CustomerPhone.tsx:135
 msgid "Which branch"
 msgstr "Ishami irihe"
 
@@ -10674,7 +10711,7 @@ msgstr "Uhabwa"
 msgid "You get one reply per review, and can edit it for 7 days. Both are public."
 msgstr "Ufite igisubizo kimwe kuri buri gitekerezo, kandi ushobora kugihindura mu minsi 7. Byombi bibonwa na bose."
 
-#: src/pages/HoursPage.tsx:499
+#: src/pages/HoursPage.tsx:521
 msgid "You have changes that are not saved"
 msgstr "Ufite impinduka zitarabikwa"
 
@@ -10826,7 +10863,7 @@ msgstr "Umunsi wawe"
 msgid "Your day at a glance"
 msgstr "Umunsi wawe muri make"
 
-#: src/shopfront/CustomerPhone.tsx:294
+#: src/shopfront/CustomerPhone.tsx:302
 msgid "Your description shows here. Say what you offer and why you are worth the trip."
 msgstr "Ibisobanuro byawe bigaragara hano. Vuga ibyo utanga n’igituma bikwiye kuza iwawe."
 

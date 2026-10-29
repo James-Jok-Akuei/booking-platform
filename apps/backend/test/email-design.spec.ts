@@ -57,6 +57,8 @@ const booking = (over: Partial<BookingFacts> = {}): BookingFacts => ({
   address: 'KN 4 Ave, Nyarugenge',
   latitude: -1.9469,
   longitude: 30.0588,
+  // How to find the door (§318), so the previews show it.
+  findUs: 'Second floor of Kigali Heights, opposite the MTN shop. Ask the guard at the door.',
   startTime: tomorrowAt(11, 15),
   endTime: tomorrowAt(12, 15),
   // The shop's clock (§315).
@@ -127,6 +129,7 @@ describe('The emails, in the platform design (§292)', () => {
     expect(last().html).toContain('Confirmed');
     expect(last().icalEvent).toBeDefined();
     expect(last().html).toContain('google.com/maps/dir');
+    expect(last().html).toContain('opposite the MTN shop');
     save('04-arrival-code-new', last().html, last().text);
   });
 

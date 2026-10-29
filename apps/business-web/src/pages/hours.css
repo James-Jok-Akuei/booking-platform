@@ -67,6 +67,14 @@
 .hr-facts svg { color: var(--muted); }
 .hr-problem { margin: 14px 24px 0; }
 
+/* How to find the door (§318), in the shop's words, under the facts. */
+.hr-findus { display: flex; align-items: flex-start; gap: 10px; margin: 12px 24px 0; padding: 12px 14px; border-radius: 16px; background: var(--accent-tint); color: var(--ink-2); font-size: 13.5px; line-height: 1.5; white-space: pre-line; }
+.hr-findus svg { flex: none; margin-top: 2px; color: var(--accent); }
+.hr-findus b { display: block; color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 1px; }
+.hr-findus-row { padding: 12px 24px 0; }
+.hr-findus-add { min-height: 36px; padding: 0 14px; border-radius: 99px; border: 1.5px dashed var(--line-strong); background: transparent; box-shadow: none; font-size: 13px; font-weight: 700; color: var(--accent-deep); gap: 8px; white-space: normal; text-align: left; }
+.hr-findus-add:hover { border-color: var(--accent); background: var(--accent-tint); }
+
 .hr-body { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(260px, 1fr); align-items: stretch; gap: 18px; padding: 18px 24px 24px; }
 
 /* ---- the week ---- */
@@ -168,6 +176,8 @@
   .hr-hero-actions { position: relative; right: auto; bottom: auto; padding: 14px 18px 18px; flex-wrap: wrap; }
   .hr-hero-actions button { flex: 1; }
   .hr-facts { padding: 14px 16px 0; }
+  .hr-findus { margin: 12px 16px 0; }
+  .hr-findus-row { padding: 12px 16px 0; }
   .hr-body { padding: 14px 14px 16px; }
   .hr-days li { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'day switch' 'times times' 'bar bar'; row-gap: 8px; padding: 10px; }
   .hr-day { grid-area: day; flex-direction: row; align-items: baseline; gap: 8px; }

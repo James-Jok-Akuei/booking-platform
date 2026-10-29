@@ -21,6 +21,8 @@ export interface BookingFacts {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  /** How to find the door, in the shop's words (§318). */
+  findUs: string | null;
   startTime: Date;
   endTime: Date;
   /** The shop's clock (§315), the one the start and end are said on. */
@@ -69,6 +71,7 @@ export const BOOKING_FACTS_SELECT = {
       address: true,
       latitude: true,
       longitude: true,
+      findUs: true,
       // The shop's clock (§315): every time said about the booking is its.
       business: { select: { name: true, logoUrl: true, country: { select: { timeZone: true } } } },
     },
@@ -94,6 +97,7 @@ type Loaded = {
     address: string;
     latitude: number | null;
     longitude: number | null;
+    findUs: string | null;
     business: { name: string | null; logoUrl: string | null; country: { timeZone: string } };
   };
 };
@@ -110,6 +114,7 @@ export function bookingFacts(row: Loaded): BookingFacts {
     address: row.location.address || null,
     latitude: row.location.latitude,
     longitude: row.location.longitude,
+    findUs: row.location.findUs,
     startTime: row.startTime,
     endTime: row.endTime,
     timeZone: row.location.business.country.timeZone,
@@ -282,6 +287,8 @@ export function bookingTicket(
     when: whenText(b, opts.timeZone, l),
     branch: b.branchName,
     address: b.address,
+    // For the one going there, while they still are (§318).
+    findUs: opts.audience === 'CUSTOMER' && live ? b.findUs : null,
     reservation: reservationNo(b.id),
     status: statusOf(b, opts.audience, l),
     money,

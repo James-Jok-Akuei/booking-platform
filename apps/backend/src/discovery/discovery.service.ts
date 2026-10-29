@@ -619,6 +619,7 @@ export class DiscoveryService {
         },
         latitude: true,
         longitude: true,
+        findUs: true,
         phone: true,
         capacity: true,
         ratingAvg: true,
@@ -739,6 +740,7 @@ export class DiscoveryService {
       address: location.address,
       latitude: location.latitude,
       longitude: location.longitude,
+      findUs: location.findUs,
       phone: location.phone,
       capacity: location.capacity,
       business: {

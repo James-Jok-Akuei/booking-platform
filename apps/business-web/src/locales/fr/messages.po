@@ -417,7 +417,7 @@ msgid "{0} bookings · {1}–{2}"
 msgstr "{0} réservations · {1}–{2}"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:457
+#: src/pages/HoursPage.tsx:479
 msgid "{0} closes"
 msgstr "{0} : fermeture"
 
@@ -496,7 +496,7 @@ msgid "{0} open · {1} finished"
 msgstr "En cours : {0} · Terminés : {1}"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:448
+#: src/pages/HoursPage.tsx:470
 msgid "{0} opens"
 msgstr "{0} : ouverture"
 
@@ -695,15 +695,15 @@ msgstr "{followUps} n’était posée qu’après une réponse ici, elle sera do
 msgid "{followUps} were asked only after an answer here, so they will be asked every time."
 msgstr "{followUps} n’étaient posées qu’après une réponse ici, elles seront donc posées à chaque fois."
 
-#: src/pages/HoursPage.tsx:679
+#: src/pages/HoursPage.tsx:703
 msgid "{fromAddress} Check it below before saving."
 msgstr "{fromAddress} Vérifiez ci-dessous avant d’enregistrer."
 
-#: src/components/NewBranchForm.tsx:314
+#: src/components/NewBranchForm.tsx:351
 msgid "{fromAddress} Check the pin below is on your shop."
 msgstr "{fromAddress} Vérifiez que le repère ci-dessous est bien sur votre établissement."
 
-#: src/shopfront/CustomerPhone.tsx:73
+#: src/shopfront/CustomerPhone.tsx:74
 msgid "{h, plural, one {# hour} other {# hours}}"
 msgstr "{h, plural, one {# heure} other {# heures}}"
 
@@ -765,7 +765,7 @@ msgstr "Code à {length} chiffres"
 msgid "{longitude} is not a longitude — it has to be between -180 and 180."
 msgstr "{longitude} n’est pas une longitude valide — elle doit être entre -180 et 180."
 
-#: src/shopfront/CustomerPhone.tsx:74
+#: src/shopfront/CustomerPhone.tsx:75
 msgid "{m, plural, one {# minute} other {# minutes}}"
 msgstr "{m, plural, one {# minute} other {# minutes}}"
 
@@ -832,7 +832,7 @@ msgstr "Sans photos : {noPhotos}"
 msgid "{noShow} no-show"
 msgstr "Absents : {noShow}"
 
-#: src/pages/HoursPage.tsx:410
+#: src/pages/HoursPage.tsx:432
 msgid "{openDays, plural, one {Open # day a week} other {Open # days a week}}"
 msgstr "{openDays, plural, one {Ouvert # jour par semaine} other {Ouvert # jours par semaine}}"
 
@@ -877,7 +877,7 @@ msgstr "Stories publiées aujourd’hui : {postedToday} sur {dailyLimit}"
 msgid "{postedToday} of {dailyLimit} today"
 msgstr "{postedToday} sur {dailyLimit} aujourd’hui"
 
-#: src/shopfront/CustomerPhone.tsx:489
+#: src/shopfront/CustomerPhone.tsx:538
 msgid "{rating} out of 5"
 msgstr "{rating} sur 5"
 
@@ -1008,7 +1008,7 @@ msgstr "<0/>Libre<1/>Fermé<2/>Pause"
 msgid "<0/>On their phone, to book"
 msgstr "<0/>Sur son téléphone, pour réserver"
 
-#: src/shopfront/CustomerPhone.tsx:253
+#: src/shopfront/CustomerPhone.tsx:254
 msgid "<0/>Open now"
 msgstr "<0/>Ouvert maintenant"
 
@@ -1093,7 +1093,7 @@ msgstr "<0>1</0> Choisissez un jour"
 msgid "<0>2</0> Change that day"
 msgstr "<0>2</0> Modifiez ce jour"
 
-#: src/shopfront/CustomerPhone.tsx:174
+#: src/shopfront/CustomerPhone.tsx:175
 msgid "<0>Customers cannot see this right now</0> — your shop is not posted yet, paused, or not yet approved. This is how it will look."
 msgstr "<0>Les clients ne peuvent pas voir ceci pour l’instant</0> — votre établissement n’est pas encore publié, est en pause ou n’est pas encore approuvé. Voici à quoi il ressemblera."
 
@@ -1165,6 +1165,10 @@ msgstr "1–90 % de réduction, jusqu’au jour de votre choix ou jusqu’à ce
 #: src/pages/FollowersPage.tsx:162
 msgid "15% off this week"
 msgstr "15 % de réduction cette semaine"
+
+#: src/components/NewBranchForm.tsx:214
+msgid "2nd floor of Kigali Heights, opposite the MTN shop. Ask the guard at the door."
+msgstr "2e étage de Kigali Heights, en face de la boutique MTN. Demandez au gardien à l’entrée."
 
 #: src/pages/AnalyticsPage.tsx:36
 msgid "30 days"
@@ -1328,7 +1332,7 @@ msgstr "Un nom, une durée, un prix dans chaque succursale — et une photo ou d
 msgid "A new booking holds its time while the customer approves the deposit on their phone."
 msgstr "Une nouvelle réservation bloque son créneau pendant que le client valide l’acompte sur son téléphone."
 
-#: src/components/NewBranchForm.tsx:242
+#: src/components/NewBranchForm.tsx:278
 msgid "A new branch"
 msgstr "Une nouvelle succursale"
 
@@ -1336,7 +1340,7 @@ msgstr "Une nouvelle succursale"
 msgid "A new branch starts closed and offers nothing. Set its hours and choose its services, and customers can book it."
 msgstr "Une nouvelle succursale démarre fermée et ne propose rien. Définissez ses horaires et choisissez ses services, et les clients pourront y réserver."
 
-#: src/components/NewBranchForm.tsx:342
+#: src/components/NewBranchForm.tsx:381
 msgid "A new branch starts closed every day. Set its hours once it is open, or customers will see nothing bookable."
 msgstr "Une nouvelle succursale démarre fermée tous les jours. Définissez ses horaires une fois ouverte, sinon les clients ne verront rien à réserver."
 
@@ -1565,7 +1569,7 @@ msgstr "Ajouter {0}"
 
 #: src/ads/guide.ts:174
 #: src/ads/slides.ts:175
-#: src/components/NewBranchForm.tsx:241
+#: src/components/NewBranchForm.tsx:277
 #: src/pages/HoursPage.tsx:88
 #: src/pages/HoursPage.tsx:132
 msgid "Add a branch"
@@ -1714,8 +1718,8 @@ msgstr "Ajoutée"
 msgid "Added to the price for answer {0}"
 msgstr "Ajouté au prix pour la réponse {0}"
 
-#: src/components/NewBranchForm.tsx:302
-#: src/pages/HoursPage.tsx:662
+#: src/components/NewBranchForm.tsx:339
+#: src/pages/HoursPage.tsx:686
 msgid "Address"
 msgstr "Adresse"
 
@@ -1999,7 +2003,7 @@ msgid "Anything that shows the problem"
 msgstr "Tout ce qui montre le problème"
 
 #: src/pages/choices/ChoicesEditor.tsx:610
-#: src/shopfront/CustomerPhone.tsx:566
+#: src/shopfront/CustomerPhone.tsx:615
 msgid "Anything the shop should know?"
 msgstr "Quelque chose que l’établissement doit savoir ?"
 
@@ -2378,9 +2382,9 @@ msgstr "succursale"
 msgid "Branch"
 msgstr "Succursale"
 
-#: src/components/NewBranchForm.tsx:278
+#: src/components/NewBranchForm.tsx:315
 #: src/onboarding/Welcome.tsx:977
-#: src/pages/HoursPage.tsx:652
+#: src/pages/HoursPage.tsx:676
 msgid "Branch name"
 msgstr "Nom de la succursale"
 
@@ -2509,9 +2513,9 @@ msgstr "facultative"
 msgid "Can’t find it? Paste a map link or use where you are"
 msgstr "Introuvable ? Collez un lien de carte ou utilisez votre position"
 
-#: src/components/NewBranchForm.tsx:247
+#: src/components/NewBranchForm.tsx:283
 #: src/pages/AppointmentsPage.tsx:1271
-#: src/pages/HoursPage.tsx:634
+#: src/pages/HoursPage.tsx:658
 #: src/pages/PayoutsPage.tsx:476
 #: src/pages/ReviewsPage.tsx:598
 #: src/pages/ServicesPage.tsx:1859
@@ -2952,11 +2956,11 @@ msgstr "fermée"
 #: src/pages/calendar/model.ts:73
 #: src/pages/calendar/model.ts:99
 #: src/pages/HoursPage.tsx:257
-#: src/pages/HoursPage.tsx:441
+#: src/pages/HoursPage.tsx:463
 #: src/pages/SupportPage.tsx:80
-#: src/shopfront/CustomerPhone.tsx:256
-#: src/shopfront/CustomerPhone.tsx:358
-#: src/shopfront/CustomerPhone.tsx:370
+#: src/shopfront/CustomerPhone.tsx:257
+#: src/shopfront/CustomerPhone.tsx:366
+#: src/shopfront/CustomerPhone.tsx:378
 msgid "Closed"
 msgstr "Fermé"
 
@@ -2971,7 +2975,7 @@ msgstr "Fermé — {why}"
 msgid "Closed all day"
 msgstr "Fermé toute la journée"
 
-#: src/pages/HoursPage.tsx:410
+#: src/pages/HoursPage.tsx:432
 msgid "Closed every day — nothing can be booked"
 msgstr "Fermé tous les jours — aucune réservation possible"
 
@@ -3002,7 +3006,7 @@ msgid "Coming to you"
 msgstr "À recevoir"
 
 #: src/checkin/CheckIn.tsx:296
-#: src/shopfront/CustomerPhone.tsx:365
+#: src/shopfront/CustomerPhone.tsx:373
 msgid "Coming up"
 msgstr "À venir"
 
@@ -3092,7 +3096,7 @@ msgid "Copy"
 msgstr "Copier"
 
 #. placeholder {0}: DAYS()[firstOpen.dayOfWeek]
-#: src/pages/HoursPage.tsx:416
+#: src/pages/HoursPage.tsx:438
 msgid "Copy {0}’s hours to every open day"
 msgstr "Copier les horaires du {0} sur chaque jour ouvert"
 
@@ -3124,8 +3128,8 @@ msgstr "Impossible de charger les réservations."
 msgid "Could not open it."
 msgstr "Impossible de l’ouvrir."
 
-#: src/pages/HoursPage.tsx:486
-#: src/pages/HoursPage.tsx:574
+#: src/pages/HoursPage.tsx:508
+#: src/pages/HoursPage.tsx:596
 #: src/pages/PayoutsPage.tsx:489
 msgid "Could not save."
 msgstr "Enregistrement impossible."
@@ -3294,15 +3298,15 @@ msgstr "Les clients ne le voient pas encore — publiez votre établissement dep
 msgid "Customers cannot see your shop until you post it. Take your time — everything you change is saved, and nobody sees it until you post."
 msgstr "Les clients ne voient votre établissement qu’une fois publié. Prenez votre temps — tout ce que vous modifiez est enregistré, et personne ne le voit avant la publication."
 
-#: src/components/NewBranchForm.tsx:328
+#: src/components/NewBranchForm.tsx:365
 msgid "Customers filter by this. It is how this branch appears when someone searches their area, so it has to be chosen."
 msgstr "Les clients filtrent par ce critère. C’est ainsi que cette succursale apparaît quand quelqu’un cherche dans son secteur, il faut donc le choisir."
 
-#: src/pages/HoursPage.tsx:690
+#: src/pages/HoursPage.tsx:714
 msgid "Customers filter by this. Without it, this branch does not appear when someone searches their area."
 msgstr "Les clients filtrent par ce critère. Sans lui, cette succursale n’apparaît pas quand quelqu’un cherche dans son secteur."
 
-#: src/components/NewBranchForm.tsx:322
+#: src/components/NewBranchForm.tsx:359
 msgid "Customers find you by how near you are. Choose a suggested address above, paste the shop's Google Maps link, or press the button if you are there now."
 msgstr "Les clients vous trouvent selon votre proximité. Choisissez une adresse proposée ci-dessus, collez le lien Google Maps de l’établissement, ou appuyez sur le bouton si vous y êtes maintenant."
 
@@ -3409,7 +3413,7 @@ msgstr "Les clients qui l’ont demandé reçoivent chaque vendredi un e-mail de
 msgid "Customers who follow your shop see your new services, discounts and messages in the app. Those who also said yes to your offers get your message as an alert. They chose to — and can stop with one tap — so one good message a week keeps them following."
 msgstr "Les clients qui suivent votre établissement voient vos nouveaux services, réductions et messages dans l’application. Ceux qui ont aussi accepté vos offres reçoivent votre message en notification. Ils l’ont choisi — et peuvent arrêter d’un geste — alors un bon message par semaine les garde abonnés."
 
-#: src/pages/HoursPage.tsx:685
+#: src/pages/HoursPage.tsx:709
 msgid "Customers' distances are measured from this pin. Paste the shop's Google Maps link, or press the button if you are at the shop now."
 msgstr "La distance des clients est mesurée depuis ce repère. Collez le lien Google Maps de l’établissement, ou appuyez sur le bouton si vous y êtes en ce moment."
 
@@ -3601,6 +3605,10 @@ msgstr "Chiffre {0}"
 #: src/onboarding/Welcome.tsx:1205
 msgid "Dinner to collect"
 msgstr "Dîner à emporter"
+
+#: src/shopfront/CustomerPhone.tsx:287
+msgid "Directions"
+msgstr "Itinéraire"
 
 #: src/pages/ServicesPage.tsx:691
 #: src/pages/ServicesPage.tsx:698
@@ -3938,7 +3946,7 @@ msgid "Edit"
 msgstr "Modifier"
 
 #: src/pages/HoursPage.tsx:275
-#: src/pages/HoursPage.tsx:628
+#: src/pages/HoursPage.tsx:652
 msgid "Edit details"
 msgstr "Modifier les détails"
 
@@ -4260,7 +4268,7 @@ msgstr "Replier « Pour vous »"
 msgid "Fold the menu"
 msgstr "Replier le menu"
 
-#: src/shopfront/CustomerPhone.tsx:262
+#: src/shopfront/CustomerPhone.tsx:263
 msgid "Follow"
 msgstr "Suivre"
 
@@ -4391,8 +4399,8 @@ msgstr "À partir de"
 #. placeholder {0}: s.rating.count
 #: src/pages/AnalyticsPage.tsx:194
 #: src/pages/ReviewsPage.tsx:337
-#: src/shopfront/CustomerPhone.tsx:287
-#: src/shopfront/CustomerPhone.tsx:387
+#: src/shopfront/CustomerPhone.tsx:295
+#: src/shopfront/CustomerPhone.tsx:395
 msgid "from {0} reviews"
 msgstr "sur {0} avis"
 
@@ -4470,6 +4478,10 @@ msgstr "Journée de commémoration du génocide perpétré contre les Tutsi"
 #: src/auth/LoginPage.tsx:501
 msgid "Get booked online"
 msgstr "Recevez des réservations en ligne"
+
+#: src/shopfront/CustomerPhone.tsx:461
+msgid "Get directions"
+msgstr "Voir l’itinéraire"
 
 #: src/ads/slides.ts:190
 msgid "Get our customer app and book any shop on the platform. Sign up there with your personal email."
@@ -4841,7 +4853,7 @@ msgstr "Combien de réponses peuvent-ils choisir ?"
 msgid "How many answers they can pick"
 msgstr "Nombre de réponses à choisir"
 
-#: src/pages/HoursPage.tsx:565
+#: src/pages/HoursPage.tsx:587
 msgid "How many customers this branch can look after at the same time — the same number for every service here. A booking for 3 people takes 3 places at that time; when every place is taken, customers see the time as booked. It is also the most people one booking can be for. Lowering it does not cancel bookings already made."
 msgstr "Le nombre de clients que cette succursale peut accueillir en même temps — le même pour tous les services ici. Une réservation pour 3 personnes prend 3 places à cette heure-là ; quand toutes les places sont prises, les clients voient ce créneau comme réservé. C’est aussi le nombre maximal de personnes pour une seule réservation. Le réduire n’annule pas les réservations déjà faites."
 
@@ -4869,6 +4881,22 @@ msgstr "Comment l’application vous classe"
 #: src/components/Allowed.tsx:19
 msgid "How the business is going — bookings, takings and ratings over time — is seen by the owner and by managers."
 msgstr "L’activité de l’entreprise — réservations, recettes et notes au fil du temps — est visible par le propriétaire et les gérants."
+
+#: src/shopfront/CustomerPhone.tsx:452
+msgid "How to find it"
+msgstr "Comment le trouver"
+
+#: src/pages/HoursPage.tsx:323
+msgid "How to find us"
+msgstr "Comment nous trouver"
+
+#: src/components/NewBranchForm.tsx:206
+msgid "How to find us <0>optional</0>"
+msgstr "Comment nous trouver <0>facultatif</0>"
+
+#: src/shopfront/CustomerPhone.tsx:457
+msgid "How to find your door shows here — add it to the branch under Branches & hours."
+msgstr "Comment trouver votre porte s’affiche ici — ajoutez-le à la succursale dans Succursales et horaires."
 
 #: src/pages/LegalPage.tsx:19
 msgid "How you get paid, and what happens when a booking is cancelled."
@@ -5152,7 +5180,7 @@ msgstr "Kigali Barbers — Kimironko"
 msgid "Kigali city tour"
 msgstr "Visite de Kigali"
 
-#: src/components/NewBranchForm.tsx:284
+#: src/components/NewBranchForm.tsx:321
 msgid "Kimironko Branch"
 msgstr "Succursale de Kimironko"
 
@@ -5237,7 +5265,7 @@ msgstr "Plus tard (→)"
 msgid "Latest reviews"
 msgstr "Derniers avis"
 
-#: src/components/NewBranchForm.tsx:296
+#: src/components/NewBranchForm.tsx:333
 msgid "Leave empty to use the business phone"
 msgstr "Laissez vide pour utiliser le téléphone de l’entreprise"
 
@@ -5510,7 +5538,7 @@ msgstr "Menu"
 msgid "Message <0>{0}/{BODY_MAX}</0>"
 msgstr "Message <0>{0}/{BODY_MAX}</0>"
 
-#: src/shopfront/CustomerPhone.tsx:300
+#: src/shopfront/CustomerPhone.tsx:308
 msgid "Message the shop"
 msgstr "Écrire à l’établissement"
 
@@ -5982,7 +6010,7 @@ msgstr "Personne ne suit encore votre établissement."
 msgid "Nobody has picked it up yet"
 msgstr "Personne ne l’a encore pris en charge"
 
-#: src/shopfront/CustomerPhone.tsx:391
+#: src/shopfront/CustomerPhone.tsx:399
 msgid "Nobody has reviewed this place yet."
 msgstr "Personne n’a encore donné son avis sur cet établissement."
 
@@ -6164,7 +6192,7 @@ msgstr "Rien ne s’est passé ici depuis un moment. Pour protéger le compte, v
 msgid "Nothing in this conversation yet."
 msgstr "Rien dans cette conversation pour l’instant."
 
-#: src/shopfront/CustomerPhone.tsx:342
+#: src/shopfront/CustomerPhone.tsx:350
 msgid "Nothing is bookable here yet."
 msgstr "Rien n’est encore réservable ici."
 
@@ -6353,7 +6381,7 @@ msgstr "Un seul à la fois ici — le premier a été utilisé."
 msgid "One email.<0/><1>No password.</1>"
 msgstr "Un e-mail.<0/><1>Pas de mot de passe.</1>"
 
-#: src/pages/HoursPage.tsx:535
+#: src/pages/HoursPage.tsx:557
 msgid "One fewer"
 msgstr "Un de moins"
 
@@ -6365,7 +6393,7 @@ msgstr "Résumé en une ligne"
 msgid "One line that makes someone want it — e.g. “Sharp fades and clean line-ups”"
 msgstr "Une ligne qui donne envie — ex. « Dégradés nets et contours impeccables »"
 
-#: src/pages/HoursPage.tsx:549
+#: src/pages/HoursPage.tsx:571
 msgid "One more"
 msgstr "Un de plus"
 
@@ -6522,7 +6550,7 @@ msgid "Open Help"
 msgstr "Ouvrir l’aide"
 
 #: src/pages/calendar/AppointmentCalendar.tsx:570
-#: src/shopfront/CustomerPhone.tsx:232
+#: src/shopfront/CustomerPhone.tsx:233
 msgid "Open hours"
 msgstr "Heures d’ouverture"
 
@@ -6561,7 +6589,7 @@ msgid "Open on"
 msgstr "Jours d’ouverture"
 
 #. placeholder {0}: DAYS()[day]
-#: src/pages/HoursPage.tsx:436
+#: src/pages/HoursPage.tsx:458
 msgid "Open on {0}"
 msgstr "Ouvert le {0}"
 
@@ -6590,7 +6618,7 @@ msgstr "Rouvrir l’établissement"
 msgid "Open this booking"
 msgstr "Ouvrir cette réservation"
 
-#: src/components/NewBranchForm.tsx:250
+#: src/components/NewBranchForm.tsx:286
 msgid "Open this branch"
 msgstr "Ouvrir cette succursale"
 
@@ -6607,7 +6635,7 @@ msgid "Open, but different hours"
 msgstr "Ouvert, mais avec d’autres horaires"
 
 #: src/onboarding/steps.ts:131
-#: src/pages/HoursPage.tsx:408
+#: src/pages/HoursPage.tsx:430
 msgid "Opening hours"
 msgstr "Horaires d’ouverture"
 
@@ -6620,7 +6648,7 @@ msgstr "Horaires d’ouverture définis"
 msgid "Opening hours at {0}"
 msgstr "Horaires d’ouverture de {0}"
 
-#: src/components/NewBranchForm.tsx:250
+#: src/components/NewBranchForm.tsx:286
 #: src/pages/ProfilePage.tsx:865
 msgid "Opening…"
 msgstr "Ouverture…"
@@ -6864,7 +6892,7 @@ msgid "Pausing…"
 msgstr "Mise en pause…"
 
 #. placeholder {0}: format(deposit, service.currency)
-#: src/shopfront/CustomerPhone.tsx:472
+#: src/shopfront/CustomerPhone.tsx:521
 msgid "pay {0} now"
 msgstr "payez {0} maintenant"
 
@@ -6952,8 +6980,8 @@ msgid "People close to you see you first"
 msgstr "Les gens près de chez vous vous voient en premier"
 
 #: src/ads/tips.ts:34
-#: src/pages/HoursPage.tsx:532
-#: src/pages/HoursPage.tsx:546
+#: src/pages/HoursPage.tsx:554
+#: src/pages/HoursPage.tsx:568
 msgid "People served at once"
 msgstr "Personnes servies en même temps"
 
@@ -6974,8 +7002,8 @@ msgstr "salon pour animaux"
 msgid "Phone"
 msgstr "Téléphone"
 
-#: src/components/NewBranchForm.tsx:289
-#: src/pages/HoursPage.tsx:656
+#: src/components/NewBranchForm.tsx:326
+#: src/pages/HoursPage.tsx:680
 msgid "Phone for this branch <0>optional</0>"
 msgstr "Téléphone de cette succursale <0>facultatif</0>"
 
@@ -7003,7 +7031,7 @@ msgid "Photos"
 msgstr "Photos"
 
 #. placeholder {0}: s.gallery.length
-#: src/shopfront/CustomerPhone.tsx:306
+#: src/shopfront/CustomerPhone.tsx:314
 msgid "Photos <0>{0}</0>"
 msgstr "Photos <0>{0}</0>"
 
@@ -7039,7 +7067,7 @@ msgstr "Photos, textes, horaires et versements — tout est prêt."
 msgid "Pick 1"
 msgstr "Choisissez-en 1"
 
-#: src/components/NewBranchForm.tsx:314
+#: src/components/NewBranchForm.tsx:351
 msgid "Pick a suggestion to drop the pin on the map for you."
 msgstr "Choisissez une suggestion pour placer le repère sur la carte à votre place."
 
@@ -7630,11 +7658,11 @@ msgstr "restaurant"
 
 #: src/nav.ts:112
 #: src/pages/ReviewsPage.tsx:158
-#: src/shopfront/CustomerPhone.tsx:233
+#: src/shopfront/CustomerPhone.tsx:234
 msgid "Reviews"
 msgstr "Avis"
 
-#: src/shopfront/CustomerPhone.tsx:233
+#: src/shopfront/CustomerPhone.tsx:234
 msgid "Reviews ({reviewTotal})"
 msgstr "Avis ({reviewTotal})"
 
@@ -7737,9 +7765,9 @@ msgstr "salon"
 msgid "Saturday morning is Umuganda"
 msgstr "Samedi matin, c’est l’Umuganda"
 
-#: src/pages/HoursPage.tsx:584
-#: src/pages/HoursPage.tsx:584
-#: src/pages/HoursPage.tsx:637
+#: src/pages/HoursPage.tsx:606
+#: src/pages/HoursPage.tsx:606
+#: src/pages/HoursPage.tsx:661
 #: src/pages/ProfilePage.tsx:561
 #: src/pages/StaffPage.tsx:317
 #: src/ui/Dialog.tsx:144
@@ -7766,12 +7794,12 @@ msgstr "Enregistrer la réponse"
 msgid "Save the service — customers see it when they book"
 msgstr "Enregistrez le service — les clients le voient en réservant"
 
-#: src/pages/HoursPage.tsx:510
+#: src/pages/HoursPage.tsx:532
 msgid "Save the week"
 msgstr "Enregistrer la semaine"
 
-#: src/pages/HoursPage.tsx:496
-#: src/pages/HoursPage.tsx:584
+#: src/pages/HoursPage.tsx:518
+#: src/pages/HoursPage.tsx:606
 msgid "Saved"
 msgstr "Enregistré"
 
@@ -7794,9 +7822,9 @@ msgstr "Enregistrement du brouillon…"
 #: src/components/LegalGate.tsx:113
 #: src/pages/AppointmentsPage.tsx:802
 #: src/pages/ClosuresPage.tsx:626
-#: src/pages/HoursPage.tsx:510
-#: src/pages/HoursPage.tsx:584
-#: src/pages/HoursPage.tsx:637
+#: src/pages/HoursPage.tsx:532
+#: src/pages/HoursPage.tsx:606
+#: src/pages/HoursPage.tsx:661
 #: src/pages/LegalPage.tsx:166
 #: src/pages/LegalPage.tsx:193
 #: src/pages/OverviewPage.tsx:586
@@ -7894,7 +7922,7 @@ msgstr "Siège pour deux"
 msgid "See all "
 msgstr "Tout voir "
 
-#: src/shopfront/CustomerPhone.tsx:308
+#: src/shopfront/CustomerPhone.tsx:316
 msgid "See all →"
 msgstr "Tout voir →"
 
@@ -8471,7 +8499,7 @@ msgstr "Partir d’une idée"
 msgid "Start selling.<0/><1>Free to join.</1>"
 msgstr "Commencez à vendre.<0/><1>Inscription gratuite.</1>"
 
-#: src/components/NewBranchForm.tsx:311
+#: src/components/NewBranchForm.tsx:348
 msgid "Start typing — KG 9 Ave, Kimironko…"
 msgstr "Commencez à taper — KG 9 Ave, Kimironko…"
 
@@ -8723,6 +8751,10 @@ msgstr "Impôts · RRA"
 msgid "Taxpayer registration (TIN)"
 msgstr "Immatriculation fiscale (TIN)"
 
+#: src/pages/HoursPage.tsx:333
+msgid "Tell customers how to find your door"
+msgstr "Dites aux clients comment trouver votre porte"
+
 #: src/pages/SupportPage.tsx:439
 msgid "Tell us what happened"
 msgstr "Dites-nous ce qui s’est passé"
@@ -8838,7 +8870,7 @@ msgstr "L’envoi a échoué. Vérifiez votre connexion."
 
 #: src/pages/AppointmentsPage.tsx:499
 #: src/pages/HoursPage.tsx:192
-#: src/pages/HoursPage.tsx:623
+#: src/pages/HoursPage.tsx:647
 #: src/pages/OverviewPage.tsx:293
 #: src/pages/ProfilePage.tsx:777
 #: src/pages/ProfilePage.tsx:808
@@ -9101,19 +9133,23 @@ msgstr "Le téléphone à côté de vos informations montre votre page telle que
 msgid "The picture could not be made"
 msgstr "L’image n’a pas pu être créée"
 
-#: src/components/NewBranchForm.tsx:216
+#: src/components/NewBranchForm.tsx:252
 msgid "The pin and the district were filled in from this address."
 msgstr "Le repère et le district ont été remplis d’après cette adresse."
 
-#: src/pages/HoursPage.tsx:676
+#: src/pages/HoursPage.tsx:700
 msgid "The pin and the district were moved to this address."
 msgstr "Le repère et le district ont été déplacés vers cette adresse."
 
-#: src/components/NewBranchForm.tsx:216
+#: src/components/NewBranchForm.tsx:218
+msgid "The pin finds the building; this finds your door. Customers read it under the map and on their booking."
+msgstr "Le repère trouve le bâtiment ; ceci trouve votre porte. Les clients le lisent sous la carte et sur leur réservation."
+
+#: src/components/NewBranchForm.tsx:252
 msgid "The pin was filled in from this address."
 msgstr "Le repère a été placé d’après cette adresse."
 
-#: src/pages/HoursPage.tsx:676
+#: src/pages/HoursPage.tsx:700
 msgid "The pin was moved to this address."
 msgstr "Le repère a été déplacé vers cette adresse."
 
@@ -9137,7 +9173,7 @@ msgstr "Le prix est pour une personne. Laissez une succursale vide pour ne plus 
 msgid "The question customers see"
 msgstr "La question que voient les clients"
 
-#: src/shopfront/CustomerPhone.tsx:180
+#: src/shopfront/CustomerPhone.tsx:181
 msgid "The real page from the app, with what you have typed. Scroll it, and try the tabs."
 msgstr "La vraie page de l’application, avec ce que vous avez saisi. Faites-la défiler, et essayez les onglets."
 
@@ -9190,7 +9226,7 @@ msgstr "Toute la journée"
 msgid "The whole shop"
 msgstr "Tout l’établissement"
 
-#: src/pages/HoursPage.tsx:501
+#: src/pages/HoursPage.tsx:523
 msgid "The whole week is saved together"
 msgstr "Toute la semaine est enregistrée d’un coup"
 
@@ -9267,7 +9303,7 @@ msgstr "Ils en choisissent une ou plusieurs"
 msgid "They pick up to {picks}"
 msgstr "Ils en choisissent jusqu’à {picks}"
 
-#: src/shopfront/CustomerPhone.tsx:408
+#: src/shopfront/CustomerPhone.tsx:416
 msgid "They replied"
 msgstr "Leur réponse"
 
@@ -9315,7 +9351,7 @@ msgstr "Impossible d’ouvrir cette réservation"
 msgid "This branch is at its {limit} photo limit."
 msgstr "Cette succursale a atteint sa limite de {limit} photos."
 
-#: src/pages/HoursPage.tsx:325
+#: src/pages/HoursPage.tsx:347
 msgid "This branch is closed. It takes no new bookings and customers cannot find it. Everything that happened here is kept."
 msgstr "Cette succursale est fermée. Elle ne prend plus de nouvelles réservations et les clients ne peuvent pas la trouver. Tout ce qui s’y est passé est conservé."
 
@@ -9476,7 +9512,7 @@ msgstr "À vous payer sur place"
 msgid "To your MoMo number"
 msgstr "Sur votre numéro MoMo"
 
-#: src/pages/HoursPage.tsx:432
+#: src/pages/HoursPage.tsx:454
 msgid "today"
 msgstr "aujourd’hui"
 
@@ -10252,7 +10288,7 @@ msgstr "Ce qu’il peut faire"
 msgid "What they chose"
 msgstr "Ses choix"
 
-#: src/shopfront/CustomerPhone.tsx:231
+#: src/shopfront/CustomerPhone.tsx:232
 msgid "What they do"
 msgstr "Leurs services"
 
@@ -10408,6 +10444,7 @@ msgid "Where is your shop?"
 msgstr "Où se trouve votre établissement ?"
 
 #: src/components/NewBranchForm.tsx:118
+#: src/shopfront/CustomerPhone.tsx:429
 msgid "Where it is"
 msgstr "Où elle se trouve"
 
@@ -10455,7 +10492,7 @@ msgid "Where your money goes"
 msgstr "Où va votre argent"
 
 #: src/pages/StoriesPage.tsx:333
-#: src/shopfront/CustomerPhone.tsx:134
+#: src/shopfront/CustomerPhone.tsx:135
 msgid "Which branch"
 msgstr "Quelle succursale"
 
@@ -10674,7 +10711,7 @@ msgstr "Vous recevez"
 msgid "You get one reply per review, and can edit it for 7 days. Both are public."
 msgstr "Vous avez droit à une réponse par avis, modifiable pendant 7 jours. Les deux sont publics."
 
-#: src/pages/HoursPage.tsx:499
+#: src/pages/HoursPage.tsx:521
 msgid "You have changes that are not saved"
 msgstr "Vous avez des modifications non enregistrées"
 
@@ -10826,7 +10863,7 @@ msgstr "Votre journée"
 msgid "Your day at a glance"
 msgstr "Votre journée en un coup d’œil"
 
-#: src/shopfront/CustomerPhone.tsx:294
+#: src/shopfront/CustomerPhone.tsx:302
 msgid "Your description shows here. Say what you offer and why you are worth the trip."
 msgstr "Votre description s’affiche ici. Dites ce que vous proposez et pourquoi vous valez le déplacement."
 

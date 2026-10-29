@@ -8,24 +8,24 @@ msgstr ""
 "Language: rw\n"
 
 #. placeholder {0}: sale.percent
-#: app/book/[id].tsx:952
+#: app/book/[id].tsx:976
 msgid " · {0}% off"
 msgstr " · igabanywa rya {0}%"
 
 #. placeholder {0}: saleUntil(sale)
-#: app/book/[id].tsx:604
+#: app/book/[id].tsx:628
 msgid " · discount {0}"
 msgstr " · igabanywa {0}"
 
-#: app/book/[id].tsx:604
+#: app/book/[id].tsx:628
 msgid " · discount on now"
 msgstr " · igabanywa ririho ubu"
 
-#: app/book/[id].tsx:585
+#: app/book/[id].tsx:609
 msgid " · once, not per person"
 msgstr " · rimwe, si kuri buri muntu"
 
-#: app/book/[id].tsx:953
+#: app/book/[id].tsx:977
 msgid " · with choices"
 msgstr " · hamwe n’amahitamo"
 
@@ -34,7 +34,7 @@ msgid " Allergies and health go in the questions above, never here."
 msgstr " Allergie n’iby’ubuzima bisubizwa mu bibazo biri hejuru, ntibyandikwa hano."
 
 #. placeholder {0}: countWord(quantity)
-#: app/book/[id].tsx:607
+#: app/book/[id].tsx:631
 msgid " on {0}"
 msgstr " ku {0}"
 
@@ -102,7 +102,7 @@ msgstr "{0, plural, one {inkuru # y’uyu munsi, wayirebye} other {inkuru # z’
 #. placeholder {0}: missing.length - 1
 #. placeholder {1}: askedAs(missing[0])
 #. placeholder {2}: askedAs(missing[0])
-#: app/book/[id].tsx:727
+#: app/book/[id].tsx:751
 msgid "{0, plural, one {Answer “{1}” first and # more — the times depend on your answers.} other {Answer “{2}” first and # more — the times depend on your answers.}}"
 msgstr "{0, plural, one {Banza usubize “{1}” n’ikindi kibazo # — imyanya iboneka ishingira ku bisubizo byawe.} other {Banza usubize “{2}” n’ibindi bibazo # — imyanya iboneka ishingira ku bisubizo byawe.}}"
 
@@ -150,17 +150,17 @@ msgid "{0} has changed"
 msgstr "{0} yahindutse"
 
 #. placeholder {0}: holiday ?? ''
-#: app/book/[id].tsx:787
+#: app/book/[id].tsx:811
 msgid "{0} is a public holiday. Shops may keep shorter hours — the times below are this shop’s."
 msgstr "{0} ni umunsi w’ikiruhuko rusange. Amaduka ashobora gukora amasaha make — amasaha ari hepfo ni ay’iri duka."
 
-#. placeholder {0}: route.data.minutes
-#: app/book/[id].tsx:177
+#. placeholder {0}: route.minutes
+#: src/routeLabel.ts:28
 msgid "{0} min by car"
 msgstr "Iminota {0} mu modoka"
 
 #. placeholder {0}: format(depositMinor)
-#: app/book/[id].tsx:962
+#: app/book/[id].tsx:986
 msgid "{0} now"
 msgstr "{0} ubu"
 
@@ -170,7 +170,7 @@ msgid "{0} paid with MTN Mobile Money. Your slot is confirmed."
 msgstr "Wishyuye {0} ukoresheje MTN Mobile Money. Umwanya wawe wemejwe."
 
 #. placeholder {0}: s.business.followers.toLocaleString()
-#: app/shop/[id].tsx:285
+#: app/shop/[id].tsx:296
 msgid "{0} people follow {displayName}"
 msgstr "Abantu {0} bakurikira {displayName}"
 
@@ -186,7 +186,7 @@ msgstr "Byatoranyijwe: {0}"
 
 #. placeholder {0}: dayOf(a.depositPaidAt)
 #. placeholder {1}: timeOf(a.depositPaidAt)
-#: src/booking/Reservation.tsx:281
+#: src/booking/Reservation.tsx:297
 msgid "{0}, {1} · {MOMO_NAME}"
 msgstr "{0}, {1} · {MOMO_NAME}"
 
@@ -196,6 +196,12 @@ msgstr "{0}, {1} · {MOMO_NAME}"
 #: app/gallery/[id].tsx:269
 msgid "{0}, {1} of {2}"
 msgstr "{0}, {1} kuri {2}"
+
+#. placeholder {0}: s.name
+#. placeholder {1}: s.address
+#: app/shop/[id].tsx:306
+msgid "{0}, {1}. Directions"
+msgstr "{0}, {1}. Inzira"
 
 #. placeholder {0}: lead.label ?? 'Photo'
 #. placeholder {1}: shown.length
@@ -210,24 +216,24 @@ msgstr "Avansi ya {0}% · yemeza umwanya wawe"
 
 #. placeholder {0}: sale.percent
 #. placeholder {1}: format(savedMinor)
-#: app/book/[id].tsx:928
+#: app/book/[id].tsx:952
 msgid "{0}% off · you save {1}"
 msgstr "Igabanywa rya {0}% · uzigama {1}"
 
-#: src/booking/Reservation.tsx:493
+#: src/booking/Reservation.tsx:509
 msgid "{amount} is on its way back to the number that paid."
 msgstr "{amount} biri mu nzira bisubira kuri nimero yishyuye."
 
-#: src/booking/Reservation.tsx:492
+#: src/booking/Reservation.tsx:508
 msgid "{amount} is taking longer than usual to send — our team is sending it to you."
 msgstr "Kohereza {amount} biratinda kurusha uko bisanzwe — itsinda ryacu riri kubikoherereza."
 
 #. placeholder {0}: dayOf(when)
-#: src/booking/Reservation.tsx:489
+#: src/booking/Reservation.tsx:505
 msgid "{amount} sent back on {0} to the number that paid."
 msgstr "{amount} byasubijwe ku wa {0} kuri nimero yishyuye."
 
-#: src/booking/Reservation.tsx:490
+#: src/booking/Reservation.tsx:506
 msgid "{amount} sent back to the number that paid."
 msgstr "{amount} byasubijwe kuri nimero yishyuye."
 
@@ -235,7 +241,7 @@ msgstr "{amount} byasubijwe kuri nimero yishyuye."
 msgid "{away} away in a straight line"
 msgstr "Kuri {away} mu murongo ugororotse"
 
-#: app/book/[id].tsx:465
+#: app/book/[id].tsx:473
 msgid "{businessName}. View the shop"
 msgstr "{businessName}. Reba iduka"
 
@@ -243,7 +249,7 @@ msgstr "{businessName}. Reba iduka"
 msgid "{clean}. Change email"
 msgstr "{clean}. Hindura imeyili"
 
-#: app/book/[id].tsx:125
+#: app/book/[id].tsx:127
 msgid "{count, plural, one {# free} other {# free}}"
 msgstr "{count, plural, one {umwanya # uboneka} other {imyanya # iboneka}}"
 
@@ -344,7 +350,7 @@ msgstr "{m} min"
 msgid "{minutes} min"
 msgstr "{minutes} min"
 
-#: app/book/[id].tsx:292
+#: app/book/[id].tsx:299
 msgid "{n, plural, one {# person} other {# people}}"
 msgstr "{n, plural, one {umuntu #} other {abantu #}}"
 
@@ -364,15 +370,15 @@ msgstr "Amaduka {on} muri {all} ukurikira ni yo akoherereza promosiyo. Hitamo mu
 msgid "{percent} percent off"
 msgstr "Igabanywa rya {percent} ku ijana"
 
-#: app/book/[id].tsx:846
+#: app/book/[id].tsx:870
 msgid "{placesLeft, plural, one {{time}, # place left} other {{time}, # places left}}"
 msgstr "{placesLeft, plural, one {{time}, hasigaye umwanya #} other {{time}, hasigaye imyanya #}}"
 
-#: app/book/[id].tsx:833
+#: app/book/[id].tsx:857
 msgid "{placesLeft} left"
 msgstr "Hasigaye {placesLeft}"
 
-#: app/book/[id].tsx:332
+#: app/book/[id].tsx:339
 msgid "{quantity, plural, one {No time has room for # person on this day. Try fewer people, or another day.} other {No time has room for # people on this day. Try fewer people, or another day.}}"
 msgstr "{quantity, plural, one {Nta mwanya wakwakira umuntu # kuri uwo munsi. Gerageza abantu bake, cyangwa undi munsi.} other {Nta mwanya wakwakira abantu # kuri uwo munsi. Gerageza abantu bake, cyangwa undi munsi.}}"
 
@@ -396,7 +402,7 @@ msgstr "{shopCount, plural, one {iduka #} other {amaduka #}}"
 msgid "{since} ago"
 msgstr "Hashize {since}"
 
-#: app/book/[id].tsx:844
+#: app/book/[id].tsx:868
 msgid "{time}, booked"
 msgstr "{time}, byafashwe"
 
@@ -436,7 +442,7 @@ msgstr "2. Shyiramo PIN yawe ya MoMo ubwemeze."
 msgid "3. This screen updates on its own."
 msgstr "3. Iyi paji yivugurura ubwayo."
 
-#: app/book/[id].tsx:639
+#: app/book/[id].tsx:663
 msgid "A {depositPct}% deposit holds the time for you. The rest is paid at the shop."
 msgstr "Avansi ya {depositPct}% igufatira umwanya. Asigaye yishyurirwa ku iduka."
 
@@ -449,11 +455,11 @@ msgstr "Ubucuruzi"
 msgid "A copy of your data"
 msgstr "Kopi y’amakuru yawe"
 
-#: src/booking/Reservation.tsx:411
+#: src/booking/Reservation.tsx:427
 msgid "A few words help the next person decide. It takes a moment."
 msgstr "Amagambo make afasha undi muntu gufata icyemezo. Bitwara akanya gato."
 
-#: app/booking/[id].tsx:214
+#: app/booking/[id].tsx:215
 msgid "A new code is on its way to your email."
 msgstr "Kode nshya yoherejwe kuri imeyili yawe."
 
@@ -506,7 +512,7 @@ msgstr "Ibyerekeye"
 msgid "About a booking"
 msgstr "Ibyerekeye gahunda"
 
-#: app/book/[id].tsx:525
+#: app/book/[id].tsx:533
 msgid "About this service"
 msgstr "Ibyerekeye iyi serivisi"
 
@@ -541,7 +547,7 @@ msgstr "Ongeraho nimero"
 msgid "Add a picture"
 msgstr "Ongeraho ifoto"
 
-#: src/booking/Reservation.tsx:219
+#: src/booking/Reservation.tsx:235
 msgid "Add a wish or a note for the shop"
 msgstr "Ongeraho icyifuzo cyangwa icyo ubwira iduka"
 
@@ -658,11 +664,11 @@ msgid "Anonymous"
 msgstr "Utazwi"
 
 #. placeholder {0}: askedAs(missing[0])
-#: app/book/[id].tsx:731
+#: app/book/[id].tsx:755
 msgid "Answer “{0}” first — the times depend on your answers."
 msgstr "Banza usubize “{0}” — imyanya iboneka ishingira ku bisubizo byawe."
 
-#: app/book/[id].tsx:986
+#: app/book/[id].tsx:1010
 msgid "Answer first"
 msgstr "Banza usubize"
 
@@ -683,11 +689,15 @@ msgstr "Intera yose"
 msgid "App language"
 msgstr "Ururimi rwa porogaramu"
 
+#: src/components/WhereCard.tsx:98
+msgid "Apple Maps"
+msgstr "Apple Maps"
+
 #: app/sign-in.tsx:448
 msgid "Approve the deposit on your own phone."
 msgstr "Emeza avansi kuri telefoni yawe."
 
-#: app/book/[id].tsx:508
+#: app/book/[id].tsx:516
 msgid "Ask"
 msgstr "Baza"
 
@@ -704,7 +714,7 @@ msgstr "Babaze icyo ushaka — ibiciro, aho guparika, icyo wazana."
 msgid "Asking before booking"
 msgstr "Ikibazo mbere ya gahunda"
 
-#: app/booking/[id].tsx:403
+#: app/booking/[id].tsx:393
 msgid "Asking your phone…"
 msgstr "Turimo kubaza telefoni yawe…"
 
@@ -716,7 +726,7 @@ msgstr "Umunsi w’Ijyanwa mu Ijuru rya Bikira Mariya"
 msgid "At the address right now?"
 msgstr "Uri kuri iyo aderesi ubu?"
 
-#: app/book/[id].tsx:632
+#: app/book/[id].tsx:656
 msgid "At the shop"
 msgstr "Ku iduka"
 
@@ -736,7 +746,7 @@ msgstr "Subira kuri {shopName} ufate gahunda"
 msgid "Bad"
 msgstr "Bibi"
 
-#: src/booking/Reservation.tsx:294
+#: src/booking/Reservation.tsx:310
 msgid "Balance at the shop"
 msgstr "Asigaye ku iduka"
 
@@ -744,7 +754,7 @@ msgstr "Asigaye ku iduka"
 msgid "Barbers, salons, spas and more — with their real photos, prices and reviews."
 msgstr "Abogosha, salon z’ubwiza, spa n’ibindi — bifite amafoto nyayo, ibiciro n’ibitekerezo."
 
-#: src/booking/Reservation.tsx:315
+#: src/booking/Reservation.tsx:331
 msgid "Because the shop cancelled, your deposit is refunded in full."
 msgstr "Kubera ko iduka ryahagaritse gahunda, avansi yawe irasubizwa yose."
 
@@ -772,8 +782,8 @@ msgstr "Igiciro cyiza: {0} kuri {1}, {price}."
 msgid "Best rated"
 msgstr "Amanota menshi"
 
-#: app/book/[id].tsx:262
-#: app/book/[id].tsx:274
+#: app/book/[id].tsx:261
+#: app/book/[id].tsx:273
 #: app/thread/[id].tsx:263
 #: src/components/SavedServiceCard.tsx:138
 msgid "Book"
@@ -784,7 +794,7 @@ msgstr "Fata gahunda"
 msgid "Book {0}"
 msgstr "Fata gahunda ya {0}"
 
-#: app/book/[id].tsx:992
+#: app/book/[id].tsx:1016
 msgid "Book {slot}"
 msgstr "Fata {slot}"
 
@@ -823,12 +833,12 @@ msgstr "Fata gahunda yawe ikurikira, byoroshye."
 msgid "Booked"
 msgstr "Byafashwe"
 
-#: app/book/[id].tsx:833
+#: app/book/[id].tsx:857
 msgctxt "a time with no places left"
 msgid "Booked"
 msgstr "Byafashwe"
 
-#: src/booking/Reservation.tsx:238
+#: src/booking/Reservation.tsx:254
 #: src/exportDocument.ts:91
 msgid "Booked on"
 msgstr "Igihe yafashwe"
@@ -843,7 +853,7 @@ msgstr "Gahunda"
 msgid "Bookings"
 msgstr "Gahunda"
 
-#: app/booking/[id].tsx:509
+#: app/booking/[id].tsx:503
 msgid "Bookings are kept with your account, so only you can open them."
 msgstr "Gahunda zibikwa kuri konti yawe, bityo ni wowe wenyine ushobora kuzifungura."
 
@@ -881,7 +891,7 @@ msgstr "Reba serivisi"
 msgid "By tapping, you agree to version {0} of the {1}."
 msgstr "Ukanze, uba wemeye “{1}”, verisiyo ya {0}."
 
-#: src/booking/Reservation.tsx:198
+#: src/booking/Reservation.tsx:208
 #: src/components/OffersCard.tsx:346
 #: src/stories/StoryPlayer.tsx:517
 msgid "Cancel"
@@ -891,27 +901,27 @@ msgstr "Hagarika"
 msgid "Cancel at least 24 hours before, or if the shop cancels, and your whole deposit goes back to the number that paid. Later, or if you don’t come, the shop keeps it."
 msgstr "Hagarika habura nibura amasaha 24, cyangwa iduka nirihagarika, avansi yawe yose isubira kuri nimero yishyuye. Nyuma y’aho, cyangwa nutaza, iduka rirayigumana."
 
-#: src/booking/Reservation.tsx:352
+#: src/booking/Reservation.tsx:368
 msgid "Cancel before {deadlineWords} and your whole deposit of {deposit} comes back to you."
 msgstr "Hagarika mbere ya {deadlineWords} maze avansi yawe yose ya {deposit} igusubire."
 
-#: app/booking/[id].tsx:301
+#: app/booking/[id].tsx:302
 msgid "Cancel booking"
 msgstr "Hagarika gahunda"
 
-#: app/booking/[id].tsx:379
+#: app/booking/[id].tsx:369
 msgid "Cancel this booking"
 msgstr "Hagarika iyi gahunda"
 
-#: app/booking/[id].tsx:291
+#: app/booking/[id].tsx:292
 msgid "Cancel this booking?"
 msgstr "Uhagarike iyi gahunda?"
 
-#: src/booking/Reservation.tsx:366
+#: src/booking/Reservation.tsx:382
 msgid "Cancel this reservation"
 msgstr "Hagarika iyi gahunda"
 
-#: src/booking/Reservation.tsx:306
+#: src/booking/Reservation.tsx:322
 #: src/components/NotificationCard.tsx:44
 #: src/exportDocument.ts:86
 msgid "Cancelled"
@@ -922,15 +932,15 @@ msgctxt "booking status"
 msgid "Cancelled"
 msgstr "Yahagaritswe"
 
-#: src/booking/Reservation.tsx:44
+#: src/booking/Reservation.tsx:46
 msgid "Cancelled it on the shop’s side"
 msgstr "Twayihagaritse mu izina ry’iduka"
 
-#: src/booking/Reservation.tsx:43
+#: src/booking/Reservation.tsx:45
 msgid "Cancelled it, as you asked"
 msgstr "Twayihagaritse, nk’uko wabisabye"
 
-#: src/booking/Reservation.tsx:345
+#: src/booking/Reservation.tsx:361
 msgid "Cancelling"
 msgstr "Guhagarika gahunda"
 
@@ -962,7 +972,7 @@ msgstr "Hindura ifoto"
 msgid "Change your wishes"
 msgstr "Hindura ibyifuzo byawe"
 
-#: src/booking/Reservation.tsx:42
+#: src/booking/Reservation.tsx:44
 msgid "Changed “missed” to done — you came"
 msgstr "Twahinduye “yabuze” mo “byarangiye” — waraje"
 
@@ -987,16 +997,16 @@ msgstr "isuzuma ry’ubuzima"
 msgid "Checked in"
 msgstr "Wakiriwe"
 
-#: src/booking/Reservation.tsx:40
+#: src/booking/Reservation.tsx:42
 msgid "Checked you in"
 msgstr "Twakwakiriye"
 
-#: app/booking/[id].tsx:354
+#: app/booking/[id].tsx:344
 msgid "Checkout"
 msgstr "Kwishyura"
 
-#: app/book/[id].tsx:686
-#: app/book/[id].tsx:990
+#: app/book/[id].tsx:710
+#: app/book/[id].tsx:1014
 msgid "Choose a time"
 msgstr "Hitamo umwanya"
 
@@ -1059,9 +1069,9 @@ msgstr "Funga iri tangazo"
 msgid "Close your account?"
 msgstr "Ufunge konti yawe?"
 
-#: app/shop/[id].tsx:220
-#: app/shop/[id].tsx:438
-#: app/shop/[id].tsx:454
+#: app/shop/[id].tsx:231
+#: app/shop/[id].tsx:460
+#: app/shop/[id].tsx:476
 msgid "Closed"
 msgstr "Birafunze"
 
@@ -1075,11 +1085,11 @@ msgctxt "help request status"
 msgid "Closed"
 msgstr "Birafunze"
 
-#: app/book/[id].tsx:341
+#: app/book/[id].tsx:348
 msgid "Closed for today — the shop shuts at {shuts}. Pick another day."
 msgstr "Uyu munsi iduka ryafunze — rifunga saa {shuts}. Hitamo undi munsi."
 
-#: app/book/[id].tsx:328
+#: app/book/[id].tsx:335
 msgid "Closed on this day."
 msgstr "Kuri uyu munsi rirafunze."
 
@@ -1103,7 +1113,7 @@ msgstr "ikiganiro n’umutoza"
 msgid "Coming soon"
 msgstr "Biraza vuba"
 
-#: app/shop/[id].tsx:448
+#: app/shop/[id].tsx:470
 msgid "Coming up"
 msgstr "Iminsi iri imbere"
 
@@ -1144,19 +1154,27 @@ msgstr "Ibiganiro bibikwa kuri konti yawe, ukabibona kuri telefoni iyo ari yo yo
 msgid "cooking class"
 msgstr "isomo ryo guteka"
 
+#: src/components/WhereCard.tsx:126
+msgid "Copied"
+msgstr "Byakoporowe"
+
+#: src/components/WhereCard.tsx:155
+msgid "Copies the address and a map link"
+msgstr "Ikoporora aderesi n’ihuza ry’ikarita"
+
 #: app/(tabs)/account.tsx:134
 msgid "Could not add that"
 msgstr "Ntibyashobotse kubyongeraho"
 
-#: app/book/[id].tsx:247
+#: app/book/[id].tsx:246
 msgid "Could not book that"
 msgstr "Ntibyashobotse gufata iyo gahunda"
 
-#: app/booking/[id].tsx:229
+#: app/booking/[id].tsx:230
 msgid "Could not cancel"
 msgstr "Ntibyashobotse guhagarika"
 
-#: app/booking/[id].tsx:91
+#: app/booking/[id].tsx:92
 msgid "Could not change that"
 msgstr "Ntibyashobotse kubihindura"
 
@@ -1164,12 +1182,12 @@ msgstr "Ntibyashobotse kubihindura"
 msgid "Could not find you just now"
 msgstr "Ntitwabashije kumenya aho uri ubu"
 
-#: app/booking/[id].tsx:327
+#: src/components/WhereCard.tsx:119
 msgid "Could not open maps"
 msgstr "Ntibyashobotse gufungura ikarita"
 
-#: app/book/[id].tsx:256
-#: app/shop/[id].tsx:121
+#: app/book/[id].tsx:255
+#: app/shop/[id].tsx:124
 msgid "Could not open that"
 msgstr "Ntibyashobotse kubifungura"
 
@@ -1193,6 +1211,10 @@ msgstr "Ntibyashobotse gushakisha. Ongera ugerageze."
 msgid "Could not send a code. Check your connection and try again."
 msgstr "Ntibyashobotse kohereza kode. Reba murandasi yawe wongere ugerageze."
 
+#: src/components/WhereCard.tsx:128
+msgid "Could not send that"
+msgstr "Ntibyashobotse kohereza"
+
 #: app/sessions.tsx:55
 msgid "Could not sign out the others"
 msgstr "Ntibyashobotse gusohoka ku bindi bikoresho"
@@ -1201,7 +1223,7 @@ msgstr "Ntibyashobotse gusohoka ku bindi bikoresho"
 msgid "Could not sign out there"
 msgstr "Ntibyashobotse gusohoka kuri icyo gikoresho"
 
-#: app/booking/[id].tsx:189
+#: app/booking/[id].tsx:190
 msgid "Could not start the payment"
 msgstr "Ntibyashobotse gutangira kwishyura"
 
@@ -1213,7 +1235,7 @@ msgstr "Fungura konti yanjye"
 msgid "Creating your account"
 msgstr "Turafungura konti yawe"
 
-#: src/booking/Reservation.tsx:230
+#: src/booking/Reservation.tsx:246
 msgid "Date"
 msgstr "Itariki"
 
@@ -1221,7 +1243,7 @@ msgstr "Itariki"
 msgid "day"
 msgstr "umunsi"
 
-#: app/book/[id].tsx:738
+#: app/book/[id].tsx:762
 msgid "Day"
 msgstr "Umunsi"
 
@@ -1241,11 +1263,11 @@ msgstr "Avansi"
 msgid "Deposit · confirms your time"
 msgstr "Avansi · yemeza umwanya wawe"
 
-#: src/booking/Reservation.tsx:278
+#: src/booking/Reservation.tsx:294
 msgid "Deposit not paid"
 msgstr "Avansi ntiyishyuwe"
 
-#: src/booking/Reservation.tsx:278
+#: src/booking/Reservation.tsx:294
 #: src/tour/WelcomeTour.tsx:110
 msgid "Deposit paid"
 msgstr "Avansi yishyuwe"
@@ -1266,9 +1288,15 @@ msgstr "Ntiwayibonye?"
 msgid "dinner out"
 msgstr "ifunguro rya nimugoroba"
 
-#: src/booking/Reservation.tsx:193
+#: app/book/[id].tsx:583
+#: app/shop/[id].tsx:318
+#: src/booking/Reservation.tsx:203
 msgid "Directions"
 msgstr "Inzira"
+
+#: app/book/[id].tsx:579
+msgid "Directions to {businessName}"
+msgstr "Inzira igana kuri {businessName}"
 
 #: src/components/NotificationCard.tsx:117
 #: src/components/Spotlights.tsx:232
@@ -1277,7 +1305,7 @@ msgstr "Igabanywa"
 
 #. placeholder {0}: a.discountPercent
 #: src/booking/Checkout.tsx:163
-#: src/booking/Reservation.tsx:263
+#: src/booking/Reservation.tsx:279
 msgid "Discount · {0}% off"
 msgstr "Igabanywa · {0}% ku giciro"
 
@@ -1369,7 +1397,7 @@ msgstr "Imeyili"
 msgid "Email address"
 msgstr "Aderesi y’imeyili"
 
-#: app/booking/[id].tsx:465
+#: app/booking/[id].tsx:458
 msgid "Email me this code again"
 msgstr "Ongera unyoherereze iyi kode kuri imeyili"
 
@@ -1381,7 +1409,7 @@ msgstr "Hasigaye {clock}"
 msgid "Enter the 6-digit code we sent to"
 msgstr "Andika kode y’imibare 6 twoherereje kuri"
 
-#: app/booking/[id].tsx:418
+#: app/booking/[id].tsx:408
 msgid "Enter your MoMo number above to pay."
 msgstr "Andika nimero yawe ya MoMo hejuru kugira ngo wishyure."
 
@@ -1409,7 +1437,7 @@ msgstr "Telefoni zose na mushakisha zose konti yawe ifunguyeho. Sohoka ku byo ut
 msgid "Every phone and browser with your account open — sign out any you do not know."
 msgstr "Telefoni na mushakisha zose konti yawe ifunguyeho — sohoka ku byo utazi."
 
-#: app/book/[id].tsx:331
+#: app/book/[id].tsx:338
 msgid "Every time is booked on this day. Pick another day."
 msgstr "Imyanya yose yafashwe kuri uyu munsi. Hitamo undi munsi."
 
@@ -1422,7 +1450,7 @@ msgid "Everything we keep about you, in one place:"
 msgstr "Ibyo tubika byose bikwerekeye, ahantu hamwe:"
 
 #: src/booking/PaidCelebration.tsx:207
-#: src/booking/Reservation.tsx:423
+#: src/booking/Reservation.tsx:439
 msgid "Explore more services"
 msgstr "Reba izindi serivisi"
 
@@ -1463,11 +1491,11 @@ msgstr "gupima imyenda"
 msgid "Fix"
 msgstr "Kosora"
 
-#: app/shop/[id].tsx:255
+#: app/shop/[id].tsx:266
 msgid "Follow"
 msgstr "Kurikira"
 
-#: app/shop/[id].tsx:247
+#: app/shop/[id].tsx:258
 msgid "Follow {displayName}"
 msgstr "Kurikira {displayName}"
 
@@ -1487,7 +1515,7 @@ msgstr "Ukurikire {shopName}?"
 msgid "Follow, and send me offers"
 msgstr "Kurikira, nohererezwe promosiyo"
 
-#: app/shop/[id].tsx:255
+#: app/shop/[id].tsx:266
 #: src/components/FollowingCard.tsx:138
 msgid "Following"
 msgstr "Ukurikira"
@@ -1497,7 +1525,7 @@ msgctxt "how many shops you follow"
 msgid "Following"
 msgstr "Amaduka ukurikira"
 
-#: app/shop/[id].tsx:247
+#: app/shop/[id].tsx:258
 msgid "Following {displayName}. Tap to unfollow"
 msgstr "Ukurikira {displayName}. Kanda ngo ureke gukurikira"
 
@@ -1536,7 +1564,7 @@ msgstr "Guhagarika ni ubuntu kugeza habura amasaha 24"
 msgid "Fri 23 Oct, 10:00"
 msgstr "Kuwa Gatanu 23/10, 10:00"
 
-#: app/book/[id].tsx:571
+#: app/book/[id].tsx:595
 msgid "from"
 msgstr "guhera kuri"
 
@@ -1545,13 +1573,13 @@ msgstr "guhera kuri"
 msgid "From"
 msgstr "Kuva"
 
-#: app/shop/[id].tsx:600
+#: app/shop/[id].tsx:631
 msgid "from "
 msgstr "guhera kuri "
 
 #. placeholder {0}: s.rating.count
-#: app/shop/[id].tsx:312
-#: app/shop/[id].tsx:473
+#: app/shop/[id].tsx:334
+#: app/shop/[id].tsx:495
 msgid "from {0} reviews"
 msgstr "mu bitekerezo {0}"
 
@@ -1579,7 +1607,7 @@ msgstr "Bivuye ku iduka"
 msgid "From where you are now"
 msgstr "Uhereye aho uri ubu"
 
-#: app/book/[id].tsx:344
+#: app/book/[id].tsx:351
 msgid "Fully booked on this day."
 msgstr "Byuzuye kuri uyu munsi."
 
@@ -1591,9 +1619,14 @@ msgstr "Umunsi wo Kwibuka Jenoside yakorewe Abatutsi"
 msgid "Get a copy of my data"
 msgstr "Kuramo kopi y’amakuru yanjye"
 
+#: src/components/WhereCard.tsx:87
+#: src/components/WhereCard.tsx:133
+msgid "Get directions"
+msgstr "Reba inzira"
+
 #: app/help/[id].tsx:83
-#: src/booking/Reservation.tsx:194
-#: src/booking/Reservation.tsx:340
+#: src/booking/Reservation.tsx:204
+#: src/booking/Reservation.tsx:356
 msgid "Get help"
 msgstr "Saba ubufasha"
 
@@ -1609,12 +1642,12 @@ msgstr "Kuramo PDF"
 msgid "getaway"
 msgstr "ikiruhuko"
 
-#: src/booking/Reservation.tsx:237
+#: src/booking/Reservation.tsx:253
 msgid "Getting there"
 msgstr "Uko wahagera"
 
-#: app/shop/[id].tsx:138
-#: app/shop/[id].tsx:535
+#: app/shop/[id].tsx:141
+#: app/shop/[id].tsx:566
 #: app/thread/[id].tsx:216
 #: src/ui/TopBar.tsx:48
 msgid "Go back"
@@ -1631,6 +1664,10 @@ msgstr "Ku wa Gatanu Mutagatifu"
 #: app/sign-in.tsx:593
 msgid "Good to see you again."
 msgstr "Twishimiye kongera kukubona."
+
+#: src/components/WhereCard.tsx:101
+msgid "Google Maps"
+msgstr "Google Maps"
 
 #: src/auth/bookWords.ts:21
 msgid "gorilla trek"
@@ -1665,7 +1702,7 @@ msgstr "Ubusabe bw’ubufasha n’ibisubizo byacu."
 msgid "Help requests are kept with your account, so only you can open them."
 msgstr "Ubusabe bw’ubufasha bubikwa kuri konti yawe, bityo ni wowe wenyine ushobora kubufungura."
 
-#: src/booking/Reservation.tsx:389
+#: src/booking/Reservation.tsx:405
 msgid "Helped with this booking"
 msgstr "Twagufashije kuri iyi gahunda"
 
@@ -1710,7 +1747,7 @@ msgstr "Uko gufata gahunda bikora"
 msgid "How many {label}, type a number up to {max}"
 msgstr "Umubare wa {label}, andika umubare utarenze {max}"
 
-#: app/book/[id].tsx:696
+#: app/book/[id].tsx:720
 msgid "How many people?"
 msgstr "Abantu bangahe?"
 
@@ -1719,8 +1756,12 @@ msgstr "Abantu bangahe?"
 msgid "How paying works"
 msgstr "Uko kwishyura bikora"
 
+#: src/components/WhereCard.tsx:81
+msgid "How to find it"
+msgstr "Uko wahagera"
+
 #: app/review/[id].tsx:185
-#: src/booking/Reservation.tsx:403
+#: src/booking/Reservation.tsx:419
 #: src/components/NotificationCard.tsx:105
 msgid "How was it?"
 msgstr "Byagenze bite?"
@@ -1745,15 +1786,15 @@ msgstr "Nasomye kandi nemeye <0>Amabwiriza y’Imikoreshereze</0> na <1>Politiki
 msgid "I need help"
 msgstr "Nkeneye ubufasha"
 
-#: src/booking/Reservation.tsx:364
+#: src/booking/Reservation.tsx:380
 msgid "If the shop cancels, you get your whole deposit back."
 msgstr "Iduka nirihagarika, usubizwa avansi yawe yose."
 
-#: src/booking/Reservation.tsx:359
+#: src/booking/Reservation.tsx:375
 msgid "If you don’t come, the booking is marked as missed and the deposit is not refunded."
 msgstr "Nutaza, gahunda yandikwa nk’iyo utitabiriye kandi avansi ntisubizwa."
 
-#: app/booking/[id].tsx:251
+#: app/booking/[id].tsx:252
 #: app/review/[id].tsx:127
 msgid "If you have signed out, sign in again and open it from My bookings."
 msgstr "Niba warasohotse, ongera winjire, uyifungure muri Gahunda zanjye."
@@ -1771,11 +1812,11 @@ msgstr "Umunsi w’Ubwigenge"
 msgid "It is less than {FREE_CANCELLATION_HOURS} hours before your time, so the deposit is not refunded if you cancel or don’t come. If the shop cancels, you get it all back."
 msgstr "Habura amasaha ari munsi ya {FREE_CANCELLATION_HOURS} ngo igihe cyawe kigere, bityo avansi ntisubizwa nuhagarika cyangwa nutaza. Iduka nirihagarika, usubizwa byose."
 
-#: src/booking/Reservation.tsx:353
+#: src/booking/Reservation.tsx:369
 msgid "It is less than 24 hours before, so if you cancel now your deposit of {deposit} is not refunded."
 msgstr "Habura amasaha ari munsi ya 24, bityo nuhagarika ubu avansi yawe ya {deposit} ntisubizwa."
 
-#: app/booking/[id].tsx:297
+#: app/booking/[id].tsx:298
 msgid "It is less than 24 hours before, so your deposit is not refunded. That is what holds the slot."
 msgstr "Habura amasaha ari munsi ya 24, bityo avansi yawe ntisubizwa. Ni yo ifata umwanya."
 
@@ -1787,7 +1828,7 @@ msgstr "Ikorerwa kuri iyi telefoni kandi ijya aho uyohereje gusa. Ntituyohererez
 msgid "It is misleading or not real"
 msgstr "Irayobya cyangwa si iy’ukuri"
 
-#: app/booking/[id].tsx:296
+#: app/booking/[id].tsx:297
 msgid "It is more than 24 hours before, so your whole deposit comes back to the number that paid it."
 msgstr "Habura amasaha arenga 24, bityo avansi yawe yose isubira kuri nimero yayishyuye."
 
@@ -1799,7 +1840,7 @@ msgstr "Irimo ibitutsi cyangwa agasuzuguro"
 msgid "It is spam"
 msgstr "Ni spam"
 
-#: src/booking/Reservation.tsx:35
+#: src/booking/Reservation.tsx:37
 msgid "It was not paid in time"
 msgstr "Ntiyishyuwe ku gihe"
 
@@ -1829,11 +1870,11 @@ msgstr "Kurikira gusa"
 msgid "Just now"
 msgstr "Nonaha"
 
-#: app/booking/[id].tsx:464
+#: app/booking/[id].tsx:457
 msgid "Just sent — check your email"
 msgstr "Yoherejwe nonaha — reba imeyili yawe"
 
-#: app/booking/[id].tsx:299
+#: app/booking/[id].tsx:300
 #: app/sessions.tsx:66
 msgid "Keep it"
 msgstr "Bireke uko biri"
@@ -1890,7 +1931,7 @@ msgstr "Niwusiga ubusa, ibitekerezo byawe bizandikwaho “Utazwi”."
 msgid "Legal"
 msgstr "Amategeko"
 
-#: src/booking/Reservation.tsx:232
+#: src/booking/Reservation.tsx:248
 msgid "Length"
 msgstr "Igihe bimara"
 
@@ -1935,6 +1976,11 @@ msgstr "Byakorewe u Rwanda"
 msgid "Make it yours"
 msgstr "Bigire ibyawe"
 
+#. placeholder {0}: place.shopName
+#: src/components/WhereCard.tsx:47
+msgid "Map of where {0} is. Tap for directions"
+msgstr "Ikarita y’aho {0} iherereye. Kanda urebe inzira"
+
 #: app/notifications.tsx:359
 msgid "Mark all as read"
 msgstr "Shyira byose nk’ibyasomwe"
@@ -1943,11 +1989,11 @@ msgstr "Shyira byose nk’ibyasomwe"
 msgid "Mark read"
 msgstr "Shyira nk’ibyasomwe"
 
-#: src/booking/Reservation.tsx:330
+#: src/booking/Reservation.tsx:346
 msgid "Marked as missed"
 msgstr "Yanditswe nk’iyo utitabiriye"
 
-#: src/booking/Reservation.tsx:41
+#: src/booking/Reservation.tsx:43
 msgid "Marked it done"
 msgstr "Twayishyize nk’iyarangiye"
 
@@ -1960,18 +2006,18 @@ msgid "match"
 msgstr "umukino"
 
 #: app/(tabs)/messages.tsx:217
-#: src/booking/Reservation.tsx:189
+#: src/booking/Reservation.tsx:199
 #: src/components/NotificationCard.tsx:68
 msgid "Message"
 msgstr "Ubutumwa"
 
-#: app/shop/[id].tsx:333
-#: src/booking/Reservation.tsx:339
-#: src/booking/Reservation.tsx:375
+#: app/shop/[id].tsx:355
+#: src/booking/Reservation.tsx:355
+#: src/booking/Reservation.tsx:391
 msgid "Message the shop"
 msgstr "Andikira iduka"
 
-#: app/book/[id].tsx:504
+#: app/book/[id].tsx:512
 msgid "Message the shop with a question"
 msgstr "Andikira iduka ubaze ikibazo"
 
@@ -2047,7 +2093,7 @@ msgstr "MTN MoMo iratinda muri iki gihe. Niba ubusabe butageze kuri telefoni yaw
 msgid "My bookings"
 msgstr "Gahunda zanjye"
 
-#: src/booking/Reservation.tsx:196
+#: src/booking/Reservation.tsx:206
 msgid "My review"
 msgstr "Igitekerezo cyanjye"
 
@@ -2150,15 +2196,15 @@ msgstr "Nta mafoto arashyirwaho."
 msgid "No services saved yet"
 msgstr "Nta serivisi urabika"
 
-#: app/book/[id].tsx:342
+#: app/book/[id].tsx:349
 msgid "No times left today. Pick another day."
 msgstr "Nta mwanya usigaye uyu munsi. Hitamo undi munsi."
 
-#: src/booking/Reservation.tsx:333
+#: src/booking/Reservation.tsx:349
 msgid "Nobody checked you in, so the booking was marked as missed a day after its time."
 msgstr "Nta wakwakiriye, bityo gahunda yanditswe nk’iyo utitabiriye umunsi umwe nyuma y’igihe cyayo."
 
-#: app/shop/[id].tsx:479
+#: app/shop/[id].tsx:501
 msgid "Nobody has reviewed this place yet."
 msgstr "Nta muntu uratanga igitekerezo kuri iri duka."
 
@@ -2166,7 +2212,7 @@ msgstr "Nta muntu uratanga igitekerezo kuri iri duka."
 msgid "None"
 msgstr "Nta na kimwe"
 
-#: app/book/[id].tsx:125
+#: app/book/[id].tsx:127
 msgid "None free"
 msgstr "Nta mwanya uboneka"
 
@@ -2244,7 +2290,7 @@ msgstr "Ntiyarishyurwa"
 msgid "Not saved"
 msgstr "Ntibyabitswe"
 
-#: app/booking/[id].tsx:218
+#: app/booking/[id].tsx:219
 #: app/help/[id].tsx:71
 #: app/thread/[id].tsx:138
 #: app/ticket/[id].tsx:65
@@ -2279,11 +2325,11 @@ msgstr "Nta kintu cyitwa gutyo."
 msgid "Nothing found for \"{asked}\". Try a street name, a building or a neighbourhood."
 msgstr "Nta cyabonetse kuri “{asked}”. Gerageza izina ry’umuhanda, inyubako cyangwa agace."
 
-#: src/booking/Reservation.tsx:350
+#: src/booking/Reservation.tsx:366
 msgid "Nothing has been paid, so cancelling costs nothing."
 msgstr "Nta cyishyuwe, bityo guhagarika nta cyo bigutwara."
 
-#: app/booking/[id].tsx:294
+#: app/booking/[id].tsx:295
 msgid "Nothing has been paid, so nothing is lost."
 msgstr "Nta cyishyuwe, bityo nta cyo uhomba."
 
@@ -2299,7 +2345,7 @@ msgstr "Nta kirimo kugeza ubu"
 msgid "Nothing here yet."
 msgstr "Nta kirimo kugeza ubu."
 
-#: app/shop/[id].tsx:405
+#: app/shop/[id].tsx:427
 msgid "Nothing is bookable here yet."
 msgstr "Nta serivisi yo gufatira gahunda iri hano kugeza ubu."
 
@@ -2475,7 +2521,7 @@ msgstr "Fungura {businessName}"
 msgid "Open a place and tap Message the shop to ask something before you book."
 msgstr "Fungura iduka maze ukande “Andikira iduka” ubaze icyo ushaka mbere yo gufata gahunda."
 
-#: app/shop/[id].tsx:393
+#: app/shop/[id].tsx:415
 msgid "Open hours"
 msgstr "Amasaha"
 
@@ -2484,8 +2530,8 @@ msgid "open now"
 msgstr "birafunguye ubu"
 
 #: app/(tabs)/index.tsx:697
-#: app/book/[id].tsx:546
-#: app/shop/[id].tsx:218
+#: app/book/[id].tsx:554
+#: app/shop/[id].tsx:229
 msgid "Open now"
 msgstr "Birafunguye ubu"
 
@@ -2524,7 +2570,7 @@ msgstr "Fungura ubusabe bw’ubufasha"
 msgid "Opened {0}"
 msgstr "Yafunguwe ku ya {0}"
 
-#: app/shop/[id].tsx:333
+#: app/shop/[id].tsx:355
 msgid "Opening…"
 msgstr "Birafunguka…"
 
@@ -2540,7 +2586,7 @@ msgstr "Cyangwa akarere kose"
 msgid "Or pick a kind"
 msgstr "Cyangwa hitamo ubwoko"
 
-#: src/booking/Reservation.tsx:384
+#: src/booking/Reservation.tsx:400
 msgid "Our support team helped"
 msgstr "Itsinda ryacu ry’ubufasha ryagufashije"
 
@@ -2548,7 +2594,7 @@ msgstr "Itsinda ryacu ry’ubufasha ryagufashije"
 msgid "paid {paidOn}"
 msgstr "yishyuwe ku ya {paidOn}"
 
-#: app/book/[id].tsx:646
+#: app/book/[id].tsx:670
 msgid "Paid in full now, and the time is yours."
 msgstr "Urishyura byose ubu, umwanya ukaba uwawe."
 
@@ -2557,7 +2603,7 @@ msgid "Past"
 msgstr "Izashize"
 
 #. placeholder {0}: format(depositMinor, service.currency)
-#: app/shop/[id].tsx:607
+#: app/shop/[id].tsx:638
 msgid "pay {0} now"
 msgstr "wishyura {0} ubu"
 
@@ -2565,14 +2611,14 @@ msgstr "wishyura {0} ubu"
 msgid "Pay at the shop"
 msgstr "Wishyura ku iduka"
 
-#: app/book/[id].tsx:627
-#: app/book/[id].tsx:933
-#: app/booking/[id].tsx:389
+#: app/book/[id].tsx:651
+#: app/book/[id].tsx:957
+#: app/booking/[id].tsx:379
 #: src/booking/Checkout.tsx:185
 msgid "Pay now"
 msgstr "Wishyura ubu"
 
-#: app/booking/[id].tsx:408
+#: app/booking/[id].tsx:398
 msgctxt "button: pay the deposit"
 msgid "Pay now"
 msgstr "Wishyura ubu"
@@ -2592,7 +2638,7 @@ msgstr "Ishyura ukoresheje MTN MoMo"
 
 #: app/(tabs)/account.tsx:562
 #: src/booking/Checkout.tsx:318
-#: src/booking/Reservation.tsx:243
+#: src/booking/Reservation.tsx:259
 #: src/components/NotificationCard.tsx:56
 msgid "Payment"
 msgstr "Ubwishyu"
@@ -2605,15 +2651,15 @@ msgstr "Kwishyura byagenze neza"
 msgid "Payment summary"
 msgstr "Incamake y’ubwishyu"
 
-#: app/book/[id].tsx:702
+#: app/book/[id].tsx:726
 msgid "people"
 msgstr "abantu"
 
-#: src/booking/Reservation.tsx:234
+#: src/booking/Reservation.tsx:250
 msgid "People"
 msgstr "Abantu"
 
-#: app/book/[id].tsx:291
+#: app/book/[id].tsx:298
 msgid "per person"
 msgstr "ku muntu"
 
@@ -2634,7 +2680,7 @@ msgstr "Ifoto ya {0}"
 #. placeholder {0}: index + 1
 #. placeholder {1}: photos.length
 #. placeholder {1}: s.gallery.length
-#: app/shop/[id].tsx:368
+#: app/shop/[id].tsx:390
 #: src/ui/PhotoViewer.tsx:295
 msgid "Photo {0} of {1}"
 msgstr "Ifoto ya {0} kuri {1}"
@@ -2659,7 +2705,7 @@ msgid "Photos"
 msgstr "Amafoto"
 
 #. placeholder {0}: s.gallery.length
-#: app/shop/[id].tsx:349
+#: app/shop/[id].tsx:371
 msgid "Photos <0>{0}</0>"
 msgstr "Amafoto <0>{0}</0>"
 
@@ -2669,7 +2715,7 @@ msgstr "Amafoto ntiyemewe"
 
 #. placeholder {0}: a.service.name
 #: src/booking/Checkout.tsx:77
-#: src/booking/Reservation.tsx:120
+#: src/booking/Reservation.tsx:130
 msgid "Photos of {0}"
 msgstr "Amafoto ya {0}"
 
@@ -2681,7 +2727,7 @@ msgstr "Hitamo 1"
 msgid "Pick a rating"
 msgstr "Hitamo amanota"
 
-#: app/book/[id].tsx:989
+#: app/book/[id].tsx:1013
 msgid "Pick a time"
 msgstr "Hitamo isaha"
 
@@ -2697,8 +2743,8 @@ msgstr "Hitamo umwanya ukunogeye"
 msgid "Picked near this address, not where your phone is. Turn it off here or from any of the emails."
 msgstr "Byatoranyijwe hafi y’iyi aderesi, atari aho telefoni yawe iri. Bihagarike hano cyangwa muri imeyili iyo ari yo yose."
 
-#: app/shop/[id].tsx:147
-#: src/booking/Reservation.tsx:236
+#: app/shop/[id].tsx:150
+#: src/booking/Reservation.tsx:252
 msgid "Place"
 msgstr "Iduka"
 
@@ -2741,7 +2787,7 @@ msgstr "Biritegurwa…"
 msgid "Price"
 msgstr "Igiciro"
 
-#: app/book/[id].tsx:917
+#: app/book/[id].tsx:941
 msgid "private answers for the shop"
 msgstr "ibisubizo by’ibanga bigenewe iduka"
 
@@ -2806,11 +2852,11 @@ msgstr "Soma ibindi"
 msgid "Read the English"
 msgstr "Soma mu Cyongereza"
 
-#: src/booking/Reservation.tsx:46
+#: src/booking/Reservation.tsx:48
 msgid "Read your conversation with the shop, to help"
 msgstr "Twasomye ikiganiro cyawe n’iduka, kugira ngo tugufashe"
 
-#: src/booking/Reservation.tsx:47
+#: src/booking/Reservation.tsx:49
 msgid "Read your private answers, to help"
 msgstr "Twasomye ibisubizo byawe by’ibanga, kugira ngo tugufashe"
 
@@ -2818,7 +2864,7 @@ msgstr "Twasomye ibisubizo byawe by’ibanga, kugira ngo tugufashe"
 msgid "Real shops near you, booked in a few taps."
 msgstr "Amaduka nyayo ari hafi yawe, ufatamo gahunda mu kanya gato."
 
-#: app/shop/[id].tsx:223
+#: app/shop/[id].tsx:234
 msgid "Registered business"
 msgstr "Ubucuruzi bwanditse"
 
@@ -2871,7 +2917,7 @@ msgstr "Menyesha ikibazo kuri iyi nkuru"
 msgid "Required"
 msgstr "Ni ngombwa"
 
-#: app/booking/[id].tsx:430
+#: app/booking/[id].tsx:420
 msgid "Reservation"
 msgstr "Gahunda"
 
@@ -2880,28 +2926,28 @@ msgstr "Gahunda"
 msgid "Reservation {0}"
 msgstr "Gahunda {0}"
 
-#: src/booking/Reservation.tsx:228
+#: src/booking/Reservation.tsx:244
 msgid "Reservation details"
 msgstr "Amakuru ya gahunda"
 
 #: src/booking/PaidCelebration.tsx:196
-#: src/booking/Reservation.tsx:229
+#: src/booking/Reservation.tsx:245
 msgid "Reservation no."
 msgstr "Nimero ya gahunda"
 
-#: src/booking/Reservation.tsx:196
+#: src/booking/Reservation.tsx:206
 #: src/components/NotificationCard.tsx:86
 #: src/components/NotificationCard.tsx:92
 msgid "Review"
 msgstr "Igitekerezo"
 
-#: app/shop/[id].tsx:396
+#: app/shop/[id].tsx:418
 #: src/exportDocument.ts:200
 msgid "Reviews"
 msgstr "Ibitekerezo"
 
 #. placeholder {0}: reviews.data.total
-#: app/shop/[id].tsx:396
+#: app/shop/[id].tsx:418
 msgid "Reviews ({0})"
 msgstr "Ibitekerezo ({0})"
 
@@ -2913,7 +2959,7 @@ msgstr "Ibitekerezo bitangwa n’abafashe gahunda, bityo dukeneye kumenya ko ari
 msgid "Reviews, offers and news arrive after. Bookings, reminders and messages still come straight away."
 msgstr "Ibitekerezo, promosiyo n’amakuru biza nyuma. Gahunda, kwibutswa n’ubutumwa bikomeza kuza ako kanya."
 
-#: src/booking/Reservation.tsx:371
+#: src/booking/Reservation.tsx:387
 msgid "Running late, or can’t come?"
 msgstr "Uratinda, cyangwa ntuzaza?"
 
@@ -2995,7 +3041,7 @@ msgstr "amasegonda"
 msgid "See all"
 msgstr "Reba byose"
 
-#: app/shop/[id].tsx:352
+#: app/shop/[id].tsx:374
 msgid "See all →"
 msgstr "Reba byose →"
 
@@ -3013,7 +3059,7 @@ msgstr "Reba uko gufata gahunda bikora"
 msgid "See more"
 msgstr "Reba ibindi"
 
-#: src/booking/Reservation.tsx:417
+#: src/booking/Reservation.tsx:433
 msgid "See or change it"
 msgstr "Reba cyangwa uhindure"
 
@@ -3021,7 +3067,7 @@ msgstr "Reba cyangwa uhindure"
 msgid "See the shop"
 msgstr "Reba iduka"
 
-#: app/shop/[id].tsx:270
+#: app/shop/[id].tsx:281
 msgid "See the story from {displayName}"
 msgstr "Reba inkuru ya {displayName}"
 
@@ -3063,6 +3109,10 @@ msgstr "Ohereza indi mu 0:{0}"
 msgid "Send offers for which address?"
 msgstr "Promosiyo zo hafi y’iyihe aderesi?"
 
+#: src/components/WhereCard.tsx:154
+msgid "Send this place"
+msgstr "Ohereza aha hantu"
+
 #: app/help/[id].tsx:126
 msgid "Send to support"
 msgstr "Ohereza ku itsinda ry’ubufasha"
@@ -3071,13 +3121,13 @@ msgstr "Ohereza ku itsinda ry’ubufasha"
 msgid "Sending it now…"
 msgstr "Iri koherezwa ubu…"
 
-#: app/booking/[id].tsx:462
+#: app/booking/[id].tsx:455
 #: app/help/[id].tsx:126
 #: app/sign-in.tsx:564
 msgid "Sending…"
 msgstr "Biroherezwa…"
 
-#: app/booking/[id].tsx:213
+#: app/booking/[id].tsx:214
 msgid "Sent"
 msgstr "Byoherejwe"
 
@@ -3094,7 +3144,7 @@ msgstr "Zoherezwa kuri"
 msgid "Sent for {where}. Change the address"
 msgstr "Zoherezwa kuri {where}. Hindura aderesi"
 
-#: src/booking/Reservation.tsx:45
+#: src/booking/Reservation.tsx:47
 msgid "Sent you a new arrival code"
 msgstr "Twakoherereje kode nshya yo kugera"
 
@@ -3111,11 +3161,11 @@ msgstr "Serivisi"
 msgid "Services{0}"
 msgstr "Serivisi{0}"
 
-#: app/shop/[id].tsx:539
+#: app/shop/[id].tsx:570
 msgid "Share this place"
 msgstr "Sangiza iri duka"
 
-#: app/book/[id].tsx:417
+#: app/book/[id].tsx:425
 msgid "Share this service"
 msgstr "Sangiza iyi serivisi"
 
@@ -3131,7 +3181,7 @@ msgstr "Erekana bike"
 msgid "Show me as Anonymous"
 msgstr "Ngaragaze nk’Utazwi"
 
-#: src/booking/Reservation.tsx:163
+#: src/booking/Reservation.tsx:173
 msgid "Show this code when you arrive"
 msgstr "Erekana iyi kode nugera"
 
@@ -3159,7 +3209,7 @@ msgstr "Injira"
 msgid "Sign in or create an account"
 msgstr "Injira cyangwa ufungure konti"
 
-#: app/book/[id].tsx:993
+#: app/book/[id].tsx:1017
 msgid "Sign in to book"
 msgstr "Injira ubanze"
 
@@ -3187,7 +3237,7 @@ msgstr "Injira usome iki kiganiro"
 msgid "Sign in to report a story"
 msgstr "Injira kugira ngo umenyeshe ikibazo ku nkuru"
 
-#: app/booking/[id].tsx:508
+#: app/booking/[id].tsx:502
 msgid "Sign in to see this booking"
 msgstr "Injira urebe iyi gahunda"
 
@@ -3376,7 +3426,7 @@ msgstr "Amabwiriza n’ibanga"
 msgid "Thank you for telling us"
 msgstr "Urakoze kutubwira"
 
-#: app/booking/[id].tsx:250
+#: app/booking/[id].tsx:251
 #: app/review/[id].tsx:126
 msgid "That booking could not be found."
 msgstr "Iyo gahunda ntiyabonetse."
@@ -3405,7 +3455,7 @@ msgstr "Izo ni kode nyinshi mu isaha imwe. Ongera ugerageze nyuma gato."
 msgid "That isn’t a photo — use a JPG, PNG or WebP."
 msgstr "Iyo si ifoto — koresha JPG, PNG cyangwa WebP."
 
-#: app/book/[id].tsx:786
+#: app/book/[id].tsx:810
 msgid "That morning is Umuganda: community work until 11:00, when shops close and some roads too. A time from 11:00 is the safe choice."
 msgstr "Icyo gitondo ni icy’Umuganda: imirimo rusange kugeza saa 11:00, igihe amaduka afunga n’imihanda imwe n’imwe igafungwa. Igihe gitangira saa 11:00 ni cyo cyizewe."
 
@@ -3417,15 +3467,19 @@ msgstr "Iyo foto irengeje MB 15 — gerageza iyoroheje."
 msgid "That request could not be found."
 msgstr "Ubwo busabe ntibwabonetse."
 
-#: app/book/[id].tsx:275
+#: app/book/[id].tsx:274
 msgid "That service is no longer offered here."
 msgstr "Iyo serivisi ntikiboneka hano."
+
+#: src/components/WhereCard.tsx:126
+msgid "The address and a map link are copied — paste them where you like."
+msgstr "Aderesi n’ihuza ry’ikarita byakoporowe — bishyire aho ushaka."
 
 #: src/today.ts:27
 msgid "The day after New Year"
 msgstr "Umunsi ukurikira Ubunani"
 
-#: src/booking/Reservation.tsx:335
+#: src/booking/Reservation.tsx:351
 msgid "The deposit is not refunded for a missed booking."
 msgstr "Avansi ntisubizwa ku gahunda utitabiriye."
 
@@ -3483,11 +3537,11 @@ msgstr "Asigaye yishyurirwa ku iduka"
 msgid "The shop before"
 msgstr "Iduka ryabanje"
 
-#: src/booking/Reservation.tsx:34
+#: src/booking/Reservation.tsx:36
 msgid "The shop cancelled this"
 msgstr "Iduka ryayihagaritse"
 
-#: app/book/[id].tsx:593
+#: app/book/[id].tsx:617
 msgid "The shop confirms the final price after seeing the job. The deposit is on this price."
 msgstr "Iduka ryemeza igiciro cya nyuma rimaze kureba akazi. Avansi ibarwa kuri iki giciro."
 
@@ -3495,7 +3549,7 @@ msgstr "Iduka ryemeza igiciro cya nyuma rimaze kureba akazi. Avansi ibarwa kuri 
 msgid "The shop is not told who reported it."
 msgstr "Iduka ntirimenya uwayitumenyesheje."
 
-#: src/booking/Reservation.tsx:334
+#: src/booking/Reservation.tsx:350
 msgid "The shop marked this booking as missed: you were not checked in."
 msgstr "Iduka ryanditse iyi gahunda nk’iyo utitabiriye: ntiwakiriwe."
 
@@ -3536,7 +3590,7 @@ msgstr "Nta konti ya <0>{clean}</0> irabaho. Reka tuyifungure — bisaba kode im
 msgid "They are kept with your account, so they follow you to any phone."
 msgstr "Bibikwa kuri konti yawe, bityo bikagukurikira kuri telefoni iyo ari yo yose."
 
-#: app/shop/[id].tsx:494
+#: app/shop/[id].tsx:516
 msgid "They replied"
 msgstr "Igisubizo cyabo"
 
@@ -3544,7 +3598,7 @@ msgstr "Igisubizo cyabo"
 msgid "They were turned off in your phone’s settings. Turn them on there, then come back."
 msgstr "Yafunzwe mu igenamiterere rya telefoni yawe. Yafungure aho, hanyuma ugaruke."
 
-#: src/booking/Reservation.tsx:337
+#: src/booking/Reservation.tsx:353
 msgid "Think this is a mistake? Write to the shop, or ask us for help."
 msgstr "Ubona ko ari ikosa? Andikira iduka, cyangwa udusabe ubufasha."
 
@@ -3617,7 +3671,7 @@ msgid "This place has not added any pictures. Its services may still be worth a 
 msgstr "Iri duka ntirirashyiraho amafoto. Serivisi zaryo zishobora kuba zikwiye kurebwa."
 
 #: app/gallery/[id].tsx:160
-#: app/shop/[id].tsx:148
+#: app/shop/[id].tsx:151
 msgid "This place is not available right now."
 msgstr "Iri duka ntiriboneka ubu."
 
@@ -3633,14 +3687,14 @@ msgstr "iri duka"
 msgid "This week"
 msgstr "Iki cyumweru"
 
-#: app/book/[id].tsx:778
+#: app/book/[id].tsx:802
 #: src/booking/Checkout.tsx:318
-#: src/booking/Reservation.tsx:231
+#: src/booking/Reservation.tsx:247
 msgid "Time"
 msgstr "Igihe"
 
 #. placeholder {0}: availability.data.timeZone
-#: app/book/[id].tsx:887
+#: app/book/[id].tsx:911
 msgid "Times are local to the shop ({0})."
 msgstr "Amasaha ni ay’aho iduka riri ({0})."
 
@@ -3648,7 +3702,7 @@ msgstr "Amasaha ni ay’aho iduka riri ({0})."
 msgid "To come"
 msgstr "Iziri imbere"
 
-#: src/booking/Reservation.tsx:294
+#: src/booking/Reservation.tsx:310
 msgid "To pay at the shop"
 msgstr "Uzishyura ku iduka"
 
@@ -3656,7 +3710,7 @@ msgstr "Uzishyura ku iduka"
 msgid "today"
 msgstr "uyu munsi"
 
-#: app/book/[id].tsx:767
+#: app/book/[id].tsx:791
 #: app/notifications.tsx:52
 #: app/thread/[id].tsx:49
 msgid "Today"
@@ -3665,7 +3719,7 @@ msgstr "Uyu munsi"
 #. placeholder {0}: label.weekday
 #. placeholder {1}: label.day
 #. placeholder {2}: label.month
-#: app/book/[id].tsx:757
+#: app/book/[id].tsx:781
 msgid "Today, {0} {1} {2}"
 msgstr "Uyu munsi, {0} {1} {2}"
 
@@ -3687,15 +3741,15 @@ msgstr "Ifite amanota menshi"
 msgid "Top rated: {0} at {1}, rated {avg}."
 msgstr "Ifite amanota menshi: {0} kuri {1}, amanota {avg}."
 
-#: app/book/[id].tsx:924
-#: app/book/[id].tsx:951
+#: app/book/[id].tsx:948
+#: app/book/[id].tsx:975
 #: src/booking/Checkout.tsx:170
-#: src/booking/Reservation.tsx:268
+#: src/booking/Reservation.tsx:284
 msgid "Total"
 msgstr "Igiteranyo"
 
 #. placeholder {0}: countWord(quantity)
-#: app/book/[id].tsx:951
+#: app/book/[id].tsx:975
 msgid "Total for {0}"
 msgstr "Igiteranyo ({0})"
 
@@ -3715,7 +3769,7 @@ msgstr "Gerageza izina ry’iduka, cyangwa ijambo riri mu butumwa."
 msgid "Try a shorter word, or clear the search to see everything."
 msgstr "Gerageza ijambo rigufi, cyangwa usibe ibyo washakishije urebe byose."
 
-#: app/booking/[id].tsx:407
+#: app/booking/[id].tsx:397
 #: src/components/NearMeCard.tsx:24
 #: src/components/NearMeCard.tsx:34
 msgid "Try again"
@@ -3803,11 +3857,11 @@ msgstr "kugeza {day}"
 msgid "Until 2 hours before, as often as you like. The shop is told something changed."
 msgstr "Kugeza amasaha 2 mbere, inshuro zose ushaka. Iduka rimenyeshwa ko hari icyahindutse."
 
-#: app/book/[id].tsx:548
+#: app/book/[id].tsx:556
 msgid "Up to {places} people"
 msgstr "Kugeza ku bantu {places}"
 
-#: app/book/[id].tsx:697
+#: app/book/[id].tsx:721
 msgid "Up to {places}, all at once"
 msgstr "Kugeza kuri {places}, icyarimwe"
 
@@ -3882,7 +3936,7 @@ msgstr "Reba"
 msgid "View my reservation"
 msgstr "Reba gahunda yanjye"
 
-#: app/book/[id].tsx:489
+#: app/book/[id].tsx:497
 msgid "View their shop"
 msgstr "Reba iduka ryabo"
 
@@ -3890,7 +3944,7 @@ msgstr "Reba iduka ryabo"
 msgid "Visit"
 msgstr "Sura"
 
-#: app/booking/[id].tsx:405
+#: app/booking/[id].tsx:395
 msgid "Waiting for approval…"
 msgstr "Dutegereje ko wemeza…"
 
@@ -3900,7 +3954,7 @@ msgid "Was {0}"
 msgstr "Cyari {0}"
 
 #. placeholder {0}: format(sale.listPriceMinor)
-#: app/book/[id].tsx:603
+#: app/book/[id].tsx:627
 msgid "Was <0>{0}</0>"
 msgstr "Cyari <0>{0}</0>"
 
@@ -3915,6 +3969,10 @@ msgstr "Reba inkuru"
 #: app/(tabs)/index.tsx:475
 msgid "Watch the story"
 msgstr "Reba inkuru"
+
+#: src/components/WhereCard.tsx:104
+msgid "Waze"
+msgstr "Waze"
 
 #: app/ticket/[id].tsx:133
 msgid "We have your message. A reply will appear here, and you can add more below."
@@ -3981,7 +4039,7 @@ msgstr "Bijyanye n’iki?"
 msgid "What is wrong with this story?"
 msgstr "Iyi nkuru ifite ikihe kibazo?"
 
-#: app/shop/[id].tsx:392
+#: app/shop/[id].tsx:414
 msgid "What they do"
 msgstr "Ibyo bakora"
 
@@ -3996,6 +4054,10 @@ msgstr "Ibyo tukoherereza"
 #: app/notification-settings.tsx:106
 msgid "What we send you is set on your account."
 msgstr "Ibyo tukoherereza bigenwa kuri konti yawe."
+
+#: src/components/WhereCard.tsx:155
+msgid "WhatsApp, a message, or copy it"
+msgstr "WhatsApp, ubutumwa, cyangwa ubikoporore"
 
 #: src/booking/PaidCelebration.tsx:194
 #: src/exportDocument.ts:79
@@ -4013,6 +4075,10 @@ msgstr "Ahantu"
 #: app/(tabs)/index.tsx:1027
 msgid "Where in Rwanda"
 msgstr "Ahantu mu Rwanda"
+
+#: src/components/WhereCard.tsx:40
+msgid "Where it is"
+msgstr "Aho riherereye"
 
 #: app/(tabs)/account.tsx:714
 #: app/sessions.tsx:73
@@ -4062,7 +4128,7 @@ msgstr "Andika ubutumwa"
 #: app/review/[id].tsx:123
 #: app/review/[id].tsx:138
 #: app/review/[id].tsx:163
-#: src/booking/Reservation.tsx:417
+#: src/booking/Reservation.tsx:433
 msgid "Write a review"
 msgstr "Andika igitekerezo"
 
@@ -4111,7 +4177,7 @@ msgstr "Ubyemeza kuri telefoni yawe"
 msgid "You approve the deposit on your own phone. This app never asks for your PIN."
 msgstr "Wemeza avansi kuri telefoni yawe. Iyi porogaramu ntijya igusaba PIN yawe."
 
-#: app/booking/[id].tsx:417
+#: app/booking/[id].tsx:407
 msgid "You approve the payment with your MoMo PIN, on your phone."
 msgstr "Wemeza ubwishyu ukoresheje PIN ya MoMo, kuri telefoni yawe."
 
@@ -4127,15 +4193,15 @@ msgstr "Ubu ugaragara nk’Utazwi."
 msgid "You can change this for {REVIEW_EDIT_WINDOW_DAYS} days after posting."
 msgstr "Ushobora kugihindura mu minsi {REVIEW_EDIT_WINDOW_DAYS} nyuma yo kugishyiraho."
 
-#: src/booking/Reservation.tsx:324
+#: src/booking/Reservation.tsx:340
 msgid "You cancelled less than 24 hours before, so the deposit is not refunded."
 msgstr "Wahagaritse habura amasaha ari munsi ya 24, bityo avansi ntisubizwa."
 
-#: src/booking/Reservation.tsx:320
+#: src/booking/Reservation.tsx:336
 msgid "You cancelled more than 24 hours before, so your whole deposit is refunded."
 msgstr "Wahagaritse habura amasaha arenga 24, bityo avansi yawe yose irasubizwa."
 
-#: src/booking/Reservation.tsx:33
+#: src/booking/Reservation.tsx:35
 msgid "You cancelled this"
 msgstr "Wayihagaritse"
 
@@ -4173,7 +4239,7 @@ msgid "you rated this"
 msgstr "amanota watanze"
 
 #. placeholder {0}: format(savedMinor)
-#: app/book/[id].tsx:606
+#: app/book/[id].tsx:630
 msgid "You save {0}"
 msgstr "Uzigama {0}"
 
@@ -4202,9 +4268,9 @@ msgstr "Konti yawe yiteguye. Reka tugushakire ikintu cyiza."
 msgid "Your account, bookings, reviews, messages and questions to us — to read, print or keep."
 msgstr "Konti yawe, gahunda, ibitekerezo, ubutumwa n’ibibazo watubajije — byo gusoma, gucapa cyangwa kubika."
 
-#: app/book/[id].tsx:902
-#: app/booking/[id].tsx:235
-#: app/booking/[id].tsx:247
+#: app/book/[id].tsx:926
+#: app/booking/[id].tsx:236
+#: app/booking/[id].tsx:248
 msgid "Your booking"
 msgstr "Gahunda yawe"
 
@@ -4216,12 +4282,12 @@ msgstr "Gahunda zawe"
 msgid "Your bookings and messages stay with your account. You will need a new code to get back in."
 msgstr "Gahunda n’ubutumwa byawe biguma kuri konti yawe. Uzakenera kode nshya kugira ngo wongere winjire."
 
-#: app/book/[id].tsx:659
+#: app/book/[id].tsx:683
 #: src/booking/BookedChoices.tsx:40
 msgid "Your choices"
 msgstr "Ibyo wahisemo"
 
-#: app/book/[id].tsx:584
+#: app/book/[id].tsx:608
 msgid "Your choices <0>{addsWords}</0>"
 msgstr "Ibyo wahisemo <0>{addsWords}</0>"
 
@@ -4247,6 +4313,10 @@ msgstr "Akarere kawe"
 #: app/(tabs)/account.tsx:809
 msgid "Your email, the name on your reviews, when you joined, and your home area if you set one."
 msgstr "Imeyili yawe, izina riri ku bitekerezo byawe, igihe wafunguye konti, n’agace utuyemo niba wagashyizeho."
+
+#: src/components/WhereCard.tsx:161
+msgid "Your maps app works out the way from where you are."
+msgstr "Porogaramu y’amakarita yawe ikwereka inzira uhereye aho uri."
 
 #: app/(tabs)/account.tsx:812
 #: src/exportDocument.ts:211
@@ -4283,7 +4353,7 @@ msgid "Your requests about this booking"
 msgstr "Ubusabe bwawe kuri iyi gahunda"
 
 #: app/review/[id].tsx:163
-#: src/booking/Reservation.tsx:403
+#: src/booking/Reservation.tsx:419
 msgid "Your review"
 msgstr "Igitekerezo cyawe"
 
@@ -4304,7 +4374,7 @@ msgstr "Umwanya wawe urakubikiwe mu gihe cya"
 msgid "Your support requests"
 msgstr "Ubusabe bwawe bw’ubufasha"
 
-#: src/booking/Reservation.tsx:373
+#: src/booking/Reservation.tsx:389
 msgid "Your time has started, so the booking can no longer be cancelled. Write to the shop — they can still check you in while your time is running."
 msgstr "Igihe cyawe cyatangiye, bityo gahunda ntigishobora guhagarikwa. Andikira iduka — baracyashobora kukwakira igihe cyawe kitararangira."
 

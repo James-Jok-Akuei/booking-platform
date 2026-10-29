@@ -107,6 +107,7 @@ export class BusinessModerationService {
             capacity: true,
             latitude: true,
             longitude: true,
+            findUs: true,
             isActive: true,
             district: { select: { name: true, province: { select: { name: true } } } },
             media: { orderBy: { displayOrder: 'asc' }, take: 6, select: { url: true, status: true } },

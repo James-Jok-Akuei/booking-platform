@@ -692,6 +692,10 @@ ul.error { margin: 2px 0 0; padding-left: 16px; }
 .bf-field label em { font-style: normal; font-weight: 600; color: var(--faint); font-size: 12px; }
 .bf-field input, .bf-field select { width: 100%; }
 .bf-help { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.bf-field textarea { width: 100%; resize: vertical; }
+/* "How to find us" (§318): the help, and how much is left, on one line. */
+.bf-findus { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.bf-count { flex: none; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--faint); }
 .bf-place {
   display: flex;
   align-items: center;

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
-  Linking,
-  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,7 +23,9 @@ import {
 } from '../../src/api/booking';
 import { threadForAppointment } from '../../src/api/chat';
 import { getRoute, getShop } from '../../src/api/discovery';
-import { routeLabel } from '../../src/routeLabel';
+import { routeLabel, shortRouteLabel } from '../../src/routeLabel';
+import { DirectionsSheet } from '../../src/components/WhereCard';
+import type { Place } from '../../src/directions';
 import { useNearMe } from '../../src/useNearMe';
 import { listSavedNumbers, saveNumber } from '../../src/api/auth';
 import { Checkout } from '../../src/booking/Checkout';
@@ -80,6 +80,7 @@ function Booking() {
   /** True from the moment the payment is SEEN to succeed until it is dismissed. */
   const [celebrating, setCelebrating] = useState(false);
   const [photo, setPhoto] = useState<number | null>(null);
+  const [directionsOpen, setDirectionsOpen] = useState(false);
   // Changing wishes after booking (§300.7).
   const [changing, setChanging] = useState(false);
   const changeWishes = useMutation({
@@ -306,28 +307,17 @@ function Booking() {
     });
 
   /**
-   * Hands the place to the phone's own maps app, which is where people already
-   * have their routes, their traffic and their way of getting about. The pin
-   * when the shop has one; its written address when it does not.
+   * Where to go, for the phone's own maps app (§318) — which is where people
+   * already have their routes, their traffic and their way of getting about.
+   * The pin when the shop has one; its written address when it does not.
    */
-  const directions = () => {
-    const pin =
-      bought.latitude !== null && bought.longitude !== null
-        ? `${bought.latitude},${bought.longitude}`
-        : null;
-    const label = encodeURIComponent(`${a.location.name}, ${a.location.address}`);
-    const url =
-      Platform.OS === 'ios'
-        ? `http://maps.apple.com/?daddr=${pin ?? label}`
-        : `https://www.google.com/maps/dir/?api=1&destination=${pin ?? label}`;
-    Linking.openURL(url).catch(() =>
-      showDialog({
-        tone: 'warn',
-        icon: 'map',
-        title: t`Could not open maps`,
-        message: `${a.location.name}\n${a.location.address}`,
-      }),
-    );
+  const place: Place = {
+    shopName: bought.businessName,
+    branchName: a.location.name,
+    address: a.location.address,
+    latitude: bought.latitude,
+    longitude: bought.longitude,
+    findUs: shop.data?.findUs ?? null,
   };
 
   const viewer = (
@@ -443,6 +433,9 @@ function Booking() {
           onOpenPhoto={setPhoto}
           onShop={() => router.push(`/shop/${a.location.id}`)}
           way={routeLabel(route.data)}
+          place={place}
+          area={shop.data?.district ? `${shop.data.district.name}, ${shop.data.district.provinceName}` : null}
+          shortWay={shortRouteLabel(route.data)}
           // Every booking is created with a conversation attached (§21.1). It
           // is the right place for "running late" and "can I bring my son too".
           messageBusy={thread.isLoading}
@@ -450,7 +443,7 @@ function Booking() {
             if (thread.data) router.push(`/thread/${thread.data.id}`);
             else router.push('/messages');
           }}
-          onDirections={directions}
+          onDirections={() => setDirectionsOpen(true)}
           onHelp={() => router.push(`/help/${id}`)}
           onCancel={askToCancel}
           onReview={() => router.push(`/review/${id}`)}
@@ -468,6 +461,7 @@ function Booking() {
           onChangeChoices={canChangeWishes ? () => setChanging(true) : undefined}
         />
       </ScrollView>
+      <DirectionsSheet place={place} open={directionsOpen} onClose={() => setDirectionsOpen(false)} />
       {listed && changing && (
         <ChangeChoicesSheet
           open={changing}
