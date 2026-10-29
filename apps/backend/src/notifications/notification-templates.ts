@@ -643,7 +643,10 @@ export function renderNotification(
     case NotificationType.BUSINESS_DOCUMENT_EXPIRING: {
       const paper = paperName(ctx.document, l);
       const day = ctx.document?.expiresAt
-        ? formatDateIn(l, ctx.document.expiresAt, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Africa/Kigali' })
+        ? // A paper's end is a calendar day kept as its last moment in UTC (§314):
+          // read on UTC it is the day written on the paper; on Kigali's clock it
+          // would be the next morning.
+          formatDateIn(l, ctx.document.expiresAt, { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })
         : '';
       return ctx.document?.expired
         ? {

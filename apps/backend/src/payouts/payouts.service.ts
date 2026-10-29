@@ -18,7 +18,6 @@ import {
   MobileMoneyProvider,
 } from '@prisma/client';
 import * as crypto from 'crypto';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { DEFAULT_PAYOUT_HOLD_DAYS, PLATFORM_SETTING_ID } from '../settings/platform-settings.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -35,6 +34,7 @@ import { DisbursementProviderRegistry } from '../payments/disbursement-provider.
 import { maskMsisdn } from './msisdn';
 import { MarkPaidDto, MarkFailedDto } from './dto/mark-payout.dto';
 import { MEMBERSHIP_SCOPE_SELECT, MONEY_READERS_ONLY, mayReadMoney, scopeOf } from '../business/branch-scope';
+import { CountriesService } from '../countries/countries.service';
 
 /** Why a business was held back from a run. */
 export type PauseReason = 'SUSPENDED' | 'NO_VERIFIED_PAYOUT_DESTINATION';
@@ -73,18 +73,15 @@ export interface RunSummary {
 export class PayoutsService {
   private readonly logger = new Logger(PayoutsService.name);
 
-  private readonly timeZone: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly destinations: PayoutDestinationsService,
     private readonly disbursements: DisbursementProviderRegistry,
-    config: ConfigService,
+    private readonly countries: CountriesService,
     // Optional so suites about the money alone need not stand up the inbox.
     @Optional() private readonly notifications?: NotificationsService,
-  ) {
-    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Kigali';
-  }
+  ) {}
 
   /**
    * Tells the shop's money people a payout went, or did not (§287). Never
@@ -565,8 +562,10 @@ export class PayoutsService {
       );
     }
 
+    // The shop's country's connection (§315): payouts leave from that country's account.
     const provider = this.disbursements.require(
       destination.provider as MobileMoneyProvider,
+      await this.countries.ofBusiness(payout.businessId),
     );
 
     // Ours, chosen now and recorded before the call.
@@ -672,6 +671,7 @@ export class PayoutsService {
       try {
         const provider = this.disbursements.require(
           destination.provider as MobileMoneyProvider,
+          await this.countries.ofBusiness(payout.businessId),
         );
         const result = await provider.checkTransferStatus(payout.providerReferenceId!);
 
@@ -1130,7 +1130,7 @@ export class PayoutsService {
   /**
    * The same payout as a spreadsheet, for the shop's own books (§290): every
    * booking, not a page of them (§216.1), and the corrections, then the total.
-   * Times are the platform's local time, as the shop knows them.
+   * Times are on the shop's own clock (§315), as the shop knows them.
    */
   async exportForBusiness(
     actor: { userId: string; role: UserRole | string },
@@ -1142,8 +1142,9 @@ export class PayoutsService {
     const detail = await this.detailForBusiness(actor, businessId, payoutId, { limit: 1, offset: 0 });
     const bookings = await this.payoutBookings(payoutId, {});
     const currency = detail.payout.settlementCurrency;
-    const day = new Intl.DateTimeFormat('en-CA', { timeZone: this.timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
-    const time = new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: this.timeZone, hour: '2-digit', minute: '2-digit' });
+    const timeZone = await this.countries.zoneOfBusiness(businessId);
+    const day = new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' });
+    const time = new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone, hour: '2-digit', minute: '2-digit' });
     // The seller app's own words for a booking's state (§213), not the enum — in the seller's language (§308).
     const said: Record<string, string> = {
       BOOKED: say(l, 'Expected'),

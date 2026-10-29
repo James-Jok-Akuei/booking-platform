@@ -862,7 +862,7 @@ describe('Guard chain over HTTP (§23.3)', () => {
   describe('business moderation over HTTP (§42)', () => {
     const pendingShop = async () => {
       const b = await prisma.businessProfile.create({
-        data: { name: 'Applicant', status: 'PENDING' },
+        data: { name: 'Applicant', status: 'PENDING', countryCode: 'RW' },
       });
       return b.id;
     };

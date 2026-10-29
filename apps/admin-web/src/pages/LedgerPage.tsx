@@ -25,6 +25,7 @@ import { Icon } from '../ui/Icon';
 import { ShopMark } from '../ui/ShopMark';
 import './ledger.css';
 import { EmptyState } from '../ui/EmptyState';
+import { useCountries } from '../lib/countries';
 
 type Tab = 'adjustments' | 'ledger' | 'refunds';
 type State = 'outstanding' | 'executed' | 'all';
@@ -255,6 +256,8 @@ const REFUND_REASON: Record<AdminRefund['reason'], string> = {
  * portal, then marked here with its reference.
  */
 function Refunds() {
+  // A number as people in the default country write it (§315), for the prompt's placeholder.
+  const defaultCountry = useCountries().find((c) => c.isDefault);
   const money = useMoney();
   const queryClient = useQueryClient();
   const [view, setView] = useState<RefundView>('person');
@@ -281,7 +284,7 @@ function Refunds() {
           </p>
         ),
         label: 'Their MoMo number',
-        placeholder: '0788 123 456',
+        placeholder: defaultCountry?.phoneExample ?? '',
         minLength: 9,
         tone: 'info',
         icon: 'phone',

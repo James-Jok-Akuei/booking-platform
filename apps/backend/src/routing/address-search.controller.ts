@@ -4,6 +4,8 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import { AddressSearchService } from './address-search.service';
 import { AddressSearchDto, AddressSearchQueryDto } from './dto/address.dto';
+import { CountriesService } from '../countries/countries.service';
+import { AuthenticatedUser, CurrentUser } from '../common/decorators/current-user.decorator';
 
 /**
  * Finding an address as it is typed (§172, §174).
@@ -18,11 +20,15 @@ import { AddressSearchDto, AddressSearchQueryDto } from './dto/address.dto';
 @UseGuards(JwtAuthGuard)
 @ApiErrors({ auth: true, validation: true })
 export class AddressSearchController {
-  constructor(private readonly addresses: AddressSearchService) {}
+  constructor(
+    private readonly addresses: AddressSearchService,
+    private readonly countries: CountriesService,
+  ) {}
 
+  /** In the searcher's own country (§315): a shop's branch address, or a customer's home. */
   @Get()
   @ApiOkResponse({ type: AddressSearchDto })
-  search(@Query() query: AddressSearchQueryDto) {
-    return this.addresses.search(query.q);
+  async search(@Query() query: AddressSearchQueryDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.addresses.search(query.q, await this.countries.ofUser(user.userId));
   }
 }

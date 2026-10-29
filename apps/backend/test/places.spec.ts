@@ -23,7 +23,7 @@ describe('Places (§104)', () => {
   let locations: LocationsService;
 
   const districtByCode = (code: string) =>
-    prisma.district.findUniqueOrThrow({ where: { code }, include: { province: true } });
+    prisma.district.findFirstOrThrow({ where: { code, province: { countryCode: 'RW' } }, include: { province: true } });
 
   beforeAll(async () => {
     moduleRef = await createTestModule([
@@ -55,7 +55,7 @@ describe('Places (§104)', () => {
     expect(await prisma.district.count()).toBe(30);
 
     const kigali = await prisma.province.findUniqueOrThrow({
-      where: { code: 'KIGALI' },
+      where: { countryCode_code: { countryCode: 'RW', code: 'KIGALI' } },
       include: { districts: true },
     });
     expect(kigali.districts.map((d) => d.name).sort()).toEqual([
@@ -164,10 +164,10 @@ describe('Places (§104)', () => {
 
   describe('a city is one place (§106)', () => {
     it('marks the City of Kigali and nothing else', async () => {
-      const kigali = await prisma.province.findUniqueOrThrow({ where: { code: 'KIGALI' } });
+      const kigali = await prisma.province.findUniqueOrThrow({ where: { countryCode_code: { countryCode: 'RW', code: 'KIGALI' } } });
       expect(kigali.isCity).toBe(true);
 
-      const others = await prisma.province.findMany({ where: { code: { not: 'KIGALI' } } });
+      const others = await prisma.province.findMany({ where: { countryCode: 'RW', code: { not: 'KIGALI' } } });
       // The four rural provinces are regions of separate towns: Rubavu and
       // Rusizi are both "Western Province" and hours apart.
       expect(others.every((p) => !p.isCity)).toBe(true);
@@ -176,7 +176,7 @@ describe('Places (§104)', () => {
 
     it('keeps the districts, so a city can still be narrowed', async () => {
       const kigali = await prisma.province.findUniqueOrThrow({
-        where: { code: 'KIGALI' },
+        where: { countryCode_code: { countryCode: 'RW', code: 'KIGALI' } },
         include: { districts: true },
       });
       // Collapsing would have thrown the data away; the city is one CHIP, not

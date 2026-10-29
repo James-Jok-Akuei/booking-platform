@@ -8,7 +8,6 @@ import {
   SavedServicePageDto,
   ServiceFavouriteStateDto,
 } from './dto/service-favourite.dto';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { liveDiscount, platformToday, priceFor } from '../business/discount';
 import { STARTING_PRICE_GROUPS_SELECT } from '../business/dto/service-choices.dto';
@@ -18,13 +17,14 @@ import {
   SavedPlacePageDto,
 } from './dto/favourite-response.dto';
 import { BusinessDocumentStatus } from '@prisma/client';
-import { REGISTRATION_KINDS } from '../business/document-rules';
+import { ALL_REGISTRATION_KINDS } from '../business/document-rules';
+import { CountriesService } from '../countries/countries.service';
 
 @Injectable()
 export class FavouritesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly config: ConfigService,
+    private readonly countries: CountriesService,
   ) {}
 
   /**
@@ -243,6 +243,7 @@ export class FavouritesService {
                 status: true,
                 pausedAt: true,
                 publishedAt: true,
+                countryCode: true,
                 category: { select: { id: true, name: true, icon: true } },
                 subcategory: { select: { id: true, name: true } },
                 kinds: KINDS_SELECT,
@@ -250,7 +251,7 @@ export class FavouritesService {
                 documents: {
                   where: {
                     status: BusinessDocumentStatus.VERIFIED,
-                    kind: { in: REGISTRATION_KINDS },
+                    kind: { in: ALL_REGISTRATION_KINDS },
                     OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
                   },
                   select: { id: true },
@@ -283,13 +284,15 @@ export class FavouritesService {
           });
     const bookings = new Map(grouped.map((g) => [`${g.serviceId}:${g.locationId}`, g._count._all]));
 
-    // At the price paid today: after a sale, if one is on (§186).
-    const timeZone = this.config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
-    const today = platformToday(timeZone);
+    // At the price paid today: after a sale, if one is on (§186) — "today" on
+    // each shop's own clock (§315), since saved services can be in any country.
+    const zones = new Map<string, string>();
+    for (const code of new Set(kept.map((r) => r.location.business.countryCode))) zones.set(code, await this.countries.zoneOf(code));
     const services: SavedServiceDto[] = kept.map((r) => {
       const offer = r.service.locations.find((o) => o.locationId === r.locationId)!;
-      const price = priceFor(offer.priceMinor, liveDiscount(r.service, today, timeZone));
-      const { status, pausedAt, publishedAt, documents, ...rest } = r.location.business;
+      const timeZone = zones.get(r.location.business.countryCode)!;
+      const price = priceFor(offer.priceMinor, liveDiscount(r.service, platformToday(timeZone), timeZone));
+      const { status, pausedAt, publishedAt, documents, countryCode: _country, ...rest } = r.location.business;
       const business = { ...rest, registeredBusiness: documents.length > 0 };
       return {
         id: r.service.id,

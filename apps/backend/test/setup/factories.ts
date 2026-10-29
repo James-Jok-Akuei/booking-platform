@@ -48,6 +48,8 @@ export async function createBusiness(
      * 'UNVERIFIED' for the cases that are about exactly that.
      */
     payoutDestination?: 'VERIFIED' | 'UNVERIFIED' | 'NONE';
+    /** The shop's country (§315); Rwanda when not given. */
+    countryCode?: string;
   } = {},
 ): Promise<TestBusiness> {
   const email = uniqueEmail('owner');
@@ -58,6 +60,8 @@ export async function createBusiness(
   const business = await prisma.businessProfile.create({
     data: {
       name: 'Test Salon',
+      // Rwanda, the default country (§315), unless a test says otherwise.
+      countryCode: options.countryCode ?? 'RW',
       status: options.status ?? BusinessStatus.APPROVED,
       // A complete shop that has asked to be reviewed (§255), as every shop
       // with a name was under the rule before it — and as the migration made them.

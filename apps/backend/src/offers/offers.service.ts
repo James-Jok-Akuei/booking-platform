@@ -12,6 +12,7 @@ import type { Locale } from '../i18n/locales';
 import { asLocale, say } from '../i18n/say';
 import { PrismaService } from '../prisma/prisma.service';
 import { OffersPreferenceDto, UpdateOffersPreferenceDto } from './dto/offers.dto';
+import { CountriesService } from '../countries/countries.service';
 
 /** Nobody hears from us more often than this, whatever the schedule does. */
 export const OFFERS_MIN_GAP_MS = 6 * 24 * 60 * 60 * 1000;
@@ -57,6 +58,7 @@ export class OffersService {
     private readonly mail: MailService,
     private readonly config: ConfigService,
     private readonly routing: RoutingService,
+    private readonly countries: CountriesService,
   ) {}
 
   async preference(userId: string): Promise<OffersPreferenceDto> {
@@ -145,15 +147,27 @@ export class OffersService {
    * A district with nothing to show sends nothing — and does not mark anyone as
    * sent, so the week a shop opens there, they hear about it.
    */
-  async sendDue(now = new Date()): Promise<{ sent: number; skipped: number }> {
+  /**
+   * `countryCode`: whose customers to write to (§315) — those whose home
+   * district is there, and, in the default country, those who gave only a
+   * spot. The scheduler calls it for each country at nine on its own Friday;
+   * with none given, every country's customers at once (for the dev script).
+   */
+  async sendDue(now = new Date(), countryCode?: string): Promise<{ sent: number; skipped: number }> {
+    const isDefault = countryCode ? (await this.countries.defaultCountry()).code === countryCode : true;
     const due = await this.prisma.user.findMany({
       where: {
         role: UserRole.CUSTOMER,
         closedAt: null,
         offersOptInAt: { not: null },
         offersToken: { not: null },
-        // A district, or an exact spot (§169).
-        OR: [{ homeDistrictId: { not: null } }, { homeLatitude: { not: null } }],
+        // A district, or an exact spot (§169) — in the country being written to.
+        OR: countryCode
+          ? [
+              { homeDistrict: { province: { countryCode } } },
+              ...(isDefault ? [{ homeDistrictId: null, homeLatitude: { not: null } }] : []),
+            ]
+          : [{ homeDistrictId: { not: null } }, { homeLatitude: { not: null } }],
         AND: [
           {
             OR: [
@@ -172,7 +186,7 @@ export class OffersService {
         homeLongitude: true,
         homeLabel: true,
         homeDistrict: {
-          select: { id: true, name: true, provinceId: true, province: { select: { name: true } } },
+          select: { id: true, name: true, provinceId: true, province: { select: { name: true, countryCode: true } } },
         },
       },
     });
@@ -191,6 +205,7 @@ export class OffersService {
           user.homeLabel,
           user.homeDistrict,
           asLocale(user.locale),
+          user.homeDistrict?.province.countryCode ?? countryCode,
         );
       } else {
         const district = user.homeDistrict!;
@@ -250,18 +265,24 @@ export class OffersService {
   private async pickAround(
     spot: { lat: number; lng: number },
     label: string | null,
-    district: { id: string; name: string; provinceId: string; province: { name: string } } | null,
+    district: { id: string; name: string; provinceId: string; province: { name: string; countryCode: string } } | null,
     locale: Locale,
+    /** The customer's country (§315): only its shops are offered. */
+    countryCode: string | undefined,
   ): Promise<Pick> {
     for (const radiusKm of SPOT_RADII_KM) {
-      const found = await this.discovery.searchServices({
-        lat: spot.lat,
-        lng: spot.lng,
-        radiusKm,
-        sort: DiscoverySort.POPULAR,
-        limit: OFFERS_PER_EMAIL,
-        offset: 0,
-      });
+      const found = await this.discovery.searchServices(
+        {
+          lat: spot.lat,
+          lng: spot.lng,
+          radiusKm,
+          sort: DiscoverySort.POPULAR,
+          limit: OFFERS_PER_EMAIL,
+          offset: 0,
+        },
+        undefined,
+        countryCode,
+      );
       if (found.services.length >= WIDEN_BELOW) {
         const shops = await this.prisma.location.findMany({
           where: { id: { in: found.services.map((s) => s.location.id) } },
@@ -296,23 +317,23 @@ export class OffersService {
     id: string;
     name: string;
     provinceId: string;
-    province: { name: string };
+    province: { name: string; countryCode: string };
   }): Promise<{ place: string; services: DiscoveredServiceDto[] }> {
-    const inDistrict = await this.discovery.searchServices({
-      districtId: district.id,
-      sort: DiscoverySort.POPULAR,
-      limit: OFFERS_PER_EMAIL,
-      offset: 0,
-    });
+    // The district's own country (§315), so the search is not narrowed to another.
+    const country = district.province.countryCode;
+    const inDistrict = await this.discovery.searchServices(
+      { districtId: district.id, sort: DiscoverySort.POPULAR, limit: OFFERS_PER_EMAIL, offset: 0 },
+      undefined,
+      country,
+    );
     if (inDistrict.services.length >= WIDEN_BELOW) {
       return { place: district.name, services: inDistrict.services };
     }
-    const inProvince = await this.discovery.searchServices({
-      provinceId: district.provinceId,
-      sort: DiscoverySort.POPULAR,
-      limit: OFFERS_PER_EMAIL,
-      offset: 0,
-    });
+    const inProvince = await this.discovery.searchServices(
+      { provinceId: district.provinceId, sort: DiscoverySort.POPULAR, limit: OFFERS_PER_EMAIL, offset: 0 },
+      undefined,
+      country,
+    );
     return {
       place: district.province.name.replace(/^City of /, ''),
       services: inProvince.services,

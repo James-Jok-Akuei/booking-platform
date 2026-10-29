@@ -23,6 +23,8 @@ export interface BookingFacts {
   longitude: number | null;
   startTime: Date;
   endTime: Date;
+  /** The shop's clock (§315), the one the start and end are said on. */
+  timeZone: string;
   depositMinor: number;
   /** The whole price, when the booking kept one (§136). */
   priceMinor: number | null;
@@ -67,7 +69,8 @@ export const BOOKING_FACTS_SELECT = {
       address: true,
       latitude: true,
       longitude: true,
-      business: { select: { name: true, logoUrl: true } },
+      // The shop's clock (§315): every time said about the booking is its.
+      business: { select: { name: true, logoUrl: true, country: { select: { timeZone: true } } } },
     },
   },
 } satisfies Prisma.AppointmentSelect;
@@ -91,7 +94,7 @@ type Loaded = {
     address: string;
     latitude: number | null;
     longitude: number | null;
-    business: { name: string | null; logoUrl: string | null };
+    business: { name: string | null; logoUrl: string | null; country: { timeZone: string } };
   };
 };
 
@@ -109,6 +112,7 @@ export function bookingFacts(row: Loaded): BookingFacts {
     longitude: row.location.longitude,
     startTime: row.startTime,
     endTime: row.endTime,
+    timeZone: row.location.business.country.timeZone,
     depositMinor: row.depositAmountMinor,
     priceMinor: row.servicePriceMinor,
     currency: row.currency,

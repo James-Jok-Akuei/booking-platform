@@ -20,18 +20,13 @@ import { plural, t } from '@lingui/core/macro';
 import { formatDateTime } from '../i18n/format';
 import { Plural } from '@lingui/react/macro';
 import { EmptyState } from '../ui/EmptyState';
+import { phoneInThrees, useShopCountry } from '../lib/country';
 
 const PAGE = 25;
 
 const when = (iso: string | null) =>
   iso ? formatDateTime(new Date(iso), { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
-/** "+250788100001" → "+250 788 100 001": read in threes, as people say it (§245). */
-const spaced = (msisdn: string) => {
-  const digits = msisdn.replace(/\D/g, '');
-  if (digits.startsWith('250') && digits.length === 12) return `+250 ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9)}`;
-  return msisdn;
-};
 
 
 /** The number's state in the page's own words (§291), not the enum. */
@@ -373,8 +368,10 @@ function Destination({
 }) {
   const [msisdn, setMsisdn] = useState('');
   const [changing, setChanging] = useState(false);
+  // The shop's country (§315): its numbers, and which network each is on.
+  const country = useShopCountry();
   // The network the typed number belongs to, as the server would read it (§58.1).
-  const typed = networkOf(msisdn);
+  const typed = networkOf(msisdn, country);
 
   const submit = useMutation({
     mutationFn: (value: string) => submitPayoutDestination(value),
@@ -417,7 +414,7 @@ function Destination({
               <Trans>{NETWORK_NAME[destination.provider]} number</Trans>
             </span>
             <strong className="gp-number-value">
-              {destination.msisdn ? spaced(destination.msisdn) : `•••• ${destination.msisdnLast3 ?? ''}`}
+              {destination.msisdn ? phoneInThrees(destination.msisdn, country?.callingCode) : `•••• ${destination.msisdnLast3 ?? ''}`}
             </strong>
           </div>
           <span className={`pill ${destination.status.toLowerCase()}`}>
@@ -457,7 +454,7 @@ function Destination({
               id="msisdn"
               value={msisdn}
               onChange={(e) => setMsisdn(e.target.value)}
-              placeholder="+250788123456"
+              placeholder={country?.phoneExample.replace(/\s/g, '') ?? ''}
               inputMode="tel"
             />
             <button type="submit" className="primary" disabled={submit.isPending}>
@@ -469,7 +466,9 @@ function Destination({
               <NetworkMark network={typed} size={22} />
               {typed === 'MTN_MOMO'
                 ? t`An MTN MoMo number — your payments can be sent to it.`
-                : t`An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079).`}
+                : country?.code === 'RW'
+                  ? t`An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079).`
+                  : t`An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number.`}
             </p>
           )}
           {destination && (

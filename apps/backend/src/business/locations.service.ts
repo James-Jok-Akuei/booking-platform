@@ -34,6 +34,7 @@ export class LocationsService {
     // Coordinates are optional, but a lone latitude is meaningless — reject the
     // half-set pair rather than storing a point that can never be mapped.
     this.assertCoordinatePair(dto.latitude, dto.longitude);
+    await this.assertDistrictInShopsCountry(businessId, dto.districtId);
 
     return this.prisma.$transaction(async (tx) => {
       const location = await tx.location.create({
@@ -49,6 +50,22 @@ export class LocationsService {
         include: LOCATION_INCLUDE,
       });
     });
+  }
+
+  /**
+   * A branch is in its shop's country (§315): its district must be one of
+   * that country's. A district from anywhere else would put the branch on
+   * the wrong clock and in the wrong country's search.
+   */
+  private async assertDistrictInShopsCountry(businessId: string, districtId: string | null | undefined) {
+    if (!districtId) return;
+    const [district, shop] = await Promise.all([
+      this.prisma.district.findUnique({ where: { id: districtId }, select: { province: { select: { countryCode: true } } } }),
+      this.prisma.businessProfile.findUniqueOrThrow({ where: { id: businessId }, select: { countryCode: true, country: { select: { name: true } } } }),
+    ]);
+    if (!district || district.province.countryCode !== shop.countryCode) {
+      throw new BadRequestException(`Choose a district in ${shop.country.name} from the list.`);
+    }
   }
 
   async findAll(userId: string) {
@@ -90,6 +107,7 @@ export class LocationsService {
           'a location without them cannot appear in a distance search.',
       );
     }
+    await this.assertDistrictInShopsCountry(businessId, dto.districtId);
 
     return this.prisma.location.update({
       where: { id: locationId },

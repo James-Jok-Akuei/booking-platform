@@ -30,6 +30,7 @@ import { MulterExceptionFilter } from '../business/filters/multer-exception.filt
 import { StoriesService } from './stories.service';
 import { PostStoryDto, RemoveStoryDto, ReportStoryDto } from './dto/story-request.dto';
 import { AdminStoriesDto, BusinessStoryDto, MyStoriesDto, StoryFeedDto } from './dto/story-response.dto';
+import { RequestedCountry } from '../countries/requested-country.decorator';
 
 /**
  * A shop's own stories (§285). The owner and managers post and take down;
@@ -78,8 +79,9 @@ export class StoriesController {
 
   @Get()
   @ApiOkResponse({ type: StoryFeedDto })
-  feed() {
-    return this.stories.feed();
+  @ApiQuery({ name: 'country', required: false, description: 'An ISO country code (§315), or the X-Country header; the default country when not given.' })
+  feed(@RequestedCountry() country: string | undefined) {
+    return this.stories.feed(country);
   }
 
   /** Counted, never recorded against anyone. */

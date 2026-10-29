@@ -11,11 +11,12 @@ import {
 } from '../api/admin';
 import { promptDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
-import { NETWORK_NAME, NetworkMark, networkOf, type Network } from '../ui/NetworkMark';
+import { NETWORK_NAME, NetworkMark, type Network } from '../ui/NetworkMark';
 import { NothingFound, SearchToggle } from '../ui/SearchToggle';
 import { ShopMark } from '../ui/ShopMark';
 import './destinations.css';
 import { EmptyState } from '../ui/EmptyState';
+import { networkOfNumber, phoneInThrees, useCountries } from '../lib/countries';
 
 type Tab = PayoutDestinationStatus | 'ALL';
 
@@ -45,12 +46,6 @@ const sinceDay = (iso: string) => {
   return days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
 };
 
-/** "+250788100004" → "+250 788 100 004": read aloud in threes, as people say it. */
-const spaced = (msisdn: string) => {
-  const digits = msisdn.replace(/\D/g, '');
-  if (digits.startsWith('250') && digits.length === 12) return `+250 ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9)}`;
-  return msisdn;
-};
 
 const same = (a: string | null, b: string) => Boolean(a) && a!.replace(/\D/g, '').slice(-9) === b.replace(/\D/g, '').slice(-9);
 
@@ -69,6 +64,9 @@ const same = (a: string | null, b: string) => Boolean(a) && a!.replace(/\D/g, ''
  */
 export function PayoutDestinationsPage() {
   const [params, setParams] = useSearchParams();
+  // Numbers read by their own country's rules (§315).
+  const countries = useCountries();
+  const spaced = (msisdn: string) => phoneInThrees(msisdn, countries);
   const tab = (params.get('status') as Tab | null) ?? 'UNVERIFIED';
   // A number (any form), a shop, a place, or who gave it (§289), kept in the address.
   const q = params.get('q') ?? '';
@@ -275,7 +273,10 @@ export function PayoutDestinationsPage() {
 function Card({ d, busy, onVerify, onReject }: { d: PayoutDestination; busy: boolean; onVerify: () => void; onReject: () => void }) {
   const look = STATUS[d.status];
   const given: Network = d.provider === 'AIRTEL_MONEY' ? 'AIRTEL_MONEY' : 'MTN_MOMO';
-  const byPrefix = networkOf(d.msisdn);
+  const countries = useCountries();
+  const spaced = (msisdn: string) => phoneInThrees(msisdn, countries);
+  // The network its prefix says, in its own country (§315).
+  const byPrefix = networkOfNumber(d.msisdn, countries);
   const prefixDisagrees = byPrefix !== null && byPrefix !== given;
   const isShopPhone = same(d.businessProfile.phone, d.msisdn);
   const waiting = d.status === 'UNVERIFIED';

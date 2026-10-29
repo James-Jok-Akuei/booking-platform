@@ -7,6 +7,7 @@ import { PayoutDestinationsPage } from './pages/PayoutDestinationsPage';
 import { PayoutsPage } from './pages/PayoutsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { PlacesPage } from './pages/PlacesPage';
+import { CountriesPage } from './pages/CountriesPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LedgerPage } from './pages/LedgerPage';
 import { ReviewsPage } from './pages/ReviewsPage';
@@ -46,6 +47,7 @@ export function App() {
         <Route path="/users" element={<UsersPage />} />
         <Route path="/tickets" element={<TicketsPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/countries" element={<CountriesPage />} />
         <Route path="/places" element={<PlacesPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/legal" element={<LegalPage />} />

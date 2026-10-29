@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { KINDS_SELECT } from '../business/kinds';
-import { ConfigService } from '@nestjs/config';
 import { BusinessStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
@@ -23,7 +22,8 @@ import { COUNTED_BOOKING_STATUSES, byPopularity } from './popularity';
 import { TaxonomyNamesService, fold } from '../categories/taxonomy-names.service';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 import { BusinessDocumentStatus } from '@prisma/client';
-import { REGISTRATION_KINDS } from '../business/document-rules';
+import { ALL_REGISTRATION_KINDS } from '../business/document-rules';
+import { CountriesService } from '../countries/countries.service';
 
 /** Rows the bounding-box + haversine query returns. */
 interface DistanceRow {
@@ -57,7 +57,7 @@ const registeredSelect = () => ({
   documents: {
     where: {
       status: BusinessDocumentStatus.VERIFIED,
-      kind: { in: REGISTRATION_KINDS },
+      kind: { in: ALL_REGISTRATION_KINDS },
       // Read when the query is built, never once at start-up: "still standing" moves with the day.
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
@@ -74,21 +74,13 @@ function publicBusiness<T extends { documents: unknown[] }>(business: T): Omit<T
 
 @Injectable()
 export class DiscoveryService {
-  private readonly timeZone: string;
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly settings: PlatformSettingsService,
     private readonly favourites: FavouritesService,
-    config: ConfigService,
     private readonly names: TaxonomyNamesService,
-  ) {
-    // The same single platform timezone AvailabilityService uses (§12). No
-    // per-location timezone is stored anywhere, and inventing one here would
-    // make "open now" and the availability calendar disagree about what day it
-    // is for the same location.
-    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
-  }
+    private readonly countries: CountriesService,
+  ) {}
 
   // ---------- Search ----------
 
@@ -106,10 +98,14 @@ export class DiscoveryService {
   async search(
     query: DiscoverLocationsDto,
     viewerId?: string,
+    /** The country asked about (§315): `X-Country` or `?country=`; the default when not live or not sent. */
+    requestedCountry?: string,
   ): Promise<DiscoveryPageDto> {
     const limit = query.limit ?? DEFAULT_LIMIT;
     const offset = query.offset ?? 0;
     const distance = this.resolveDistance(query);
+    // One country's shops at a time (§315), on its own clock for "open now".
+    const country = await this.countries.resolve(requestedCountry ?? query.country);
 
     if (query.sort === DiscoverySort.DISTANCE && !distance) {
       throw new BadRequestException('sort=distance requires lat and lng.');
@@ -159,15 +155,15 @@ export class DiscoveryService {
     let openIds: string[] | null = null;
     if (query.openNow) {
       const candidates = await this.prisma.location.findMany({
-        where: this.buildWhere(query, restrictTo, spoken),
+        where: this.buildWhere(query, restrictTo, country.code, spoken),
         select: { id: true },
       });
-      openNowByCandidate = await this.openNowByLocation(candidates.map((c) => c.id));
+      openNowByCandidate = await this.openNowByLocation(candidates.map((c) => c.id), country.timeZone);
       openIds = candidates.map((c) => c.id).filter((id) => openNowByCandidate!.get(id));
       if (openIds.length === 0) return this.emptyPage(limit, offset, distance);
     }
 
-    const where = this.buildWhere(query, intersectIds(restrictTo, openIds), spoken);
+    const where = this.buildWhere(query, intersectIds(restrictTo, openIds), country.code, spoken);
 
     // Two orders cannot be expressed as a column Prisma can sort by: distance
     // lives in raw SQL, and popularity is a count from another table weighted by
@@ -263,7 +259,7 @@ export class DiscoveryService {
     const [pageOpenNow, rate, saved, bookings] = await Promise.all([
       // Already known when the filter was applied, and every row on this page is
       // one of those candidates.
-      openNowByCandidate ?? this.openNowByLocation(rows.map((l) => l.id)),
+      openNowByCandidate ?? this.openNowByLocation(rows.map((l) => l.id), country.timeZone),
       // One rate read per response, reused for every amount in it (§39).
       this.settings.getExchangeRateForDisplay(),
       // One query for the page, never one per row — and none at all for a
@@ -355,10 +351,13 @@ export class DiscoveryService {
   async searchServices(
     query: DiscoverLocationsDto,
     viewerId?: string,
+    /** As for `search` (§315). */
+    requestedCountry?: string,
   ): Promise<DiscoveredServicePageDto> {
     const limit = query.limit ?? DEFAULT_LIMIT;
     const offset = query.offset ?? 0;
     const distance = this.resolveDistance(query);
+    const country = await this.countries.resolve(requestedCountry ?? query.country);
 
     if (query.sort === DiscoverySort.DISTANCE && !distance) {
       throw new BadRequestException('sort=distance requires lat and lng.');
@@ -370,7 +369,7 @@ export class DiscoveryService {
 
     // The branch rules, minus the filters that belong to the offer.
     const { q, maxPriceMinor, onSale, following, ...branchQuery } = query;
-    const locationWhere = this.buildWhere(branchQuery as DiscoverLocationsDto, restrictTo);
+    const locationWhere = this.buildWhere(branchQuery as DiscoverLocationsDto, restrictTo, country.code);
     // Kinds named in Kinyarwanda or French (§308.7).
     const spoken = q ? await this.names.spokenMatches(q) : null;
     // Only shops this customer follows (§288): Home's "From places you follow".
@@ -456,7 +455,7 @@ export class DiscoveryService {
 
     const locationIds = [...new Set(offers.map((o) => o.locationId))];
     const [openNow, grouped] = await Promise.all([
-      this.openNowByLocation(locationIds),
+      this.openNowByLocation(locationIds, country.timeZone),
       // One grouped count for every candidate offer at once.
       offers.length === 0
         ? Promise.resolve([])
@@ -478,9 +477,9 @@ export class DiscoveryService {
     const distanceById = new Map(nearby?.map((r) => [r.id, r.distance_km]) ?? []);
 
     // Each offer at the price paid today (§186): after a sale, if one is on.
-    const today = this.localToday().date;
+    const today = this.localToday(country.timeZone).date;
     const priced = new Map(
-      offers.map((o) => [o, priceFor(o.priceMinor, liveDiscount(o.service, today, this.timeZone))]),
+      offers.map((o) => [o, priceFor(o.priceMinor, liveDiscount(o.service, today, country.timeZone))]),
     );
     const paid = (o: (typeof offers)[number]) => priced.get(o)!;
     // The least a booking can cost once the questions that must be answered
@@ -636,6 +635,7 @@ export class DiscoveryService {
             status: true,
             pausedAt: true,
             publishedAt: true,
+            countryCode: true,
             category: { select: { id: true, name: true, icon: true } },
             subcategory: { select: { id: true, name: true } },
             kinds: KINDS_SELECT,
@@ -665,7 +665,9 @@ export class DiscoveryService {
       throw new NotFoundException('Location not found.');
     }
 
-    const today = this.localToday();
+    // The shop's own clock (§315): a page opened by its link, from anywhere, still says its hours.
+    const timeZone = await this.countries.zoneOf(location.business.countryCode);
+    const today = this.localToday(timeZone);
     const [services, exceptions, todayException, rate] = await Promise.all([
       // What THIS branch offers, at THIS branch's prices (§72). Reading the
       // business's services here would list work the branch does not do, and
@@ -765,7 +767,7 @@ export class DiscoveryService {
         const { discountPercent, discountEndsOn, notePrompt, ...service } = offer.service;
         const price = priceFor(
           offer.priceMinor,
-          liveDiscount({ discountPercent, discountEndsOn }, today.date, this.timeZone),
+          liveDiscount({ discountPercent, discountEndsOn }, today.date, timeZone),
         );
         return {
         ...service,
@@ -803,7 +805,7 @@ export class DiscoveryService {
         this.windowFor(template, todayException),
         today.minutesSinceMidnight,
       ),
-      timeZone: this.timeZone,
+      timeZone,
     };
   }
 
@@ -941,11 +943,12 @@ export class DiscoveryService {
    * the weekly template, including one that opens a day the template calls
    * closed.
    */
-  private async openNowByLocation(locationIds: string[]) {
+  /** `timeZone`: the country's whose branches these are — one search is one country (§315). */
+  private async openNowByLocation(locationIds: string[], timeZone: string) {
     const open = new Map<string, boolean>();
     if (locationIds.length === 0) return open;
 
-    const today = this.localToday();
+    const today = this.localToday(timeZone);
     const [hours, exceptions] = await Promise.all([
       this.prisma.locationHours.findMany({
         where: { locationId: { in: locationIds }, dayOfWeek: today.dayOfWeek },
@@ -1012,7 +1015,13 @@ export class DiscoveryService {
 
   // ---------- Shared ----------
 
-  private buildWhere(query: DiscoverLocationsDto, ids: string[] | null, spoken: SpokenKinds | null = null) {
+  private buildWhere(
+    query: DiscoverLocationsDto,
+    ids: string[] | null,
+    /** One country's shops (§315): a customer in Kigali is not shown Nairobi. */
+    countryCode: string,
+    spoken: SpokenKinds | null = null,
+  ) {
     const where: Prisma.LocationWhereInput = {
       // A closed branch is not bookable and must not be discoverable (§89).
       // Applied in buildWhere so the count and the page agree about it, the
@@ -1024,6 +1033,7 @@ export class DiscoveryService {
       // still happen; this stops new ones).
       business: {
         ...PUBLIC_BUSINESS,
+        countryCode,
         // Any of its kinds (§265): a barbershop whose other branch is a spa
         // is found under both. The main kind is matched too, for a business
         // that chose a category before choosing its type.
@@ -1122,12 +1132,9 @@ export class DiscoveryService {
     };
   }
 
-  /** Today, in the platform timezone: the calendar date and the local minute. */
-  private localToday() {
-    const { date, minutesSinceMidnight } = instantToZonedParts(
-      new Date(),
-      this.timeZone,
-    );
+  /** Today on a country's clock (§315): the calendar date and the local minute. */
+  private localToday(timeZone: string) {
+    const { date, minutesSinceMidnight } = instantToZonedParts(new Date(), timeZone);
     return { date, minutesSinceMidnight, dayOfWeek: dayOfWeekUtc(date) };
   }
 

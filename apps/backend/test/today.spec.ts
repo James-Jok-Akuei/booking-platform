@@ -18,7 +18,8 @@ import {
   umugandaIn,
 } from '../src/today/rwanda-calendar';
 import { TodayScheduler } from '../src/today/today.scheduler';
-import { TodayService, taxDue } from '../src/today/today.service';
+import { TodayService } from '../src/today/today.service';
+import { rwandaTaxDue as taxDue } from '../src/countries/packs/rwanda';
 import { WeatherService } from '../src/today/weather.service';
 import { createAdmin, createBusiness } from './setup/factories';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
@@ -200,9 +201,9 @@ describe('Rwanda today (§310)', () => {
       const result = await today.forShop(shop.userId, 'fr');
       expect(result.items[0]).toEqual({ kind: 'momo', momo: 'down' });
       expect(result.items.find((i) => i.kind === 'news')).toMatchObject({ title: 'Nouveaux prix du carburant' });
-      expect(today.publicToday(undefined).momo).toBe('down');
-      expect(today.publicToday('2026-10-31')).toMatchObject({ umuganda: true, holiday: null });
-      expect(today.publicToday('2026-12-25')).toMatchObject({ umuganda: false, holiday: 'christmas' });
+      expect((await today.publicToday(undefined)).momo).toBe('down');
+      expect(await today.publicToday('2026-10-31')).toMatchObject({ umuganda: true, holiday: null });
+      expect(await today.publicToday('2026-12-25')).toMatchObject({ umuganda: false, holiday: 'christmas' });
     });
 
     it('keeps an announcement’s For you date only for audiences shops are in', async () => {

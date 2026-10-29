@@ -1,5 +1,4 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   BusinessStatus,
   LedgerEntryType,
@@ -16,6 +15,7 @@ import type {
   OverviewPeriodDto,
 } from './dto/admin-overview.dto';
 import { PUBLIC_BUSINESS } from '../business/business-status';
+import { CountriesService } from '../countries/countries.service';
 
 /** The chart's length; the two weeks compared are its halves. */
 export const OVERVIEW_DAYS = 14;
@@ -41,14 +41,10 @@ const shiftDay = (ymd: string, by: number) => {
  */
 @Injectable()
 export class AdminOverviewService {
-  private readonly timeZone: string;
-
   constructor(
     private readonly prisma: PrismaService,
-    config: ConfigService,
-  ) {
-    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
-  }
+    private readonly countries: CountriesService,
+  ) {}
 
   async overview(actor: { userId: string; role: string }): Promise<AdminOverviewDto> {
     // Asserted here as well as by the guard (§27.1).
@@ -56,9 +52,11 @@ export class AdminOverviewService {
       throw new ForbiddenException('Only an administrator can read the overview.');
     }
 
-    // Today, in the platform's time zone, and the first day of the chart.
+    // Today, and the first day of the chart, on the platform's clock: the
+    // default country's (§315) — the console's days are the whole platform's.
+    const timeZone = await this.countries.platformZone();
     const [{ today }] = await this.prisma.$queryRaw<Array<{ today: string }>>`
-      SELECT to_char((now() AT TIME ZONE ${this.timeZone})::date, 'YYYY-MM-DD') AS today
+      SELECT to_char((now() AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS today
     `;
     const days = Array.from({ length: OVERVIEW_DAYS }, (_, i) => shiftDay(today, i - (OVERVIEW_DAYS - 1)));
     // A day of slack before the chart's first midnight, whatever the zone's
@@ -78,7 +76,7 @@ export class AdminOverviewService {
     ] = await Promise.all([
       this.waiting(),
       this.prisma.$queryRaw<DayRow[]>`
-        SELECT to_char(("depositPaidAt" AT TIME ZONE 'UTC' AT TIME ZONE ${this.timeZone})::date, 'YYYY-MM-DD') AS day,
+        SELECT to_char(("depositPaidAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
                COUNT(*)::bigint AS n,
                SUM("depositAmountMinor")::bigint AS minor
         FROM "appointments"
@@ -88,7 +86,7 @@ export class AdminOverviewService {
       // PLATFORM_FEE is negative and its reversal positive (§34); their sum,
       // turned round, is what the platform kept.
       this.prisma.$queryRaw<DayRow[]>`
-        SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${this.timeZone})::date, 'YYYY-MM-DD') AS day,
+        SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
                COUNT(*)::bigint AS n,
                (-SUM("amountMinor"))::bigint AS minor
         FROM "ledger_entries"
@@ -97,14 +95,14 @@ export class AdminOverviewService {
         GROUP BY 1
       `,
       this.prisma.$queryRaw<DayRow[]>`
-        SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${this.timeZone})::date, 'YYYY-MM-DD') AS day,
+        SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
                COUNT(*)::bigint AS n, NULL::bigint AS minor
         FROM "business_profiles"
         WHERE "createdAt" >= ${since}
         GROUP BY 1
       `,
       this.prisma.$queryRaw<DayRow[]>`
-        SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${this.timeZone})::date, 'YYYY-MM-DD') AS day,
+        SELECT to_char(("createdAt" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::date, 'YYYY-MM-DD') AS day,
                COUNT(*)::bigint AS n, NULL::bigint AS minor
         FROM "users"
         WHERE "createdAt" >= ${since}
@@ -148,7 +146,7 @@ export class AdminOverviewService {
 
     return {
       asOf: new Date().toISOString(),
-      timeZone: this.timeZone,
+      timeZone,
       currency: INTERNAL_CURRENCY,
       waiting,
       days: series,

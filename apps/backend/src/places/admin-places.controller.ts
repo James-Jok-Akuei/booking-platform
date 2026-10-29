@@ -55,11 +55,13 @@ export class AdminPlacesController {
   @ApiOkResponse({ type: AdminProvinceDto, isArray: true })
   async findAll() {
     const provinces = await this.prisma.province.findMany({
-      orderBy: { name: 'asc' },
+      // By country first (§315), so each country's places read together.
+      orderBy: [{ countryCode: 'asc' }, { name: 'asc' }],
       select: {
         id: true,
         code: true,
         name: true,
+        countryCode: true,
         districts: {
           orderBy: { name: 'asc' },
           select: {
@@ -77,6 +79,7 @@ export class AdminPlacesController {
       id: province.id,
       code: province.code,
       name: province.name,
+      countryCode: province.countryCode,
       districts: province.districts.map((district) => ({
         id: district.id,
         code: district.code,

@@ -35,8 +35,17 @@ const OFFERED: AppLocale[] = ['en', 'rw', 'fr'];
 /** The "long words" test language (§308): every sentence stretched. Only while developing. */
 export const LONG_WORDS: Language = { code: 'en-XA', name: 'Long words (test)', native: 'Long words (test)' };
 
+/**
+ * The languages of the shop's country (§315), once its profile has said:
+ * a shop in Kenya is not offered Kinyarwanda. Null until then — everything
+ * the app speaks is offered, as on the sign-in page.
+ */
+export const countryLocales: { current: string[] | null } = { current: null };
+
 export const offeredLanguages = (): Language[] => [
-  ...LANGUAGES.filter((language) => OFFERED.includes(language.code)),
+  ...LANGUAGES.filter(
+    (language) => OFFERED.includes(language.code) && (!countryLocales.current || countryLocales.current.includes(language.code)),
+  ),
   ...(import.meta.env.DEV ? [LONG_WORDS] : []),
 ];
 

@@ -353,6 +353,8 @@ async function main() {
     const profile = await prisma.businessProfile.create({
       data: {
         name: options.label,
+        // The demo shops are all in Kigali (§315).
+        countryCode: 'RW',
         members: {
           create: {
             userId: owner.id,

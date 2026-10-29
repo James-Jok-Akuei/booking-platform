@@ -4,6 +4,7 @@ import { Prisma, RefundReason, RefundStatus, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { DisbursementProviderRegistry } from '../payments/disbursement-provider.registry';
 import type { ListRefundsDto, MarkRefundSentDto } from './dto/refund-request.dto';
+import { CountriesService } from '../countries/countries.service';
 
 /** Tries with the operator before a person takes over. */
 export const REFUND_ATTEMPTS = 3;
@@ -51,7 +52,14 @@ export class RefundsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly disbursements: DisbursementProviderRegistry,
+    private readonly countries: CountriesService,
   ) {}
+
+  /** The country a refund goes back in (§315): its booking's shop's — whose connection sends it. */
+  private async countryOf(appointmentId: string) {
+    const booking = await this.prisma.appointment.findUniqueOrThrow({ where: { id: appointmentId }, select: { locationId: true } });
+    return this.countries.ofLocation(booking.locationId);
+  }
 
   /**
    * Writes the refund down, in the cancellation's own transaction: the
@@ -108,7 +116,8 @@ export class RefundsService {
   async sendOne(id: string): Promise<boolean> {
     const refund = await this.prisma.refund.findUnique({ where: { id } });
     if (!refund || refund.status !== RefundStatus.PENDING || !refund.phoneNumber || !refund.provider) return false;
-    if (!this.disbursements.isAvailable(refund.provider)) {
+    const country = await this.countryOf(refund.appointmentId);
+    if (!this.disbursements.isAvailable(refund.provider, country)) {
       // Nothing here can send on that network: straight to our team, rather than
       // "on its way" for ever.
       await this.prisma.refund.update({
@@ -117,7 +126,7 @@ export class RefundsService {
       });
       return false;
     }
-    const provider = this.disbursements.require(refund.provider);
+    const provider = this.disbursements.require(refund.provider, country);
 
     const reference = randomUUID();
     const claimed = await this.prisma.refund.updateMany({
@@ -169,14 +178,15 @@ export class RefundsService {
   async pollInFlight(): Promise<{ sent: number; failed: number }> {
     const inFlight = await this.prisma.refund.findMany({
       where: { status: RefundStatus.SENDING, providerReferenceId: { not: null } },
-      select: { id: true, provider: true, providerReferenceId: true, attempts: true },
+      select: { id: true, provider: true, providerReferenceId: true, attempts: true, appointmentId: true },
     });
     let sent = 0;
     let failed = 0;
     for (const refund of inFlight) {
       try {
-        if (!refund.provider || !this.disbursements.isAvailable(refund.provider)) continue;
-        const result = await this.disbursements.require(refund.provider).checkTransferStatus(refund.providerReferenceId!);
+        const country = await this.countryOf(refund.appointmentId);
+        if (!refund.provider || !this.disbursements.isAvailable(refund.provider, country)) continue;
+        const result = await this.disbursements.require(refund.provider, country).checkTransferStatus(refund.providerReferenceId!);
         if (result.status === 'PENDING') continue;
         if (result.status === 'SUCCESSFUL') {
           await this.prisma.refund.update({

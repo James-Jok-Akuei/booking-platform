@@ -4,7 +4,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   AppointmentStatus,
   BusinessMemberRole,
@@ -16,6 +15,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { INTERNAL_CURRENCY } from '../payments/currency';
 import { AnalyticsQueryDto } from './dto/analytics-query.dto';
 import { EVERY_BRANCH, MEMBERSHIP_SCOPE_SELECT, assertBranch, branchIn, scopeOf } from '../business/branch-scope';
+import { CountriesService } from '../countries/countries.service';
 
 export const DEFAULT_RANGE_DAYS = 30;
 export const MAX_RANGE_DAYS = 365;
@@ -41,14 +41,10 @@ export const DEPOSIT_COLLECTED_STATUSES: AppointmentStatus[] = [
 
 @Injectable()
 export class AnalyticsService {
-  private readonly timeZone: string;
-
   constructor(
     private readonly prisma: PrismaService,
-    config: ConfigService,
-  ) {
-    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
-  }
+    private readonly countries: CountriesService,
+  ) {}
 
   /**
    * Business performance over a period.
@@ -363,7 +359,7 @@ export class AnalyticsService {
   }
 
   /**
-   * Busiest day of week and hour, in the platform's local timezone.
+   * Busiest day of week and hour, on the shop's own clock (§315).
    *
    * Raw SQL because Prisma's groupBy cannot express EXTRACT over a timezone
    * conversion — but the aggregation still happens in the database, which is
@@ -379,12 +375,13 @@ export class AnalyticsService {
     from: Date,
     to: Date,
   ) {
+    const timeZone = await this.countries.zoneOfBusiness(businessId);
     const rows = await this.prisma.$queryRaw<
       Array<{ dow: number; hour: number; count: bigint }>
     >`
       SELECT
-        EXTRACT(DOW  FROM a."startTime" AT TIME ZONE 'UTC' AT TIME ZONE ${this.timeZone})::int AS dow,
-        EXTRACT(HOUR FROM a."startTime" AT TIME ZONE 'UTC' AT TIME ZONE ${this.timeZone})::int AS hour,
+        EXTRACT(DOW  FROM a."startTime" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::int AS dow,
+        EXTRACT(HOUR FROM a."startTime" AT TIME ZONE 'UTC' AT TIME ZONE ${timeZone})::int AS hour,
         COUNT(*)::bigint AS count
       FROM "appointments" a
       JOIN "locations" l ON l."id" = a."locationId"
@@ -396,7 +393,7 @@ export class AnalyticsService {
     `;
 
     if (rows.length === 0) {
-      return { dayOfWeek: null, hour: null, timeZone: this.timeZone };
+      return { dayOfWeek: null, hour: null, timeZone };
     }
 
     const byDay = new Map<number, number>();
@@ -417,7 +414,7 @@ export class AnalyticsService {
       // 0 = Sunday, matching LocationHours.dayOfWeek (§10.4).
       dayOfWeek: { day: dow, appointments: dowCount },
       hour: { hour, appointments: hourCount },
-      timeZone: this.timeZone,
+      timeZone,
     };
   }
 }

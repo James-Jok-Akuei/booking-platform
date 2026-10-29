@@ -15,6 +15,7 @@ import type {
   StoryFeedDto,
   StoryShopDto,
 } from './dto/story-response.dto';
+import { CountriesService } from '../countries/countries.service';
 
 const HOUR = 60 * 60 * 1000;
 
@@ -71,6 +72,7 @@ export class StoriesService {
     private readonly storage: StorageService,
     private readonly access: BusinessAccessService,
     private readonly notifications: NotificationsService,
+    private readonly countries: CountriesService,
   ) {}
 
   // ---------- The shop ----------
@@ -168,11 +170,12 @@ export class StoriesService {
    * Every live story of every shop customers can find (§268), a shop at a
    * time: the shop that posted most recently first, and its stories in the
    * order they went up. Each story says where its "Book" button leads — its
-   * branch, or the shop's first open one.
+   * branch, or the shop's first open one. One country's shops (§315).
    */
-  async feed(): Promise<StoryFeedDto> {
+  async feed(requestedCountry?: string): Promise<StoryFeedDto> {
+    const country = await this.countries.resolve(requestedCountry);
     const rows = await this.prisma.story.findMany({
-      where: { expiresAt: { gt: new Date() }, removedAt: null, business: PUBLIC_BUSINESS },
+      where: { expiresAt: { gt: new Date() }, removedAt: null, business: { ...PUBLIC_BUSINESS, countryCode: country.code } },
       orderBy: { createdAt: 'asc' },
       take: 500,
       select: {

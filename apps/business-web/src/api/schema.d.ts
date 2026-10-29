@@ -4,6 +4,55 @@
  */
 
 export interface paths {
+    "/countries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CountriesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/countries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AdminCountriesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/admin/countries/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Its own fee, or switching it on or off. Bookings already made keep the fee they were made with. */
+        patch: operations["AdminCountriesController_update"];
+        trace?: never;
+    };
     "/auth/otp/request": {
         parameters: {
             query?: never;
@@ -841,6 +890,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** One country's places (§315): the one asked for (`X-Country`, `?country=`), or the default. */
         get: operations["PlacesController_findAll"];
         put?: never;
         post?: never;
@@ -3775,6 +3825,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** In the searcher's own country (§315): a shop's branch address, or a customer's home. */
         get: operations["AddressSearchController_search"];
         put?: never;
         post?: never;
@@ -3980,6 +4031,36 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        CountryDto: {
+            /**
+             * @description The network a mobile number most likely belongs to, by the two digits
+             *     after the calling code: { "78": "MTN_MOMO", "72": "AIRTEL_MONEY" }. A
+             *     guess the person can always change (§58.1); a prefix not listed is not
+             *     guessed at all.
+             */
+            networkPrefixes: {
+                [key: string]: "MTN_MOMO" | "AIRTEL_MONEY";
+            };
+            /** @description ISO 3166-1 alpha-2: "RW". */
+            code: string;
+            /** @description In English; the apps name it in the reader's language. */
+            name: string;
+            /** @description Digits only: "250". */
+            callingCode: string;
+            /** @description ISO 4217: "RWF". */
+            currency: string;
+            /** @description IANA zone: "Africa/Kigali" — the clock its shops keep. */
+            timeZone: string;
+            /** @description The app languages offered there, the usual one first. */
+            locales: string[];
+            networks: ("MTN_MOMO" | "AIRTEL_MONEY")[];
+            /** @description A mobile number as people there write it: "+250 788 123 456". */
+            phoneExample: string;
+            /** @description How many digits a mobile number has after the calling code. */
+            mobileDigits: number;
+            /** @description The country a visitor who has not chosen one is in. */
+            isDefault: boolean;
+        };
         ValidationErrorDto: {
             /** @example 400 */
             statusCode: number;
@@ -3993,6 +4074,12 @@ export interface components {
             message: string[];
             /** @example Bad Request */
             error: string;
+        };
+        UnauthorizedErrorDto: {
+            /** @example 401 */
+            statusCode: number;
+            /** @example Unauthorized */
+            message: string;
         };
         ApiErrorDto: {
             /** @description A sentence for a domain failure; an ARRAY of sentences for a validation failure, one per broken rule. */
@@ -4012,6 +4099,65 @@ export interface components {
              */
             code?: string;
             statusCode: number;
+        };
+        CountryCheckDto: {
+            /** @enum {string} */
+            key: "pack" | "currency" | "clock" | "phone" | "networks" | "languages" | "places";
+            ok: boolean;
+            /** @description In plain words, for the console. */
+            words: string;
+        };
+        AdminCountryDto: {
+            /**
+             * @description The network a mobile number most likely belongs to, by the two digits
+             *     after the calling code: { "78": "MTN_MOMO", "72": "AIRTEL_MONEY" }. A
+             *     guess the person can always change (§58.1); a prefix not listed is not
+             *     guessed at all.
+             */
+            networkPrefixes: {
+                [key: string]: "MTN_MOMO" | "AIRTEL_MONEY";
+            };
+            /** @description ISO 3166-1 alpha-2: "RW". */
+            code: string;
+            /** @description In English; the apps name it in the reader's language. */
+            name: string;
+            /** @description Digits only: "250". */
+            callingCode: string;
+            /** @description ISO 4217: "RWF". */
+            currency: string;
+            /** @description IANA zone: "Africa/Kigali" — the clock its shops keep. */
+            timeZone: string;
+            /** @description The app languages offered there, the usual one first. */
+            locales: string[];
+            networks: ("MTN_MOMO" | "AIRTEL_MONEY")[];
+            /** @description A mobile number as people there write it: "+250 788 123 456". */
+            phoneExample: string;
+            /** @description How many digits a mobile number has after the calling code. */
+            mobileDigits: number;
+            /** @description The country a visitor who has not chosen one is in. */
+            isDefault: boolean;
+            isLive: boolean;
+            liveSince: string | null;
+            /** @description The country's own fee, or null when it takes the platform's. Two decimals, as a string. */
+            platformFeePercentage: string | null;
+            /** @description The fee its bookings are charged now: its own, or the platform's. */
+            effectiveFeePercentage: string;
+            /** @description Shops there, and how many customers can find. */
+            shops: number;
+            liveShops: number;
+            /** @description Districts there customers can pick. */
+            places: number;
+            /** @description Everything it needs to be on; all `ok` for a country that can be switched on. */
+            checks: components["schemas"]["CountryCheckDto"][];
+        };
+        UpdateCountryDto: {
+            /**
+             * @description The country's own fee, two decimals, 0–100; null to take the platform's.
+             *     Like the platform fee, it may not be raised above any active service's
+             *     deposit there (§55-style check in `PlatformSettingsService`).
+             */
+            platformFeePercentage?: number | null;
+            isLive?: boolean;
         };
         RequestOtpDto: {
             /** Format: email */
@@ -4104,12 +4250,6 @@ export interface components {
             current: boolean;
             /** @description An administrator's sign-in with an authenticator code. */
             twoStep: boolean;
-        };
-        UnauthorizedErrorDto: {
-            /** @example 401 */
-            statusCode: number;
-            /** @example Unauthorized */
-            message: string;
         };
         TwoStepStatusDto: {
             enabled: boolean;
@@ -4682,6 +4822,8 @@ export interface components {
             id: string;
             code: string;
             name: string;
+            /** @description The country it is in (§315). */
+            countryCode: string;
             districts: components["schemas"]["AdminDistrictDto"][];
         };
         CreateDistrictDto: {
@@ -4722,6 +4864,22 @@ export interface components {
             /** @description What the business wrote when this kind is "Other" (§267); null otherwise. */
             otherLabel: string | null;
         };
+        ShopCountryDto: {
+            /** @description ISO 3166-1 alpha-2: "RW". */
+            code: string;
+            name: string;
+            /** @description Digits only: "250". */
+            callingCode: string;
+            /** @description ISO 4217: "RWF". */
+            currency: string;
+            /** @description IANA zone: "Africa/Kigali" — the shop's clock. */
+            timeZone: string;
+            /** @description The app languages offered there, the usual one first. */
+            locales: string[];
+            networks: ("MTN_MOMO" | "AIRTEL_MONEY")[];
+            /** @description A mobile number as people there write it: "+250 788 123 456". */
+            phoneExample: string;
+        };
         BusinessProfileDto: {
             id: string;
             name: string | null;
@@ -4755,6 +4913,8 @@ export interface components {
             subcategory: components["schemas"]["BusinessSubcategoryDto"] | null;
             /** @description Every kind of place it is, the main one first (§265). */
             kinds: components["schemas"]["BusinessKindDto"][];
+            /** @description The country it is in (§315). */
+            country: components["schemas"]["ShopCountryDto"];
         };
         UpdateBusinessProfileDto: {
             name?: string;
@@ -6883,11 +7043,11 @@ export interface components {
             covered: boolean;
         };
         TodayRateDto: {
-            /** @description USD, EUR, KES or UGX. */
+            /** @description USD, EUR, KES, UGX or RWF — never the country's own. */
             code: string;
-            /** @description Francs for one. */
-            rwf: number;
-            /** @description Since the previous day's figure, in francs; null on the first day. */
+            /** @description How much of the shop's money one buys (§315): francs, in Rwanda. */
+            local: number;
+            /** @description Since the previous day's figure, in the shop's money; null on the first day. */
             change: number | null;
         };
         TodayItemDto: {
@@ -6916,7 +7076,8 @@ export interface components {
             from?: string;
             /** @description tax: vat-paye (the 15th) · licence (31 January) · annual (31 March). */
             tax?: string;
-            /** @description rates: francs for one dollar, euro, Kenyan and Ugandan shilling, and where they come from. */
+            /** @description rates: the shop's money for one dollar, euro and the neighbours' monies (§315), and where they come from. */
+            currency?: string;
             rates?: components["schemas"]["TodayRateDto"][];
             source?: string;
             sourceUrl?: string;
@@ -6937,7 +7098,7 @@ export interface components {
             calm: boolean;
             /** @description ok · slow · down */
             momo: string;
-            /** @description The day asked about ("YYYY-MM-DD", Kigali). */
+            /** @description The day asked about ("YYYY-MM-DD", on the country's clock). */
             date: string;
             /** @description That day is Umuganda: shops open from 11:00. */
             umuganda: boolean;
@@ -8258,8 +8419,8 @@ export interface components {
             /**
              * @description The mobile-money number payouts are sent to, in E.164.
              *
-             *     The SHAPE is checked here; the expected country prefix is checked in the
-             *     service, because it is configurable (§48.2).
+             *     The SHAPE is checked here; that it is a mobile number in the shop's own
+             *     country is checked in the service (§315).
              */
             msisdn: string;
             /** @enum {string} */
@@ -8792,6 +8953,141 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    CountriesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CountryDto"][];
+                };
+            };
+        };
+    };
+    AdminCountriesController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCountryDto"][];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
+    AdminCountriesController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateCountryDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCountryDto"];
+                };
+            };
+            /** @description The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence. */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorDto"];
+                };
+            };
+            /** @description No token, an expired one, or one for an account that has since been closed. Carries no `error` field. */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnauthorizedErrorDto"];
+                };
+            };
+            /** @description Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2). */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+            /** @description No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2). */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorDto"];
+                };
+            };
+        };
+    };
     AuthController_requestOtp: {
         parameters: {
             query?: never;
@@ -11318,7 +11614,10 @@ export interface operations {
     };
     PlacesController_findAll: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description An ISO country code (§315), or the X-Country header; the default country when not given. */
+                country?: unknown;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -15591,7 +15890,9 @@ export interface operations {
     PaymentsController_providers: {
         parameters: {
             query?: {
-                phoneNumber?: string;
+                /** @description An ISO country code (§315), or the X-Country header; the default country when not given. */
+                country?: unknown;
+                phoneNumber?: unknown;
             };
             header?: never;
             path?: never;
@@ -17947,8 +18248,10 @@ export interface operations {
     PublicTodayController_get: {
         parameters: {
             query?: {
-                /** @description YYYY-MM-DD, Kigali; today when not given. */
-                date?: string;
+                /** @description An ISO country code (§315), or the X-Country header; the default country when not given. */
+                country?: unknown;
+                /** @description YYYY-MM-DD on the country's clock; today when not given. */
+                date?: unknown;
             };
             header?: never;
             path?: never;
@@ -19992,7 +20295,10 @@ export interface operations {
     };
     StoriesController_feed: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description An ISO country code (§315), or the X-Country header; the default country when not given. */
+                country?: unknown;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -22139,6 +22445,12 @@ export interface operations {
         parameters: {
             query?: {
                 /**
+                 * @description The country to search (§315), as an ISO code — for a link; an app sends
+                 *     the `X-Country` header instead. A country that is not live, or none at
+                 *     all, searches the default one.
+                 */
+                country?: string;
+                /**
                  * @description Narrow to one province (§104). Matched through the district, so a branch
                  *     with no district set is simply not returned — it has not said where it is.
                  */
@@ -22207,6 +22519,12 @@ export interface operations {
     DiscoveryController_searchServices: {
         parameters: {
             query?: {
+                /**
+                 * @description The country to search (§315), as an ISO code — for a link; an app sends
+                 *     the `X-Country` header instead. A country that is not live, or none at
+                 *     all, searches the default one.
+                 */
+                country?: string;
                 /**
                  * @description Narrow to one province (§104). Matched through the district, so a branch
                  *     with no district set is simply not returned — it has not said where it is.

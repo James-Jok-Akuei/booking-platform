@@ -103,6 +103,13 @@ export const cancelAppointment = (id: string, reason: string) =>
  * `string`, so a screen cannot branch on a status the server never sends.
  */
 export type BusinessProfile = components['schemas']['BusinessProfileDto'];
+/** The shop's country, as its profile carries it (§315). */
+export type ShopCountry = BusinessProfile['country'];
+/** A country as the platform describes it to any app (§315): with how its numbers are read. */
+export type Country = components['schemas']['CountryDto'];
+
+/** The countries customers can find shops in, the default first. */
+export const getCountries = () => api<Country[]>('/countries');
 
 
 /**

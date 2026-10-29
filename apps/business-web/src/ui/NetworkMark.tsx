@@ -21,14 +21,26 @@ export const NETWORK_NAME: Record<Network, string> = {
  * as the server's `operator-routing.ts` (§58.1): Rwanda's 078/079 are MTN,
  * 072/073 Airtel. Unknown numbers return null rather than a guess.
  */
-export function networkOf(number: string): Network | null {
+/**
+ * The network a number most likely belongs to in `country` (§315), by its
+ * prefix — written with the calling code ("+250 78…") or the leading 0
+ * people dial at home ("078…"). Null when the country is not known yet or
+ * the prefix is not one it lists: a guess, never a fact (§58.1).
+ */
+export function networkOf(
+  number: string,
+  country: { callingCode: string; networkPrefixes?: Record<string, string> } | null | undefined,
+): Network | null {
+  if (!country?.networkPrefixes) return null;
   const digits = number.replace(/\D/g, '');
-  const national = digits.startsWith('250') ? digits.slice(3) : digits.startsWith('0') ? digits.slice(1) : null;
+  const national = digits.startsWith(country.callingCode)
+    ? digits.slice(country.callingCode.length)
+    : digits.startsWith('0')
+      ? digits.slice(1)
+      : null;
   if (!national || national.length < 2) return null;
-  const prefix = national.slice(0, 2);
-  if (prefix === '78' || prefix === '79') return 'MTN_MOMO';
-  if (prefix === '72' || prefix === '73') return 'AIRTEL_MONEY';
-  return null;
+  const network = country.networkPrefixes[national.slice(0, 2)];
+  return network === 'MTN_MOMO' || network === 'AIRTEL_MONEY' ? network : null;
 }
 
 export function NetworkMark({

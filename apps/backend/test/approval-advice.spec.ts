@@ -14,6 +14,7 @@ import { StorageService } from '../src/storage/storage.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, notificationsStub, resetDatabase } from './setup/test-module';
 import { createAdmin, createBusiness } from './setup/factories';
+import { DocumentsService } from '../src/business/documents.service';
 
 /**
  * §303. An approval can carry advice: of the things that would make the shop
@@ -34,6 +35,7 @@ describe('Advice sent with an approval (§303)', () => {
     moduleRef = await createTestModule([
       BusinessProfileService,
       BusinessModerationService,
+      DocumentsService,
       { provide: StorageService, useValue: {} },
       commonStubs.mail(),
       commonStubs.notifications(),
@@ -157,6 +159,7 @@ describe('Advice sent with an approval (§303)', () => {
 
   it('keeps only items still missing, in the checklist order, and a blank note is no note', () => {
     const items = adviceItems({
+      countryCode: 'RW',
       coverImageUrl: null,
       logoUrl: 'https://x/logo.png',
       description: null,
@@ -191,6 +194,7 @@ describe('Advice sent with an approval (§303)', () => {
       audience: 'BUSINESS',
       advice: {
         shop: {
+          countryCode: 'RW',
           coverImageUrl: null,
           logoUrl: null,
           description: null,

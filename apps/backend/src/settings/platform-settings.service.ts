@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, UserRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { CountriesService } from '../countries/countries.service';
 import {
   INTERNAL_CURRENCY,
   isSettlementCurrency,
@@ -62,16 +63,25 @@ export class PlatformSettingsService {
   private readonly logger = new Logger(PlatformSettingsService.name);
   private cached: { value: Prisma.Decimal; expiresAt: number } | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly countries: CountriesService,
+  ) {}
 
   /**
-   * The live platform fee percentage.
+   * The live platform fee percentage — in `countryCode`, when given (§315):
+   * the country's own fee if it has one, otherwise the platform's. A booking
+   * is charged its shop's country's fee.
    *
    * Returned as a Prisma.Decimal, never a JS number — this value multiplies
    * money, and going through binary floating point is exactly the mistake the
    * integer-minor-units rule exists to prevent.
    */
-  async getPlatformFeePercentage(): Promise<Prisma.Decimal> {
+  async getPlatformFeePercentage(countryCode?: string): Promise<Prisma.Decimal> {
+    if (countryCode) {
+      const own = (await this.countries.get(countryCode)).platformFeePercentage;
+      if (own !== null) return own;
+    }
     if (this.cached && this.cached.expiresAt > Date.now()) {
       return this.cached.value;
     }
@@ -593,16 +603,24 @@ export class PlatformSettingsService {
    *
    * Decreases are always allowed: lowering the fee can only widen the margin.
    */
-  private async assertNoServiceStrandedBy(percentage: number) {
+  /**
+   * `scope` is whose fee is changing (§315): the platform's reaches the shops in
+   * every country without a fee of its own; a country's reaches only its shops.
+   */
+  private async assertNoServiceStrandedBy(
+    percentage: number,
+    scope: { countryCode: string } | 'platform' = 'platform',
+  ) {
     const next = new Prisma.Decimal(percentage);
-    const current = await this.getPlatformFeePercentage();
+    const current = await this.getPlatformFeePercentage(scope === 'platform' ? undefined : scope.countryCode);
 
     // Equal or lower can strand nobody.
     if (next.lessThanOrEqualTo(current)) return;
 
-    const where = {
+    const where: Prisma.ServiceWhereInput = {
       isActive: true,
       depositPercentage: { lt: next },
+      business: scope === 'platform' ? { country: { platformFeePercentage: null } } : { countryCode: scope.countryCode },
     };
 
     const offendingCount = await this.prisma.service.count({ where });
@@ -680,5 +698,24 @@ export class PlatformSettingsService {
       platformFeePercentage: updated.platformFeePercentage.toFixed(2),
       updatedAt: updated.updatedAt.toISOString(),
     };
+  }
+
+  /**
+   * A country's own fee (§315), or null to take the platform's again. The same
+   * rule as the platform fee: it may not rise above any active service's
+   * deposit there, and bookings already made keep the fee they were made with.
+   */
+  async setCountryFee(code: string, percentage: number | null, actor: { role: UserRole | string }): Promise<void> {
+    this.assertAdmin(actor);
+    const country = await this.countries.get(code);
+    const next = percentage ?? Number((await this.getPlatformFeePercentage()).toFixed(2));
+    await this.assertNoServiceStrandedBy(next, { countryCode: country.code });
+    await this.prisma.country.update({ where: { code: country.code }, data: { platformFeePercentage: percentage } });
+    this.countries.forget();
+    this.logger.log(
+      percentage === null
+        ? `${country.name} takes the platform fee again.`
+        : `${country.name}'s own fee set to ${new Prisma.Decimal(percentage).toFixed(2)}%. Existing appointments keep theirs.`,
+    );
   }
 }

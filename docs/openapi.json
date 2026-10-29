@@ -1,6 +1,175 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/countries": {
+      "get": {
+        "operationId": "CountriesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CountryDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Countries"
+        ]
+      }
+    },
+    "/admin/countries": {
+      "get": {
+        "operationId": "AdminCountriesController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminCountryDto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "AdminCountries"
+        ]
+      }
+    },
+    "/admin/countries/{code}": {
+      "patch": {
+        "operationId": "AdminCountriesController_update",
+        "parameters": [
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCountryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminCountryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The body or a path parameter broke a rule. `message` is an ARRAY, one entry per broken rule. Also returned for a malformed UUID, and for a domain rule refused with a single sentence.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No token, an expired one, or one for an account that has since been closed. Carries no `error` field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnauthorizedErrorDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Signed in, but not as someone this route is for. Never returned for another tenant's data — that is a 404 (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such row — OR it belongs to somebody else. The two are deliberately indistinguishable (§27.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Its own fee, or switching it on or off. Bookings already made keep the fee they were made with.",
+        "tags": [
+          "AdminCountries"
+        ]
+      }
+    },
     "/auth/otp/request": {
       "post": {
         "operationId": "AuthController_requestOtp",
@@ -3166,7 +3335,15 @@
     "/places/provinces": {
       "get": {
         "operationId": "PlacesController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "An ISO country code (§315), or the X-Country header; the default country when not given.",
+            "schema": {}
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -3182,6 +3359,7 @@
             }
           }
         },
+        "summary": "One country's places (§315): the one asked for (`X-Country`, `?country=`), or the default.",
         "tags": [
           "Places"
         ]
@@ -8518,12 +8696,17 @@
         "operationId": "PaymentsController_providers",
         "parameters": [
           {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "An ISO country code (§315), or the X-Country header; the default country when not given.",
+            "schema": {}
+          },
+          {
             "name": "phoneNumber",
             "required": false,
             "in": "query",
-            "schema": {
-              "type": "string"
-            }
+            "schema": {}
           }
         ],
         "responses": {
@@ -11781,13 +11964,18 @@
         "operationId": "PublicTodayController_get",
         "parameters": [
           {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "An ISO country code (§315), or the X-Country header; the default country when not given.",
+            "schema": {}
+          },
+          {
             "name": "date",
             "required": false,
             "in": "query",
-            "description": "YYYY-MM-DD, Kigali; today when not given.",
-            "schema": {
-              "type": "string"
-            }
+            "description": "YYYY-MM-DD on the country's clock; today when not given.",
+            "schema": {}
           }
         ],
         "responses": {
@@ -14562,7 +14750,15 @@
     "/stories": {
       "get": {
         "operationId": "StoriesController_feed",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "An ISO country code (§315), or the X-Country header; the default country when not given.",
+            "schema": {}
+          }
+        ],
         "responses": {
           "200": {
             "description": "",
@@ -17367,6 +17563,16 @@
         "operationId": "DiscoveryController_search",
         "parameters": [
           {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "The country to search (§315), as an ISO code — for a link; an app sends\nthe `X-Country` header instead. A country that is not live, or none at\nall, searches the default one.",
+            "schema": {
+              "pattern": "^[A-Za-z]{2}$",
+              "type": "string"
+            }
+          },
+          {
             "name": "provinceId",
             "required": false,
             "in": "query",
@@ -17563,6 +17769,16 @@
       "get": {
         "operationId": "DiscoveryController_searchServices",
         "parameters": [
+          {
+            "name": "country",
+            "required": false,
+            "in": "query",
+            "description": "The country to search (§315), as an ISO code — for a link; an app sends\nthe `X-Country` header instead. A country that is not live, or none at\nall, searches the default one.",
+            "schema": {
+              "pattern": "^[A-Za-z]{2}$",
+              "type": "string"
+            }
+          },
           {
             "name": "provinceId",
             "required": false,
@@ -18441,6 +18657,7 @@
             }
           }
         },
+        "summary": "In the searcher's own country (§315): a shop's branch address, or a customer's home.",
         "tags": [
           "AddressSearch"
         ]
@@ -19436,6 +19653,84 @@
       }
     },
     "schemas": {
+      "CountryDto": {
+        "type": "object",
+        "properties": {
+          "networkPrefixes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "MTN_MOMO",
+                "AIRTEL_MONEY"
+              ]
+            },
+            "description": "The network a mobile number most likely belongs to, by the two digits\nafter the calling code: { \"78\": \"MTN_MOMO\", \"72\": \"AIRTEL_MONEY\" }. A\nguess the person can always change (§58.1); a prefix not listed is not\nguessed at all."
+          },
+          "code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2: \"RW\"."
+          },
+          "name": {
+            "type": "string",
+            "description": "In English; the apps name it in the reader's language."
+          },
+          "callingCode": {
+            "type": "string",
+            "description": "Digits only: \"250\"."
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217: \"RWF\"."
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "IANA zone: \"Africa/Kigali\" — the clock its shops keep."
+          },
+          "locales": {
+            "description": "The app languages offered there, the usual one first.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "networks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MTN_MOMO",
+                "AIRTEL_MONEY"
+              ]
+            }
+          },
+          "phoneExample": {
+            "type": "string",
+            "description": "A mobile number as people there write it: \"+250 788 123 456\"."
+          },
+          "mobileDigits": {
+            "type": "number",
+            "description": "How many digits a mobile number has after the calling code."
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "The country a visitor who has not chosen one is in."
+          }
+        },
+        "required": [
+          "networkPrefixes",
+          "code",
+          "name",
+          "callingCode",
+          "currency",
+          "timeZone",
+          "locales",
+          "networks",
+          "phoneExample",
+          "mobileDigits",
+          "isDefault"
+        ]
+      },
       "ValidationErrorDto": {
         "type": "object",
         "properties": {
@@ -19463,6 +19758,23 @@
           "statusCode",
           "message",
           "error"
+        ]
+      },
+      "UnauthorizedErrorDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "example": 401
+          },
+          "message": {
+            "type": "string",
+            "example": "Unauthorized"
+          }
+        },
+        "required": [
+          "statusCode",
+          "message"
         ]
       },
       "ApiErrorDto": {
@@ -19500,6 +19812,170 @@
           "message",
           "statusCode"
         ]
+      },
+      "CountryCheckDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "enum": [
+              "pack",
+              "currency",
+              "clock",
+              "phone",
+              "networks",
+              "languages",
+              "places"
+            ],
+            "type": "string"
+          },
+          "ok": {
+            "type": "boolean"
+          },
+          "words": {
+            "type": "string",
+            "description": "In plain words, for the console."
+          }
+        },
+        "required": [
+          "key",
+          "ok",
+          "words"
+        ]
+      },
+      "AdminCountryDto": {
+        "type": "object",
+        "properties": {
+          "networkPrefixes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "MTN_MOMO",
+                "AIRTEL_MONEY"
+              ]
+            },
+            "description": "The network a mobile number most likely belongs to, by the two digits\nafter the calling code: { \"78\": \"MTN_MOMO\", \"72\": \"AIRTEL_MONEY\" }. A\nguess the person can always change (§58.1); a prefix not listed is not\nguessed at all."
+          },
+          "code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2: \"RW\"."
+          },
+          "name": {
+            "type": "string",
+            "description": "In English; the apps name it in the reader's language."
+          },
+          "callingCode": {
+            "type": "string",
+            "description": "Digits only: \"250\"."
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217: \"RWF\"."
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "IANA zone: \"Africa/Kigali\" — the clock its shops keep."
+          },
+          "locales": {
+            "description": "The app languages offered there, the usual one first.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "networks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MTN_MOMO",
+                "AIRTEL_MONEY"
+              ]
+            }
+          },
+          "phoneExample": {
+            "type": "string",
+            "description": "A mobile number as people there write it: \"+250 788 123 456\"."
+          },
+          "mobileDigits": {
+            "type": "number",
+            "description": "How many digits a mobile number has after the calling code."
+          },
+          "isDefault": {
+            "type": "boolean",
+            "description": "The country a visitor who has not chosen one is in."
+          },
+          "isLive": {
+            "type": "boolean"
+          },
+          "liveSince": {
+            "type": "string",
+            "nullable": true
+          },
+          "platformFeePercentage": {
+            "type": "string",
+            "nullable": true,
+            "description": "The country's own fee, or null when it takes the platform's. Two decimals, as a string."
+          },
+          "effectiveFeePercentage": {
+            "type": "string",
+            "description": "The fee its bookings are charged now: its own, or the platform's."
+          },
+          "shops": {
+            "type": "number",
+            "description": "Shops there, and how many customers can find."
+          },
+          "liveShops": {
+            "type": "number"
+          },
+          "places": {
+            "type": "number",
+            "description": "Districts there customers can pick."
+          },
+          "checks": {
+            "description": "Everything it needs to be on; all `ok` for a country that can be switched on.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountryCheckDto"
+            }
+          }
+        },
+        "required": [
+          "networkPrefixes",
+          "code",
+          "name",
+          "callingCode",
+          "currency",
+          "timeZone",
+          "locales",
+          "networks",
+          "phoneExample",
+          "mobileDigits",
+          "isDefault",
+          "isLive",
+          "liveSince",
+          "platformFeePercentage",
+          "effectiveFeePercentage",
+          "shops",
+          "liveShops",
+          "places",
+          "checks"
+        ]
+      },
+      "UpdateCountryDto": {
+        "type": "object",
+        "properties": {
+          "platformFeePercentage": {
+            "type": "number",
+            "nullable": true,
+            "description": "The country's own fee, two decimals, 0–100; null to take the platform's.\nLike the platform fee, it may not be raised above any active service's\ndeposit there (§55-style check in `PlatformSettingsService`).",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "isLive": {
+            "type": "boolean"
+          }
+        }
       },
       "RequestOtpDto": {
         "type": "object",
@@ -19753,23 +20229,6 @@
           "lastUsedAt",
           "current",
           "twoStep"
-        ]
-      },
-      "UnauthorizedErrorDto": {
-        "type": "object",
-        "properties": {
-          "statusCode": {
-            "type": "number",
-            "example": 401
-          },
-          "message": {
-            "type": "string",
-            "example": "Unauthorized"
-          }
-        },
-        "required": [
-          "statusCode",
-          "message"
         ]
       },
       "TwoStepStatusDto": {
@@ -21757,6 +22216,10 @@
           "name": {
             "type": "string"
           },
+          "countryCode": {
+            "type": "string",
+            "description": "The country it is in (§315)."
+          },
           "districts": {
             "type": "array",
             "items": {
@@ -21768,6 +22231,7 @@
           "id",
           "code",
           "name",
+          "countryCode",
           "districts"
         ]
       },
@@ -21902,6 +22366,61 @@
           "otherLabel"
         ]
       },
+      "ShopCountryDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "ISO 3166-1 alpha-2: \"RW\"."
+          },
+          "name": {
+            "type": "string"
+          },
+          "callingCode": {
+            "type": "string",
+            "description": "Digits only: \"250\"."
+          },
+          "currency": {
+            "type": "string",
+            "description": "ISO 4217: \"RWF\"."
+          },
+          "timeZone": {
+            "type": "string",
+            "description": "IANA zone: \"Africa/Kigali\" — the shop's clock."
+          },
+          "locales": {
+            "description": "The app languages offered there, the usual one first.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "networks": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "MTN_MOMO",
+                "AIRTEL_MONEY"
+              ]
+            }
+          },
+          "phoneExample": {
+            "type": "string",
+            "description": "A mobile number as people there write it: \"+250 788 123 456\"."
+          }
+        },
+        "required": [
+          "code",
+          "name",
+          "callingCode",
+          "currency",
+          "timeZone",
+          "locales",
+          "networks",
+          "phoneExample"
+        ]
+      },
       "BusinessProfileDto": {
         "type": "object",
         "properties": {
@@ -21989,6 +22508,14 @@
             "items": {
               "$ref": "#/components/schemas/BusinessKindDto"
             }
+          },
+          "country": {
+            "description": "The country it is in (§315).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShopCountryDto"
+              }
+            ]
           }
         },
         "required": [
@@ -22007,7 +22534,8 @@
           "updatedAt",
           "category",
           "subcategory",
-          "kinds"
+          "kinds",
+          "country"
         ]
       },
       "UpdateBusinessProfileDto": {
@@ -28697,21 +29225,21 @@
         "properties": {
           "code": {
             "type": "string",
-            "description": "USD, EUR, KES or UGX."
+            "description": "USD, EUR, KES, UGX or RWF — never the country's own."
           },
-          "rwf": {
+          "local": {
             "type": "number",
-            "description": "Francs for one."
+            "description": "How much of the shop's money one buys (§315): francs, in Rwanda."
           },
           "change": {
             "type": "number",
             "nullable": true,
-            "description": "Since the previous day's figure, in francs; null on the first day."
+            "description": "Since the previous day's figure, in the shop's money; null on the first day."
           }
         },
         "required": [
           "code",
-          "rwf",
+          "local",
           "change"
         ]
       },
@@ -28776,8 +29304,11 @@
             "type": "string",
             "description": "tax: vat-paye (the 15th) · licence (31 January) · annual (31 March)."
           },
+          "currency": {
+            "type": "string",
+            "description": "rates: the shop's money for one dollar, euro and the neighbours' monies (§315), and where they come from."
+          },
           "rates": {
-            "description": "rates: francs for one dollar, euro, Kenyan and Ugandan shilling, and where they come from.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/TodayRateDto"
@@ -28844,7 +29375,7 @@
           },
           "date": {
             "type": "string",
-            "description": "The day asked about (\"YYYY-MM-DD\", Kigali)."
+            "description": "The day asked about (\"YYYY-MM-DD\", on the country's clock)."
           },
           "umuganda": {
             "type": "boolean",
@@ -33604,7 +34135,7 @@
         "properties": {
           "msisdn": {
             "type": "string",
-            "description": "The mobile-money number payouts are sent to, in E.164.\n\nThe SHAPE is checked here; the expected country prefix is checked in the\nservice, because it is configurable (§48.2)."
+            "description": "The mobile-money number payouts are sent to, in E.164.\n\nThe SHAPE is checked here; that it is a mobile number in the shop's own\ncountry is checked in the service (§315)."
           },
           "provider": {
             "type": "string",

@@ -34,9 +34,12 @@ const HOLIDAY: Record<string, string> = {
 };
 
 const dayWords = (date: string) => formatDate(`${date}T12:00:00`, { weekday: 'long', day: 'numeric', month: 'long' });
-const francs = (n: number) =>
+const inMoney = (n: number, currency: string) =>
   // A no-break space: "RWF" and its number never part at the end of a line.
-  `RWF\u00a0${new Intl.NumberFormat(dateLocale(), { minimumFractionDigits: n < 100 ? 2 : 0, maximumFractionDigits: n < 100 ? 2 : 0 }).format(n)}`;
+  `${currency}\u00a0${new Intl.NumberFormat(dateLocale(), { minimumFractionDigits: n < 100 ? 2 : 0, maximumFractionDigits: n < 100 ? 2 : 0 }).format(n)}`;
+
+/** One of each money, as people write it, for a rate line (§315). */
+const ONE: Record<string, string> = { USD: '$1', EUR: '€1', KES: 'KSh 1', UGX: 'USh 1', RWF: 'FRw 1' };
 
 /** Beside the urgent ones, at most this many at a time: the shop's own cards stay the most of the banner. */
 const AT_MOST = 2;
@@ -217,25 +220,42 @@ function slideFor(item: TodayItem, d: AdData): Slide | null {
     }
 
     case 'rates': {
+      // In the shop's own money (§315): francs in Rwanda.
+      const currency = item.currency ?? 'RWF';
       const by = Object.fromEntries((item.rates ?? []).map((r) => [r.code, r]));
       if (!by.USD) return null;
-      const usd = francs(by.USD.rwf);
-      const eur = by.EUR ? francs(by.EUR.rwf) : '';
-      const kes = by.KES ? francs(by.KES.rwf) : '';
-      const ugx = by.UGX ? francs(by.UGX.rwf) : '';
+      const usd = inMoney(by.USD.local, currency);
       const source = item.source ?? '';
-      return {
+      const base = {
         key: 'today-rates',
-        look: 'green',
-        icon: 'coins',
-        effect: 'coins',
+        look: 'green' as const,
+        icon: 'coins' as const,
+        effect: 'coins' as const,
         eyebrow: t`Market rates · ${dayWords(item.date ?? '')}`,
         title: t`1 US dollar = ${usd}`,
-        // Short enough for three lines on a phone, the "not official" part included.
-        text: t`€1 = ${eur} · KSh 1 = ${kes} · USh 1 = ${ugx}. Not the official BNR rates.`,
-        gist: t`€1 = ${eur} · KSh 1 = ${kes}`,
         // The free feed asks to be named; the button does it.
         cta: item.sourceUrl ? { label: t`Rates by ${source}`, href: item.sourceUrl } : undefined,
+      };
+      if (currency === 'RWF') {
+        const eur = by.EUR ? inMoney(by.EUR.local, currency) : '';
+        const kes = by.KES ? inMoney(by.KES.local, currency) : '';
+        const ugx = by.UGX ? inMoney(by.UGX.local, currency) : '';
+        return {
+          ...base,
+          // Short enough for three lines on a phone, the "not official" part included.
+          text: t`€1 = ${eur} · KSh 1 = ${kes} · USh 1 = ${ugx}. Not the official BNR rates.`,
+          gist: t`€1 = ${eur} · KSh 1 = ${kes}`,
+        };
+      }
+      // Any other country's money: the same rates, said without Rwanda's bank.
+      const others = (item.rates ?? [])
+        .filter((r) => r.code !== 'USD')
+        .map((r) => `${ONE[r.code] ?? r.code} = ${inMoney(r.local, currency)}`)
+        .join(' · ');
+      return {
+        ...base,
+        text: t`${others}. Market rates, not a central bank's official ones.`,
+        gist: others,
       };
     }
 

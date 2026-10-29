@@ -12,7 +12,7 @@ import { StorageService } from '../storage/storage.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 import { say } from '../i18n/say';
-import { EXPIRY_WARNING_DAYS, KIND_WORDS, isRegistered, requiredPapers, ruleState } from './document-rules';
+import { EXPIRY_WARNING_DAYS, KIND_WORDS, isRegistered, paperKinds, requiredPapers, ruleState } from './document-rules';
 import type { BusinessDocumentDto, BusinessDocumentsDto, UploadDocumentDto } from './dto/documents.dto';
 
 const DOCUMENT_SELECT = {
@@ -84,6 +84,10 @@ export class DocumentsService {
     }
 
     const shop = await this.shop(businessId);
+    // Only the papers of the shop's own country (§315): an RDB certificate means nothing in Kenya.
+    if (!paperKinds(shop.countryCode).includes(dto.kind)) {
+      throw new BadRequestException('That paper is not one a shop in this country can upload.');
+    }
     const key = await this.storage.uploadPrivate(file.buffer, file.mimetype, `documents/${businessId}`);
 
     const row = await this.prisma.$transaction(async (tx) => {
@@ -189,13 +193,15 @@ export class DocumentsService {
    * Papers running out (§314): a word a month before, and another when they
    * have — once each, so a shop that has already renewed hears nothing more.
    */
-  async expiryReminders(now = new Date()): Promise<number> {
+  /** `countryCode`: only that country's shops (§315) — the scheduler asks each at its own morning. */
+  async expiryReminders(now = new Date(), countryCode?: string): Promise<number> {
     const soon = new Date(now.getTime() + EXPIRY_WARNING_DAYS * 86_400_000);
     const due = await this.prisma.businessDocument.findMany({
       where: {
         status: { in: [S.SUBMITTED, S.VERIFIED] },
         expiresAt: { not: null, lte: soon },
         reminderStage: { lt: 2 },
+        ...(countryCode ? { business: { countryCode } } : {}),
       },
       select: DOCUMENT_SELECT,
     });
@@ -226,6 +232,7 @@ export class DocumentsService {
         name: true,
         status: true,
         submittedAt: true,
+        countryCode: true,
         kinds: { select: { category: { select: { name: true } }, subcategory: { select: { name: true } } } },
       },
     });
@@ -255,8 +262,8 @@ export class DocumentsService {
   private view(shop: Awaited<ReturnType<DocumentsService['shop']>>, rows: Row[]): BusinessDocumentsDto {
     const now = new Date();
     return {
-      registered: isRegistered(rows, now),
-      required: requiredPapers(shop.kinds).map((rule) => ({ key: rule.key, kinds: rule.kinds, state: ruleState(rule, rows, now) })),
+      registered: isRegistered(shop.countryCode, rows, now),
+      required: requiredPapers(shop.countryCode, shop.kinds).map((rule) => ({ key: rule.key, kinds: rule.kinds, state: ruleState(rule, rows, now) })),
       documents: rows.map((row) => this.one(row, now)),
       canUpload: this.storage.privateStorageReady(),
     };

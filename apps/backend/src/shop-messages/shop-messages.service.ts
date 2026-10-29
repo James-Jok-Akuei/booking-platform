@@ -7,7 +7,6 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { BusinessAccessService } from '../business/business-access.service';
 import { ALL_BRANCHES_ONLY } from '../business/branch-scope';
 import { PUBLIC_BUSINESS } from '../business/business-status';
-import { ConfigService } from '@nestjs/config';
 import { liveDiscount, platformToday } from '../business/discount';
 import {
   FollowListDto,
@@ -17,6 +16,7 @@ import {
   ShopMessageDto,
   ShopMessagesDto,
 } from './dto/shop-message.dto';
+import { CountriesService } from '../countries/countries.service';
 
 /** One message a week per shop (§287). */
 export const SHOP_MESSAGE_EVERY_DAYS = 7;
@@ -48,16 +48,13 @@ export const followWording = (shop: string) => `Yes, send me offers from ${shop.
 @Injectable()
 export class ShopMessagesService {
   private readonly logger = new Logger(ShopMessagesService.name);
-  private readonly timeZone: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: BusinessAccessService,
     private readonly notifications: NotificationsService,
-    config: ConfigService,
-  ) {
-    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Kigali';
-  }
+    private readonly countries: CountriesService,
+  ) {}
 
   // ---------- Customers ----------
 
@@ -69,7 +66,6 @@ export class ShopMessagesService {
    */
   async follows(userId: string): Promise<FollowListDto> {
     const now = new Date();
-    const today = platformToday(this.timeZone, now);
     const rows = await this.prisma.shopFollow.findMany({
       where: { userId, business: PUBLIC_BUSINESS },
       orderBy: { createdAt: 'desc' },
@@ -82,6 +78,7 @@ export class ShopMessagesService {
             name: true,
             logoUrl: true,
             coverImageUrl: true,
+            countryCode: true,
             category: { select: { icon: true } },
             locations: {
               where: { isActive: true },
@@ -118,12 +115,17 @@ export class ShopMessagesService {
 
     const day = (d: Date) =>
       new Intl.DateTimeFormat('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' }).format(d);
+    // Each shop's sale is judged on its own clock (§315): followed shops can be in any country.
+    const zones = new Map<string, string>();
+    for (const code of new Set(rows.map((r) => r.business.countryCode))) zones.set(code, await this.countries.zoneOf(code));
     const follows = rows.map((r) => {
       const b = r.business;
+      const zone = zones.get(b.countryCode)!;
+      const today = platformToday(zone, now);
       const branch = b.locations[0] ?? null;
       const news: FollowNewsDto[] = [];
       for (const service of b.services) {
-        const discount = liveDiscount(service, today, this.timeZone);
+        const discount = liveDiscount(service, today, zone);
         if (discount) {
           news.push({
             kind: 'DISCOUNT',
@@ -235,11 +237,22 @@ export class ShopMessagesService {
    * is forgotten, so the next one is news again.
    */
   async tellFollowersOfDiscounts(): Promise<number> {
-    const today = platformToday(this.timeZone);
+    // A sale's last day is a day on its shop's clock (§315), so each country is looked at on its own.
+    let told = 0;
+    for (const country of await this.countries.live()) {
+      told += await this.tellFollowersOfDiscountsIn(country.code, platformToday(country.timeZone));
+    }
+    return told;
+  }
+
+  private async tellFollowersOfDiscountsIn(countryCode: string, today: Date): Promise<number> {
     // Ended or removed: forgotten.
     await this.prisma.discountNote.deleteMany({
       where: {
-        service: { OR: [{ discountPercent: null }, { discountEndsOn: { lt: today } }, { isActive: false }] },
+        service: {
+          business: { countryCode },
+          OR: [{ discountPercent: null }, { discountEndsOn: { lt: today } }, { isActive: false }],
+        },
       },
     });
     const candidates = await this.prisma.service.findMany({
@@ -247,7 +260,7 @@ export class ShopMessagesService {
         isActive: true,
         discountPercent: { not: null },
         OR: [{ discountEndsOn: null }, { discountEndsOn: { gte: today } }],
-        business: { ...PUBLIC_BUSINESS, followers: { some: {} } },
+        business: { ...PUBLIC_BUSINESS, countryCode, followers: { some: {} } },
       },
       select: {
         id: true,
@@ -359,7 +372,7 @@ export class ShopMessagesService {
 
     const shop = await this.prisma.businessProfile.findFirst({
       where: { id: businessId, ...PUBLIC_BUSINESS },
-      select: { id: true, name: true },
+      select: { id: true, name: true, countryCode: true },
     });
     if (!shop) {
       throw new BadRequestException('Your shop needs to be live on the app to write to its followers.');
@@ -374,7 +387,7 @@ export class ShopMessagesService {
       // Said here, in the sender's language: the date is not a word the error filter could translate.
       throw new BadRequestException(
         say(locale, 'One message a week keeps people following. The next can go on {day}.', {
-          day: formatDateIn(locale, next, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Kigali' }),
+          day: formatDateIn(locale, next, { weekday: 'long', day: 'numeric', month: 'long', timeZone: await this.countries.zoneOf(shop.countryCode) }),
         }),
       );
     }

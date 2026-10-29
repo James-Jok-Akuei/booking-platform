@@ -5,7 +5,6 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   BusinessMemberRole,
   BusinessMemberStatus,
@@ -18,7 +17,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { DEFAULT_MSISDN_COUNTRY_PREFIX, maskMsisdn } from './msisdn';
+import { maskMsisdn } from './msisdn';
 import { CreatePayoutDestinationDto } from './dto/create-payout-destination.dto';
 import {
   RejectPayoutDestinationDto,
@@ -27,6 +26,7 @@ import {
 import { ListPayoutDestinationsDto } from './dto/list-payout-destinations.dto';
 import { numberPart, placesOf, shopMatching } from './payout-search';
 import { MEMBERSHIP_SCOPE_SELECT, MONEY_READERS_ONLY, mayReadMoney, scopeOf } from '../business/branch-scope';
+import { CountriesService, type CountryRow } from '../countries/countries.service';
 
 /**
  * What a caller gets back about a destination.
@@ -106,20 +106,12 @@ type DestinationRow = {
 @Injectable()
 export class PayoutDestinationsService {
   private readonly logger = new Logger(PayoutDestinationsService.name);
-  private readonly countryPrefix: string;
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
-    config: ConfigService,
-  ) {
-    // Configurable, not hardcoded. The same reasoning as PLATFORM_TIMEZONE
-    // (§12): a country baked into a constant is a redeploy the first time the
-    // platform crosses a border, and it would be found by a business unable to
-    // submit a perfectly valid number.
-    this.countryPrefix =
-      config.get<string>('PAYOUT_MSISDN_COUNTRY_PREFIX') ?? DEFAULT_MSISDN_COUNTRY_PREFIX;
-  }
+    private readonly countries: CountriesService,
+  ) {}
 
   // ---------- Business side ----------
 
@@ -139,7 +131,15 @@ export class PayoutDestinationsService {
     dto: CreatePayoutDestinationDto,
   ): Promise<PayoutDestinationView> {
     const membership = await this.requireOwner(userId);
-    const msisdn = this.assertValidMsisdn(dto.msisdn);
+    // A number in the shop's own country (§315), on one of its networks.
+    const country = await this.countries.ofBusiness(membership.businessProfileId);
+    const msisdn = this.assertValidMsisdn(dto.msisdn, country);
+    if (dto.provider && !country.networks.includes(dto.provider)) {
+      throw new BadRequestException(`${dto.provider} is not a mobile money network in ${country.name}.`);
+    }
+    // The network the number belongs to when the shop did not say (§58.1):
+    // an Airtel number is Airtel's, not the column's default.
+    const provider = dto.provider ?? this.countries.inferNetwork(country, msisdn) ?? undefined;
 
     const destination = await this.prisma.$transaction(async (tx) => {
       await tx.payoutDestination.updateMany({
@@ -154,7 +154,7 @@ export class PayoutDestinationsService {
         data: {
           businessId: membership.businessProfileId,
           msisdn,
-          provider: dto.provider ?? undefined,
+          provider,
           status: PayoutDestinationStatus.UNVERIFIED,
           submittedById: userId,
         },
@@ -436,13 +436,17 @@ export class PayoutDestinationsService {
 
   // ---------- Internals ----------
 
-  private assertValidMsisdn(raw: string) {
+  /**
+   * A mobile number in the shop's country (§315): its calling code, then as
+   * many digits as its mobiles have. Payouts are sent through that country's
+   * networks, and a number anywhere else cannot receive them.
+   */
+  private assertValidMsisdn(raw: string, country: CountryRow) {
     const msisdn = raw.replace(/\s+/g, '');
-    if (!msisdn.startsWith(this.countryPrefix)) {
+    if (!msisdn.startsWith(`+${country.callingCode}`) || !this.countries.isMobileIn(country, msisdn)) {
       throw new BadRequestException(
-        `msisdn must be a ${this.countryPrefix} number. Payouts are sent through a ` +
-          'local mobile-money provider, and a number outside that country cannot ' +
-          'receive them.',
+        `msisdn must be a ${country.name} mobile number, like ${country.phoneExample}. Payouts are sent ` +
+          'through a local mobile-money provider, and a number outside that country cannot receive them.',
       );
     }
     return msisdn;

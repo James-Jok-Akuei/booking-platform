@@ -59,6 +59,8 @@ const booking = (over: Partial<BookingFacts> = {}): BookingFacts => ({
   longitude: 30.0588,
   startTime: tomorrowAt(11, 15),
   endTime: tomorrowAt(12, 15),
+  // The shop's clock (§315).
+  timeZone: TZ,
   depositMinor: 4000,
   priceMinor: 20000,
   currency: 'RWF',
@@ -294,6 +296,7 @@ describe('The emails, in the platform design (§292)', () => {
         advice: {
           // No cover, a branch with no photos, three services with no words.
           shop: {
+            countryCode: 'RW',
             coverImageUrl: null,
             logoUrl: 'https://x/logo.png',
             description: 'We cut, shave and style in the heart of Kimironko, six days a week.',
@@ -304,6 +307,8 @@ describe('The emails, in the platform design (§292)', () => {
             ],
             services: [1, 2, 3].map(() => ({ description: null, _count: { images: 1 }, locations: [{}] })),
             payoutDestinations: [{}],
+            // No papers uploaded (§314).
+            documents: [],
           },
           keys: ['cover', 'gallery', 'service-words'],
           note: 'Your haircuts look great. A bright photo of the shop front would help people find you on the street.',

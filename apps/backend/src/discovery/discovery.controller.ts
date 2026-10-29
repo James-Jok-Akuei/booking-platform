@@ -12,6 +12,7 @@ import { DiscoveredServicePageDto, ShopfrontDto } from './dto/discovery-response
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import { RequestLocale } from '../i18n/request-locale.decorator';
 import type { Locale } from '../i18n/locales';
+import { RequestedCountry } from '../countries/requested-country.decorator';
 
 /**
  * The customer front door.
@@ -38,9 +39,10 @@ export class DiscoveryController {
   @ApiOkResponse({ type: DiscoveryPageDto })
   search(
     @Query() query: DiscoverLocationsDto,
+    @RequestedCountry() country: string | undefined,
     @CurrentUser() user?: AuthenticatedUser,
   ) {
-    return this.discovery.search(query, user?.userId);
+    return this.discovery.search(query, user?.userId, country);
   }
 
   /**
@@ -52,8 +54,9 @@ export class DiscoveryController {
   searchServices(
     @Query() query: DiscoverLocationsDto,
     @CurrentUser() user: AuthenticatedUser | undefined,
+    @RequestedCountry() country: string | undefined,
   ) {
-    return this.discovery.searchServices(query, user?.userId);
+    return this.discovery.searchServices(query, user?.userId, country);
   }
 
   @Get('locations/:id')

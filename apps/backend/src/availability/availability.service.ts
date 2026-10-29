@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import {
   AppointmentStatus,
   BusinessMemberStatus,
@@ -24,6 +23,7 @@ import {
 } from './time.util';
 import { assertQuantityAllowed } from '../appointments/quantity';
 import { MEMBERSHIP_SCOPE_SELECT, scopeOf, seesBranch } from '../business/branch-scope';
+import { CountriesService } from '../countries/countries.service';
 
 /**
  * Statuses that occupy a unit of a location's capacity.
@@ -87,28 +87,23 @@ export interface AvailabilityResult {
 
 @Injectable()
 export class AvailabilityService {
-  private readonly timeZone: string;
-
-  /**
-   * The zone every slot in this module is expressed in (§103).
-   *
-   * Exposed because booking has to resolve a wall-clock time against the SAME
-   * zone the slots were generated in. Reading the config separately there
-   * would let the two drift, and a drift of one hour is a customer arriving
-   * when the shop is shut.
-   */
-  get platformTimeZone(): string {
-    return this.timeZone;
-  }
-
   constructor(
     private readonly prisma: PrismaService,
-    config: ConfigService,
-  ) {
-    // Platform-wide, not per-location: every business is in one market for MVP.
-    // When the platform crosses a timezone border this becomes a Location
-    // column, and this line is the only place that has to change.
-    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
+    private readonly countries: CountriesService,
+  ) {}
+
+  /**
+   * The zone a branch's slots are expressed in (§103): its shop's country's
+   * clock (§315). One shop, one country, one clock — so every branch of a
+   * shop keeps the same time.
+   *
+   * Exposed because booking has to resolve a wall-clock time against the SAME
+   * zone the slots were generated in. Reading it separately there would let
+   * the two drift, and a drift of one hour is a customer arriving when the
+   * shop is shut.
+   */
+  async zoneOfLocation(locationId: string): Promise<string> {
+    return (await this.countries.ofLocation(locationId)).timeZone;
   }
 
   /**
@@ -146,6 +141,7 @@ export class AvailabilityService {
         business: {
           select: {
             status: true,
+            countryCode: true,
             members: {
               where: { status: BusinessMemberStatus.ACTIVE },
               select: { userId: true, ...MEMBERSHIP_SCOPE_SELECT },
@@ -189,6 +185,8 @@ export class AvailabilityService {
       throw new NotFoundException('Location not found.');
     }
 
+    // The shop's own clock (§315): every minute below is on it.
+    const timeZone = await this.countries.zoneOf(location.business.countryCode);
     const dayOfWeek = dayOfWeekUtc(date);
     const base: Omit<
       AvailabilityResult,
@@ -197,7 +195,7 @@ export class AvailabilityService {
       locationId,
       date: formatCalendarDate(date),
       dayOfWeek,
-      timeZone: this.timeZone,
+      timeZone,
       durationMinutes,
       capacity: location.capacity,
     };
@@ -266,7 +264,7 @@ export class AvailabilityService {
     }
 
     // ---- Steps 4 & 5: gather everything that removes time from the day ----
-    const unavailability = await this.collectUnavailability(locationId, date);
+    const unavailability = await this.collectUnavailability(locationId, date, timeZone);
 
     // ---- Steps 3 & 6: walk the grid, keeping only slots that fully fit ----
     const times = this.buildSlots(
@@ -276,6 +274,7 @@ export class AvailabilityService {
       unavailability,
       location.capacity,
       date,
+      timeZone,
     );
 
     return {
@@ -365,7 +364,7 @@ export class AvailabilityService {
   ): Promise<{ slots: string[]; localStart: string; date: string }> {
     const { date, minutesSinceMidnight } = instantToZonedParts(
       startInstant,
-      this.timeZone,
+      await this.zoneOfLocation(locationId),
     );
 
     const availability = await this.getAvailability(
@@ -399,9 +398,10 @@ export class AvailabilityService {
   private async collectUnavailability(
     locationId: string,
     date: Date,
+    timeZone: string,
   ): Promise<{ closures: MinuteInterval[]; appointments: WeightedInterval[] }> {
-    const dayStart = zonedWallTimeToInstant(date, 0, this.timeZone);
-    const dayEnd = zonedWallTimeToInstant(date, MINUTES_PER_DAY, this.timeZone);
+    const dayStart = zonedWallTimeToInstant(date, 0, timeZone);
+    const dayEnd = zonedWallTimeToInstant(date, MINUTES_PER_DAY, timeZone);
 
     const [blocks, appointments] = await Promise.all([
       this.prisma.locationTimeBlock.findMany({ where: { locationId, date } }),
@@ -457,10 +457,11 @@ export class AvailabilityService {
     unavailability: { closures: MinuteInterval[]; appointments: WeightedInterval[] },
     capacity: number,
     date: Date,
+    timeZone: string,
   ): Array<{ start: number; placesLeft: number }> {
     // A slot may only start in the past-cutoff future. Computed once per call
     // so every slot is judged against the same instant.
-    const nowMinutes = this.minutesSinceLocalMidnight(date);
+    const nowMinutes = this.minutesSinceLocalMidnight(date, timeZone);
 
     const slots: Array<{ start: number; placesLeft: number }> = [];
 
@@ -504,8 +505,8 @@ export class AvailabilityService {
    * date is not today (past dates yield no slots via an empty grid anyway,
    * future dates are entirely open).
    */
-  private minutesSinceLocalMidnight(date: Date): number | null {
-    const dayStart = zonedWallTimeToInstant(date, 0, this.timeZone);
+  private minutesSinceLocalMidnight(date: Date, timeZone: string): number | null {
+    const dayStart = zonedWallTimeToInstant(date, 0, timeZone);
     const elapsed = (Date.now() - dayStart.getTime()) / 60_000;
 
     if (elapsed < 0) return null; // date is in the future

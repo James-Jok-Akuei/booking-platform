@@ -32,6 +32,7 @@ import { TOURS } from '../users/tours';
 import { describeDevice, trimUserAgent } from './device';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
 import { say } from '../i18n/say';
+import { CountriesService } from '../countries/countries.service';
 
 /** The refusal the console answers by asking for the authenticator code (§298). */
 export const TWO_STEP_REQUIRED = 'TWO_STEP_REQUIRED';
@@ -95,6 +96,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly legal: LegalService,
+    private readonly countries: CountriesService,
     // Optional so the auth flow never depends on a notice being sent (§298).
     @Optional() private readonly notifications?: NotificationsService,
   ) {}
@@ -537,9 +539,11 @@ export class AuthService {
     // No invitation: this person is founding their own business, which is the
     // original pre-membership behaviour. They become its one and only OWNER.
     // The profile starts PENDING until an admin approves it, exactly as before.
+    // It is in the default country (§315) — the one the app is offered in.
+    const country = await this.countries.defaultCountry();
     return this.prisma.$transaction(async (tx) => {
       const user = await tx.user.create({ data: { email, role, toursDue: [TOURS.seller] } });
-      const business = await tx.businessProfile.create({ data: {} });
+      const business = await tx.businessProfile.create({ data: { countryCode: country.code } });
       await tx.businessMembership.create({
         data: {
           userId: user.id,

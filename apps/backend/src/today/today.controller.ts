@@ -10,6 +10,7 @@ import { RequestLocale } from '../i18n/request-locale.decorator';
 import type { Locale } from '../i18n/locales';
 import { PublicTodayDto, TodayDto } from './dto/today.dto';
 import { TodayService } from './today.service';
+import { RequestedCountry } from '../countries/requested-country.decorator';
 
 /** "Rwanda today" for a shop's For you (§310): what changes its day. Every member, each their own branches. */
 @Controller('business/today')
@@ -34,8 +35,9 @@ export class PublicTodayController {
 
   @Get()
   @ApiOkResponse({ type: PublicTodayDto })
-  @ApiQuery({ name: 'date', required: false, description: 'YYYY-MM-DD, Kigali; today when not given.' })
-  get(@Query('date') date?: string) {
-    return this.today.publicToday(date);
+  @ApiQuery({ name: 'date', required: false, description: "YYYY-MM-DD on the country's clock; today when not given." })
+  @ApiQuery({ name: 'country', required: false, description: 'An ISO country code (§315), or the X-Country header; the default country when not given.' })
+  get(@Query('date') date: string | undefined, @RequestedCountry() country: string | undefined) {
+    return this.today.publicToday(date, country);
   }
 }

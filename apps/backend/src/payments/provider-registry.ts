@@ -4,8 +4,18 @@ import { MobileMoneyProvider } from '@prisma/client';
 /** The least a registry needs to know about what it holds. */
 export interface KeyedProvider {
   readonly key: MobileMoneyProvider;
+  /**
+   * The country this connection serves (§315), as an ISO code — or null for
+   * the default country. An operator's account belongs to one country: MTN
+   * Rwanda's keys cannot charge a Ugandan SIM, so MTN Uganda would be a second
+   * connection with its own keys and its own `country`.
+   */
+  readonly country?: string | null;
   isConfigured(): boolean;
 }
+
+/** The country a payment is for, as the registry needs it. */
+export type ServedCountry = { code: string; name: string; isDefault: boolean };
 
 /**
  * Operators the platform can reach, addressable one at a time (§57.1, §64.2).
@@ -21,6 +31,13 @@ export interface KeyedProvider {
 export abstract class ProviderRegistry<T extends KeyedProvider> {
   private readonly providers: ReadonlyMap<MobileMoneyProvider, T>;
   protected readonly logger: Logger;
+
+  /** Whether a connection serves `country`: its own, or the default one when it names none. */
+  private serves(provider: T, country?: ServedCountry): boolean {
+    if (!country) return true;
+    const served = provider.country?.trim().toUpperCase() || null;
+    return served === null ? country.isDefault : served === country.code;
+  }
 
   protected constructor(providers: T[], label: string) {
     this.logger = new Logger(label);
@@ -58,12 +75,14 @@ export abstract class ProviderRegistry<T extends KeyedProvider> {
    */
   protected abstract get capability(): string;
 
-  available(): MobileMoneyProvider[] {
-    return [...this.providers.keys()];
+  /** The operators that can be reached — in `country`, when given (§315). */
+  available(country?: ServedCountry): MobileMoneyProvider[] {
+    return [...this.providers.values()].filter((p) => this.serves(p, country)).map((p) => p.key);
   }
 
-  isAvailable(key: MobileMoneyProvider): boolean {
-    return this.providers.has(key);
+  isAvailable(key: MobileMoneyProvider, country?: ServedCountry): boolean {
+    const provider = this.providers.get(key);
+    return Boolean(provider && this.serves(provider, country));
   }
 
   /**
@@ -73,17 +92,23 @@ export abstract class ProviderRegistry<T extends KeyedProvider> {
    * is on that network — and the reason it cannot be served is on the
    * platform's side.
    */
-  require(key: MobileMoneyProvider): T {
+  require(key: MobileMoneyProvider, country?: ServedCountry): T {
     const provider = this.providers.get(key);
-    if (provider) return provider;
+    if (provider && this.serves(provider, country)) return provider;
 
-    const available = this.available();
+    const available = this.available(country);
+    // Whole sentences, each its own (§308): a country's name is a value, "in Rwanda" is not.
+    if (available.length > 0) {
+      throw new ServiceUnavailableException(
+        country
+          ? `${key} ${this.capability}s are not available in ${country.name} right now. Currently accepted: ${available.join(', ')}.`
+          : `${key} ${this.capability}s are not available on this platform right now. Currently accepted: ${available.join(', ')}.`,
+      );
+    }
     throw new ServiceUnavailableException(
-      available.length > 0
-        ? `${key} ${this.capability}s are not available on this platform right now. ` +
-          `Currently accepted: ${available.join(', ')}.`
-        : `No ${this.capability} provider is configured. ` +
-          'This is a platform fault and has been reported.',
+      country
+        ? `No ${this.capability} provider is configured for ${country.name}. This is a platform fault and has been reported.`
+        : `No ${this.capability} provider is configured. This is a platform fault and has been reported.`,
     );
   }
 
@@ -94,10 +119,10 @@ export abstract class ProviderRegistry<T extends KeyedProvider> {
    * default" is a coin toss, so the caller has to decide. Refusing here is what
    * forces that decision to be made rather than defaulted into.
    */
-  requireOnlyOne(): T {
-    const available = this.available();
+  requireOnlyOne(country?: ServedCountry): T {
+    const available = this.available(country);
 
-    if (available.length === 1) return this.require(available[0]);
+    if (available.length === 1) return this.require(available[0], country);
 
     if (available.length === 0) {
       throw new ServiceUnavailableException(

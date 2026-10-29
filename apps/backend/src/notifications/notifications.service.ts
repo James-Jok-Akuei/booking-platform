@@ -43,6 +43,7 @@ import { readTyped, typedIn } from '../i18n/typed-words';
 import { NotificationPreferencesService } from './notification-preferences.service';
 import { PushService } from './push.service';
 import { NotificationsGateway } from './notifications.gateway';
+import { CountriesService } from '../countries/countries.service';
 
 /** Give up after this many failed sends; the delivery stays FAILED for inspection. */
 export const MAX_NOTIFICATION_ATTEMPTS = 5;
@@ -72,7 +73,6 @@ const BUTTON: Partial<Record<NotificationCategory, string>> = {
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
-  private readonly timeZone: string;
   private readonly businessAppUrl: string;
   private readonly adminAppUrl: string;
 
@@ -82,9 +82,9 @@ export class NotificationsService {
     @Inject(NOTIFICATION_CHANNEL) private readonly driver: NotificationChannelDriver,
     private readonly preferences: NotificationPreferencesService,
     private readonly push: PushService,
+    private readonly countries: CountriesService,
     @Optional() private readonly live?: NotificationsGateway,
   ) {
-    this.timeZone = config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Kigali';
     this.businessAppUrl = (config.get<string>('BUSINESS_APP_URL') ?? 'http://localhost:5174').replace(/\/$/, '');
     this.adminAppUrl = (config.get<string>('ADMIN_APP_URL') ?? 'http://localhost:5173').replace(/\/$/, '');
   }
@@ -101,6 +101,25 @@ export class NotificationsService {
    * recorded on the delivery and tried again by the sweep. Returns the new
    * notification's id, or null when there was nobody to tell.
    */
+  /**
+   * The two clocks a notice keeps (§315). The SHOP's, for any time it says —
+   * a booking is at the shop's hour, wherever its reader is; and the
+   * READER's, for when it is sent — quiet hours and the morning summary are
+   * the reader's night and morning. A shop member's clock is their shop's
+   * country's, a customer's their home district's, anyone else's the default
+   * country's.
+   */
+  private async clocksFor(recipientId: string, appointmentId?: string | null): Promise<{ says: string; reader: string }> {
+    const [reader, appointment] = await Promise.all([
+      this.countries.ofUser(recipientId).then((c) => c.timeZone),
+      appointmentId
+        ? this.prisma.appointment.findUnique({ where: { id: appointmentId }, select: { locationId: true } })
+        : null,
+    ]);
+    const says = appointment ? (await this.countries.ofLocation(appointment.locationId)).timeZone : reader;
+    return { says, reader };
+  }
+
   async notify(params: {
     recipientId: string;
     type: NotificationType;
@@ -140,18 +159,19 @@ export class NotificationsService {
 
       const audience = audienceOf(recipient.role);
       const category = params.category ?? categoryOf(params.type, audience);
+      const clocks = await this.clocksFor(recipient.id, params.appointmentId);
       // Written once, in the language this person reads (§308): the list,
       // the push and the email all carry these words.
       const { subject, body } = renderNotification(params.type, {
         ...params.context,
-        timeZone: this.timeZone,
+        timeZone: clocks.says,
         audience,
         locale: asLocale(recipient.locale),
       });
       const ref: NotificationRef = { appointmentId: params.appointmentId, ...params.ref };
       const link = params.link !== undefined ? params.link : linkFor(params.type, audience, ref);
 
-      const plans = await this.plan(recipient, audience, category, ref.threadId ?? null, params.channels);
+      const plans = await this.plan(recipient, audience, category, ref.threadId ?? null, clocks.reader, params.channels);
 
       const notification = await this.prisma.notification.create({
         data: {
@@ -200,6 +220,8 @@ export class NotificationsService {
     audience: Audience,
     category: NotificationCategory,
     threadId: string | null,
+    /** The reader's own clock (§315), for quiet hours and the morning summary. */
+    zone: string,
     only?: { email?: boolean; push?: boolean },
   ): Promise<Plan[]> {
     const now = new Date();
@@ -224,11 +246,11 @@ export class NotificationsService {
           const quiet =
             rule?.canWait &&
             recipient.quietHoursOn &&
-            inWindow(localMinutes(now, this.timeZone), recipient.quietFrom, recipient.quietTo);
+            inWindow(localMinutes(now, zone), recipient.quietFrom, recipient.quietTo);
           plans.push({
             channel: NotificationChannel.PUSH,
             status: NotificationStatus.PENDING,
-            dueAt: quiet ? nextLocalTime(now, this.timeZone, recipient.quietTo) : now,
+            dueAt: quiet ? nextLocalTime(now, zone, recipient.quietTo) : now,
           });
           pushPlanned = true;
         }
@@ -240,7 +262,7 @@ export class NotificationsService {
         plans.push({
           channel: NotificationChannel.EMAIL,
           status: NotificationStatus.HELD,
-          dueAt: nextLocalTime(now, this.timeZone, DIGEST_AT_MINUTES),
+          dueAt: nextLocalTime(now, zone, DIGEST_AT_MINUTES),
         });
       } else if (category === NotificationCategory.MESSAGES && threadId && pushPlanned) {
         plans.push({
@@ -285,9 +307,11 @@ export class NotificationsService {
     try {
       // An administrator's invitation is to the English-only console.
       const l = params.context.role === 'ADMIN' ? DEFAULT_LOCALE : (params.locale ?? DEFAULT_LOCALE);
+      // No account yet, so no clock of their own: the default country's (§315).
+      const timeZone = await this.countries.platformZone();
       const { subject, body } = renderNotification(params.type, {
         ...params.context,
-        timeZone: this.timeZone,
+        timeZone,
         locale: l,
       });
       const app = params.context.role === 'ADMIN' ? this.adminAppUrl : this.businessAppUrl;
@@ -305,7 +329,7 @@ export class NotificationsService {
         booking: null,
         arrivalCode: null,
         author: null,
-        timeZone: this.timeZone,
+        timeZone,
       });
       await this.driver.send({ destination: params.email, subject, body, email: { design: email } });
       this.logger.log(`Sent ${params.type} to ${params.email} (no account yet, so no inbox row).`);
@@ -519,6 +543,10 @@ export class NotificationsService {
         })
       : null;
 
+    // A booking's times on its shop's clock; anything else on the reader's (§315).
+    const booking = row ? bookingFacts(row) : null;
+    const timeZone = booking?.timeZone ?? (await this.clocksFor(n.recipient.id)).reader;
+
     const { email, calendar } = noticeEmail({
       type: n.type,
       audience,
@@ -546,12 +574,12 @@ export class NotificationsService {
         unsubscribeUrl: locked ? null : this.preferences.unsubscribeUrl(n.recipient.id, n.category),
       },
       locale: l,
-      booking: row ? bookingFacts(row) : null,
+      booking,
       arrivalCode: audience === 'CUSTOMER' ? (row?.verificationCode ?? null) : null,
       author: n.shopMessage
         ? { name: n.shopMessage.business.name ?? say(l, 'A shop you follow'), logoUrl: n.shopMessage.business.logoUrl }
         : null,
-      timeZone: this.timeZone,
+      timeZone,
     });
     return {
       destination: n.recipient.email,
@@ -659,9 +687,10 @@ export class NotificationsService {
     for (const [, list] of byPerson) {
       const email = list[0].notification.recipient.email;
       const locale = asLocale(list[0].notification.recipient.locale);
+      // The seller's own morning, on their shop's clock (§315).
+      const zone = (await this.clocksFor(list[0].notification.recipient.id)).reader;
       const clock = {
-        format: (at: Date) =>
-          formatDateIn(locale, at, { timeZone: this.timeZone, weekday: 'short', hour: '2-digit', minute: '2-digit' }),
+        format: (at: Date) => formatDateIn(locale, at, { timeZone: zone, weekday: 'short', hour: '2-digit', minute: '2-digit' }),
       };
       const summary = summaryEmail({
         items: list.map((d) => ({ at: clock.format(d.notification.createdAt), subject: d.notification.subject })),

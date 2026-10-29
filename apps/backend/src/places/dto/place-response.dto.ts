@@ -56,6 +56,8 @@ export class AdminProvinceDto {
   id!: string;
   code!: string;
   name!: string;
+  /** The country it is in (§315). */
+  countryCode!: string;
   districts!: AdminDistrictDto[];
 }
 

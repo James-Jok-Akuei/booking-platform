@@ -539,6 +539,14 @@ model BusinessProfile {
   description String?
   phone       String?
 
+  /// The country the shop is in (§315): set when the account is made, from
+  /// the default country, and never changed — a shop that opens across a
+  /// border is a second shop, because its money, tax and law are different.
+  /// Its clock, its money, the phone numbers and networks it uses and the
+  /// papers it must hold all follow from it.
+  countryCode String
+  country     Country @relation(fields: [countryCode], references: [code], onDelete: Restrict)
+
   // Taxonomy. Both nullable: the profile row is created at signup, before the
   // business has picked anything. SetNull on delete so retiring a category
   // never cascades away a business account.
@@ -635,6 +643,7 @@ model BusinessProfile {
   @@index([categoryId])
   @@index([status])
   @@index([status, submittedAt])
+  @@index([countryCode])
   @@map("business_profiles")
 }
 
@@ -2621,15 +2630,80 @@ model AdminInvitation {
   @@map("admin_invitations")
 }
 
-/// Rwanda's five provinces (§104).
+/// A country the platform can run in (§315).
+///
+/// Reference data, like the places under it: added with the code that knows
+/// the country (its pack in `src/countries/packs/`), never typed into the
+/// console. Admins only switch one on, and set its own fee.
+///
+/// A shop is in exactly one country, and everything that differs across a
+/// border is read from here rather than written into the code: the shop's
+/// clock, its money, the phone numbers it accepts, the networks it is paid
+/// through, the languages its apps offer.
+model Country {
+  /// ISO 3166-1 alpha-2, upper case: "RW".
+  code String @id
+
+  /// In English, for the console; the apps name it in the reader's language.
+  name String
+
+  /// The country calling code, digits only: "250". A phone number in the
+  /// country is this followed by its national number without the leading 0.
+  callingCode String
+
+  /// ISO 4217: "RWF". Until money in more than one currency is built
+  /// (§315.3), a country can be live only when this is the platform's unit
+  /// of account (`INTERNAL_CURRENCY`) — `CountryGuard` checks at boot.
+  currency String
+
+  /// IANA zone: "Africa/Kigali". A shop's clock is its country's: opening
+  /// hours, slots, "today", reminders and every time said in a message.
+  timeZone String
+
+  /// The app languages offered there, the usual one first.
+  locales String[]
+
+  /// The mobile money networks that work there.
+  networks MobileMoneyProvider[]
+
+  /// A mobile number as people there write it, for the apps' placeholders.
+  phoneExample String
+
+  /// The platform's fee in this country, or null for the platform's own
+  /// (`PlatformSetting.platformFeePercentage`).
+  platformFeePercentage Decimal? @db.Decimal(5, 2)
+
+  /// Whether shops there can be found and booked.
+  isLive Boolean @default(false)
+
+  /// The country a visitor who has not chosen one is in, and the one new
+  /// shops start in. Exactly one: a partial unique index in the migration
+  /// (a plain unique on a boolean would allow only one row to be false).
+  isDefault Boolean @default(false)
+
+  liveSince DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  provinces  Province[]
+  businesses BusinessProfile[]
+
+  @@map("countries")
+}
+
+/// A country's first level of places — Rwanda's five provinces (§104).
 ///
 /// Reference data, seeded in a migration and never edited through the API.
 /// `code` exists so a seed, a test or a support query can name one without
-/// carrying a UUID around.
+/// carrying a UUID around. Codes and names are unique within a country, not
+/// across them: Uganda has a "Northern" region too.
 model Province {
   id   String @id @default(uuid())
-  code String @unique
-  name String @unique
+  code String
+  name String
+
+  countryCode String
+  country     Country @relation(fields: [countryCode], references: [code], onDelete: Restrict)
 
   /// Whether this is a single CITY whose districts are neighbourhoods (§106).
   ///
@@ -2645,6 +2719,9 @@ model Province {
 
   districts District[]
 
+  @@unique([countryCode, code])
+  @@unique([countryCode, name])
+  @@index([countryCode])
   @@map("provinces")
 }
 
@@ -2656,7 +2733,8 @@ model Province {
 /// same businesses across Gasabo, Kicukiro and Nyarugenge.
 model District {
   id   String @id @default(uuid())
-  code String @unique
+  /// Unique within its province, so a second country never collides with the first.
+  code String
   name String
 
   /// Whether the platform is open here (§105).
@@ -2677,6 +2755,7 @@ model District {
   announcements Announcement[]
 
   @@unique([provinceId, name])
+  @@unique([provinceId, code])
   @@index([provinceId])
   @@map("districts")
 }

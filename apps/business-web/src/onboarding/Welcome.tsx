@@ -70,6 +70,7 @@ import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { dayName, listOf, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
+import { useShopCountry } from '../lib/country';
 
 /** The server's refusal in its own words, or ours. */
 const said = (error: unknown, fallback: string) => (error instanceof ApiError ? error.message : fallback);
@@ -102,6 +103,8 @@ type Nav = {
  * middle scrolls. On a phone it is a sheet over a band of the photos.
  */
 export function Welcome() {
+  // The shop's country (§315), told to the server — the wizard is outside the app's frame.
+  useShopCountry();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [params, setParams] = useSearchParams();
@@ -764,6 +767,8 @@ const WRITE_IN_EXAMPLES: Record<string, string> = {
 function ContactQ({ nav }: { nav: Nav }) {
   const queryClient = useQueryClient();
   const profile = useQuery({ queryKey: ['profile'], queryFn: getProfile });
+  // A number as people in the shop's country write it (§315).
+  const country = useShopCountry();
   const [phone, setPhone] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
   useEffect(() => {
@@ -799,7 +804,7 @@ function ContactQ({ nav }: { nav: Nav }) {
     >
       <QHead screen="contact" title={t`How can customers reach you?`} lead={t`A number customers can call. We may call it too, to check your shop before it goes live.`} />
       <Body>
-        <BigInput icon="phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" maxLength={30} placeholder="+250 788 123 456" aria-label={t`Phone number`} autoFocus />
+        <BigInput icon="phone" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" maxLength={30} placeholder={country?.phoneExample ?? ''} aria-label={t`Phone number`} autoFocus />
         <div className="wz-sep">
           <span><Trans>And if you have one</Trans></span>
         </div>
@@ -1391,7 +1396,7 @@ function PaidQ({ nav }: { nav: Nav }) {
   const current = useQuery({ queryKey: ['payout-destination'], queryFn: getPayoutDestination });
   const [msisdn, setMsisdn] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
-  const network = networkOf(msisdn);
+  const network = networkOf(msisdn, useShopCountry());
   const digits = msisdn.replace(/\D/g, '');
 
   const save = useMutation({

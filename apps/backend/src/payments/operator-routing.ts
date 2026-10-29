@@ -1,4 +1,5 @@
 import { MobileMoneyProvider } from '@prisma/client';
+import { allPacks } from '../countries/packs';
 
 /**
  * Which mobile money operator a phone number probably belongs to (§58.1).
@@ -26,26 +27,18 @@ import { MobileMoneyProvider } from '@prisma/client';
  */
 
 /**
- * National-number prefixes by country calling code.
+ * National-number prefixes by country calling code — each country's own,
+ * from its pack (§315): Rwanda's are in `countries/packs/rwanda.ts`.
  *
  * Keyed on the two digits that follow the country code in E.164/MSISDN form —
  * i.e. the national number WITHOUT its leading zero, since international format
- * drops it. A Rwandan 078… is 25078… on the wire, so the prefix here is "78".
+ * drops it. A Rwandan 078… is 25078… on the wire, so the prefix there is "78".
+ *
+ * A country with no pack has no mapping, deliberately: a mapping written from
+ * memory would be a guess dressed as a rule.
  */
-const OPERATOR_PREFIXES: Readonly<
-  Record<string, Readonly<Record<string, MobileMoneyProvider>>>
-> = {
-  // Rwanda. Airtel absorbed Tigo, which is why it holds 72 as well as 73.
-  '250': {
-    '78': MobileMoneyProvider.MTN_MOMO,
-    '79': MobileMoneyProvider.MTN_MOMO,
-    '72': MobileMoneyProvider.AIRTEL_MONEY,
-    '73': MobileMoneyProvider.AIRTEL_MONEY,
-  },
-  // South Sudan is deliberately absent. MTN is the only operator the platform
-  // has ever collected through there, so every number falls back to it — and a
-  // mapping written from memory would be a guess dressed as a rule.
-};
+const OPERATOR_PREFIXES = (): Readonly<Record<string, Readonly<Record<string, MobileMoneyProvider>>>> =>
+  Object.fromEntries(allPacks().map((pack) => [pack.callingCode, pack.operatorPrefixes]));
 
 /**
  * The operator a number most likely belongs to, or null if it cannot be told.
@@ -60,7 +53,7 @@ export function inferOperator(msisdn: string): MobileMoneyProvider | null {
   // "250" must win over "25" for a Rwandan number.
   for (const length of [3, 2, 1]) {
     const country = digits.slice(0, length);
-    const prefixes = OPERATOR_PREFIXES[country];
+    const prefixes = OPERATOR_PREFIXES()[country];
     if (!prefixes) continue;
 
     const national = digits.slice(length);
@@ -72,5 +65,5 @@ export function inferOperator(msisdn: string): MobileMoneyProvider | null {
 
 /** The countries this mapping actually covers, for tests and diagnostics. */
 export function routedCountries(): string[] {
-  return Object.keys(OPERATOR_PREFIXES);
+  return Object.keys(OPERATOR_PREFIXES());
 }

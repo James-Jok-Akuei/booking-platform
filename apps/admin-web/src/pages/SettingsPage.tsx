@@ -227,7 +227,9 @@ function FeeCard({ value, updatedAt, onSaved }: { value?: string; updatedAt: str
           }}
         />
       )}
-      <footer>Future bookings only{updatedAt && ` · changed ${ago(updatedAt)}`}</footer>
+      <footer>
+        Future bookings only, in every country without a fee of its own (Countries){updatedAt && ` · changed ${ago(updatedAt)}`}
+      </footer>
     </Card>
   );
 }

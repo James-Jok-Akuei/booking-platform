@@ -10,6 +10,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
 import { AppointmentsService } from './appointments.service';
+import { CountriesService } from '../countries/countries.service';
 
 /**
  * How long an appointment may sit in PENDING_PAYMENT before it is released.
@@ -44,6 +45,7 @@ export class PaymentsScheduler {
     private readonly appointments: AppointmentsService,
     private readonly payments: PaymentProviderRegistry,
     private readonly momo: MomoHealthService,
+    private readonly countries: CountriesService,
   ) {}
 
   /**
@@ -64,7 +66,7 @@ export class PaymentsScheduler {
       },
       // paymentProvider comes along because a reference can only be polled
       // against the operator that issued it (§57.2).
-      select: { id: true, paymentProviderReferenceId: true, paymentProvider: true },
+      select: { id: true, paymentProviderReferenceId: true, paymentProvider: true, locationId: true },
     });
 
     if (pending.length === 0) return { confirmed: 0, failed: 0 };
@@ -75,7 +77,7 @@ export class PaymentsScheduler {
     for (const appointment of pending) {
       const reference = appointment.paymentProviderReferenceId!;
       try {
-        const result = await this.providerFor(appointment).checkPaymentStatus(reference);
+        const result = await (await this.providerFor(appointment)).checkPaymentStatus(reference);
         if (result.status === 'PENDING') continue;
 
         // Delegated so the poll and the on-demand status read share one
@@ -130,10 +132,12 @@ export class PaymentsScheduler {
    * — which this sweep would read as a failure and act on, cancelling a booking
    * whose deposit had actually been paid.
    */
-  private providerFor(appointment: { paymentProvider: MobileMoneyProvider | null }) {
+  private async providerFor(appointment: { paymentProvider: MobileMoneyProvider | null; locationId: string }) {
+    // The shop's country's connection (§315): only its keys issued this reference.
+    const country = await this.countries.ofLocation(appointment.locationId);
     return appointment.paymentProvider
-      ? this.payments.require(appointment.paymentProvider)
-      : this.payments.requireOnlyOne();
+      ? this.payments.require(appointment.paymentProvider, country)
+      : this.payments.requireOnlyOne(country);
   }
 
   @Cron('0 * * * * *', { name: 'pending-payment-expiry' })
@@ -150,6 +154,7 @@ export class PaymentsScheduler {
         createdAt: true,
         paymentProviderReferenceId: true,
         paymentProvider: true,
+        locationId: true,
       },
     });
 
@@ -161,7 +166,7 @@ export class PaymentsScheduler {
     for (const appointment of stale) {
       if (appointment.paymentProviderReferenceId) {
         try {
-          const result = await this.providerFor(appointment).checkPaymentStatus(
+          const result = await (await this.providerFor(appointment)).checkPaymentStatus(
             appointment.paymentProviderReferenceId,
           );
           if (result.status === 'SUCCESSFUL') {

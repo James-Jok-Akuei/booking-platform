@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AddressDto, AddressSearchDto } from './dto/address.dto';
+import { packFor } from '../countries/packs';
 
 /** The same letters are answered the same way tomorrow: kept a day. */
 const CACHE_MS = 24 * 60 * 60 * 1000;
@@ -10,11 +11,6 @@ const CACHE_MAX = 5000;
 const TIMEOUT_MS = 4000;
 /** How many matches to offer. Enough to find the right one, few enough to read. */
 const LIMIT = 6;
-/**
- * Rwanda's box (west, south, east, north). It takes in a little of each
- * neighbour, so what comes back is filtered to Rwanda as well.
- */
-const RWANDA_BOX = '28.85,-2.85,30.9,-1.04';
 /** Map features nobody lives at or sends offers to: rivers, streams, hills. */
 const NOT_ADDRESSES = new Set(['waterway', 'natural']);
 
@@ -37,8 +33,9 @@ type Feature = { geometry?: { coordinates?: [number, number] }; properties?: Pla
 const unique = (parts: Array<string | undefined>) =>
   parts.filter((part, i, all): part is string => Boolean(part) && all.indexOf(part) === i);
 
-/** "Northern Province, Rwanda" is in Rwanda; every result is. */
-const local = (part: string | undefined) => part?.replace(/,\s*Rwanda$/, '').trim() || undefined;
+/** "Northern Province, Rwanda" is in Rwanda; every result is in the country searched (§315). */
+const local = (part: string | undefined, country: string) =>
+  part?.replace(/,\s*([^,]+)$/, (all, last: string) => (last.trim() === country ? '' : all)).trim() || undefined;
 
 /**
  * A place as a person would say it (§172): "Kimironko Market, KG 153 Street,
@@ -46,25 +43,25 @@ const local = (part: string | undefined) => part?.replace(/,\s*Rwanda$/, '').tri
  * then "Kayonza District, Eastern Province", so the four Remeras in Rwanda can
  * be told apart.
  */
-export function describePlace(p: PlaceProperties): { label: string; detail: string } {
+export function describePlace(p: PlaceProperties, country: string): { label: string; detail: string } {
   const street = p.street ? (p.housenumber ? `${p.housenumber} ${p.street}` : p.street) : undefined;
   // "Gasabo District" is where something is, not what it is called.
   const area = [p.district, p.locality].find((part) => part && !/ District$/.test(part));
 
-  let label = unique([local(p.name), street, area]).slice(0, 3);
-  if (label.length === 0) label = unique([local(p.city), local(p.county)]).slice(0, 1);
+  let label = unique([local(p.name, country), street, area]).slice(0, 3);
+  if (label.length === 0) label = unique([local(p.city, country), local(p.county, country)]).slice(0, 1);
 
   // Smallest first: "Ruheru, Nyaruguru District". Kigali is the exception —
   // the one city with districts INSIDE it (§106.1) — so "Gasabo District,
   // Kigali", the way it is said.
-  const city = local(p.city);
+  const city = local(p.city, country);
   const inKigali = city === 'Kigali';
   const detail = unique([
     inKigali ? undefined : city,
     ...[p.district, p.locality].filter((part) => part && / District$/.test(part)),
-    local(p.county),
+    local(p.county, country),
     inKigali ? city : undefined,
-    local(p.state),
+    local(p.state, country),
   ])
     .filter((part) => !label.includes(part))
     .slice(0, 2);
@@ -110,13 +107,14 @@ export class AddressSearchService {
     this.spacingMs = Number(config.get<string>('GEOCODING_SPACING_MS') ?? 250);
   }
 
-  async search(query: string): Promise<AddressSearchDto> {
-    const key = query.toLowerCase();
+  /** Addresses in `country` (§315): the searcher's own — a shop's, or a customer's. */
+  async search(query: string, country: { code: string; name: string }): Promise<AddressSearchDto> {
+    const key = `${country.code}:${query.toLowerCase()}`;
     const hit = this.cache.get(key);
     if (hit && Date.now() - hit.at < CACHE_MS) return { results: hit.value, available: true };
     if (!this.baseUrl) return { results: [], available: false };
 
-    const found = await this.inTurn(() => this.ask(query));
+    const found = await this.inTurn(() => this.ask(query, country));
     if (found === null) return { results: [], available: false };
     this.remember(key, found);
     return { results: found, available: true };
@@ -144,13 +142,15 @@ export class AddressSearchService {
     return run;
   }
 
-  private async ask(query: string): Promise<AddressDto[] | null> {
+  private async ask(query: string, country: { code: string; name: string }): Promise<AddressDto[] | null> {
+    // The country's box on the map, from its pack; results are filtered to it too.
+    const box = packFor(country.code)?.mapBox;
     const params = new URLSearchParams({
       q: query,
-      // More than are shown: some will be outside Rwanda or be a river.
+      // More than are shown: some will be over a border or be a river.
       limit: String(LIMIT * 2),
       lang: 'en',
-      bbox: RWANDA_BOX,
+      ...(box ? { bbox: box } : {}),
     });
     try {
       const response = await fetch(`${this.baseUrl}/api/?${params}`, {
@@ -167,11 +167,11 @@ export class AddressSearchService {
       const results: AddressDto[] = [];
       for (const feature of body.features as Feature[]) {
         const p = feature.properties ?? {};
-        if (p.countrycode !== 'RW' || (p.osm_key && NOT_ADDRESSES.has(p.osm_key))) continue;
+        if (p.countrycode !== country.code || (p.osm_key && NOT_ADDRESSES.has(p.osm_key))) continue;
         const [longitude, latitude] = feature.geometry?.coordinates ?? [];
         if (typeof latitude !== 'number' || typeof longitude !== 'number') continue;
         if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) continue;
-        const { label, detail } = describePlace(p);
+        const { label, detail } = describePlace(p, country.name);
         // The same place found twice (a shop and its building) is one choice.
         if (!label || results.some((r) => r.label === label && r.detail === detail)) continue;
         results.push({ label, detail, latitude, longitude });

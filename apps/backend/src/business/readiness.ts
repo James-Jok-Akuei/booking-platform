@@ -21,6 +21,8 @@ import { msg } from '../i18n/say';
  *    customer could book.
  */
 export const READINESS_SELECT = {
+  // Its country (§315): whose papers it must hold.
+  countryCode: true,
   name: true,
   phone: true,
   subcategoryId: true,
@@ -79,8 +81,8 @@ export type ReadinessKey = 'name' | 'type' | 'phone' | 'branch' | 'hours' | 'ser
 /** Where the shop stands on each licence its kind must hold (§314). */
 export type PaperRuleView = PaperRule & { state: RuleState };
 
-export const paperRules = (shop: Pick<ReadinessShop, 'kinds' | 'documents'>): PaperRuleView[] =>
-  requiredPapers(shop.kinds).map((rule) => ({ ...rule, state: ruleState(rule, shop.documents) }));
+export const paperRules = (shop: Pick<ReadinessShop, 'countryCode' | 'kinds' | 'documents'>): PaperRuleView[] =>
+  requiredPapers(shop.countryCode, shop.kinds).map((rule) => ({ ...rule, state: ruleState(rule, shop.documents) }));
 
 export interface ReadinessItem {
   key: ReadinessKey;
@@ -113,7 +115,7 @@ export function readinessItems(shop: ReadinessShop): ReadinessItem[] {
     {
       key: 'papers',
       required: rules.length > 0,
-      done: rules.length > 0 ? rules.every((rule) => rule.state !== 'missing') : hasRegistration(shop.documents),
+      done: rules.length > 0 ? rules.every((rule) => rule.state !== 'missing') : hasRegistration(shop.countryCode, shop.documents),
     },
     { key: 'logo', required: false, done: Boolean(shop.logoUrl) },
     { key: 'payout', required: false, done: shop.payoutDestinations.length > 0 },

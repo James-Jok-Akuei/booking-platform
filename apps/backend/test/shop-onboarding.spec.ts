@@ -9,6 +9,7 @@ import { NotificationsService } from '../src/notifications/notifications.service
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import { TestBusiness, createAdmin, createBusiness } from './setup/factories';
+import { DocumentsService } from '../src/business/documents.service';
 
 /**
  * §255. A shop gets ready, sends itself for review, and — after a rejection —
@@ -30,8 +31,10 @@ describe('Shop onboarding and review (§255)', () => {
     moduleRef = await createTestModule([
       BusinessProfileService,
       BusinessModerationService,
+      DocumentsService,
       AdminOverviewService,
-      { provide: StorageService, useValue: {} },
+      // Nothing is uploaded here; the papers view only asks whether it could be (§314).
+      { provide: StorageService, useValue: { privateStorageReady: () => true } },
       commonStubs.mail(),
       commonStubs.notifications(),
     ]);
@@ -54,7 +57,7 @@ describe('Shop onboarding and review (§255)', () => {
 
   /** What signing up creates: an empty shop, waiting for nothing yet. */
   const freshSignup = () =>
-    prisma.businessProfile.create({ data: {} }).then((b) => b.id);
+    prisma.businessProfile.create({ data: { countryCode: 'RW' } }).then((b) => b.id);
 
   /** A shop with everything the wizard asks for, not yet sent. */
   const readyShop = async (): Promise<TestBusiness> => {
@@ -81,7 +84,8 @@ describe('Shop onboarding and review (§255)', () => {
     const view = await profiles.readiness(id);
 
     expect(keysOf(view.items, false)).toEqual(['name', 'type', 'phone', 'branch', 'hours', 'service']);
-    expect(view.items.filter((i) => !i.required).map((i) => i.key)).toEqual(['logo', 'payout']);
+    // Papers are optional for a shop that is not a licensed trade (§314).
+    expect(view.items.filter((i) => !i.required).map((i) => i.key)).toEqual(['papers', 'logo', 'payout']);
     expect(view.ready).toBe(false);
     expect(view.canSubmit).toBe(false);
     expect(view.submittedAt).toBeNull();

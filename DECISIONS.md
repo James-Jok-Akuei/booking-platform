@@ -20502,3 +20502,144 @@ is asked for.
 - **Not done**: no national ID or owner identity check; no automatic check
   against RDB's register (none is open to us); the "Health & Medical"
   category exists in the seed but is not in this dev database's live list.
+
+## 315. Countries — every shop is in one, and what differs across a border is the country's, not the code's (2026-10-29)
+
+The user asked for "a broader category, country": Rwanda today, Kenya and
+others later, built so that scaling is little work — payments especially. The
+decisions, agreed in plain words first: build the room for many countries but
+fill in only Rwanda; one shop, one country (a business in two is two shops,
+because money, tax and law differ); customers see the shops of their own
+country; prices always in the shop's own money, never converted; the
+platform's fee may differ by country.
+
+### 315.1 What a country is
+
+- **Its row** (`countries`): ISO code (the key), name, calling code, currency,
+  time zone, the app languages offered there, its mobile money networks, a
+  phone number as people write it, its own fee (or none, for the platform's),
+  `isLive`, `isDefault` (exactly one — a partial unique index, like
+  `one_primary_admin`), `liveSince`. Reference data: added with the code that
+  knows the country, never typed in the console. Rwanda's row comes with the
+  migration and `prisma/reference-data.sql`.
+- **Its pack** (`src/countries/packs/`): what is code rather than a setting —
+  its calling code (checked against the row), how many digits its mobiles
+  have, which network each prefix belongs to (Rwanda: 78/79 MTN, 72/73
+  Airtel), its box on the map for the address search, its papers rules
+  (§314: which trades need a licence, which papers prove registration, which
+  may be uploaded), and its calendar (holidays, community work — Umuganda —,
+  remembrance — Kwibuka —, tax dates — RRA's). Adding a country is a new file
+  beside `rwanda.ts` and a line in `packs/index.ts`.
+- **Places**: provinces belong to a country; province codes and names are
+  unique within it, district codes within their province (Uganda has a
+  "Northern" too). **Shops**: `BusinessProfile.countryCode`, required, set at
+  sign-up from the default country, never changed; no database default — the
+  code that makes a shop chooses. A branch's district must be in its shop's
+  country.
+- `CountriesService` reads the rows whole and keeps them a minute: `get`,
+  `live`, `defaultCountry`, `resolve(asked)` (a live country asked for, else
+  the default — never a 4xx), `ofBusiness`, `ofLocation`, `ofUser` (a member's
+  shop's, a customer's home district's, else the default), `zoneOf`,
+  `isMobileIn`, `inferNetwork`.
+- **`CountryGuard`** refuses to start unless there is exactly one default
+  country, it is live, and every live country passes every check: a pack
+  agreeing with its row, its money (see 315.3), a real time zone, a calling
+  code its example starts with, at least one network, languages the apps
+  speak, open districts. The console shows the same checks.
+
+### 315.2 What now follows the shop's country
+
+- **Its clock** — `PLATFORM_TIMEZONE` is gone (an old `.env` that sets it is
+  harmless). Availability and slots, the time a booking asked for, "today" for
+  sales, open-now, saved services and followed shops, the shop page, emails
+  (`BookingFacts.timeZone`, read in the same query), notifications (a time is
+  said on the SHOP's clock; quiet hours and the morning summary are the
+  READER's), support messages, payout statements, the shop's busiest hour,
+  rain, and the "next message" day. The console's overview uses the default
+  country's clock. Jobs that speak to people at a local hour wake every hour
+  and act for the countries where it is that hour (`local-time.ts`): the
+  Friday 09:00 offers email, the 08:15 papers reminders. Housekeeping jobs
+  stay on the server's clock.
+- **Its phone numbers** — `PAYOUT_MSISDN_COUNTRY_PREFIX` is gone. A payout
+  number must be a mobile in the shop's country (calling code and length), on
+  one of its networks; its network is now recorded from its prefix when the
+  shop does not say (an Airtel number was saved as MTN, the column's default).
+  A deposit is paid from a mobile number in the shop's country, on one of its
+  networks. The apps read numbers by the country's own table, sent by the
+  server (`networkPrefixes`), instead of three copies of Rwanda's.
+- **Its payment connections** — each connection says which country it serves
+  (`MOMO_COUNTRY`, empty for the default), and every place that picks one
+  (taking a deposit, checking it, the sweeps, refunds, payouts) asks for the
+  shop's country. MTN Uganda would be a second connection with its own keys.
+- **Its fee** — `Country.platformFeePercentage` or the platform's. Read at
+  booking and by the deposit check for the shop's country; the "never above a
+  deposit" rule (§55-era) applies per country, and the platform's fee checks
+  only shops in countries without their own.
+- **What customers see** — search, services search, stories, the weekly
+  offers, the places list and the customer app's "today" are one country's:
+  the one asked for (`X-Country` header or `?country=`) or the default. A shop
+  opened by its own link works from anywhere, on its own clock.
+- **Papers and For you** — the shop's country's papers; a paper of another
+  country cannot be uploaded. For you's Umuganda, Kwibuka, holidays and tax
+  dates come from the pack (a country without a calendar gets none); MoMo's
+  health only where MTN is a network; the rates are in the shop's own money
+  (`TodayRateDto.local`, `currency` on the item), and the Rwanda card keeps
+  its words ("not the official BNR rates") while another country's says
+  "not a central bank's official ones".
+- **Approval** — a shop in a country that is not switched on cannot be
+  approved.
+- **Apps**: the seller app reads its country from its profile
+  (`ShopCountryDto`) and the countries list, sends `X-Country`, offers only
+  the country's languages, and uses its phone example, number format and
+  clock (the shop preview's open-now too). The console has a **Countries**
+  page (Platform → Countries): each country's money, clock, numbers,
+  networks, languages, shops and places, its fee (its own, or the
+  platform's), the checks, and switching a country on (only when every check
+  passes) or off (never the default, never while its shops are live). Places
+  are grouped by country; phone numbers everywhere are read by their own
+  country's rules. The customer app needed no change: it is in the default
+  country.
+
+### 315.3 Deliberately not done: money in more than one currency
+
+Every amount is already labelled with its currency, so nothing will need
+moving. But the sums across shops — the platform's ledger account, the
+console's totals, payout runs, reconciliation, the single exchange-rate
+setting — assume one currency (`INTERNAL_CURRENCY`). That is the most
+dangerous code in the app, so it is left as it is, behind a firm check: a
+country can be live only if its money is the platform's. Before a second
+currency (Kenya's KES) is switched on: make the platform's ledger account,
+the console's money totals, payout runs and reconciliation per currency;
+move the provider currency and exchange rate onto the country; let
+`CurrencyGuard` check each country's rows against its own currency. Also
+before the second country: its legal documents and company (`LegalDocument`
+gains a country; Terms and the Seller Agreement are Rwanda's), its
+connection keys, its Swahili or other words, and a country chooser in the
+customer app (the server already answers `X-Country`).
+
+### 315.4 Found on the way
+
+- §314 had added `DocumentsService` to every test's default setup; it needs
+  notifications, so **209 tests in 11 suites failed** since that commit. It is
+  now added only by the suites that moderate shops, and the email preview's
+  sample shop has its papers list. The suite is whole again.
+- The paper-running-out email read a paper's end date on Kigali's clock, so
+  "runs out 31 March" said 1 April. It is now read as the day written.
+- Several payment tests paid a Rwandan shop from a Ugandan number; they now
+  pay from a Rwandan one, which is what the new rule asks.
+
+### 315.5 Verified
+
+`test/countries.spec.ts` (19) adds an imaginary second country for its
+length — "Testland" (XT, a private-use code), the platform's money, Nairobi's
+clock, calling code 999 — and proves: Rwanda's reference data and checks;
+only one default; switching on refused while a check fails or without a pack,
+the default never off, a country with live shops never off; each country's
+search shows only its shops, a shop page opens anywhere on its own clock;
+slots and booked times on each shop's clock (10:00 in Nairobi is 07:00 UTC,
+in Kigali 08:00); payout numbers in the shop's own country and network, an
+Airtel number recorded as Airtel; each country's own fee, refused above a
+deposit there, charged at booking; papers by country; a person's country;
+connections serving only their country; local hours. Full suite: **1677
+passing in 87 suites**. Screenshots of the console's Countries (1440, 390),
+Places and Settings, and the seller app's contact step and Getting paid.

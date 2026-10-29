@@ -39,6 +39,8 @@ export const ADVICE_NOTE_MAX = 600;
 
 /** What the advice reads — the readiness select provides it (`readiness.ts`). */
 export interface AdviceShop {
+  /** Its country (§315), whose papers prove registration. */
+  countryCode: string;
   coverImageUrl: string | null;
   logoUrl: string | null;
   description: string | null;
@@ -163,7 +165,7 @@ export function adviceItems(shop: AdviceShop, locale: Locale = DEFAULT_LOCALE): 
     },
     {
       key: 'papers',
-      done: hasRegistration(shop.documents),
+      done: hasRegistration(shop.countryCode, shop.documents),
       title: say(l, 'Your business papers'),
       why: say(l, 'a checked registration earns the “Registered business” mark customers trust'),
     },

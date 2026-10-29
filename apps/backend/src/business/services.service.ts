@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Prisma } from '@prisma/client';
 
 /**
@@ -46,6 +45,7 @@ import { loadChoiceGroups, saveChoiceGroups } from './choice-groups';
 import { notePromptIn, priceAtShopFor, suggestionsFor, suggestionsIn } from './choice-suggestions';
 import { KINDS_SELECT } from './kinds';
 import { DEFAULT_LOCALE, type Locale } from '../i18n/locales';
+import { CountriesService } from '../countries/countries.service';
 
 /**
  * Services belong to the *business*, not to a location.
@@ -66,7 +66,7 @@ export class ServicesService {
     private readonly access: BusinessAccessService,
     private readonly settings: PlatformSettingsService,
     private readonly legal: LegalService,
-    private readonly config: ConfigService,
+    private readonly countries: CountriesService,
   ) {}
 
   /**
@@ -76,9 +76,12 @@ export class ServicesService {
    * day needs a percentage, and a NEW last day may not be in the past — the
    * stored one may be, and is accepted when sent back unchanged, so editing
    * the name of a service whose sale ended last week is not refused.
+   *
+   * `timeZone` is the shop's country's clock (§315): "today" is the shop's.
    */
   private discountColumns(
     sent: { discountPercent?: number | null; discountEndsOn?: string | null },
+    timeZone: string,
     stored?: { discountPercent: number | null; discountEndsOn: Date | null },
   ): { discountPercent?: number | null; discountEndsOn?: Date | null } {
     if (sent.discountPercent === undefined && sent.discountEndsOn === undefined) return {};
@@ -96,7 +99,6 @@ export class ServicesService {
       if (Number.isNaN(day.getTime()) || ymd(day) !== endsOn) {
         throw new BadRequestException('discountEndsOn must be a real date, like 2026-10-31.');
       }
-      const timeZone = this.config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Juba';
       if (endsOn !== storedEnd && day.getTime() < platformToday(timeZone).getTime()) {
         throw new BadRequestException('The last day of a sale cannot be in the past.');
       }
@@ -118,12 +120,12 @@ export class ServicesService {
    *
    * Read LIVE on every write, never cached into a constant: an admin can change
    * the fee at runtime, and a service saved yesterday must be validated against
-   * today's rule.
+   * today's rule. The fee is the shop's country's (§315).
    */
-  private async assertDepositCoversPlatformFee(depositPercentage?: number) {
+  private async assertDepositCoversPlatformFee(depositPercentage: number | undefined, countryCode: string) {
     if (depositPercentage === undefined) return;
 
-    const fee = await this.settings.getPlatformFeePercentage();
+    const fee = await this.settings.getPlatformFeePercentage(countryCode);
     if (new Prisma.Decimal(depositPercentage).lessThan(fee)) {
       throw new BadRequestException(
         `Deposit percentage must be at least ${fee.toFixed(2)}% — the platform fee is ` +
@@ -164,14 +166,15 @@ export class ServicesService {
     // trap a shop with a wrong price it cannot correct.
     await this.legal.requireAccepted(userId, LegalDocumentKind.SELLER_AGREEMENT);
 
-    await this.assertDepositCoversPlatformFee(dto.depositPercentage);
+    const country = await this.countries.ofBusiness(businessId);
+    await this.assertDepositCoversPlatformFee(dto.depositPercentage, country.code);
     await this.assertOwnsLocations(
       businessId,
       dto.offers.map((offer) => offer.locationId),
     );
 
     const { offers, discountPercent, discountEndsOn, choiceGroups, ...words } = dto;
-    const fields = { ...tidyWords(words), ...this.discountColumns({ discountPercent, discountEndsOn }) };
+    const fields = { ...tidyWords(words), ...this.discountColumns({ discountPercent, discountEndsOn }, country.timeZone) };
 
     // The questions a customer answers while booking (§300), checked before
     // anything is written.
@@ -230,7 +233,8 @@ export class ServicesService {
   async update(userId: string, serviceId: string, dto: UpdateServiceDto) {
     const businessId = await this.access.requireBusinessId(userId);
     await this.requireOwned(businessId, serviceId);
-    await this.assertDepositCoversPlatformFee(dto.depositPercentage);
+    const country = await this.countries.ofBusiness(businessId);
+    await this.assertDepositCoversPlatformFee(dto.depositPercentage, country.code);
 
     // Recomputed unconditionally rather than only when `priceMinor` is in the
     // patch: an update can also flip `isActive` back on, which changes the
@@ -242,6 +246,7 @@ export class ServicesService {
         ? {}
         : this.discountColumns(
             { discountPercent, discountEndsOn },
+            country.timeZone,
             await this.prisma.service.findUniqueOrThrow({
               where: { id: serviceId },
               select: { discountPercent: true, discountEndsOn: true },

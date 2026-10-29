@@ -19,16 +19,6 @@ export const NETWORK_NAME: Record<Network, string> = {
  * as the server's `operator-routing.ts` (§58.1): Rwanda's 078/079 are MTN,
  * 072/073 Airtel. Unknown numbers return null rather than a guess.
  */
-export function networkOf(number: string): Network | null {
-  const digits = number.replace(/\D/g, '');
-  const national = digits.startsWith('250') ? digits.slice(3) : digits.startsWith('0') ? digits.slice(1) : null;
-  if (!national || national.length < 2) return null;
-  const prefix = national.slice(0, 2);
-  if (prefix === '78' || prefix === '79') return 'MTN_MOMO';
-  if (prefix === '72' || prefix === '73') return 'AIRTEL_MONEY';
-  return null;
-}
-
 export function NetworkMark({
   network,
   size = 40,

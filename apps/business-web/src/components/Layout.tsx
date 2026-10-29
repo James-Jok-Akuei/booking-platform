@@ -20,6 +20,7 @@ import { TourProvider } from '../tour/Tour';
 import '../shell/shell.css';
 import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
+import { useShopCountry } from '../lib/country';
 
 const RAIL_KEY = 'booking-business.sidebar-rail';
 const ADS_KEY = 'booking-business.ads-folded';
@@ -74,6 +75,8 @@ function Frame() {
   const { signOut, user } = useAuth();
   // The bell, live (§287).
   useLiveNotifications(Boolean(user));
+  // The shop's country (§315), told to the server with every request from here on.
+  useShopCountry();
   const navigate = useNavigate();
   const location = useLocation();
   const data = useShellData();

@@ -61,6 +61,14 @@ const WHY_KEY = 'booking-business.signedOutWhy';
  */
 export const requestLanguage = { current: 'en' };
 
+/**
+ * The shop's country (§315), sent with every request as `X-Country` once the
+ * profile has said which — so a public list the app asks for (the places a
+ * branch can be in) is its own country's. Null until then: the server
+ * answers about the default country.
+ */
+export const requestCountry: { current: string | null } = { current: null };
+
 export type TokenPair = components['schemas']['TokenPairDto'];
 export type Session = components['schemas']['SessionDto'] & { renewedAt: number };
 
@@ -277,6 +285,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
       signal,
       headers: {
         'Accept-Language': requestLanguage.current,
+        ...(requestCountry.current ? { 'X-Country': requestCountry.current } : {}),
         ...(body !== undefined && !isForm ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(pass ? { 'X-Step-Up': pass } : {}),

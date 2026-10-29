@@ -30,7 +30,6 @@ export class MailService {
   private transporter: nodemailer.Transporter;
   /** Where the email's own pictures — the mark — are loaded from. */
   private readonly assetBase: string;
-  private readonly timeZone: string;
 
   constructor(private readonly config: ConfigService) {
     const user = this.config.get<string>('SMTP_USER');
@@ -46,7 +45,6 @@ export class MailService {
       ...(user ? { auth: { user, pass } } : {}),
     });
     this.assetBase = (this.config.get<string>('APP_BASE_URL') ?? 'http://localhost:4100').replace(/\/$/, '');
-    this.timeZone = this.config.get<string>('PLATFORM_TIMEZONE') ?? 'Africa/Kigali';
   }
 
   /** Whether an SMTP host is configured at all. */
@@ -55,10 +53,6 @@ export class MailService {
     return Boolean(host && host.trim().length > 0);
   }
 
-  /** The platform's time zone, for anyone composing an email about a time. */
-  get zone() {
-    return this.timeZone;
-  }
 
   /**
    * Any email, drawn in the platform's design and sent. Throws when the send
@@ -357,7 +351,7 @@ export class MailService {
               : say(l, 'You asked for a new arrival code, so any earlier one no longer works.'),
           },
           blocks: [
-            bookingTicket(booking, { timeZone: this.timeZone, audience: 'CUSTOMER', locale: l }),
+            bookingTicket(booking, { timeZone: booking.timeZone, audience: 'CUSTOMER', locale: l }),
             codeBoxes(code, {
               label: say(l, 'Your arrival code'),
               note: say(

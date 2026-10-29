@@ -4,15 +4,18 @@ import { PrismaService } from '../prisma/prisma.service';
 import { BusinessAccessService } from '../business/business-access.service';
 import { mayReadMoney } from '../business/branch-scope';
 import { KINDS_SELECT } from '../business/kinds';
-import { BusinessDocumentStatus, BusinessMemberRole } from '@prisma/client';
+import { BusinessDocumentStatus, BusinessMemberRole, MobileMoneyProvider } from '@prisma/client';
 import { EXPIRY_WARNING_DAYS, requiredPapers, ruleState } from '../business/document-rules';
 import { fold } from '../categories/taxonomy-names.service';
 import { readTyped, typedIn } from '../i18n/typed-words';
 import type { Locale } from '../i18n/locales';
 import { MomoHealthService } from '../payments/momo-health.service';
-import { RATE_CODES, RatesService } from './rates.service';
+import { RatesService } from './rates.service';
 import { WeatherService } from './weather.service';
-import { UMUGANDA_HOURS, addDays, holidayOn, kigaliToday, kwibuka, nextHoliday, nextUmuganda, umugandaIn, weekday } from './rwanda-calendar';
+import { addDays, weekday } from './rwanda-calendar';
+import { CountriesService, type CountryRow } from '../countries/countries.service';
+import { localTime } from '../countries/local-time';
+import { packFor } from '../countries/packs';
 import type { PublicTodayDto, TodayBranchDto, TodayDto, TodayItemDto } from './dto/today.dto';
 
 /** Days before Umuganda and a holiday that the card starts showing. */
@@ -30,6 +33,12 @@ const NEWS_WORDS = ['title', 'body', 'linkLabel'] as const;
  * what customers near it searched for, heavy rain for a car wash, a tax date
  * for whoever sees the money, the rates, and what our team posted. Facts, in
  * the order they matter; the app says them in its language.
+ *
+ * Each on the shop's COUNTRY's terms (§315): its clock decides "today", its
+ * pack holds its holidays, its community work and remembrance and its tax
+ * dates (Rwanda's are Umuganda, Kwibuka and RRA's), its money is what the
+ * rates are in, and mobile money's health is said only where MTN is a network.
+ * A country without a calendar simply gets none of those cards.
  */
 @Injectable()
 export class TodayService {
@@ -39,12 +48,19 @@ export class TodayService {
     private readonly momo: MomoHealthService,
     private readonly weather: WeatherService,
     private readonly rates: RatesService,
+    private readonly countries: CountriesService,
   ) {}
+
+  /** Mobile money's health as far as `country` is concerned: MTN's, where MTN is a network there. */
+  private momoIn(country: CountryRow, now: Date) {
+    return country.networks.includes(MobileMoneyProvider.MTN_MOMO) ? this.momo.state(now.getTime()) : 'ok';
+  }
 
   async forShop(userId: string, locale: Locale, now = new Date()): Promise<TodayDto> {
     const membership = await this.access.requireActiveMembership(userId);
-    const today = kigaliToday(now);
-    const hour = Number(new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Kigali', hour: '2-digit', hour12: false }).format(now));
+    const country = await this.countries.ofBusiness(membership.businessProfileId);
+    const calendar = packFor(country.code)?.calendar;
+    const { date: today, hour } = localTime(now, country.timeZone);
     const shop = await this.prisma.businessProfile.findUniqueOrThrow({
       where: { id: membership.businessProfileId },
       select: {
@@ -70,22 +86,26 @@ export class TodayService {
     });
     const items: TodayItemDto[] = [];
 
-    const momo = this.momo.state(now.getTime());
+    const momo = this.momoIn(country, now);
     if (momo !== 'ok') items.push({ kind: 'momo', momo });
 
-    const remembrance = kwibuka(today);
+    const remembrance = calendar?.remembrance?.(today) ?? null;
     if (remembrance) items.push({ kind: 'kwibuka', number: remembrance.number, until: remembrance.to });
 
     items.push(...(await this.news(membership.businessProfileId, shop.kinds.map((k) => k.category.id), locale, now)));
 
-    // Umuganda, from a few days before until it ends that Saturday morning.
-    const umuganda = nextUmuganda(today);
-    if (addDays(umuganda, -UMUGANDA_AHEAD) <= today && (umuganda > today || hour < 11)) {
-      const branches = await this.openAt(shop.locations, umuganda, UMUGANDA_HOURS.from, UMUGANDA_HOURS.to);
-      if (branches.some((b) => !b.covered)) items.push({ kind: 'umuganda', date: umuganda, branches });
+    // Community work (Umuganda), from a few days before until it ends that morning.
+    const work = calendar?.communityWork;
+    if (work) {
+      const day = work.next(today);
+      const ends = Number(work.hours.to.slice(0, 2));
+      if (addDays(day, -UMUGANDA_AHEAD) <= today && (day > today || hour < ends)) {
+        const branches = await this.openAt(shop.locations, day, work.hours.from, work.hours.to);
+        if (branches.some((b) => !b.covered)) items.push({ kind: 'umuganda', date: day, branches });
+      }
     }
 
-    const holiday = nextHoliday(today, HOLIDAY_AHEAD);
+    const holiday = calendar?.nextHoliday(today, HOLIDAY_AHEAD) ?? null;
     if (holiday) {
       const branches = await this.openAt(shop.locations, holiday.date, '00:00', '23:59');
       if (branches.some((b) => !b.covered)) items.push({ kind: 'holiday', date: holiday.date, holiday: holiday.key, branches });
@@ -101,7 +121,7 @@ export class TodayService {
     const outdoors = shop.kinds.some((k) => WEATHER_KINDS.has(k.category.icon ?? ''));
     const placed = shop.locations.find((l) => l.latitude !== null && l.longitude !== null);
     if (outdoors && placed) {
-      const rain = await this.weather.rainAhead(placed.latitude!, placed.longitude!, now);
+      const rain = await this.weather.rainAhead(placed.latitude!, placed.longitude!, country.timeZone, now);
       if (rain) items.push({ kind: 'rain', from: rain.from, district: placed.district?.name ?? placed.name });
     }
 
@@ -109,16 +129,18 @@ export class TodayService {
     if (asked) items.push(asked);
 
     if (mayReadMoney(membership.role, membership.scope)) {
-      const tax = taxDue(today);
+      const tax = calendar?.taxDue?.(today) ?? null;
       if (tax) items.push({ kind: 'tax', ...tax });
     }
 
-    const rates = await this.rates.today(now.getTime());
+    // In the shop's own money (§315).
+    const rates = await this.rates.today(country.currency, now.getTime());
     if (rates) {
       items.push({
         kind: 'rates',
         date: rates.date,
-        rates: RATE_CODES.map((code) => ({ code, rwf: rates.rwf[code], change: rates.change[code] })),
+        currency: rates.currency,
+        rates: rates.rates,
         source: rates.source,
         sourceUrl: rates.sourceUrl,
       });
@@ -127,16 +149,21 @@ export class TodayService {
     return { calm: Boolean(remembrance), items };
   }
 
-  /** For the customer app: what changes booking on `date` (today when not given). */
-  publicToday(date: string | undefined, now = new Date()): PublicTodayDto {
-    const today = kigaliToday(now);
+  /**
+   * For the customer app: what changes booking on `date` (today when not
+   * given), in the country asked about (§315) — the default when none is.
+   */
+  async publicToday(date: string | undefined, requestedCountry?: string, now = new Date()): Promise<PublicTodayDto> {
+    const country = await this.countries.resolve(requestedCountry);
+    const calendar = packFor(country.code)?.calendar;
+    const today = localTime(now, country.timeZone).date;
     const day = date && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : today;
     return {
-      calm: Boolean(kwibuka(today)),
-      momo: this.momo.state(now.getTime()),
+      calm: Boolean(calendar?.remembrance?.(today)),
+      momo: this.momoIn(country, now),
       date: day,
-      umuganda: umugandaIn(Number(day.slice(0, 4)), Number(day.slice(5, 7))) === day,
-      holiday: holidayOn(day)?.key ?? null,
+      umuganda: calendar?.communityWork?.on(day) ?? false,
+      holiday: calendar?.holidayOn(day)?.key ?? null,
     };
   }
 
@@ -229,6 +256,7 @@ export class TodayService {
     const shop = await this.prisma.businessProfile.findUniqueOrThrow({
       where: { id: businessId },
       select: {
+        countryCode: true,
         kinds: { select: { category: { select: { name: true } }, subcategory: { select: { name: true } } } },
         documents: {
           where: { status: { in: [BusinessDocumentStatus.SUBMITTED, BusinessDocumentStatus.VERIFIED, BusinessDocumentStatus.REFUSED] } },
@@ -238,7 +266,7 @@ export class TodayService {
       },
     });
     const docs = shop.documents;
-    const missing = requiredPapers(shop.kinds).find((rule) => ruleState(rule, docs, now) === 'missing');
+    const missing = requiredPapers(shop.countryCode, shop.kinds).find((rule) => ruleState(rule, docs, now) === 'missing');
     if (missing) return { kind: 'papers', state: 'missing', paper: missing.kinds[0] };
     const refused = docs.find((d) => d.status === BusinessDocumentStatus.REFUSED);
     if (refused) return { kind: 'papers', state: 'refused', paper: refused.kind };
@@ -273,19 +301,4 @@ export class TodayService {
       return { kind: 'news', newsId: p.id, title: words.title, body: words.body, linkPath: p.linkPath, linkLabel: words.linkLabel };
     });
   }
-}
-
-/**
- * Tax dates for whoever sees the money (§310), from the Rwanda Revenue
- * Authority's calendar: monthly VAT and PAYE by the 15th (shown from the 8th),
- * the trading licence by 31 January, the annual income tax return by 31
- * March. A reminder with RRA's link, never advice.
- */
-export function taxDue(today: string): { tax: string; date: string } | null {
-  const [y, m, d] = today.split('-').map(Number);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  if (m === 1) return { tax: 'licence', date: `${y}-01-31` };
-  if (m === 3 && d > 15) return { tax: 'annual', date: `${y}-03-31` };
-  if (d >= 8 && d <= 15) return { tax: 'vat-paye', date: `${y}-${pad(m)}-15` };
-  return null;
 }

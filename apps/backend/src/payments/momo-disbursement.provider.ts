@@ -40,6 +40,11 @@ class TokenRefused extends Error {
 @Injectable()
 export class MomoDisbursementProvider implements DisbursementProvider, OnModuleInit {
   readonly key = MobileMoneyProvider.MTN_MOMO;
+  /**
+   * The country these keys are for (§315): `MOMO_COUNTRY`, an ISO code, or
+   * none for the default country. An MTN account is one country's.
+   */
+  readonly country = process.env.MOMO_COUNTRY?.trim().toUpperCase() || null;
   readonly name = 'MTN MoMo Disbursements';
 
   private readonly logger = new Logger(MomoDisbursementProvider.name);

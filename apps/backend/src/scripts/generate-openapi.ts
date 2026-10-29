@@ -247,12 +247,15 @@ async function main() {
    *   2. a request body implies a 400 — the ValidationPipe is global
    *   3. a 403 implies a 401 — you cannot be forbidden without first being
    *      authenticated, so documenting one without the other is incoherent
-   *   4. no operation documents zero failures, except the two public reads that
-   *      take no parameter and no body and genuinely cannot fail with a 4xx
+   *   4. no operation documents zero failures, except the public reads that
+   *      take no parameter and no body and genuinely cannot fail with a 4xx —
+   *      a country asked for that is not live is answered with the default
+   *      one, never refused (§315)
    */
   const PUBLIC_INFALLIBLE = new Set([
     'GET /categories',
     'GET /places/provinces',
+    'GET /countries',
   ]);
 
   const errorProblems: string[] = [];

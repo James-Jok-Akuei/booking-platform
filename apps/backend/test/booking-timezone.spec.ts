@@ -15,8 +15,9 @@ import { TestBusiness, createBusiness, createCustomer } from './setup/factories'
  * accident; on a host in UTC — which is every deployment — the same booking
  * landed two hours late.
  *
- * These pin the behaviour to the platform's zone rather than the host's, so a
- * server moved to UTC cannot reintroduce it silently.
+ * These pin the behaviour to the shop's zone — its country's clock (§315) —
+ * rather than the host's, so a server moved to UTC cannot reintroduce it
+ * silently.
  */
 describe('Booking time zones (§103)', () => {
   let moduleRef: TestingModule;
@@ -71,9 +72,10 @@ describe('Booking time zones (§103)', () => {
     return Number(label) - 12;
   };
 
-  it('reads a zone-less time as the platform zone, not the host zone', async () => {
+  it("reads a zone-less time as the shop's zone, not the host zone", async () => {
     const date = openDate();
-    const zone = availability.platformTimeZone;
+    const zone = await availability.zoneOfLocation(business.locationId);
+    expect(zone).toBe('Africa/Kigali');
     const shift = offsetHours(zone, date);
 
     const appointment = await appointments.create(customerId, {
@@ -88,9 +90,9 @@ describe('Booking time zones (§103)', () => {
     expect(appointment.status).toBe(AppointmentStatus.PENDING_PAYMENT);
   });
 
-  it('shows the same wall-clock time back in the platform zone', async () => {
+  it("shows the same wall-clock time back in the shop's zone", async () => {
     const date = openDate();
-    const zone = availability.platformTimeZone;
+    const zone = await availability.zoneOfLocation(business.locationId);
 
     const appointment = await appointments.create(customerId, {
       locationId: business.locationId,

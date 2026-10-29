@@ -9,6 +9,7 @@ import {
   IsString,
   IsUUID,
   Length,
+  Matches,
   Max,
   Min,
 } from 'class-validator';
@@ -31,6 +32,15 @@ export enum DiscoverySort {
 export const MAX_RADIUS_KM = 200;
 
 export class DiscoverLocationsDto {
+  /**
+   * The country to search (§315), as an ISO code — for a link; an app sends
+   * the `X-Country` header instead. A country that is not live, or none at
+   * all, searches the default one.
+   */
+  @IsOptional()
+  @Matches(/^[A-Za-z]{2}$/, { message: 'country must be a two-letter country code, like RW.' })
+  country?: string;
+
   /**
    * Narrow to one province (§104). Matched through the district, so a branch
    * with no district set is simply not returned — it has not said where it is.

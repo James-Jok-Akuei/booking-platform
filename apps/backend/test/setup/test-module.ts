@@ -18,8 +18,8 @@ import { MobileMoneyProvider } from '@prisma/client';
 import { TaxonomyNamesService } from '../../src/categories/taxonomy-names.service';
 import { MomoHealthService } from '../../src/payments/momo-health.service';
 import { RefundsService } from '../../src/refunds/refunds.service';
-import { DocumentsService } from '../../src/business/documents.service';
 import { StorageService } from '../../src/storage/storage.service';
+import { CountriesService } from '../../src/countries/countries.service';
 import {
   InitiatePaymentParams,
   InitiatePaymentResult,
@@ -63,6 +63,8 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
     // at all — it seals and opens with the configured key.
     providers: [
       PrismaService,
+      // The countries (§315): which clock, numbers and papers a shop has — the database only.
+      CountriesService,
       LedgerService,
       PlatformSettingsService,
       SupportLogService,
@@ -72,9 +74,11 @@ export async function createTestModule(providers: Provider[]): Promise<TestingMo
       // MoMo's health (§310): a count in memory, nothing reached.
       MomoHealthService,
       RefundsService,
-      // Business papers (§314): the local-disk storage, nothing reached.
+      // The local-disk storage (§314), nothing reached. DocumentsService is NOT a
+      // default: it tells shops and admins about their papers, so it needs a
+      // NotificationsService, which most suites neither have nor want — the
+      // suites that moderate shops (its one dependant) add it with their stub.
       StorageService,
-      DocumentsService,
       { provide: DisbursementProviderRegistry, useValue: new DisbursementProviderRegistry([]) },
       ...providers,
     ],
@@ -159,7 +163,7 @@ export const commonStubs = {
  * would only make every test assert against a Rwanda with no provinces in it —
  * a state no deployment is ever in. Left standing, exactly as in production.
  */
-const REFERENCE_TABLES = ['provinces', 'districts'];
+const REFERENCE_TABLES = ['countries', 'provinces', 'districts'];
 
 export async function resetDatabase(prisma: PrismaService): Promise<void> {
   const tables = await prisma.$queryRaw<Array<{ tablename: string }>>`

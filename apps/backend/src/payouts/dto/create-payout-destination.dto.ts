@@ -6,8 +6,8 @@ export class CreatePayoutDestinationDto {
   /**
    * The mobile-money number payouts are sent to, in E.164.
    *
-   * The SHAPE is checked here; the expected country prefix is checked in the
-   * service, because it is configurable (§48.2).
+   * The SHAPE is checked here; that it is a mobile number in the shop's own
+   * country is checked in the service (§315).
    */
   @IsString()
   @Matches(E164, {

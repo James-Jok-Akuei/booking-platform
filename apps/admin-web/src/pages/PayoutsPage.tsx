@@ -23,6 +23,7 @@ import { NothingFound, SearchToggle } from '../ui/SearchToggle';
 import { ShopMark } from '../ui/ShopMark';
 import './payouts.css';
 import { EmptyState } from '../ui/EmptyState';
+import { phoneInThrees, useCountries } from '../lib/countries';
 
 type Tab = PayoutStatus | 'ALL';
 
@@ -46,11 +47,6 @@ const PAGE = 25;
 const when = (iso: string | null) =>
   iso ? new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
 
-const spaced = (msisdn: string) => {
-  const digits = msisdn.replace(/\D/g, '');
-  if (digits.startsWith('250') && digits.length === 12) return `+250 ${digits.slice(3, 6)} ${digits.slice(6, 9)} ${digits.slice(9)}`;
-  return msisdn;
-};
 
 /**
  * Payouts, as a wallet (§246, §35, §36, §64).
@@ -66,6 +62,9 @@ const spaced = (msisdn: string) => {
  */
 export function PayoutsPage() {
   const { format: money } = useMoney();
+  // Numbers read by their own country's rules (§315).
+  const countries = useCountries();
+  const spaced = (msisdn: string) => phoneInThrees(msisdn, countries);
   const [params, setParams] = useSearchParams();
   const tab = (params.get('status') as Tab | null) ?? 'PENDING';
   // A shop, a place, a payout number or a reference (§289), kept in the address.
@@ -391,6 +390,8 @@ function Row({
 }) {
   const look = STATUS[p.status];
   const network = p.destinationProvider === 'AIRTEL_MONEY' ? 'AIRTEL_MONEY' : 'MTN_MOMO';
+  const countries = useCountries();
+  const spaced = (msisdn: string) => phoneInThrees(msisdn, countries);
   return (
     <li className={`po-row is-${look.cls}`}>
       <span className="po-shop">

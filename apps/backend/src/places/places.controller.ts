@@ -1,6 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiQuery } from '@nestjs/swagger';
+import { CountriesService } from '../countries/countries.service';
+import { RequestedCountry } from '../countries/requested-country.decorator';
 import { ProvinceDto, PUBLIC_PROVINCE_SELECT } from './dto/place-response.dto';
 
 /**
@@ -16,14 +18,20 @@ import { ProvinceDto, PUBLIC_PROVINCE_SELECT } from './dto/place-response.dto';
  */
 @Controller('places')
 export class PlacesController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly countries: CountriesService,
+  ) {}
 
+  /** One country's places (§315): the one asked for (`X-Country`, `?country=`), or the default. */
   @Get('provinces')
   @ApiOkResponse({ type: ProvinceDto, isArray: true })
-  findAll() {
+  @ApiQuery({ name: 'country', required: false, description: 'An ISO country code (§315), or the X-Country header; the default country when not given.' })
+  async findAll(@RequestedCountry() requested: string | undefined) {
+    const country = await this.countries.resolve(requested);
     return this.prisma.province.findMany({
       // A province with nothing open in it is noise in a filter row.
-      where: { districts: { some: { isLive: true } } },
+      where: { countryCode: country.code, districts: { some: { isLive: true } } },
       orderBy: { name: 'asc' },
       // One select, shared with the DTO that describes it (§128.5).
       select: PUBLIC_PROVINCE_SELECT,

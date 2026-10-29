@@ -140,6 +140,13 @@ export const SECTIONS: NavGroup[] = [
         hint: 'What kinds of business can sign up',
       },
       {
+        to: '/countries',
+        label: 'Countries',
+        icon: 'globe',
+        keywords: 'country countries rwanda kenya uganda currency money time zone clock phone fee switch on expand',
+        hint: 'Where the platform runs, and each country’s fee',
+      },
+      {
         to: '/places',
         label: 'Places',
         icon: 'pin',

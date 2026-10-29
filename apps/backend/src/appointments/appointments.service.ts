@@ -49,7 +49,6 @@ import { MailService } from '../mail/mail.service';
 import { BOOKING_FACTS_SELECT, bookingFacts } from '../mail/booking-email';
 import { PlatformSettingsService } from '../settings/platform-settings.service';
 import { PaymentProviderRegistry } from '../payments/payment-provider.registry';
-import { inferOperator } from '../payments/operator-routing';
 import {
   INTERNAL_CURRENCY,
   convertMinorUnits,
@@ -86,6 +85,7 @@ import {
 import { MEMBERSHIP_SCOPE_SELECT, branchIn, scopeOf, seesBranch } from '../business/branch-scope';
 import { SupportActor, SupportLogService } from '../support/support-log.service';
 import { SupportCancelForShopDto, SupportCheckInDto, SupportReasonDto } from '../support/support.dto';
+import { CountriesService } from '../countries/countries.service';
 
 /** What our support team did, in one reader's language (§297, §308). */
 type SupportWords = (l: Locale) => { title: string; body: string };
@@ -269,6 +269,7 @@ export class AppointmentsService {
     private readonly health: HealthChoices,
     private readonly momo: MomoHealthService,
     private readonly refunds: RefundsService,
+    private readonly countries: CountriesService,
   ) {}
 
   /**
@@ -284,8 +285,10 @@ export class AppointmentsService {
    * which is to say every deployment — the same request would have stored
    * 10:00 UTC for a 10:00 Kigali slot and put every booking two hours late.
    * Found by sending exactly what the app sends.
+   *
+   * `timeZone` is the shop's country's clock (§315), the one its slots are in.
    */
-  private resolveStartTime(raw: string): Date {
+  private resolveStartTime(raw: string, timeZone: string): Date {
     const hasZone = /(?:Z|[+-]\d{2}:?\d{2})$/.test(raw.trim());
 
     if (hasZone) {
@@ -309,11 +312,7 @@ export class AppointmentsService {
     );
     // The same helper availability uses, so the two cannot disagree — it also
     // handles the hour that does not exist on a DST boundary.
-    return zonedWallTimeToInstant(
-      calendarDate,
-      Number(hour) * 60 + Number(minute),
-      this.availability.platformTimeZone,
-    );
+    return zonedWallTimeToInstant(calendarDate, Number(hour) * 60 + Number(minute), timeZone);
   }
 
   /**
@@ -399,8 +398,6 @@ export class AppointmentsService {
    * second caller's capacity check runs after the first has committed.
    */
   async create(customerId: string, dto: CreateAppointmentDto) {
-    const startTime = this.resolveStartTime(dto.startTime);
-
     const service = await this.prisma.service.findUnique({
       where: { id: dto.serviceId },
       select: {
@@ -436,10 +433,14 @@ export class AppointmentsService {
         address: true,
         isActive: true,
         capacity: true,
-        business: { select: { status: true, pausedAt: true, publishedAt: true } },
+        business: { select: { status: true, pausedAt: true, publishedAt: true, countryCode: true } },
       },
     });
     if (!location) throw new NotFoundException('Location not found.');
+
+    // The time asked for, on the shop's own clock (§315) — the clock its slots are in.
+    const timeZone = await this.countries.zoneOf(location.business.countryCode);
+    const startTime = this.resolveStartTime(dto.startTime, timeZone);
 
     // A closed branch takes no new bookings (§89). 404 rather than a message,
     // for the same reason the status check below is a 404: to a customer, a
@@ -500,11 +501,7 @@ export class AppointmentsService {
     // One unit's price as the customer was shown it: after the sale, if one
     // is on today (§186). The sale is taken off ONE and then multiplied, so
     // the card's price times three is exactly what three cost.
-    const sale = liveDiscount(
-      service,
-      platformToday(this.availability.platformTimeZone),
-      this.availability.platformTimeZone,
-    );
+    const sale = liveDiscount(service, platformToday(timeZone), timeZone);
     const unit = priceFor(offer.priceMinor, sale);
 
     // The price of the whole booking. Multiplied BEFORE the percentages are
@@ -524,8 +521,8 @@ export class AppointmentsService {
     }
 
     // Read live, at this instant: the fee an admin sets later must not change
-    // what this customer agreed to.
-    const platformFeePercentage = await this.settings.getPlatformFeePercentage();
+    // what this customer agreed to. The shop's country's fee (§315).
+    const platformFeePercentage = await this.settings.getPlatformFeePercentage(location.business.countryCode);
     const amounts = computeAppointmentAmounts(
       totalPriceMinor,
       service.depositPercentage,
@@ -787,10 +784,12 @@ export class AppointmentsService {
    * them, so this path should be unreachable; it exists so a row written by
    * something other than `initiateDepositPayment` cannot crash the poller.
    */
-  private providerFor(appointment: { paymentProvider: MobileMoneyProvider | null }) {
+  private async providerFor(appointment: { paymentProvider: MobileMoneyProvider | null; locationId: string }) {
+    // The connection for the shop's country (§315): another country's keys never saw this reference.
+    const country = await this.countries.ofLocation(appointment.locationId);
     return appointment.paymentProvider
-      ? this.payments.require(appointment.paymentProvider)
-      : this.payments.requireOnlyOne();
+      ? this.payments.require(appointment.paymentProvider, country)
+      : this.payments.requireOnlyOne(country);
   }
 
   private generateVerificationCode(): string {
@@ -835,6 +834,18 @@ export class AppointmentsService {
         'A payment for this appointment is already in progress. Approve the prompt on your phone, ' +
           'or wait for it to time out before trying again.',
       );
+    }
+
+    // The shop's country's mobile money (§315): a Rwandan shop is paid from a
+    // Rwandan number, through a network that works there.
+    const country = await this.countries.ofLocation(appointment.locationId);
+    if (!this.countries.isMobileIn(country, phoneNumber)) {
+      throw new BadRequestException(
+        `Pay with a mobile money number in ${country.name}, like ${country.phoneExample}. You have not been charged.`,
+      );
+    }
+    if (chosenProvider && !country.networks.includes(chosenProvider)) {
+      throw new BadRequestException(`${chosenProvider} is not a mobile money network in ${country.name}. You have not been charged.`);
     }
 
     // ---- Convert the internal USD deposit into the provider's currency ----
@@ -897,10 +908,10 @@ export class AppointmentsService {
     // `require` throws a 503 naming what IS accepted if the chosen operator is
     // not available here — better than silently collecting on another network,
     // which charges the wrong SIM and fails in a way nobody can explain.
-    const chosen = chosenProvider ?? inferOperator(phoneNumber);
+    const chosen = chosenProvider ?? this.countries.inferNetwork(country, phoneNumber);
     const provider = chosen
-      ? this.payments.require(chosen)
-      : this.payments.requireOnlyOne();
+      ? this.payments.require(chosen, country)
+      : this.payments.requireOnlyOne(country);
 
     const result = await provider.initiatePayment({
       phoneNumber,
@@ -1016,6 +1027,7 @@ export class AppointmentsService {
         paymentProviderReferenceId: true,
         paymentProvider: true,
         paymentInitiatedAt: true,
+        locationId: true,
       },
     });
 
@@ -1045,6 +1057,7 @@ export class AppointmentsService {
     const { result, applied } = await this.askOperator(appointmentId, {
       paymentProviderReferenceId: full.paymentProviderReferenceId,
       paymentProvider: full.paymentProvider,
+      locationId: full.locationId,
     });
 
     return {
@@ -1063,12 +1076,12 @@ export class AppointmentsService {
    */
   private async askOperator(
     appointmentId: string,
-    full: { paymentProviderReferenceId: string; paymentProvider: MobileMoneyProvider | null },
+    full: { paymentProviderReferenceId: string; paymentProvider: MobileMoneyProvider | null; locationId: string },
   ) {
     // The operator that ISSUED this reference, not whichever is configured now.
     // Asking the wrong one returns "no such transaction", which reads exactly
     // like a genuine failure and would cancel a paid booking (§57.2).
-    const result = await this.providerFor(full).checkPaymentStatus(full.paymentProviderReferenceId);
+    const result = await (await this.providerFor(full)).checkPaymentStatus(full.paymentProviderReferenceId);
     const applied = await this.applyPaymentResult(
       appointmentId,
       full.paymentProviderReferenceId,
@@ -1956,9 +1969,8 @@ export class AppointmentsService {
 
   // ---------- Support, on someone's behalf (§297) ----------
 
-  /** "Tuesday 20 October at 11:15", as the shop and the customer know the time. */
-  private spokenTime(at: Date, l: Locale = DEFAULT_LOCALE) {
-    const zone = process.env.PLATFORM_TIMEZONE ?? 'Africa/Kigali';
+  /** "Tuesday 20 October at 11:15", as the shop and the customer know the time: on the shop's clock (§315). */
+  private spokenTime(at: Date, l: Locale, zone: string) {
     const day = formatDateIn(l, at, { timeZone: zone, weekday: 'long', day: 'numeric', month: 'long' }).replace(',', '');
     const time = new Intl.DateTimeFormat(DATE_TAGS[l], { timeZone: zone, hour: '2-digit', minute: '2-digit' }).format(at);
     return say(l, '{day} at {time}', { day, time });
@@ -1980,12 +1992,14 @@ export class AppointmentsService {
         cancelledBy: true,
         paymentProviderReferenceId: true,
         paymentProvider: true,
+        locationId: true,
         service: { select: { name: true } },
-        location: { select: { businessId: true, business: { select: { name: true } } } },
+        location: { select: { businessId: true, business: { select: { name: true, countryCode: true } } } },
       },
     });
     if (!appointment) throw new NotFoundException('Appointment not found.');
-    return appointment;
+    // The shop's clock (§315), for saying the booking's time to either side.
+    return { ...appointment, timeZone: await this.countries.zoneOf(appointment.location.business.countryCode) };
   }
 
   /**
@@ -2060,7 +2074,7 @@ export class AppointmentsService {
           body: say(
             l,
             'We checked the customer in for {serviceName} on {when}, because it could not be done in the app. Mark it done when the service is finished, as usual.',
-            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l) },
+            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l, appointment.timeZone) },
           ),
         }),
         customer: (l) => ({
@@ -2169,7 +2183,7 @@ export class AppointmentsService {
           body: say(
             l,
             'We marked {serviceName} on {when} as done, because it could not be done in the app. Your share of the deposit is paid to you as usual.',
-            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l) },
+            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l, appointment.timeZone) },
           ),
         }),
       },
@@ -2247,7 +2261,7 @@ export class AppointmentsService {
           body: say(
             l,
             '{serviceName} on {when} was marked as missed, but the customer came. It now counts as done. Nothing changes in your money.',
-            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l) },
+            { serviceName: appointment.service.name, when: this.spokenTime(appointment.startTime, l, appointment.timeZone) },
           ),
         }),
       },
@@ -2370,6 +2384,7 @@ export class AppointmentsService {
     const { result, applied } = await this.askOperator(appointmentId, {
       paymentProviderReferenceId: appointment.paymentProviderReferenceId,
       paymentProvider: appointment.paymentProvider,
+      locationId: appointment.locationId,
     });
     await this.support.record(actor, {
       kind: SupportActionKind.CHECK_PAYMENT,

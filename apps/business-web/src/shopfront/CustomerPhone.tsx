@@ -12,6 +12,7 @@ import { Trans } from '@lingui/react/macro';
 import { t } from '@lingui/core/macro';
 import { dayName, formatDate } from '../i18n/format';
 import { plural } from '@lingui/core/macro';
+import { useShopCountry } from '../lib/country';
 
 /**
  * "How customers see you" (§208): the customer app's shop page, drawn here at
@@ -117,13 +118,14 @@ export function CustomerPhone({ live, locations }: { live: LiveDetails; location
   });
   // Customers cannot see it right now — draw it from the shop's own records.
   const hidden = shop.isError;
+  const country = useShopCountry();
   const services = useQuery({ queryKey: ['services'], queryFn: listServices, enabled: hidden });
   const gallery = useQuery({ queryKey: ['gallery', id], queryFn: () => getGallery(id!), enabled: hidden && Boolean(id) });
 
   const s: Shopfront | null = shop.data
     ? shop.data
     : hidden && branch
-      ? fromOwnRecords(branch, services.data ?? [], gallery.data?.photos ?? [])
+      ? fromOwnRecords(branch, services.data ?? [], gallery.data?.photos ?? [], country?.timeZone ?? null)
       : null;
 
   return (
@@ -523,6 +525,8 @@ function fromOwnRecords(
   branch: Location,
   services: Service[],
   photos: Array<{ id: string; url: string; status: string; displayOrder: number }>,
+  /** The shop's clock (§315), as the customer app is told it. */
+  timeZone: string | null,
 ): Shopfront {
   const ymd = new Date().toISOString().slice(0, 10);
   // Cheapest first by the branch's list price, as the server orders them.
@@ -566,8 +570,18 @@ function fromOwnRecords(
     });
 
   const now = new Date();
-  const hours = branch.hours.find((h) => h.dayOfWeek === now.getDay());
-  const hhmm = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  // "Open now" on the shop's own clock (§315), not this computer's.
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    ...(timeZone ? { timeZone } : {}),
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(now);
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(part('weekday'));
+  const hours = branch.hours.find((h) => h.dayOfWeek === weekday);
+  const hhmm = `${part('hour')}:${part('minute')}`;
 
   return {
     id: branch.id,
@@ -590,7 +604,7 @@ function fromOwnRecords(
       .sort((a, b) => a.displayOrder - b.displayOrder)
       .map((p) => ({ id: p.id, url: p.url, type: 'PHOTO' as const, displayOrder: p.displayOrder })),
     openNow: Boolean(hours && !hours.isClosed && hhmm >= hours.openTime && hhmm < hours.closeTime),
-    timeZone: 'Africa/Kigali',
+    timeZone: timeZone ?? '',
   };
 }
 

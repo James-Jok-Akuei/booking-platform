@@ -256,6 +256,14 @@ export class BusinessModerationService {
             'Listed without that, no customer could book it — ask the business to finish setting up.',
         );
       }
+      // Its country must be switched on (§315): approved there, no customer could find it.
+      const country = await this.prisma.country.findUniqueOrThrow({ where: { code: shop.countryCode }, select: { name: true, isLive: true } });
+      if (!country.isLive) {
+        throw new BadRequestException(
+          `This business is in ${country.name}, which is not switched on yet, so it cannot be approved. ` +
+            'Switch the country on under Countries first.',
+        );
+      }
     }
 
     if (rule.requiresReason && !reason?.trim()) {

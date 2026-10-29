@@ -4,6 +4,7 @@ import { BusinessModerationService } from '../src/business/business-moderation.s
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import { asUser, createAdmin, createBusiness } from './setup/factories';
+import { DocumentsService } from '../src/business/documents.service';
 
 /**
  * The approval desk (§244): finding a business by a word, and the detail a
@@ -16,7 +17,7 @@ describe('The approval desk (§244)', () => {
   let admin: ReturnType<typeof asUser>;
 
   beforeAll(async () => {
-    moduleRef = await createTestModule([BusinessModerationService, commonStubs.notifications()]);
+    moduleRef = await createTestModule([BusinessModerationService, DocumentsService, commonStubs.notifications()]);
     prisma = moduleRef.get(PrismaService);
     moderation = moduleRef.get(BusinessModerationService);
     await resetDatabase(prisma);

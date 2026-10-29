@@ -6,7 +6,8 @@ import { TestingModule } from '@nestjs/testing';
 import { BusinessDocumentKind as K, BusinessDocumentStatus as S, BusinessStatus, NotificationType } from '@prisma/client';
 import { BusinessAccessService } from '../src/business/business-access.service';
 import { DocumentsService } from '../src/business/documents.service';
-import { PAPER_RULES, isRegistered, requiredPapers } from '../src/business/document-rules';
+import { isRegistered, requiredPapers } from '../src/business/document-rules';
+import { RWANDA } from '../src/countries/packs/rwanda';
 import { canSubmit, goLiveGaps, readinessItems, READINESS_SELECT } from '../src/business/readiness';
 import { DiscoveryService } from '../src/discovery/discovery.service';
 import { FavouritesService } from '../src/favourites/favourites.service';
@@ -48,6 +49,7 @@ describe('Business papers (§314)', () => {
       TodayService,
       WeatherService,
       RatesService,
+      DocumentsService,
       commonStubs.notifications(),
     ]);
     prisma = moduleRef.get(PrismaService);
@@ -99,14 +101,14 @@ describe('Business papers (§314)', () => {
   describe('the rules', () => {
     it('name only categories and types the seed has', () => {
       expect(Object.keys(seeded)).toHaveLength(16);
-      for (const entry of PAPER_RULES) {
+      for (const entry of RWANDA.papers.rules) {
         expect(seeded[entry.category]).toBeDefined();
         for (const type of entry.types ?? []) expect(seeded[entry.category]).toContain(type);
       }
     });
 
     it('ask a licence of a clinic, a tour operator and a lawyer — nothing of a barber', () => {
-      const of = (category: string, subcategory: string) => requiredPapers([{ category: { name: category }, subcategory: { name: subcategory } }]);
+      const of = (category: string, subcategory: string) => requiredPapers('RW', [{ category: { name: category }, subcategory: { name: subcategory } }]);
       expect(of('Health & Medical', 'Dental').map((r) => r.key)).toEqual(['health']);
       expect(of('Tours & Experiences', 'City & Cultural Tours').map((r) => r.key)).toEqual(['tourism']);
       expect(of('Services', 'Legal Consultation').map((r) => r.key)).toEqual(['legal']);
@@ -114,7 +116,7 @@ describe('Business papers (§314)', () => {
       expect(of('Wellness', 'Meditation & Yoga')).toEqual([]);
       // Two kinds under the same rule: asked once.
       expect(
-        requiredPapers([
+        requiredPapers('RW', [
           { category: { name: 'Health & Medical' }, subcategory: { name: 'Dental' } },
           { category: { name: 'Wellness' }, subcategory: { name: 'Physiotherapy & Rehab' } },
         ]).map((r) => r.key),
@@ -244,7 +246,7 @@ describe('Business papers (§314)', () => {
       // Run out: the mark goes.
       await prisma.businessDocument.update({ where: { id: cert.id }, data: { expiresAt: new Date(Date.now() - DAY) } });
       expect((await discovery.findOne(shop.locationId)).business.registeredBusiness).toBe(false);
-      expect(isRegistered([{ kind: K.TRADING_LICENCE, status: S.REFUSED, expiresAt: null }])).toBe(false);
+      expect(isRegistered('RW', [{ kind: K.TRADING_LICENCE, status: S.REFUSED, expiresAt: null }])).toBe(false);
     });
   });
 

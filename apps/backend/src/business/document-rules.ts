@@ -1,4 +1,5 @@
 import { BusinessDocumentKind as K, BusinessDocumentStatus as S } from '@prisma/client';
+import { allPacks, packFor } from '../countries/packs';
 import { msg } from '../i18n/say';
 
 /**
@@ -8,9 +9,12 @@ import { msg } from '../i18n/say';
  *
  * Only licensed trades are blocked: a clinic, a lab, a tour operator, a
  * lawyer. A barber or a car wash may list without any paper, and earns the
- * mark by uploading its registration. Keyed by the category and type NAMES
- * the seed uses (§266), like the ready-made questions; a test keeps them in
- * step.
+ * mark by uploading its registration.
+ *
+ * The rules themselves are the shop's COUNTRY's (§315) — which trades need a
+ * licence, and which papers prove registration, are a country's law — so they
+ * live in its pack (`src/countries/packs/`). Everything here takes the shop's
+ * country and asks it.
  */
 
 /** Each kind of paper, as our team and the emails name it. */
@@ -26,41 +30,33 @@ export const KIND_WORDS: Record<K, string> = {
   OTHER: msg('Another paper'),
 };
 
-/** The papers that earn "Registered business" once checked (§314). */
-export const REGISTRATION_KINDS: K[] = [K.RDB_CERTIFICATE, K.TIN_CERTIFICATE, K.TRADING_LICENCE];
-
 /** What a licensed trade must hold: at least ONE of `kinds`, checked by our team. */
 export interface PaperRule {
   key: 'health' | 'veterinary' | 'tourism' | 'legal';
   kinds: K[];
 }
 
-const HEALTH: PaperRule = { key: 'health', kinds: [K.HEALTH_FACILITY_LICENCE, K.PROFESSIONAL_LICENCE] };
-const VETERINARY: PaperRule = { key: 'veterinary', kinds: [K.PROFESSIONAL_LICENCE, K.HEALTH_FACILITY_LICENCE] };
-const TOURISM: PaperRule = { key: 'tourism', kinds: [K.TOURISM_LICENCE] };
-const LEGAL: PaperRule = { key: 'legal', kinds: [K.BAR_MEMBERSHIP] };
+/** The papers that earn "Registered business" in a country once checked (§314). */
+export const registrationKinds = (countryCode: string): readonly K[] => packFor(countryCode)?.papers.registration ?? [];
 
-/** Which kinds of shop need which paper. No `types`: every type of the category. */
-export const PAPER_RULES: Array<{ category: string; types?: string[]; rule: PaperRule }> = [
-  { category: 'Health & Medical', rule: HEALTH },
-  {
-    category: 'Wellness',
-    types: ['Acupuncture', 'Diet & Nutrition', 'Chiropractic', 'Therapy', 'Physiotherapy & Rehab'],
-    rule: HEALTH,
-  },
-  { category: 'Pet Services', types: ['Veterinary Clinic'], rule: VETERINARY },
-  { category: 'Tours & Experiences', rule: TOURISM },
-  { category: 'Hotels & Stays', types: ['Hotel Rooms', 'Guesthouses & Lodges', 'Apartments & Short Stays'], rule: TOURISM },
-  { category: 'Services', types: ['Legal Consultation'], rule: LEGAL },
-];
+/**
+ * Every country's registration papers together, for a query across shops.
+ * Safe as one list because a shop can only upload its own country's papers
+ * (`paperKinds`), so an RDB certificate is only ever a Rwandan shop's.
+ */
+export const ALL_REGISTRATION_KINDS: K[] = [...new Set(allPacks().flatMap((p) => p.papers.registration))];
+
+/** Every paper a shop in this country may upload. */
+export const paperKinds = (countryCode: string): readonly K[] => packFor(countryCode)?.papers.kinds ?? [];
 
 export type ShopKindNames = { category: { name: string }; subcategory: { name: string } };
 
-/** The rules a shop falls under, by its kinds — each once. */
-export function requiredPapers(kinds: ShopKindNames[]): PaperRule[] {
+/** The rules a shop in `countryCode` falls under, by its kinds — each once. */
+export function requiredPapers(countryCode: string, kinds: ShopKindNames[]): PaperRule[] {
+  const rules = packFor(countryCode)?.papers.rules ?? [];
   const out = new Map<PaperRule['key'], PaperRule>();
   for (const kind of kinds) {
-    for (const entry of PAPER_RULES) {
+    for (const entry of rules) {
       if (entry.category !== kind.category.name) continue;
       if (entry.types && !entry.types.includes(kind.subcategory.name)) continue;
       out.set(entry.rule.key, entry.rule);
@@ -92,13 +88,13 @@ export function ruleState(rule: PaperRule, docs: PaperLike[], now = new Date()):
   return 'missing';
 }
 
-/** "Registered business": a registration paper our team checked, still standing. */
-export const isRegistered = (docs: PaperLike[], now = new Date()) =>
-  docs.some((d) => REGISTRATION_KINDS.includes(d.kind) && isChecked(d, now));
+/** "Registered business": a registration paper of the shop's country our team checked, still standing. */
+export const isRegistered = (countryCode: string, docs: PaperLike[], now = new Date()) =>
+  docs.some((d) => registrationKinds(countryCode).includes(d.kind) && isChecked(d, now));
 
 /** A registration paper uploaded, checked or not — what the shop's own checklist ticks. */
-export const hasRegistration = (docs: PaperLike[], now = new Date()) =>
-  docs.some((d) => REGISTRATION_KINDS.includes(d.kind) && inHand(d, now));
+export const hasRegistration = (countryCode: string, docs: PaperLike[], now = new Date()) =>
+  docs.some((d) => registrationKinds(countryCode).includes(d.kind) && inHand(d, now));
 
 /** How long before a paper runs out that the shop is reminded (§314). */
 export const EXPIRY_WARNING_DAYS = 30;

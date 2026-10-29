@@ -837,3 +837,14 @@ export const refuseDocument = (businessId: string, id: string, reason: string) =
 /** The paper itself, in a new tab — fetched with the sign-in, since no link reaches it. */
 export const openBusinessDocument = (businessId: string, doc: Pick<AdminDocument, 'id' | 'fileName'>) =>
   openFile(`/admin/businesses/${businessId}/documents/${doc.id}/file`, doc.fileName);
+
+// ---------------------------------------------------------------------------
+// Countries (§315): where the platform runs, each with its own settings
+
+export type AdminCountry = components['schemas']['AdminCountryDto'];
+
+export const listAdminCountries = () => api<AdminCountry[]>('/admin/countries');
+
+/** A country's own fee (null takes the platform's), or switching it on or off. */
+export const updateCountry = (code: string, body: { platformFeePercentage?: number | null; isLive?: boolean }) =>
+  api<AdminCountry>(`/admin/countries/${code}`, { method: 'PATCH', body });

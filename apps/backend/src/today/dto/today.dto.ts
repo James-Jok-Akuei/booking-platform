@@ -12,11 +12,11 @@ export class TodayBranchDto {
 }
 
 export class TodayRateDto {
-  /** USD, EUR, KES or UGX. */
+  /** USD, EUR, KES, UGX or RWF — never the country's own. */
   code!: string;
-  /** Francs for one. */
-  rwf!: number;
-  /** Since the previous day's figure, in francs; null on the first day. */
+  /** How much of the shop's money one buys (§315): francs, in Rwanda. */
+  local!: number;
+  /** Since the previous day's figure, in the shop's money; null on the first day. */
   change!: number | null;
 }
 
@@ -54,7 +54,8 @@ export class TodayItemDto {
   /** tax: vat-paye (the 15th) · licence (31 January) · annual (31 March). */
   tax?: string;
 
-  /** rates: francs for one dollar, euro, Kenyan and Ugandan shilling, and where they come from. */
+  /** rates: the shop's money for one dollar, euro and the neighbours' monies (§315), and where they come from. */
+  currency?: string;
   rates?: TodayRateDto[];
   source?: string;
   sourceUrl?: string;
@@ -79,7 +80,7 @@ export class PublicTodayDto {
   calm!: boolean;
   /** ok · slow · down */
   momo!: string;
-  /** The day asked about ("YYYY-MM-DD", Kigali). */
+  /** The day asked about ("YYYY-MM-DD", on the country's clock). */
   date!: string;
   /** That day is Umuganda: shops open from 11:00. */
   umuganda!: boolean;

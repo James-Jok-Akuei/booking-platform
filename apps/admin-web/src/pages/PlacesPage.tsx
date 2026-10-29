@@ -7,6 +7,7 @@ import { confirmDialog } from '../ui/Dialog';
 import { Icon } from '../ui/Icon';
 import { RwandaFlag } from '../ui/RwandaFlag';
 import './taxonomy.css';
+import { useCountries } from '../lib/countries';
 
 const branches = (n: number) => `${n} ${n === 1 ? 'branch' : 'branches'}`;
 
@@ -24,12 +25,13 @@ const branches = (n: number) => `${n} ${n === 1 ? 'branch' : 'branches'}`;
 export function PlacesPage() {
   const queryClient = useQueryClient();
   const places = useQuery({ queryKey: ['admin-places'], queryFn: listAdminPlaces });
+  const countries = useCountries();
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ['admin-places'] });
 
-  const provinces = places.data ?? [];
-  const all = provinces.flatMap((p) => p.districts);
-  const open = all.filter((d) => d.isLive);
-  const listed = all.reduce((sum, d) => sum + d.branchCount, 0);
+  // Each country's places together (§315), the default country first.
+  const codes = [...new Set((places.data ?? []).map((p) => p.countryCode))].sort(
+    (a, b) => Number(countries.find((c) => c.code === b)?.isDefault ?? false) - Number(countries.find((c) => c.code === a)?.isDefault ?? false),
+  );
 
   return (
     <section className="tx">
@@ -42,12 +44,41 @@ export function PlacesPage() {
         </header>
       </div>
 
-      {places.data && (
+      {places.isLoading && (
+        <div className="pl-list">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="skeleton tx-skel" />
+          ))}
+        </div>
+      )}
+
+      {codes.map((code) => (
+        <CountryPlaces
+          key={code}
+          code={code}
+          name={countries.find((c) => c.code === code)?.name ?? code}
+          provinces={(places.data ?? []).filter((p) => p.countryCode === code)}
+          onChanged={refresh}
+        />
+      ))}
+    </section>
+  );
+}
+
+/** One country's provinces and districts (§315), under a summary of where it is open. */
+function CountryPlaces({ code, name, provinces, onChanged }: { code: string; name: string; provinces: AdminProvince[]; onChanged: () => void }) {
+  const all = provinces.flatMap((p) => p.districts);
+  const open = all.filter((d) => d.isLive);
+  const listed = all.reduce((sum, d) => sum + d.branchCount, 0);
+
+  return (
+    <>
+      {provinces.length > 0 && (
         <div className="pl-hero">
-          <RwandaFlag width={44} />
+          {code === 'RW' ? <RwandaFlag width={44} /> : <Icon name="globe" size={30} />}
           <div>
             <strong>
-              Open in {open.length} of {all.length} districts
+              {name}: open in {open.length} of {all.length} districts
             </strong>
             <span>
               {provinces.filter((p) => p.districts.some((d) => d.isLive)).length} of {provinces.length} provinces · {branches(listed)} listed
@@ -67,20 +98,12 @@ export function PlacesPage() {
         </div>
       )}
 
-      {places.isLoading && (
-        <div className="pl-list">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton tx-skel" />
-          ))}
-        </div>
-      )}
-
       <div className="pl-list">
         {provinces.map((province, i) => (
-          <Province key={province.id} province={province} index={i} onChanged={refresh} />
+          <Province key={province.id} province={province} index={i} onChanged={onChanged} />
         ))}
       </div>
-    </section>
+    </>
   );
 }
 

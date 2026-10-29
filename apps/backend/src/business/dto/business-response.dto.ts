@@ -1,4 +1,4 @@
-import { BusinessStatus, Prisma } from '@prisma/client';
+import { BusinessStatus, MobileMoneyProvider, Prisma } from '@prisma/client';
 import { KINDS_SELECT } from '../kinds';
 import { NoExtraFields, Serialised } from '../../common/serialised';
 import { CHOICE_GROUPS_SELECT, ServiceChoiceGroupDto } from './service-choices.dto';
@@ -216,6 +216,10 @@ export const PROFILE_SELECT = {
   subcategory: { select: { id: true, name: true } },
   // Every kind it is (§265), the main one first.
   kinds: KINDS_SELECT,
+  // Its country (§315): the clock, money, phone numbers and networks its app speaks of.
+  country: {
+    select: { code: true, name: true, callingCode: true, currency: true, timeZone: true, locales: true, networks: true, phoneExample: true },
+  },
 } as const;
 
 type ProfilePayload = Serialised<
@@ -231,6 +235,24 @@ export class BusinessCategoryDto {
 export class BusinessSubcategoryDto {
   id!: string;
   name!: string;
+}
+
+/** The country a shop is in (§315), as its own app needs it. */
+export class ShopCountryDto {
+  /** ISO 3166-1 alpha-2: "RW". */
+  code!: string;
+  name!: string;
+  /** Digits only: "250". */
+  callingCode!: string;
+  /** ISO 4217: "RWF". */
+  currency!: string;
+  /** IANA zone: "Africa/Kigali" — the shop's clock. */
+  timeZone!: string;
+  /** The app languages offered there, the usual one first. */
+  locales!: string[];
+  networks!: MobileMoneyProvider[];
+  /** A mobile number as people there write it: "+250 788 123 456". */
+  phoneExample!: string;
 }
 
 /** One kind of place the business is: a type, and the category it is in (§265). */
@@ -278,6 +300,8 @@ export class BusinessProfileDto implements ProfilePayload {
   subcategory!: BusinessSubcategoryDto | null;
   /** Every kind of place it is, the main one first (§265). */
   kinds!: BusinessKindDto[];
+  /** The country it is in (§315). */
+  country!: ShopCountryDto;
 }
 
 /**

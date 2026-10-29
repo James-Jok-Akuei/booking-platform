@@ -19,20 +19,23 @@ export class WeatherService {
   private readonly logger = new Logger(WeatherService.name);
   private readonly cache = new Map<string, { at: number; hours: Array<{ time: string; mm: number; chance: number }> }>();
 
-  /** The first hour of heavy rain still to come today near (lat, lng), or null. */
-  async rainAhead(lat: number, lng: number, now = new Date()): Promise<RainAhead | null> {
+  /**
+   * The first hour of heavy rain still to come today near (lat, lng), or null.
+   * `timeZone` is the shop's country's clock (§315): "today" and the hour are its.
+   */
+  async rainAhead(lat: number, lng: number, timeZone: string, now = new Date()): Promise<RainAhead | null> {
     // Not from tests or a machine told to keep to itself.
     if (process.env.NODE_ENV === 'test' || process.env.TODAY_FEEDS === 'off') return null;
-    const key = `${lat.toFixed(2)},${lng.toFixed(2)}`;
+    const key = `${lat.toFixed(2)},${lng.toFixed(2)},${timeZone}`;
     let hours = this.cache.get(key);
     if (!hours || now.getTime() - hours.at > 3_600_000) {
-      const fetched = await this.fetch(lat, lng);
+      const fetched = await this.fetch(lat, lng, timeZone);
       if (!fetched) return null;
       hours = { at: now.getTime(), hours: fetched };
       this.cache.set(key, hours);
     }
     const local = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Africa/Kigali',
+      timeZone,
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -50,11 +53,12 @@ export class WeatherService {
     return ahead ? { from: ahead.time.slice(11, 16), mm: ahead.mm, chance: ahead.chance } : null;
   }
 
-  private async fetch(lat: number, lng: number) {
+  private async fetch(lat: number, lng: number, timeZone: string) {
+    // The forecast's hours on the shop's clock, so they compare with "now" there.
     const url =
       'https://api.open-meteo.com/v1/forecast' +
       `?latitude=${lat.toFixed(2)}&longitude=${lng.toFixed(2)}` +
-      '&hourly=precipitation,precipitation_probability&forecast_days=1&timezone=Africa%2FKigali';
+      `&hourly=precipitation,precipitation_probability&forecast_days=1&timezone=${encodeURIComponent(timeZone)}`;
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(4000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -1,13 +1,14 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PaymentProviderRegistry } from './payment-provider.registry';
-import { inferOperator } from './operator-routing';
 import { INTERNAL_CURRENCY, minorUnitExponent } from './currency';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiQuery } from '@nestjs/swagger';
 import { ApiErrors } from '../common/decorators/api-errors.decorator';
 import {
   CurrencyDto,
   PaymentProvidersDto,
 } from './dto/payment-response.dto';
+import { CountriesService } from '../countries/countries.service';
+import { RequestedCountry } from '../countries/requested-country.decorator';
 
 /**
  * Which mobile money operators this platform can collect through (§58.2).
@@ -27,7 +28,10 @@ import {
 @Controller('payments')
 @ApiErrors({ validation: true })
 export class PaymentsController {
-  constructor(private readonly registry: PaymentProviderRegistry) {}
+  constructor(
+    private readonly registry: PaymentProviderRegistry,
+    private readonly countries: CountriesService,
+  ) {}
 
   /**
    * How to render money, so no client has to guess (§70.1).
@@ -60,12 +64,15 @@ export class PaymentsController {
 
   @Get('providers')
   @ApiOkResponse({ type: PaymentProvidersDto })
-  providers(@Query('phoneNumber') phoneNumber?: string) {
-    const available = this.registry.available();
+  @ApiQuery({ name: 'country', required: false, description: 'An ISO country code (§315), or the X-Country header; the default country when not given.' })
+  async providers(@Query('phoneNumber') phoneNumber: string | undefined, @RequestedCountry() requested: string | undefined) {
+    // The networks of the country asked about (§315) that the platform can reach.
+    const country = await this.countries.resolve(requested);
+    const available = this.registry.available(country).filter((p) => country.networks.includes(p));
 
     // Only suggest something the platform can actually act on. Pre-selecting an
     // operator that is not available would put the customer one tap from a 503.
-    const inferred = phoneNumber ? inferOperator(phoneNumber) : null;
+    const inferred = phoneNumber ? this.countries.inferNetwork(country, phoneNumber) : null;
     const suggested = inferred && available.includes(inferred) ? inferred : null;
 
     return {

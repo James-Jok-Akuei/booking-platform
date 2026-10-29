@@ -33,6 +33,7 @@ import {
   createCustomer,
   futureSlot,
 } from './setup/factories';
+import { DocumentsService } from '../src/business/documents.service';
 
 const DAY = 86_400_000;
 const ALL_STATUSES = Object.values(BusinessStatus);
@@ -61,6 +62,7 @@ describe('Business approval (§42)', () => {
   beforeAll(async () => {
     moduleRef = await createTestModule([
       BusinessModerationService,
+      DocumentsService,
       AppointmentsService,
       AvailabilityService,
       ReviewsService,
@@ -608,7 +610,7 @@ describe('Business approval (§42)', () => {
   describe('a nameless business cannot be approved (§53.1)', () => {
     const nameless = async (status: BusinessStatus = BusinessStatus.PENDING) => {
       const business = await prisma.businessProfile.create({
-        data: { name: null, status },
+        data: { name: null, status, countryCode: 'RW' },
       });
       return business.id;
     };
@@ -624,7 +626,7 @@ describe('Business approval (§42)', () => {
 
     it('refuses a name that is only whitespace', async () => {
       const business = await prisma.businessProfile.create({
-        data: { name: '   ', status: BusinessStatus.PENDING },
+        data: { name: '   ', status: BusinessStatus.PENDING, countryCode: 'RW' },
       });
 
       await expect(

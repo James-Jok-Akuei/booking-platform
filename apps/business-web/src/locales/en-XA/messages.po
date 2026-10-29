@@ -17,7 +17,7 @@ msgid " · {0} people"
 msgstr " · {0} peoplezeshya"
 
 #. placeholder {0}: questions.length
-#: src/onboarding/Welcome.tsx:356
+#: src/onboarding/Welcome.tsx:359
 msgid " · {n} of {0}"
 msgstr " · {n} of {0}"
 
@@ -149,7 +149,7 @@ msgid "{0, plural, one {{names} is asked only after an answer here.} other {{nam
 msgstr "{0, plural, one {{names} is askedshya onlynya afteriki an answershya herenya.} other {{names} areiki askedshya onlynya afteriki an answershya herenya.}}"
 
 #. placeholder {0}: b.onTheWayCount
-#: src/pages/PayoutsPage.tsx:152
+#: src/pages/PayoutsPage.tsx:147
 msgid "{0, plural, one {{onTheWay} of it is on its way to you, in # payment.} other {{onTheWay} of it is on its way to you, in # payments.}}"
 msgstr "{0, plural, one {{onTheWay} of it is on itsrwa wayndi to youugu, in # paymentikiugu.} other {{onTheWay} of it is on itsrwa wayndi to youugu, in # paymentszemwa.}}"
 
@@ -184,12 +184,12 @@ msgid "{0, plural, one {# file isn’t {words}, so it was left out.} other {# fi
 msgstr "{0, plural, one {# filenya isnikimbi’t {words}, so it wasmwa leftndishya outshya.} other {# filesaba arenikizerwa’t {words}, so theynya wereugu leftndishya outshya.}}"
 
 #. placeholder {0}: b.onTheWayCount
-#: src/pages/PayoutsPage.tsx:233
+#: src/pages/PayoutsPage.tsx:228
 msgid "{0, plural, one {# payment being sent to you.} other {# payments being sent to you.}}"
 msgstr "{0, plural, one {# paymentikiugu beingaba sentho to youugu.} other {# paymentszemwa beingaba sentho to youugu.}}"
 
 #. placeholder {0}: b.payoutCount
-#: src/pages/PayoutsPage.tsx:243
+#: src/pages/PayoutsPage.tsx:238
 msgid "{0, plural, one {# payment.} other {# payments.}}"
 msgstr "{0, plural, one {# paymentikiugu.} other {# paymentszemwa.}}"
 
@@ -219,7 +219,7 @@ msgid "{0, plural, one {# thing customers notice} other {# things customers noti
 msgstr "{0, plural, one {# thinghoikiho customersmwako noticekonyazembi} other {# thingsabanya customersmwako noticekonyazembi}}"
 
 #. placeholder {0}: missing.length
-#: src/onboarding/Welcome.tsx:1686
+#: src/onboarding/Welcome.tsx:1691
 msgid "{0, plural, one {# thing is still needed before we can review your shop.} other {# things are still needed before we can review your shop.}}"
 msgstr "{0, plural, one {# thinghoikiho is stillkomwa neededabarwa beforembiho we caniki reviewikimbiiki yourmbihoiki shopko.} other {# thingsabanya areiki stillkomwa neededabarwa beforembiho we caniki reviewikimbiiki yourmbihoiki shopko.}}"
 
@@ -244,12 +244,12 @@ msgid "{0, plural, one {A description on # service} other {A description on # se
 msgstr "{0, plural, one {A descriptionrwaabaiki on # serviceuguaba} other {A descriptionrwaabaiki on # servicesrwaho}}"
 
 #. placeholder {0}: b.onTheWayCount
-#: src/pages/PayoutsPage.tsx:148
+#: src/pages/PayoutsPage.tsx:143
 msgid "{0, plural, one {All of it is on its way to you, in # payment.} other {All of it is on its way to you, in # payments.}}"
 msgstr "{0, plural, one {Allugu of it is on itsrwa wayndi to youugu, in # paymentikiugu.} other {Allugu of it is on itsrwa wayndi to youugu, in # paymentszemwa.}}"
 
 #. placeholder {0}: b.holdDays
-#: src/pages/PayoutsPage.tsx:215
+#: src/pages/PayoutsPage.tsx:210
 msgid "{0, plural, one {Earned, waiting # day after the visit.} other {Earned, waiting # days after the visit.}}"
 msgstr "{0, plural, one {Earnedmwaho, waitingabaugukombi # dayko afteriki theugumbi visitugu.} other {Earnedmwaho, waitingabaugukombi # daysmbi afteriki theugumbi visitugu.}}"
 
@@ -289,7 +289,7 @@ msgid "{0, plural, one {Saved, but # photo change did not go through: {why}. Ope
 msgstr "{0, plural, one {Savedugu, butndiho # photonya changekonya didmwa notmwa go throughmbimwa: {why}. Openrwa Editrwa on theugumbi serviceuguaba to trymbi againshyakoshya.} other {Savedugu, butndiho # photonya changesmwaiki didmwa notmwa go throughmbimwa: {why}. Openrwa Editrwa on theugumbi serviceuguaba to trymbi againshyakoshya.}}"
 
 #. placeholder {0}: open.length
-#: src/ads/todaySlides.ts:112
+#: src/ads/todaySlides.ts:115
 msgid "{0, plural, one {Shops close 08:00–11:00, but # of your branches is open for bookings then.} other {Shops close 08:00–11:00, but # of your branches are open for bookings then.}}"
 msgstr "{0, plural, one {Shopsmbihondi closenya 08:00–11:00, butndiho # of yourmbihoiki brancheskombihohondi is openrwa forabaze bookingskomwa thenmwa.} other {Shopsmbihondi closenya 08:00–11:00, butndiho # of yourmbihoiki brancheskombihohondi areiki openrwa forabaze bookingskomwa thenmwa.}}"
 
@@ -304,7 +304,7 @@ msgid "{0, plural, one {With MTN for # day} other {With MTN for # days}}"
 msgstr "{0, plural, one {Withrwa MTNmwandi forabaze # dayko} other {Withrwa MTNmwandi forabaze # daysmbi}}"
 
 #. placeholder {0}: offered.length
-#: src/onboarding/Welcome.tsx:1168
+#: src/onboarding/Welcome.tsx:1173
 msgid "{0, plural, one {You have # service ready to book.} other {You have # services ready to book.}}"
 msgstr "{0, plural, one {Youaba havenyanya # serviceuguaba readyaba to bookugundi.} other {Youaba havenyanya # servicesrwaho readyaba to bookugundi.}}"
 
@@ -329,7 +329,7 @@ msgstr "{0} · {1} minhoho"
 #. placeholder {0}: money.format(Math.min(...first.locations.map((o) => o.priceMinor)))
 #. placeholder {1}: first.durationMinutes
 #. placeholder {2}: Number(first.depositPercentage)
-#: src/onboarding/Welcome.tsx:1173
+#: src/onboarding/Welcome.tsx:1178
 msgid "{0} · {1} min · {2}% deposit"
 msgstr "{0} · {1} minhoho · {2}% depositikinyambiiki"
 
@@ -459,7 +459,7 @@ msgid "{0} min"
 msgstr "{0} minhoho"
 
 #. placeholder {0}: NETWORK_NAME[destination.provider]
-#: src/pages/PayoutsPage.tsx:417
+#: src/pages/PayoutsPage.tsx:414
 msgid "{0} number"
 msgstr "{0} numberabarwa"
 
@@ -480,12 +480,12 @@ msgid "{0} of {PHOTO_LIMIT} · choose the cover with “Make cover”"
 msgstr "{0} of {PHOTO_LIMIT} · choosendiuguiki theugumbi coverugu withikimbi “Makeho coverugu”"
 
 #. placeholder {0}: chosen.length
-#: src/onboarding/Welcome.tsx:601
+#: src/onboarding/Welcome.tsx:604
 msgid "{0} of up to {MAX_KIND_CATEGORIES} chosen — take one off to choose another."
 msgstr "{0} of up to {MAX_KIND_CATEGORIES} chosennyaabaho — takeze onenya offmwa to choosendiuguiki anotherndimwa."
 
 #. placeholder {0}: chosen.length
-#: src/onboarding/Welcome.tsx:602
+#: src/onboarding/Welcome.tsx:605
 msgid "{0} of up to {MAX_KIND_CATEGORIES} chosen."
 msgstr "{0} of up to {MAX_KIND_CATEGORIES} chosennyaabaho."
 
@@ -548,7 +548,7 @@ msgstr "{0}, {1} at {2}, {3}. Openrwa detailsrwamwambiiki."
 
 #. placeholder {0}: money.format(payout.settlementAmountMinor)
 #. placeholder {1}: look.label
-#: src/pages/PayoutsPage.tsx:299
+#: src/pages/PayoutsPage.tsx:294
 msgid "{0}, {1}. See the bookings in it"
 msgstr "{0}, {1}. Seeabaugu theugumbi bookingskomwa in it"
 
@@ -597,15 +597,15 @@ msgstr "{change}% on theugumbi {days} daysmbi beforembiho"
 msgid "{clean}. Change the email"
 msgstr "{clean}. Changerwaaba theugumbi emailnyakomwa"
 
-#: src/ads/todaySlides.ts:159
+#: src/ads/todaySlides.ts:162
 msgid "{count, plural, one {# search near you this week} other {# searches near you this week}}"
 msgstr "{count, plural, one {# searchikiugu nearnya youugu thisrwaaba weekrwa} other {# searcheskombi nearnya youugu thisrwaaba weekrwa}}"
 
-#: src/ads/todaySlides.ts:154
+#: src/ads/todaySlides.ts:157
 msgid "{count, plural, one {# search this week in {district}, and you do not offer it yet.} other {# searches this week in {district}, and you do not offer it yet.}}"
 msgstr "{count, plural, one {# searchikiugu thisrwaaba weekrwa in {district}, andmwa youugu do notmwa offeriki it yetiki.} other {# searcheskombi thisrwaaba weekrwa in {district}, andmwa youugu do notmwa offeriki it yetiki.}}"
 
-#: src/ads/todaySlides.ts:150
+#: src/ads/todaySlides.ts:153
 msgid "{count, plural, one {# search this week in {district}, and you offer it. A discount could bring them in.} other {# searches this week in {district}, and you offer it. A discount could bring them in.}}"
 msgstr "{count, plural, one {# searchikiugu thisrwaaba weekrwa in {district}, andmwa youugu offeriki it. A discountzekomwahoiki couldmbi bringshya themnyaiki in.} other {# searcheskombi thisrwaaba weekrwa in {district}, andmwa youugu offeriki it. A discountzekomwahoiki couldmbi bringshya themnyaiki in.}}"
 
@@ -618,7 +618,7 @@ msgstr "{count} of {limit}"
 msgid "{count} on {0}"
 msgstr "{count} on {0}"
 
-#: src/onboarding/Welcome.tsx:1148
+#: src/onboarding/Welcome.tsx:1153
 msgid "{d} min"
 msgstr "{d} minhoho"
 
@@ -643,7 +643,7 @@ msgid "{done} of {total} done"
 msgstr "{done} of {total} donerwa"
 
 #. placeholder {0}: required.length
-#: src/onboarding/Welcome.tsx:197
+#: src/onboarding/Welcome.tsx:200
 msgid "{doneCount} of {0} required things done"
 msgstr "{doneCount} of {0} requiredabanya thingsabanya donerwa"
 
@@ -667,11 +667,11 @@ msgstr "{expectedToday, plural, one {# customerkoshya stillkomwa expectedkokoko 
 msgid "{expectedToday, plural, one {# customer} other {# customers}} still expected today, and {withYou} with you now."
 msgstr "{expectedToday, plural, one {# customerkoshya} other {# customersmwako}} stillkomwa expectedkokoko todaymbi, andmwa {withYou} withikimbi youugu nownya."
 
-#: src/onboarding/Welcome.tsx:1025
+#: src/onboarding/Welcome.tsx:1030
 msgid "{first} to {last}"
 msgstr "{first} to {last}"
 
-#: src/onboarding/Welcome.tsx:473
+#: src/onboarding/Welcome.tsx:476
 msgid "{firstThree} and more"
 msgstr "{firstThree} andmwa moreaba"
 
@@ -703,7 +703,7 @@ msgstr "{fromAddress} Checkshyambi it belowzenya beforembiho savinghondi."
 msgid "{fromAddress} Check the pin below is on your shop."
 msgstr "{fromAddress} Checkshyambi theugumbi pinabanya belowzenya is on yourmbihoiki shopko."
 
-#: src/shopfront/CustomerPhone.tsx:72
+#: src/shopfront/CustomerPhone.tsx:73
 msgid "{h, plural, one {# hour} other {# hours}}"
 msgstr "{h, plural, one {# hourshya} other {# hoursugu}}"
 
@@ -725,11 +725,11 @@ msgstr "{h}h {m}m leftndishya"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# hourshya} other {# hoursugu}}"
 
-#: src/onboarding/Welcome.tsx:1148
+#: src/onboarding/Welcome.tsx:1153
 msgid "{hours} h"
 msgstr "{hours} h"
 
-#: src/onboarding/Welcome.tsx:1148
+#: src/onboarding/Welcome.tsx:1153
 msgid "{hours} h {minutes}"
 msgstr "{hours} h {minutes}"
 
@@ -765,7 +765,7 @@ msgstr "{length}-digitmwa codendiugu"
 msgid "{longitude} is not a longitude — it has to be between -180 and 180."
 msgstr "{longitude} is notmwa a longitudezembi — it hasshya to be betweenshyamwazemwa -180 andmwa 180."
 
-#: src/shopfront/CustomerPhone.tsx:73
+#: src/shopfront/CustomerPhone.tsx:74
 msgid "{m, plural, one {# minute} other {# minutes}}"
 msgstr "{m, plural, one {# minutekombi} other {# minutesmbiiki}}"
 
@@ -836,6 +836,10 @@ msgstr "{noShow} no-showugu"
 msgid "{openDays, plural, one {Open # day a week} other {Open # days a week}}"
 msgstr "{openDays, plural, one {Openrwa # dayko a weekrwa} other {Openrwa # daysmbi a weekrwa}}"
 
+#: src/ads/todaySlides.ts:257
+msgid "{others}. Market rates, not a central bank's official ones."
+msgstr "{others}. Marketrwaaba ratesndi, notmwa a centralmwaiki banknyazeshya's officialndishya onesndi."
+
 #: src/pages/LegalPage.tsx:88
 msgid "{outstanding, plural, one {# document has changed since you agreed.} other {# documents have changed since you agreed.}}"
 msgstr "{outstanding, plural, one {# documentugunya hasshya changednyanya sincerwa youugu agreedrwarwa.} other {# documentsrwaze havenyanya changednyanya sincerwa youugu agreedrwarwa.}}"
@@ -873,7 +877,7 @@ msgstr "{postedToday} of {dailyLimit} storieszenya postedmwanya todaymbi"
 msgid "{postedToday} of {dailyLimit} today"
 msgstr "{postedToday} of {dailyLimit} todaymbi"
 
-#: src/shopfront/CustomerPhone.tsx:487
+#: src/shopfront/CustomerPhone.tsx:489
 msgid "{rating} out of 5"
 msgstr "{rating} outshya of 5"
 
@@ -972,7 +976,7 @@ msgstr "<0/> {0} on salemwa"
 msgid "<0/>{0}% booked"
 msgstr "<0/>{0}% bookedikiikimbi"
 
-#: src/onboarding/Welcome.tsx:1371
+#: src/onboarding/Welcome.tsx:1376
 msgid "<0/>At your shop"
 msgstr "<0/>At yourmbihoiki shopko"
 
@@ -1000,11 +1004,11 @@ msgstr "<0/>Differentzenya hoursugu"
 msgid "<0/>Free<1/>Closed<2/>Break"
 msgstr "<0/>Freehondimwa<1/>Closedkombi<2/>Breakaba"
 
-#: src/onboarding/Welcome.tsx:1367
+#: src/onboarding/Welcome.tsx:1372
 msgid "<0/>On their phone, to book"
 msgstr "<0/>On theirshya phonehoikize, to bookugundi"
 
-#: src/shopfront/CustomerPhone.tsx:251
+#: src/shopfront/CustomerPhone.tsx:253
 msgid "<0/>Open now"
 msgstr "<0/>Openrwa nownya"
 
@@ -1017,11 +1021,11 @@ msgstr "<0/>Pastiki"
 msgid "<0/>Platform fees {0}"
 msgstr "<0/>Platformzembi feesaba {0}"
 
-#: src/onboarding/Welcome.tsx:417
+#: src/onboarding/Welcome.tsx:420
 msgid "<0/>Saving…"
 msgstr "<0/>Savingnyako…"
 
-#: src/onboarding/Welcome.tsx:1729
+#: src/onboarding/Welcome.tsx:1734
 msgid "<0/>Sending…"
 msgstr "<0/>Sendingkoaba…"
 
@@ -1061,7 +1065,7 @@ msgstr "<0>{0}/{capacity}</0>placeskonya"
 msgid "<0>{0}</0> is with you now."
 msgstr "<0>{0}</0> is withikimbi youugu nownya."
 
-#: src/onboarding/Welcome.tsx:199
+#: src/onboarding/Welcome.tsx:202
 msgid "<0>{doneCount} of {total}</0> done <1>{percent}%</1>"
 msgstr "<0>{doneCount} of {total}</0> donerwa <1>{percent}%</1>"
 
@@ -1089,7 +1093,7 @@ msgstr "<0>1</0> Pickaba a dayko"
 msgid "<0>2</0> Change that day"
 msgstr "<0>2</0> Changerwaaba thatugu dayko"
 
-#: src/shopfront/CustomerPhone.tsx:172
+#: src/shopfront/CustomerPhone.tsx:174
 msgid "<0>Customers cannot see this right now</0> — your shop is not posted yet, paused, or not yet approved. This is how it will look."
 msgstr "<0>Customersmbiiki cannotmwako seeaba thisrwaaba rightrwa nownya</0> — yourmbihoiki shopko is notmwa postedmwanya yetiki, pausedhomwa, or notmwa yetiki approvedmwandi. Thisiki is howko it willrwa lookzembiugu."
 
@@ -1097,7 +1101,7 @@ msgstr "<0>Customersmbiiki cannotmwako seeaba thisrwaaba rightrwa nownya</0> —
 msgid "<0>esc</0> to close"
 msgstr "<0>escmbize</0> to closenya"
 
-#: src/onboarding/Welcome.tsx:1638
+#: src/onboarding/Welcome.tsx:1643
 msgid "<0>Meanwhile, make it shine</0>Photos, a description, more services and your team. Shops with photos get booked first."
 msgstr "<0>Meanwhilekokombi, makeho it shinendi</0>Photosabaze, a descriptionrwaabaiki, moreaba servicesrwaho andmwa yourmbihoiki teamaba. Shopsmbihondi withikimbi photosndimwa gethoze bookedikiikimbi firstkondi."
 
@@ -1105,7 +1109,7 @@ msgstr "<0>Meanwhilekokombi, makeho it shinendi</0>Photosabaze, a descriptionrwa
 msgid "<0>Please accept this before listing a service.</0> Listing one is you agreeing to trade under these terms, so it is the one thing we stop until you have read them."
 msgstr "<0>Pleasenyanya acceptikindi thisrwaaba beforembiho listingshya a serviceuguaba.</0> Listingnyaze onenya is youugu agreeingkonyaikihomwa to tradeiki underkoshyako theseaba termsndi, so it is theugumbi onenya thinghoikiho we stopko untilhoho youugu havenyanya readrwa themnyaiki."
 
-#: src/onboarding/Welcome.tsx:1610
+#: src/onboarding/Welcome.tsx:1615
 msgid "<0>We check your details</0>Usually within one working day. We may call your shop’s number."
 msgstr "<0>We checkshya yourmbihoiki detailsrwamwambiiki</0>Usuallyzekokombiugu withinzerwa onenya workinguguiki dayko. We mayzeko calliki yourmbihoiki shopko’s numberabarwa."
 
@@ -1113,11 +1117,11 @@ msgstr "<0>We checkshya yourmbihoiki detailsrwamwambiiki</0>Usuallyzekokombiugu 
 msgid "<0>You are up to date.</0> You have agreed to the latest version of everything."
 msgstr "<0>Youaba areiki up to datekoabaugu.</0> Youaba havenyanya agreedrwarwa to theugumbi latestmbiiki versionshya of everythinguguabaikiikimbi."
 
-#: src/onboarding/Welcome.tsx:1620
+#: src/onboarding/Welcome.tsx:1625
 msgid "<0>You get an email</0>At {address}, the moment you are approved."
 msgstr "<0>Youaba gethoze an emailnyakomwa</0>At {address}, theugumbi momentrwauguko youugu areiki approvedmwandi."
 
-#: src/onboarding/Welcome.tsx:1628
+#: src/onboarding/Welcome.tsx:1633
 msgid "<0>You post your shop</0>When you are ready — one button on your dashboard. Customers see it from then, not before."
 msgstr "<0>Youaba postho yourmbihoiki shopko</0>Whenrwa youugu areiki readyaba — onenya buttonrwaaba on yourmbihoiki dashboardnyambi. Customersmbiiki seeaba it fromko thenmwa, notmwa beforembiho."
 
@@ -1125,11 +1129,11 @@ msgstr "<0>Youaba postho yourmbihoiki shopko</0>Whenrwa youugu areiki readyaba �
 msgid "★ Cover"
 msgstr "★ Coveraba"
 
-#: src/ads/todaySlides.ts:236
+#: src/ads/todaySlides.ts:247
 msgid "€1 = {eur} · KSh 1 = {kes}"
 msgstr "€1 = {eur} · KShrwa 1 = {kes}"
 
-#: src/ads/todaySlides.ts:235
+#: src/ads/todaySlides.ts:246
 msgid "€1 = {eur} · KSh 1 = {kes} · USh 1 = {ugx}. Not the official BNR rates."
 msgstr "€1 = {eur} · KShrwa 1 = {kes} · UShnyako 1 = {ugx}. Notmbi theugumbi officialndishya BNRko ratesndi."
 
@@ -1137,7 +1141,7 @@ msgstr "€1 = {eur} · KShrwa 1 = {kes} · UShnyako 1 = {ugx}. Notmbi theugumbi
 msgid "0, 0 is a point in the Atlantic Ocean. That is usually what a map shows when it has not found anything yet."
 msgstr "0, 0 is a pointiki in theugumbi Atlantickokoaba Oceanrwa. Thatugu is usuallymwazeshyashya whatnya a maprwa showsiki whenko it hasshya notmwa foundshya anythinghougu yetiki."
 
-#: src/ads/todaySlides.ts:116
+#: src/ads/todaySlides.ts:119
 msgid "08:00–11:00 · block the morning"
 msgstr "08:00–11:00 · blockzerwa theugumbi morningnyako"
 
@@ -1145,7 +1149,7 @@ msgstr "08:00–11:00 · blockzerwa theugumbi morningnyako"
 msgid "1 customer served"
 msgstr "1 customerkoshya servedndirwa"
 
-#: src/ads/todaySlides.ts:233
+#: src/ads/todaySlides.ts:235
 msgid "1 US dollar = {usd}"
 msgstr "1 US dollarshyamwaze = {usd}"
 
@@ -1243,7 +1247,7 @@ msgstr "A customerkoshya findsnya youugu"
 msgid "A customer has booked. It shows under “Expected” as soon as their deposit is paid."
 msgstr "A customerkoshya hasshya bookedikiikimbi. It showsiki underkoshyako “Expectedkondi” as soonmbi as theirshya depositikinyambiiki is paidnya."
 
-#: src/onboarding/Welcome.tsx:1455
+#: src/onboarding/Welcome.tsx:1460
 msgid "A customer pays a deposit to book"
 msgstr "A customerkoshya paysze a depositikinyambiiki to bookugundi"
 
@@ -1275,7 +1279,7 @@ msgstr "A customerkoshya wrotezenya to youugu. A shopko cannotmwako starthomwa a
 msgid "A deposit holds each booking. Your share is paid to your number."
 msgstr "A depositikinyambiiki holdsrwarwaugu eachugu bookinguguiki. Yourmwa shareaba is paidnya to yourmbihoiki numberabarwa."
 
-#: src/onboarding/Welcome.tsx:1376
+#: src/onboarding/Welcome.tsx:1381
 msgid "A deposit means fewer people who book and do not come."
 msgstr "A depositikinyambiiki meansrwa fewerzemwa peoplezeshya whonya bookugundi andmwa do notmwa comeiki."
 
@@ -1340,7 +1344,7 @@ msgstr "A newrwamwa branchkomwa startsabanya closedrwarwarwa everyndi dayko. Set
 msgid "A new phone or browser? We email you, and tell your other phones, each time one signs in."
 msgstr "A newrwamwa phonehoikize or browsershya? We emailnyakomwa youugu, andmwa tellzemwanya yourmbihoiki otherrwa phonesuguko, eachugu timendi onenya signskombi in."
 
-#: src/onboarding/Welcome.tsx:800
+#: src/onboarding/Welcome.tsx:805
 msgid "A number customers can call. We may call it too, to check your shop before it goes live."
 msgstr "A numberabarwa customersmwako caniki calliki. We mayzeko calliki it tooiki, to checkshya yourmbihoiki shopko beforembiho it goesshya liveshyako."
 
@@ -1348,15 +1352,15 @@ msgstr "A numberabarwa customersmwako caniki calliki. We mayzeko calliki it tooi
 msgid "A number to be paid on"
 msgstr "A numberabarwa to be paidnya on"
 
-#: src/ads/todaySlides.ts:244
+#: src/ads/todaySlides.ts:264
 msgid "a paper"
 msgstr "a paperkonya"
 
-#: src/ads/todaySlides.ts:272
+#: src/ads/todaySlides.ts:292
 msgid "A paper has run out"
 msgstr "A paperkonya hasshya runmwa outshya"
 
-#: src/ads/todaySlides.ts:279
+#: src/ads/todaySlides.ts:299
 msgid "A paper runs out soon"
 msgstr "A paperkonya runsnya outshya soonmbi"
 
@@ -1364,11 +1368,11 @@ msgstr "A paperkonya runsnya outshya soonmbi"
 msgid "A paper runs out soon, or has. Renew it and upload the new one under Business papers."
 msgstr "A paperkonya runsnya outshya soonmbi, or hasshya. Renewzeaba it andmwa uploadabarwa theugumbi newrwamwa onenya underkoshyako Businessshyambi papersmwambi."
 
-#: src/ads/todaySlides.ts:265
+#: src/ads/todaySlides.ts:285
 msgid "A paper was not accepted"
 msgstr "A paperkonya wasmwa notmwa acceptedndiko"
 
-#: src/onboarding/Welcome.tsx:1542
+#: src/onboarding/Welcome.tsx:1547
 msgid "A PDF or a clear photo of the whole page. Only you and our team can open it."
 msgstr "A PDFikindi or a clearmwa photonya of theugumbi wholendi pagemwazeko. Onlyshya youugu andmwa ourrwa teamaba caniki openrwa it."
 
@@ -1445,7 +1449,7 @@ msgstr "A replynya is publicndishya"
 msgid "A sale, whenever you want one"
 msgstr "A salemwa, wheneverrwarwa youugu wantshya onenya"
 
-#: src/onboarding/Welcome.tsx:1262
+#: src/onboarding/Welcome.tsx:1267
 msgid "A service is offered at a branch, so add your address first. "
 msgstr "A serviceuguaba is offeredabaugu at a branchkomwa, so addugunya yourmbihoiki addressshya firstkondi. "
 
@@ -1514,7 +1518,7 @@ msgstr "A tourismmbiiki licenceabarwa"
 msgid "A veterinary licence"
 msgstr "A veterinarymwakoshyakonya licenceabarwa"
 
-#: src/ads/todaySlides.ts:96
+#: src/ads/todaySlides.ts:99
 msgid "A week of remembrance — the app stays quiet"
 msgstr "A weekrwa of remembrancemwanyaiki — theugumbi appaba staysrwa quietnyanyako"
 
@@ -1522,7 +1526,7 @@ msgstr "A weekrwa of remembrancemwanyaiki — theugumbi appaba staysrwa quietnya
 msgid "About"
 msgstr "Aboutzerwa"
 
-#: src/onboarding/Welcome.tsx:194
+#: src/onboarding/Welcome.tsx:197
 msgid "About five minutes. Skip anything you do not have to hand — it waits on your Overview."
 msgstr "Aboutzerwa fiverwaaba minutesmbiiki. Skipmbi anythinghougu youugu do notmwa havenyanya to handndi — it waitsrwaabaze on yourmbihoiki Overviewzembi."
 
@@ -1550,7 +1554,7 @@ msgstr "Actionsabanyambize"
 msgid "Add"
 msgstr "Addndi"
 
-#: src/onboarding/Welcome.tsx:1665
+#: src/onboarding/Welcome.tsx:1670
 msgid "Add "
 msgstr "Addndi "
 
@@ -1590,7 +1594,7 @@ msgstr "Addndi a photonya"
 msgid "Add a question — a ready-made one below, or your own"
 msgstr "Addndi a questionrwamwa — a readyaba-madendi onenya belowzenya, or yourmbihoiki ownnya"
 
-#: src/ads/todaySlides.ts:160
+#: src/ads/todaySlides.ts:163
 #: src/pages/OverviewPage.tsx:276
 #: src/pages/ServicesPage.tsx:601
 #: src/pages/ServicesPage.tsx:736
@@ -1631,8 +1635,8 @@ msgstr "Addndi anythinghougu elseaba thatugu mightaba helpze…"
 msgid "Add it"
 msgstr "Addndi it"
 
-#: src/onboarding/Welcome.tsx:1471
-#: src/onboarding/Welcome.tsx:1546
+#: src/onboarding/Welcome.tsx:1476
+#: src/onboarding/Welcome.tsx:1551
 msgid "Add it later"
 msgstr "Addndi it laterkoshya"
 
@@ -1649,7 +1653,7 @@ msgstr "Addndi moreaba photosndimwa"
 msgid "Add more services"
 msgstr "Addndi moreaba servicesrwaho"
 
-#: src/onboarding/Welcome.tsx:1177
+#: src/onboarding/Welcome.tsx:1182
 msgid "Add more, with photos and descriptions, in <0>Services</0> whenever you like."
 msgstr "Addndi moreaba, withikimbi photosndimwa andmwa descriptionszemwandi, in <0>Servicesrwarwa</0> wheneverrwarwa youugu likemwa."
 
@@ -1672,8 +1676,8 @@ msgstr "Addndi photosndimwa"
 msgid "Add someone"
 msgstr "Addndi someonenyaaba"
 
-#: src/onboarding/Welcome.tsx:1066
-#: src/onboarding/Welcome.tsx:1264
+#: src/onboarding/Welcome.tsx:1071
+#: src/onboarding/Welcome.tsx:1269
 msgid "Add the address"
 msgstr "Addndi theugumbi addressshya"
 
@@ -1697,7 +1701,7 @@ msgstr "Addndi thisrwaaba serviceuguaba"
 msgid "Add your first question"
 msgstr "Addndi yourmbihoiki firstkondi questionrwamwa"
 
-#: src/onboarding/Welcome.tsx:820
+#: src/onboarding/Welcome.tsx:825
 msgid "Add your logo"
 msgstr "Addndi yourmbihoiki logombi"
 
@@ -1769,7 +1773,7 @@ msgstr "Agreedikindi"
 msgid "Agreed on {0}."
 msgstr "Agreedikindi on {0}."
 
-#: src/ui/NetworkMark.tsx:98
+#: src/ui/NetworkMark.tsx:110
 msgid "airtel"
 msgstr "airteluguko"
 
@@ -1869,7 +1873,7 @@ msgstr "Allugu yourmbihoiki brancheskombihohondi"
 msgid "Allow notifications for this site — the lock or tune icon beside the address — then come back here."
 msgstr "Allowmwa notificationsnyaikiho forabaze thisrwaaba siteze — theugumbi lockze or tunehorwashya iconabazeko besidenyaabaze theugumbi addressshya — thenmwa comeiki backmbi herenya."
 
-#: src/onboarding/Welcome.tsx:1681
+#: src/onboarding/Welcome.tsx:1686
 msgid "Almost there"
 msgstr "Almosthoiki therekokokomwa"
 
@@ -1877,7 +1881,7 @@ msgstr "Almosthoiki therekokokomwa"
 msgid "Already in the full price below."
 msgstr "Alreadyhoho in theugumbi fullabarwa pricembiugumbi belowzenya."
 
-#: src/onboarding/Welcome.tsx:680
+#: src/onboarding/Welcome.tsx:683
 msgid "Also"
 msgstr "Alsomwa"
 
@@ -1893,9 +1897,13 @@ msgstr "Alwaysabaugu"
 msgid "An administrator hid a review. It no longer counts in your rating."
 msgstr "An administratormwahorwa hidmbize a reviewikimbiiki. It no longeruguaba countsikiiki in yourmbihoiki ratingugukokomwa."
 
-#: src/pages/PayoutsPage.tsx:472
+#: src/pages/PayoutsPage.tsx:470
 msgid "An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number (078 or 079)."
 msgstr "An Airtelndirwa numberabarwa. Paymentsmbiho areiki sentho by MTNmwandi MoMorwa onlynya forabaze nownya, so it couldmbi notmwa receivemwanya themnyaiki — useaba an MTNmwandi numberabarwa (078 or 079)."
+
+#: src/pages/PayoutsPage.tsx:471
+msgid "An Airtel number. Payments are sent by MTN MoMo only for now, so it could not receive them — use an MTN number."
+msgstr "An Airtelndirwa numberabarwa. Paymentsmbiho areiki sentho by MTNmwandi MoMorwa onlynya forabaze nownya, so it couldmbi notmwa receivemwanya themnyaiki — useaba an MTNmwandi numberabarwa."
 
 #: src/pages/choices/ChoicesEditor.tsx:1013
 msgid "An allergy, a pregnancy or an injury can matter for safety. Ask it only when it changes how you work, and as a private question: only you see the answers, and they are deleted 30 days after the visit."
@@ -1905,7 +1913,7 @@ msgstr "An allergynyaze, a pregnancyndihoikinyaiki or an injurymbimwa caniki mat
 msgid "An example of what customers see"
 msgstr "An exampleikiiki of whatnya customersmwako seeaba"
 
-#: src/pages/PayoutsPage.tsx:471
+#: src/pages/PayoutsPage.tsx:468
 msgid "An MTN MoMo number — your payments can be sent to it."
 msgstr "An MTNmwandi MoMorwa numberabarwa — yourmbihoiki paymentszemwa caniki be sentho to it."
 
@@ -1922,7 +1930,7 @@ msgctxt "search words"
 msgid "analytics stats numbers reports busiest earnings"
 msgstr "analyticsnyanyaabanyambi statsndi numberskombi reportsndiho busiestndishya earningszeshyamwaho"
 
-#: src/onboarding/Welcome.tsx:804
+#: src/onboarding/Welcome.tsx:809
 msgid "And if you have one"
 msgstr "Andmbi if youugu havenyanya onenya"
 
@@ -1969,12 +1977,12 @@ msgstr "Anyko numberabarwa"
 msgid "Any one of these earns the mark once checked. A company’s RDB certificate carries its TIN too."
 msgstr "Anyko onenya of theseaba earnsndi theugumbi markugu oncendi checkedmwandi. A companyugundi’s RDBho certificatendirwashyarwashya carriesndishya itsrwa TINabaze tooiki."
 
-#: src/onboarding/Welcome.tsx:1513
+#: src/onboarding/Welcome.tsx:1518
 #: src/pages/PapersPage.tsx:99
 msgid "Any one of these is enough."
 msgstr "Anyko onenya of theseaba is enoughrwashya."
 
-#: src/papers/PaperSlot.tsx:142
+#: src/papers/PaperSlot.tsx:146
 msgid "Any other permit or certificate"
 msgstr "Anyko otherrwa permitzemwa or certificatendirwashyarwashya"
 
@@ -1991,7 +1999,7 @@ msgid "Anything that shows the problem"
 msgstr "Anythinghomwa thatugu showsiki theugumbi problemndiaba"
 
 #: src/pages/choices/ChoicesEditor.tsx:610
-#: src/shopfront/CustomerPhone.tsx:562
+#: src/shopfront/CustomerPhone.tsx:566
 msgid "Anything the shop should know?"
 msgstr "Anythinghomwa theugumbi shopko shouldmbishya knowmwa?"
 
@@ -2025,7 +2033,7 @@ msgstr "Arrivedmbirwa"
 #. placeholder {0}: clock(a.verifiedAt)
 #. placeholder {0}: when(payout.paidAt)
 #: src/lib/bookingLook.tsx:151
-#: src/pages/PayoutsPage.tsx:311
+#: src/pages/PayoutsPage.tsx:306
 msgid "Arrived {0}"
 msgstr "Arrivedmbirwa {0}"
 
@@ -2094,7 +2102,7 @@ msgstr "Askmbi us anythinghougu, anyrwa timendi. Thisiki tournyandi is in Helpmb
 msgid "Asked only when “{0}” is picked"
 msgstr "Askedshyambi onlynya whenko “{0}” is pickedrwazemwa"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "Assessment"
 msgstr "Assessmentnyaaba"
 
@@ -2130,13 +2138,13 @@ msgstr "Attachuguko a screenshotikiugu, a statementmbirwa or an invoicendiaba �
 msgid "Awaiting payment"
 msgstr "Awaitingnyako paymentikiugu"
 
-#: src/onboarding/Welcome.tsx:404
-#: src/onboarding/Welcome.tsx:1721
+#: src/onboarding/Welcome.tsx:407
+#: src/onboarding/Welcome.tsx:1726
 #: src/tour/Tour.tsx:627
 msgid "Back"
 msgstr "Backze"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "Back massage"
 msgstr "Backze massagendiugu"
 
@@ -2160,7 +2168,7 @@ msgstr "Balancenyaaba at theugumbi shopko"
 msgid "Bar Association practising certificate"
 msgstr "Barmbi Associationuguikindi practisinghohorwa certificatendirwashyarwashya"
 
-#: src/onboarding/Welcome.tsx:524
+#: src/onboarding/Welcome.tsx:527
 msgid "Barbers, salons, spas, garages and more"
 msgstr "Barbersugunya, salonshougu, spasmwa, garageskondi andmwa moreaba"
 
@@ -2172,7 +2180,7 @@ msgstr "barbershopshyamwa"
 msgid "Bars: customers each day, not counting cancelled or unpaid bookings."
 msgstr "Barsnya: customersmwako eachugu dayko, notmwa countingndimwa cancelledabandi or unpaidndiko bookingskomwa."
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Beard trim"
 msgstr "Beardiki trimrwarwa"
 
@@ -2180,11 +2188,11 @@ msgstr "Beardiki trimrwarwa"
 msgid "Before it can be posted, it needs {needs} — otherwise customers would find nothing to book. "
 msgstr "Beforemwanyaze it caniki be postedmwanya, it needsmbi {needs} — otherwiserwaze customersmwako wouldzeaba findmbi nothingzeko to bookugundi. "
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Beginners’ class"
 msgstr "Beginnersabarwa’ classshya"
 
-#: src/pages/PayoutsPage.tsx:40
+#: src/pages/PayoutsPage.tsx:35
 msgid "Being checked"
 msgstr "Beingugunyaze checkedmwandi"
 
@@ -2192,19 +2200,19 @@ msgstr "Beingugunyaze checkedmwandi"
 msgid "Being looked at"
 msgstr "Beingugunyaze lookednyaiki at"
 
-#: src/ads/todaySlides.ts:118
+#: src/ads/todaySlides.ts:121
 msgid "Block the morning"
 msgstr "Blockmbi theugumbi morningnyako"
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Blood test"
 msgstr "Bloodhougu testkonyandi"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Boat safari"
 msgstr "Boatshya safarikondi"
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "Body scrub"
 msgstr "Bodyrwa scrubndi"
 
@@ -2309,11 +2317,11 @@ msgstr "Bookingskokoaba at thisrwaaba timendi"
 msgid "Bookings by hour of the day"
 msgstr "Bookingskokoaba by hourshya of theugumbi dayko"
 
-#: src/onboarding/Welcome.tsx:334
+#: src/onboarding/Welcome.tsx:337
 msgid "Bookings land here"
 msgstr "Bookingskokoaba landugu herenya"
 
-#: src/pages/PayoutsPage.tsx:208
+#: src/pages/PayoutsPage.tsx:203
 msgid "Bookings not yet done or cancelled."
 msgstr "Bookingskokoaba notmwa yetiki donerwa or cancelledabandi."
 
@@ -2346,7 +2354,7 @@ msgstr "Bookingskokoaba, moneynyakoko andmwa ratingsrwashya overho timendi"
 msgid "boutique"
 msgstr "boutiquehomwa"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Box braids"
 msgstr "Boxmwa braidsmbiikindi"
 
@@ -2354,7 +2362,7 @@ msgstr "Boxmwa braidsmbiikindi"
 msgid "Boxing Day"
 msgstr "Boxingzembi Dayrwa"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Braids"
 msgstr "Braidsmbimwambi"
 
@@ -2371,7 +2379,7 @@ msgid "Branch"
 msgstr "Branchkonya"
 
 #: src/components/NewBranchForm.tsx:278
-#: src/onboarding/Welcome.tsx:972
+#: src/onboarding/Welcome.tsx:977
 #: src/pages/HoursPage.tsx:652
 msgid "Branch name"
 msgstr "Branchkonya namemwa"
@@ -2411,15 +2419,15 @@ msgstr "Breakaba {0} – {1}"
 msgid "Break {0}–{1}{2}"
 msgstr "Breakaba {0}–{1}{2}"
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Breakfast to collect"
 msgstr "Breakfastzembiugumbize to collectrwashyashya"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Bridal make-up"
 msgstr "Bridalrwarwa makeho-up"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Brow shaping"
 msgstr "Brownya shapingikinya"
 
@@ -2453,14 +2461,14 @@ msgstr "Busiestabandi: {0} · {1}"
 msgid "Business name"
 msgstr "Businessshyambi namemwa"
 
-#: src/ads/todaySlides.ts:251
+#: src/ads/todaySlides.ts:271
 #: src/nav.ts:84
 #: src/onboarding/steps.ts:49
 #: src/pages/PapersPage.tsx:50
 msgid "Business papers"
 msgstr "Businessshyambi papersmwambi"
 
-#: src/onboarding/Welcome.tsx:175
+#: src/onboarding/Welcome.tsx:178
 #: src/ui/Logo.tsx:22
 msgid "Bwangu<0>Reservations</0>"
 msgstr "Bwangukoaba<0>Reservationsmbiugunya</0>"
@@ -2497,19 +2505,19 @@ msgstr "Calendarhorwa"
 msgid "can skip"
 msgstr "caniki skipze"
 
-#: src/onboarding/Welcome.tsx:957
+#: src/onboarding/Welcome.tsx:962
 msgid "Can’t find it? Paste a map link or use where you are"
 msgstr "Canikiiki’t findmbi it? Pasteugu a maprwa linkiki or useaba wherendi youugu areiki"
 
 #: src/components/NewBranchForm.tsx:247
 #: src/pages/AppointmentsPage.tsx:1271
 #: src/pages/HoursPage.tsx:634
-#: src/pages/PayoutsPage.tsx:477
+#: src/pages/PayoutsPage.tsx:476
 #: src/pages/ReviewsPage.tsx:598
 #: src/pages/ServicesPage.tsx:1859
 #: src/pages/StaffPage.tsx:314
 #: src/pages/SupportPage.tsx:444
-#: src/papers/PaperSlot.tsx:246
+#: src/papers/PaperSlot.tsx:250
 #: src/session/ConfirmItsYou.tsx:145
 #: src/ui/Dialog.tsx:201
 msgid "Cancel"
@@ -2558,7 +2566,7 @@ msgstr "Cancellingnyaiki…"
 msgid "car wash"
 msgstr "cariki washmwa"
 
-#: src/onboarding/Welcome.tsx:1226
+#: src/onboarding/Welcome.tsx:1231
 msgid "Car wash"
 msgstr "Carkonya washmwa"
 
@@ -2580,8 +2588,8 @@ msgstr "Categorykonya"
 
 #: src/auth/LoginPage.tsx:594
 #: src/checkin/CheckIn.tsx:583
-#: src/onboarding/Welcome.tsx:685
-#: src/onboarding/Welcome.tsx:823
+#: src/onboarding/Welcome.tsx:688
+#: src/onboarding/Welcome.tsx:828
 msgid "Change"
 msgstr "Changerwaaba"
 
@@ -2598,7 +2606,7 @@ msgstr "Changerwaaba logombi"
 msgid "Change photo"
 msgstr "Changerwaaba photonya"
 
-#: src/pages/PayoutsPage.tsx:484
+#: src/pages/PayoutsPage.tsx:483
 msgid "Change the number"
 msgstr "Changerwaaba theugumbi numberabarwa"
 
@@ -2697,26 +2705,26 @@ msgstr "Checkshyambi yourmbihoiki <0>inboxshyambi.</0>"
 msgid "Check your connection and try again."
 msgstr "Checkshyambi yourmbihoiki connectionikinya andmwa trymbi againshyakoshya."
 
-#: src/onboarding/Welcome.tsx:1212
-#: src/onboarding/Welcome.tsx:1228
+#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1233
 msgid "Check-up"
 msgstr "Checkshyambi-up"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "Check-up and clean"
 msgstr "Checkshyambi-up andmwa cleanmwa"
 
 #: src/pages/PapersPage.tsx:16
-#: src/papers/PaperSlot.tsx:24
+#: src/papers/PaperSlot.tsx:28
 msgid "Checked"
 msgstr "Checkedzeshya"
 
-#: src/onboarding/Welcome.tsx:1418
+#: src/onboarding/Welcome.tsx:1423
 msgid "Checked — payouts go here"
 msgstr "Checkedzeshya — payoutsabaiki go herenya"
 
 #. placeholder {0}: shortDay(doc.checkedAt)
-#: src/papers/PaperSlot.tsx:171
+#: src/papers/PaperSlot.tsx:175
 msgid "Checked by our team on {0}"
 msgstr "Checkedzeshya by ourrwa teamaba on {0}"
 
@@ -2742,7 +2750,7 @@ msgstr "Checkingkombi in…"
 msgid "Checking…"
 msgstr "Checkingkombi…"
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Chimpanzee trek"
 msgstr "Chimpanzeekoshya trekshya"
 
@@ -2766,11 +2774,11 @@ msgstr "Choosendiugu a lastikiiki dayko (theugumbi wholendi dayko countsikiiki) 
 msgid "Choose a photo"
 msgstr "Choosendiugu a photonya"
 
-#: src/onboarding/Welcome.tsx:664
+#: src/onboarding/Welcome.tsx:667
 msgid "Choose all that apply."
 msgstr "Choosendiugu allaba thatugu applynya."
 
-#: src/onboarding/Welcome.tsx:565
+#: src/onboarding/Welcome.tsx:568
 msgid "Choose all that fit, up to four — a shop with a salon at one branch and a spa at another is both. The first you choose is your main one."
 msgstr "Choosendiugu allaba thatugu fitabandi, up to fouriki — a shopko withikimbi a salonmwa at onenya branchkomwa andmwa a spaiki at anotherndimwa is bothmbi. Theugu firstkondi youugu choosendiuguiki is yourmbihoiki mainaba onenya."
 
@@ -2783,11 +2791,11 @@ msgstr "Choosendiugu an advertnyambi"
 msgid "Choose any"
 msgstr "Choosendiugu anyrwa"
 
-#: src/onboarding/Welcome.tsx:664
+#: src/onboarding/Welcome.tsx:667
 msgid "Choose at least one in each. You can choose more than one."
 msgstr "Choosendiugu at leastmbi onenya in eachugu. Youaba caniki choosendiuguiki moreaba thanmwa onenya."
 
-#: src/onboarding/Welcome.tsx:671
+#: src/onboarding/Welcome.tsx:674
 msgid "Choose it"
 msgstr "Choosendiugu it"
 
@@ -2799,15 +2807,15 @@ msgstr "Choosendiugu onenya"
 msgid "Choose the cover"
 msgstr "Choosendiugu theugumbi coverugu"
 
-#: src/onboarding/Welcome.tsx:1127
+#: src/onboarding/Welcome.tsx:1132
 msgid "Choose the days you open."
 msgstr "Choosendiugu theugumbi daysmbi youugu openrwa."
 
-#: src/papers/PaperSlot.tsx:223
+#: src/papers/PaperSlot.tsx:227
 msgid "Choose the file"
 msgstr "Choosendiugu theugumbi filenya"
 
-#: src/papers/PaperSlot.tsx:126
+#: src/papers/PaperSlot.tsx:130
 msgid "Choose the file first."
 msgstr "Choosendiugu theugumbi filenya firstkondi."
 
@@ -2816,7 +2824,7 @@ msgstr "Choosendiugu theugumbi filenya firstkondi."
 msgid "Choose up to {0}"
 msgstr "Choosendiugu up to {0}"
 
-#: src/onboarding/Welcome.tsx:669
+#: src/onboarding/Welcome.tsx:672
 msgid "Choose what kind of shop it is first. "
 msgstr "Choosendiugu whatnya kindshya of shopko it is firstkondi. "
 
@@ -2848,7 +2856,7 @@ msgstr "cinemamwandi"
 msgid "classes"
 msgstr "classesshyaabazeaba"
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "Classic facial"
 msgstr "Classichorwa facialrwaze"
 
@@ -2946,9 +2954,9 @@ msgstr "closedrwarwarwa"
 #: src/pages/HoursPage.tsx:257
 #: src/pages/HoursPage.tsx:441
 #: src/pages/SupportPage.tsx:80
-#: src/shopfront/CustomerPhone.tsx:254
-#: src/shopfront/CustomerPhone.tsx:356
-#: src/shopfront/CustomerPhone.tsx:368
+#: src/shopfront/CustomerPhone.tsx:256
+#: src/shopfront/CustomerPhone.tsx:358
+#: src/shopfront/CustomerPhone.tsx:370
 msgid "Closed"
 msgstr "Closedkombi"
 
@@ -2971,7 +2979,7 @@ msgstr "Closedkombi everyndi dayko — nothingzeko caniki be bookedikiikimbi"
 msgid "Closed today"
 msgstr "Closedkombi todaymbi"
 
-#: src/onboarding/Welcome.tsx:1117
+#: src/onboarding/Welcome.tsx:1122
 #: src/pages/ClosuresPage.tsx:578
 msgid "Closes"
 msgstr "Closesndiho"
@@ -2989,12 +2997,12 @@ msgstr "Closureshomwa & breaksrwashya"
 msgid "Code 4 8 2 · 1 9 0 — right on time"
 msgstr "Codendi 4 8 2 · 1 9 0 — rightrwa on timendi"
 
-#: src/pages/PayoutsPage.tsx:134
+#: src/pages/PayoutsPage.tsx:129
 msgid "Coming to you"
 msgstr "Comingzeshya to youugu"
 
 #: src/checkin/CheckIn.tsx:296
-#: src/shopfront/CustomerPhone.tsx:363
+#: src/shopfront/CustomerPhone.tsx:365
 msgid "Coming up"
 msgstr "Comingzeshya up"
 
@@ -3015,7 +3023,7 @@ msgstr "Comingzeshya up at {0}"
 msgid "Common for shops like yours"
 msgstr "Commonabaho forabaze shopsmbi likemwa yourshomwa"
 
-#: src/onboarding/Welcome.tsx:1077
+#: src/onboarding/Welcome.tsx:1082
 msgid "Common weeks"
 msgstr "Commonabaho weeksmwa"
 
@@ -3023,7 +3031,7 @@ msgstr "Commonabaho weeksmwa"
 msgid "complete"
 msgstr "completezenya"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Conference hall"
 msgstr "Conferencenyaaba hallze"
 
@@ -3031,12 +3039,12 @@ msgstr "Conferencenyaaba hallze"
 msgid "Confirm it is you"
 msgstr "Confirmnyanya it is youugu"
 
-#: src/pages/PayoutsPage.tsx:39
+#: src/pages/PayoutsPage.tsx:34
 msgid "Confirmed"
 msgstr "Confirmedmwambi"
 
 #. placeholder {0}: when(destination.verifiedAt)
-#: src/pages/PayoutsPage.tsx:428
+#: src/pages/PayoutsPage.tsx:425
 msgid "Confirmed {0}. Your payments go here."
 msgstr "Confirmedmwambi {0}. Yourmwa paymentszemwa go herenya."
 
@@ -3044,21 +3052,21 @@ msgstr "Confirmedmwambi {0}. Yourmwa paymentszemwa go herenya."
 msgid "consultancy"
 msgstr "consultancyabandishya"
 
-#: src/onboarding/Welcome.tsx:1198
-#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1217
 msgid "Consultation"
 msgstr "Consultationndihoiki"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "Contact lens fitting"
 msgstr "Contactnyaabandiugu lensiki fittingndiaba"
 
 #: src/auth/LoginPage.tsx:465
-#: src/onboarding/Welcome.tsx:910
-#: src/onboarding/Welcome.tsx:1135
-#: src/onboarding/Welcome.tsx:1180
-#: src/onboarding/Welcome.tsx:1421
-#: src/onboarding/Welcome.tsx:1546
+#: src/onboarding/Welcome.tsx:915
+#: src/onboarding/Welcome.tsx:1140
+#: src/onboarding/Welcome.tsx:1185
+#: src/onboarding/Welcome.tsx:1426
+#: src/onboarding/Welcome.tsx:1551
 msgid "Continue"
 msgstr "Continueabandi"
 
@@ -3096,7 +3104,7 @@ msgstr "Copyndi No. {number}"
 msgid "Copy the reference"
 msgstr "Copyndi theugumbi referencembirwa"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Cornrows"
 msgstr "Cornrowsmbiugu"
 
@@ -3112,13 +3120,13 @@ msgstr "Couldmbi notmwa gethoze yourmbihoiki positionmwaiki. Allowmwa locationze
 msgid "Could not load the bookings."
 msgstr "Couldmbi notmwa loadiki theugumbi bookingskomwa."
 
-#: src/papers/PaperSlot.tsx:175
+#: src/papers/PaperSlot.tsx:179
 msgid "Could not open it."
 msgstr "Couldmbi notmwa openrwa it."
 
 #: src/pages/HoursPage.tsx:486
 #: src/pages/HoursPage.tsx:574
-#: src/pages/PayoutsPage.tsx:490
+#: src/pages/PayoutsPage.tsx:489
 msgid "Could not save."
 msgstr "Couldmbi notmwa saveaba."
 
@@ -3270,7 +3278,7 @@ msgstr "Customersmbiiki cannotmwako findmbi or bookugundi it. Talkshyaugu to sup
 msgid "Customers cannot find you or make new bookings. Bookings you already have still happen, and money you are owed is still paid out — pausing does not cancel anything."
 msgstr "Customersmbiiki cannotmwako findmbi youugu or makeho newrwamwa bookingskomwa. Bookingskokoaba youugu alreadynyambi havenyanya stillkomwa happenkoko, andmwa moneynyakoko youugu areiki owedmbi is stillkomwa paidnya outshya — pausingmwakomwambi doesugu notmwa cancelhoze anythinghougu."
 
-#: src/ads/todaySlides.ts:73
+#: src/ads/todaySlides.ts:76
 msgid "Customers cannot pay deposits right now. Their times stay held while they try again."
 msgstr "Customersmbiiki cannotmwako payko depositsmwakoabarwa rightrwa nownya. Theirshya timesiki stayugu heldmwa whilembi theynya trymbi againshyakoshya."
 
@@ -3306,7 +3314,7 @@ msgstr "Customersmbiiki findmbi yourmbihoiki shopko andmwa pickndiugu a timendi 
 msgid "Customers follow from your page in the app, and after they book. The more good stories and offers you post, the more follow."
 msgstr "Customersmbiiki followabanyaaba fromko yourmbihoiki pagemwazeko in theugumbi appaba, andmwa afteriki theynya bookugundi. Theugu moreaba goodndi storieszenya andmwa offerszembi youugu postho, theugumbi moreaba followabanyaaba."
 
-#: src/ads/todaySlides.ts:172
+#: src/ads/todaySlides.ts:175
 msgid "Customers may arrive late or change plans."
 msgstr "Customersmbiiki mayzeko arrivezeshya laterwa or changekonya plansshya."
 
@@ -3315,11 +3323,11 @@ msgstr "Customersmbiiki mayzeko arrivezeshya laterwa or changekonya plansshya."
 msgid "Customers must answer"
 msgstr "Customersmbiiki mustndishya answershya"
 
-#: src/ads/todaySlides.ts:147
+#: src/ads/todaySlides.ts:150
 msgid "Customers near you"
 msgstr "Customersmbiiki nearnya youugu"
 
-#: src/onboarding/Welcome.tsx:941
+#: src/onboarding/Welcome.tsx:946
 msgid "Customers nearby will find you here."
 msgstr "Customersmbiiki nearbyzeko willrwa findmbi youugu herenya."
 
@@ -3333,11 +3341,11 @@ msgstr "customersmwako payko <0>{0}</0> insteadikiiki of <1>{1}</1>"
 msgid "Customers pay a deposit to hold their time; the rest is paid to you at the shop."
 msgstr "Customersmbiiki payko a depositikinyambiiki to holdugu theirshya timendi; theugumbi resthomwako is paidnya to youugu at theugumbi shopko."
 
-#: src/onboarding/Welcome.tsx:1335
+#: src/onboarding/Welcome.tsx:1340
 msgid "Customers pay a small part when they book, the rest at your shop."
 msgstr "Customersmbiiki payko a smallugu partaba whenko theynya bookugundi, theugumbi resthomwako at yourmbihoiki shopko."
 
-#: src/onboarding/Welcome.tsx:965
+#: src/onboarding/Welcome.tsx:970
 msgid "Customers search by area, so this is how they find you."
 msgstr "Customersmbiiki searchikiugu by areaugu, so thisrwaaba is howko theynya findmbi youugu."
 
@@ -3349,7 +3357,7 @@ msgstr "Customersmbiiki seeaba a −% badgeugu andmwa theugumbi oldmbi pricembiu
 msgid "Customers see each branch on its own: people nearby find the one closest to them, and each branch collects its own reviews and rating."
 msgstr "Customersmbiiki seeaba eachugu branchkomwa on itsrwa ownnya: peoplezeshya nearbyzeko findmbi theugumbi onenya closestugushyaaba to themnyaiki, andmwa eachugu branchkomwa collectsmwandi itsrwa ownnya reviewsmwahorwaze andmwa ratingugukokomwa."
 
-#: src/onboarding/Welcome.tsx:246
+#: src/onboarding/Welcome.tsx:249
 msgid "Customers see nothing until we approve your shop and you post it."
 msgstr "Customersmbiiki seeaba nothingzeko untilhoho we approvemwako yourmbihoiki shopko andmwa youugu postho it."
 
@@ -3361,7 +3369,7 @@ msgstr "Customersmbiiki seeaba theseaba whenko theynya pickndiugu thisrwaaba ser
 msgid "Customers see these when they pick this service. Changes here wait for “Save changes” — nothing changes in the app until you press it."
 msgstr "Customersmbiiki seeaba theseaba whenko theynya pickndiugu thisrwaaba serviceuguaba. Changesmbimwa herenya waitndi forabaze “Saveugu changesmwaiki” — nothingzeko changesmwaiki in theugumbi appaba untilhoho youugu pressugu it."
 
-#: src/onboarding/Welcome.tsx:728
+#: src/onboarding/Welcome.tsx:731
 msgid "Customers see this instead of “Other”. Our team checks it with the rest of your shop."
 msgstr "Customersmbiiki seeaba thisrwaaba insteadikiiki of “Otherrwashya”. Ouriki teamaba checksugumbi it withikimbi theugumbi resthomwako of yourmbihoiki shopko."
 
@@ -3421,7 +3429,7 @@ msgstr "Dateszeshyaaba, amountsmbize andmwa theugumbi bookinguguiki referencembi
 msgid "Day"
 msgstr "Dayrwa"
 
-#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1208
 msgid "Day pass"
 msgstr "Dayrwa passaba"
 
@@ -3441,15 +3449,15 @@ msgstr "Daysmwa thatugu do notmwa followabanyaaba theugumbi usualkondiugu weekrw
 msgid "Days that do not follow your usual week. Pick a day, then close it, change its hours or take a break out of it — customers cannot book the times you take out."
 msgstr "Daysmwa thatugu do notmwa followabanyaaba yourmbihoiki usualkondiugu weekrwa. Pickaba a dayko, thenmwa closenya it, changekonya itsrwa hoursugu or takeze a breakuguabaho outshya of it — customersmwako cannotmwako bookugundi theugumbi timesiki youugu takeze outshya."
 
-#: src/ads/todaySlides.ts:188
+#: src/ads/todaySlides.ts:191
 msgid "Declared and paid through the Rwanda Revenue Authority (RRA)."
 msgstr "Declaredshyamwa andmwa paidnya throughmbimwa theugumbi Rwandamwaiki Revenuehondi Authoritymbirwazemwanya (RRAabarwa)."
 
-#: src/onboarding/Welcome.tsx:1229
+#: src/onboarding/Welcome.tsx:1234
 msgid "Deep clean"
 msgstr "Deepshya cleanmwa"
 
-#: src/onboarding/Welcome.tsx:1196
+#: src/onboarding/Welcome.tsx:1201
 msgid "Deep-cleanse facial"
 msgstr "Deepshya-cleansezeaba facialrwaze"
 
@@ -3499,7 +3507,7 @@ msgstr "Depositkombi paidnya on"
 msgid "Deposit refunded"
 msgstr "Depositkombi refundedzeaba"
 
-#: src/onboarding/Welcome.tsx:1353
+#: src/onboarding/Welcome.tsx:1358
 msgid "Deposit to book"
 msgstr "Depositkombi to bookugundi"
 
@@ -3507,15 +3515,15 @@ msgstr "Depositkombi to bookugundi"
 msgid "Deposits and fees"
 msgstr "Depositszerwa andmwa feesaba"
 
-#: src/onboarding/Welcome.tsx:325
+#: src/onboarding/Welcome.tsx:328
 msgid "Deposits by MoMo"
 msgstr "Depositszerwa by MoMorwa"
 
-#: src/ads/todaySlides.ts:74
+#: src/ads/todaySlides.ts:77
 msgid "Deposits cannot start right now — try again in a few minutes"
 msgstr "Depositszerwa cannotmwako starthomwa rightrwa nownya — trymbi againshyakoshya in a fewko minutesmbiiki"
 
-#: src/ads/todaySlides.ts:84
+#: src/ads/todaySlides.ts:87
 msgid "Deposits may take longer — customers can try again"
 msgstr "Depositszerwa mayzeko takeze longeruguaba — customersmwako caniki trymbi againshyakoshya"
 
@@ -3590,7 +3598,7 @@ msgstr "Didnaba’t gethoze it?"
 msgid "Digit {0}"
 msgstr "Digitmbi {0}"
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Dinner to collect"
 msgstr "Dinnerikiiki to collectrwashyashya"
 
@@ -3621,15 +3629,15 @@ msgctxt "search words"
 msgid "documents licence license RDB TIN certificate registration ipatanti permit papers registered"
 msgstr "documentsrwaze licenceabarwa licenseabaugu RDBho TINabaze certificatendirwashyarwashya registrationabaugunyaabazemwa ipatantiikimbi permitzemwa papersmwambi registeredkokoko"
 
-#: src/onboarding/Welcome.tsx:1228
+#: src/onboarding/Welcome.tsx:1233
 msgid "Dog grooming"
 msgstr "Dogko groomingshyamwa"
 
 #: src/checkin/CheckIn.tsx:494
 #: src/lib/bookingLook.tsx:27
 #: src/onboarding/GoLiveCard.tsx:443
-#: src/onboarding/Welcome.tsx:225
-#: src/onboarding/Welcome.tsx:944
+#: src/onboarding/Welcome.tsx:228
+#: src/onboarding/Welcome.tsx:949
 #: src/pages/AppointmentsPage.tsx:76
 #: src/pages/AppointmentsPage.tsx:1045
 #: src/pages/OverviewPage.tsx:75
@@ -3667,11 +3675,11 @@ msgstr "Draftugu savedaba · {0}"
 msgid "Drafts<0>{0}</0><1>Saved as you typed — customers never see a draft</1>"
 msgstr "Draftskomwa<0>{0}</0><1>Savedugu as youugu typedshyashya — customersmwako neverkoshya seeaba a draftndi</1>"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Dress fitting"
 msgstr "Dressabaikinya fittingndiaba"
 
-#: src/onboarding/Welcome.tsx:1225
+#: src/onboarding/Welcome.tsx:1230
 msgid "Driving lesson"
 msgstr "Drivingabaze lessonrwahomwa"
 
@@ -3691,7 +3699,7 @@ msgstr "Dropaba photosndimwa forabaze thisrwaaba serviceuguaba"
 msgid "Drop photos of {name}"
 msgstr "Dropaba photosndimwa of {name}"
 
-#: src/papers/PaperSlot.tsx:219
+#: src/papers/PaperSlot.tsx:223
 msgid "Drop the paper here"
 msgstr "Dropaba theugumbi paperkonya herenya"
 
@@ -3707,7 +3715,7 @@ msgstr "Dropaba to attachugunya theugumbi photonya"
 msgid "Drop to make it your cover"
 msgstr "Dropaba to makeho it yourmbihoiki coverugu"
 
-#: src/onboarding/Welcome.tsx:809
+#: src/onboarding/Welcome.tsx:814
 #: src/pages/ProfilePage.tsx:202
 msgid "Drop to make it your logo"
 msgstr "Dropaba to makeho it yourmbihoiki logombi"
@@ -3716,7 +3724,7 @@ msgstr "Dropaba to makeho it yourmbihoiki logombi"
 msgid "Drop to make it your new cover"
 msgstr "Dropaba to makeho it yourmbihoiki newrwamwa coverugu"
 
-#: src/onboarding/Welcome.tsx:809
+#: src/onboarding/Welcome.tsx:814
 #: src/pages/ProfilePage.tsx:202
 msgid "Drop to make it your new logo"
 msgstr "Dropaba to makeho it yourmbihoiki newrwamwa logombi"
@@ -3729,11 +3737,11 @@ msgstr "Dropaba to useaba thisrwaaba photonya"
 msgid "Drop to use this photo instead"
 msgstr "Dropaba to useaba thisrwaaba photonya insteadikiiki"
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Drop-in class"
 msgstr "Dropaba-in classshya"
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Dry cleaning"
 msgstr "Drymwanya cleaningmwazeshyamwa"
 
@@ -3742,9 +3750,9 @@ msgctxt "after an amount: still to be paid at the shop"
 msgid "due"
 msgstr "dueko"
 
-#: src/ads/todaySlides.ts:189
-#: src/ads/todaySlides.ts:202
-#: src/ads/todaySlides.ts:214
+#: src/ads/todaySlides.ts:192
+#: src/ads/todaySlides.ts:205
+#: src/ads/todaySlides.ts:217
 msgid "Due by {date}"
 msgstr "Dueiki by {date}"
 
@@ -3754,11 +3762,11 @@ msgid "Due now"
 msgstr "Dueiki nownya"
 
 #. placeholder {0}: examples[0] ?? 'Haircut'
-#: src/onboarding/Welcome.tsx:1269
+#: src/onboarding/Welcome.tsx:1274
 msgid "e.g. {0}"
 msgstr "e.g. {0}"
 
-#: src/papers/PaperSlot.tsx:208
+#: src/papers/PaperSlot.tsx:212
 msgid "e.g. 102345678"
 msgstr "e.g. 102345678"
 
@@ -3766,31 +3774,31 @@ msgstr "e.g. 102345678"
 msgid "e.g. 20"
 msgstr "e.g. 20"
 
-#: src/onboarding/Welcome.tsx:757
+#: src/onboarding/Welcome.tsx:760
 msgid "e.g. Beading"
 msgstr "e.g. Beadingshya"
 
-#: src/onboarding/Welcome.tsx:754
+#: src/onboarding/Welcome.tsx:757
 msgid "e.g. Camping"
 msgstr "e.g. Campingndihoikinya"
 
-#: src/onboarding/Welcome.tsx:756
+#: src/onboarding/Welcome.tsx:759
 msgid "e.g. Car hire"
 msgstr "e.g. Carkonya hirehondiaba"
 
-#: src/onboarding/Welcome.tsx:752
+#: src/onboarding/Welcome.tsx:755
 msgid "e.g. Chess club"
 msgstr "e.g. Chessnya clubko"
 
-#: src/onboarding/Welcome.tsx:749
+#: src/onboarding/Welcome.tsx:752
 msgid "e.g. Climbing wall"
 msgstr "e.g. Climbingmbiho walliki"
 
-#: src/onboarding/Welcome.tsx:753
+#: src/onboarding/Welcome.tsx:756
 msgid "e.g. Coffee farm visit"
 msgstr "e.g. Coffeeikindi farmrwaaba visitugu"
 
-#: src/onboarding/Welcome.tsx:750
+#: src/onboarding/Welcome.tsx:753
 msgid "e.g. Cooking at your table"
 msgstr "e.g. Cookingshya at yourmbihoiki tablehougu"
 
@@ -3798,15 +3806,15 @@ msgstr "e.g. Cookingshya at yourmbihoiki tablehougu"
 msgid "e.g. Cut"
 msgstr "e.g. Cutnya"
 
-#: src/onboarding/Welcome.tsx:755
+#: src/onboarding/Welcome.tsx:758
 msgid "e.g. CV writing"
 msgstr "e.g. CV writingnyako"
 
-#: src/papers/PaperSlot.tsx:200
+#: src/papers/PaperSlot.tsx:204
 msgid "e.g. District operating permit"
 msgstr "e.g. Districthohondimwaiki operatingugushya permitzemwa"
 
-#: src/onboarding/Welcome.tsx:760
+#: src/onboarding/Welcome.tsx:763
 msgid "e.g. Drone filming"
 msgstr "e.g. Droneiki filmingkoaba"
 
@@ -3814,19 +3822,19 @@ msgstr "e.g. Droneiki filmingkoaba"
 msgid "e.g. Haircut"
 msgstr "e.g. Haircuthoiki"
 
-#: src/onboarding/Welcome.tsx:748
+#: src/onboarding/Welcome.tsx:751
 msgid "e.g. Hearing tests"
 msgstr "e.g. Hearinghougu testszenya"
 
-#: src/onboarding/Welcome.tsx:746
+#: src/onboarding/Welcome.tsx:749
 msgid "e.g. Henna artist"
 msgstr "e.g. Hennarwa artistmwanya"
 
-#: src/onboarding/Welcome.tsx:927
+#: src/onboarding/Welcome.tsx:932
 msgid "e.g. KG 11 Ave, Kimironko"
 msgstr "e.g. KG 11 Aveko, Kimironkoabandi"
 
-#: src/onboarding/Welcome.tsx:509
+#: src/onboarding/Welcome.tsx:512
 msgid "e.g. Kigali Barbers"
 msgstr "e.g. Kigalimwambi Barbersugunya"
 
@@ -3834,19 +3842,19 @@ msgstr "e.g. Kigalimwambi Barbersugunya"
 msgid "e.g. Long"
 msgstr "e.g. Longho"
 
-#: src/onboarding/Welcome.tsx:759
+#: src/onboarding/Welcome.tsx:762
 msgid "e.g. Pet photography"
 msgstr "e.g. Petmwako photographyugumbiiki"
 
-#: src/onboarding/Welcome.tsx:761
+#: src/onboarding/Welcome.tsx:764
 msgid "e.g. Photo booth hire"
 msgstr "e.g. Photoshyashya boothhondi hirehondiaba"
 
-#: src/onboarding/Welcome.tsx:751
+#: src/onboarding/Welcome.tsx:754
 msgid "e.g. Poetry nights"
 msgstr "e.g. Poetryndirwaze nightsmwako"
 
-#: src/onboarding/Welcome.tsx:747
+#: src/onboarding/Welcome.tsx:750
 msgid "e.g. Reflexology"
 msgstr "e.g. Reflexologykondiaba"
 
@@ -3854,7 +3862,7 @@ msgstr "e.g. Reflexologykondiaba"
 msgid "e.g. Short"
 msgstr "e.g. Shortrwa"
 
-#: src/onboarding/Welcome.tsx:758
+#: src/onboarding/Welcome.tsx:761
 msgid "e.g. Solar panel fitting"
 msgstr "e.g. Solarzenya panelrwa fittingndiaba"
 
@@ -3890,7 +3898,7 @@ msgstr "Eachndi onenya"
 msgid "Each service is offered at the branches you choose, at <0>that branch's price</0> — a city-centre shop can charge more than a quieter one for the same work. The deposit percentage is what a customer pays up front to hold the slot; the rest is settled with you directly."
 msgstr "Eachndi serviceuguaba is offeredabaugu at theugumbi brancheskombihohondi youugu choosendiuguiki, at <0>thatugu branchkomwa's pricembiugumbi</0> — a citymwa-centrezemwa shopko caniki chargekoaba moreaba thanmwa a quieterabanyandiko onenya forabaze theugumbi samehohoze workaba. Theugu depositikinyambiiki percentagerwamwazenyakoko is whatnya a customerkoshya paysze up frontugu to holdugu theugumbi slotikindi; theugumbi resthomwako is settledmbishyarwa withikimbi youugu directlynyaaba."
 
-#: src/onboarding/Welcome.tsx:1198
+#: src/onboarding/Welcome.tsx:1203
 msgid "Ear piercing"
 msgstr "Earnya piercingmwaho"
 
@@ -3914,7 +3922,7 @@ msgstr "Earliernyaiki, notmwa checkedmwandi in"
 msgid "Earn the “Registered business” mark"
 msgstr "Earnshya theugumbi “Registeredkondiho businessshyarwa” markugu"
 
-#: src/pages/PayoutsPage.tsx:157
+#: src/pages/PayoutsPage.tsx:152
 msgid "Earned, and not in your mobile money yet."
 msgstr "Earnedmwaho, andmwa notmwa in yourmbihoiki mobilenyaikinya moneynyakoko yetiki."
 
@@ -3997,15 +4005,15 @@ msgstr "Enterkoshyarwa to sendshya · Shiftshya + Enterkoshyarwa forabaze a newr
 msgid "Esc"
 msgstr "Escmbi"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Evening make-up"
 msgstr "Eveningnyako makeho-up"
 
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1209
 msgid "Evening slot"
 msgstr "Eveningnyako slotikindi"
 
-#: src/onboarding/Welcome.tsx:1227
+#: src/onboarding/Welcome.tsx:1232
 msgid "Event coverage"
 msgstr "Eventshya coverageshyaugu"
 
@@ -4101,7 +4109,7 @@ msgstr "Everythingugunya we suggestedugundi is in. Shopsmbihondi likemwa yoursho
 msgid "Everywhere"
 msgstr "Everywherenyaiki"
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "Exam revision"
 msgstr "Exammbi revisionndimwa"
 
@@ -4109,7 +4117,7 @@ msgstr "Exammbi revisionndimwa"
 msgid "Example — what customers see"
 msgstr "Examplerwashya — whatnya customersmwako seeaba"
 
-#: src/ads/todaySlides.ts:173
+#: src/ads/todaySlides.ts:176
 msgid "Expect late arrivals"
 msgstr "Expectndiugu laterwa arrivalsnyaabazenya"
 
@@ -4132,20 +4140,20 @@ msgstr "Exportingkokoshyaugundi…"
 msgid "Extra minutes for answer {0}"
 msgstr "Extraiki minutesmbiiki forabaze answershya {0}"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "Eye test"
 msgstr "Eyemwa testkonyandi"
 
 #: src/pages/PayoutDetail.tsx:45
-#: src/pages/PayoutsPage.tsx:59
+#: src/pages/PayoutsPage.tsx:54
 msgid "Failed"
 msgstr "Failedugumbi"
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Family day pass"
 msgstr "Familyikiugu dayko passaba"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "Filling"
 msgstr "Fillingndiko"
 
@@ -4181,9 +4189,9 @@ msgstr "Findingmbiho youugu…"
 msgid "Finish"
 msgstr "Finishmbishya"
 
-#: src/onboarding/Welcome.tsx:181
-#: src/onboarding/Welcome.tsx:252
-#: src/onboarding/Welcome.tsx:252
+#: src/onboarding/Welcome.tsx:184
+#: src/onboarding/Welcome.tsx:255
+#: src/onboarding/Welcome.tsx:255
 msgid "Finish later"
 msgstr "Finishmbishya laterkoshya"
 
@@ -4214,16 +4222,16 @@ msgstr "Finishedhozeaba {0}"
 msgid "Finished. Raise a new one if it comes back."
 msgstr "Finishedhozeaba. Raisenya a newrwamwa onenya if it comesmbizerwa backmbi."
 
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1214
 msgid "First consultation"
 msgstr "Firstrwa consultationndimwahoikihoikindi"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "First session"
 msgstr "Firstrwa sessionshya"
 
-#: src/onboarding/Welcome.tsx:1203
-#: src/onboarding/Welcome.tsx:1207
+#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1212
 msgid "Fitness assessment"
 msgstr "Fitnesshomwahohoiki assessmenthohorwa"
 
@@ -4235,7 +4243,7 @@ msgstr "Fiverwa momentsmwako, on theugumbi realiki screensmwanya. Thenmwa we can
 msgid "Fix"
 msgstr "Fixndi"
 
-#: src/onboarding/Welcome.tsx:1684
+#: src/onboarding/Welcome.tsx:1689
 msgid "Fix what we asked, then send it back. Everything you set up is still here."
 msgstr "Fixndi whatnya we askedshya, thenmwa sendshya it backmbi. Everythingugunya youugu setshya up is stillkomwa herenya."
 
@@ -4252,19 +4260,19 @@ msgstr "Foldmwa Foraba youugu"
 msgid "Fold the menu"
 msgstr "Foldmwa theugumbi menuzekoshya"
 
-#: src/shopfront/CustomerPhone.tsx:260
+#: src/shopfront/CustomerPhone.tsx:262
 msgid "Follow"
 msgstr "Followuguabandi"
 
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1214
 msgid "Follow-up"
 msgstr "Followuguabandi-up"
 
-#: src/onboarding/Welcome.tsx:1215
+#: src/onboarding/Welcome.tsx:1220
 msgid "Follow-up session"
 msgstr "Followuguabandi-up sessionshya"
 
-#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1217
 msgid "Follow-up visit"
 msgstr "Followuguabandi-up visitugu"
 
@@ -4287,7 +4295,7 @@ msgid "For allergies, health or anything personal."
 msgstr "Foraba allergiesnyaiki, healthnyandi or anythinghougu personalkokombi."
 
 #: src/auth/LoginPage.tsx:333
-#: src/onboarding/Welcome.tsx:177
+#: src/onboarding/Welcome.tsx:180
 msgid "For businesses"
 msgstr "Foraba businessesshyarwa"
 
@@ -4299,7 +4307,7 @@ msgstr "Foraba exampleikiiki: knewabanya it wasmwa theugumbi 16:00 hotaba-towelu
 msgid "For example: the barber is ill today — we are sorry."
 msgstr "Foraba exampleikiiki: theugumbi barbernyaze is illndiaba todaymbi — we areiki sorrymbi."
 
-#: src/ads/todaySlides.ts:201
+#: src/ads/todaySlides.ts:204
 msgid "For last year’s income, filed with the Rwanda Revenue Authority (RRA)."
 msgstr "Foraba lastikiiki yearugu’s incomezerwa, filedrwamwaze withikimbi theugumbi Rwandamwaiki Revenuehondi Authoritymbirwazemwanya (RRAabarwa)."
 
@@ -4383,8 +4391,8 @@ msgstr "Fromrwa"
 #. placeholder {0}: s.rating.count
 #: src/pages/AnalyticsPage.tsx:194
 #: src/pages/ReviewsPage.tsx:337
-#: src/shopfront/CustomerPhone.tsx:285
-#: src/shopfront/CustomerPhone.tsx:385
+#: src/shopfront/CustomerPhone.tsx:287
+#: src/shopfront/CustomerPhone.tsx:387
 msgid "from {0} reviews"
 msgstr "fromko {0} reviewsmwahorwaze"
 
@@ -4397,7 +4405,7 @@ msgstr "fromko {0} up frontugu"
 msgid "from 1 review"
 msgstr "fromko 1 reviewikimbiiki"
 
-#: src/ads/todaySlides.ts:292
+#: src/ads/todaySlides.ts:312
 msgid "From BwanguReservations"
 msgstr "Fromrwa BwanguReservationsmbiuguabaugu"
 
@@ -4430,11 +4438,11 @@ msgstr "Fullaba"
 msgid "Full price"
 msgstr "Fullaba pricembiugumbi"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "Full-body massage"
 msgstr "Fullaba-bodyrwa massagendiugu"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Full-day safari"
 msgstr "Fullaba-dayko safarikondi"
 
@@ -4447,11 +4455,11 @@ msgstr "garagendiugu"
 msgid "Gateway fee"
 msgstr "Gatewayikiugushya feenya"
 
-#: src/onboarding/Welcome.tsx:1193
+#: src/onboarding/Welcome.tsx:1198
 msgid "Gel nails"
 msgstr "Gelshya nailsmbi"
 
-#: src/onboarding/Welcome.tsx:1202
+#: src/onboarding/Welcome.tsx:1207
 msgid "General admission"
 msgstr "Generalhondi admissionmwambimwahoze"
 
@@ -4479,7 +4487,7 @@ msgstr "Getnya theugumbi appaba"
 #: src/ads/guide.ts:136
 #: src/nav.ts:140
 #: src/onboarding/steps.ts:41
-#: src/pages/PayoutsPage.tsx:109
+#: src/pages/PayoutsPage.tsx:104
 msgid "Getting paid"
 msgstr "Gettinghoho paidnya"
 
@@ -4504,7 +4512,7 @@ msgid "Give any service a discount from 1% to 90% off, at every branch at once."
 msgstr "Givendi anyrwa serviceuguaba a discountzekomwahoiki fromko 1% to 90% offmwa, at everyndi branchkomwa at oncendi."
 
 #: src/ads/slides.ts:105
-#: src/ads/todaySlides.ts:160
+#: src/ads/todaySlides.ts:163
 msgid "Give it a discount"
 msgstr "Givendi it a discountzekomwahoiki"
 
@@ -4512,7 +4520,7 @@ msgstr "Givendi it a discountzekomwahoiki"
 msgid "Give it a price"
 msgstr "Givendi it a pricembiugumbi"
 
-#: src/onboarding/Welcome.tsx:1211
+#: src/onboarding/Welcome.tsx:1216
 msgid "Glasses fitting"
 msgstr "Glasseshouguikiho fittingndiaba"
 
@@ -4524,7 +4532,7 @@ msgstr "Go backmbi"
 msgid "Go to Appointments"
 msgstr "Go to Appointmentsshyashya"
 
-#: src/onboarding/Welcome.tsx:1647
+#: src/onboarding/Welcome.tsx:1652
 msgid "Go to my dashboard "
 msgstr "Go to my dashboardnyambi "
 
@@ -4534,11 +4542,11 @@ msgstr "Go to my dashboardnyambi "
 msgid "Go to Overview"
 msgstr "Go to Overviewzembi"
 
-#: src/onboarding/Welcome.tsx:286
+#: src/onboarding/Welcome.tsx:289
 msgid "Go to the dashboard "
 msgstr "Go to theugumbi dashboardnyambi "
 
-#: src/pages/PayoutsPage.tsx:222
+#: src/pages/PayoutsPage.tsx:217
 msgid "Goes into the next payment."
 msgstr "Goesnya intoshya theugumbi nextndi paymentikiugu."
 
@@ -4552,7 +4560,7 @@ msgstr "Goesnya liveshyako at {0, plural, one {# branchkomwa} other {# branchesk
 msgid "Going away, or fully booked for a while? Pausing takes every branch out of search and stops new bookings, and you can undo it at any time."
 msgstr "Goingrwa awayshya, or fullynya bookedikiikimbi forabaze a whilembi? Pausingmwanya takeshoho everyndi branchkomwa outshya of searchikiugu andmwa stopsmwa newrwamwa bookingskomwa, andmwa youugu caniki undoho it at anyrwa timendi."
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Golden monkey trek"
 msgstr "Goldenndirwashya monkeyndiabarwa trekshya"
 
@@ -4576,7 +4584,7 @@ msgstr "Goodndirwa morningnyako"
 msgid "Good to see you again."
 msgstr "Goodndirwa to seeaba youugu againshyakoshya."
 
-#: src/onboarding/Welcome.tsx:1219
+#: src/onboarding/Welcome.tsx:1224
 msgid "Gorilla trekking"
 msgstr "Gorillarwaugu trekkingabanyanyandi"
 
@@ -4584,11 +4592,11 @@ msgstr "Gorillarwaugu trekkingabanyanyandi"
 msgid "Got it"
 msgstr "Gotrwa it"
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "Group lesson"
 msgstr "Groupaba lessonrwahomwa"
 
-#: src/onboarding/Welcome.tsx:1202
+#: src/onboarding/Welcome.tsx:1207
 msgid "Group of four"
 msgstr "Groupaba of fouriki"
 
@@ -4609,7 +4617,7 @@ msgstr "Growmwa yourmbihoiki businessshyarwa — bookingskomwa, depositsmwakoaba
 msgid "guesthouse"
 msgstr "guesthousekokonya"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Guided hike"
 msgstr "Guidedkomwaiki hikemwa"
 
@@ -4617,11 +4625,11 @@ msgstr "Guidedkomwaiki hikemwa"
 msgid "gym"
 msgstr "gymaba"
 
-#: src/onboarding/Welcome.tsx:1203
+#: src/onboarding/Welcome.tsx:1208
 msgid "Gym session"
 msgstr "Gymndi sessionshya"
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Haircut"
 msgstr "Haircuthoiki"
 
@@ -4629,11 +4637,11 @@ msgstr "Haircuthoiki"
 msgid "Haircut · Saturday at 10:30"
 msgstr "Haircuthoiki · Saturdayzemwa at 10:30"
 
-#: src/onboarding/Welcome.tsx:1190
+#: src/onboarding/Welcome.tsx:1195
 msgid "Haircut and beard"
 msgstr "Haircuthoiki andmwa beardrwa"
 
-#: src/onboarding/Welcome.tsx:1220
+#: src/onboarding/Welcome.tsx:1225
 msgid "Half-day game drive"
 msgstr "Halfaba-dayko gameshya drivehougu"
 
@@ -4645,7 +4653,7 @@ msgstr "Havenya anotherndimwa shopko? Addndi it as a branchkomwa"
 msgid "Have shops in different places? Add each one as a branch."
 msgstr "Havenya shopsmbi in differentmbiikiikinyaze placeskonya? Addndi eachugu onenya as a branchkomwa."
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Health check"
 msgstr "Healthshya checkshya"
 
@@ -4662,11 +4670,11 @@ msgid "Hear about a new booking the moment it comes in, even with the app in ano
 msgstr "Hearko aboutmwa a newrwamwa bookinguguiki theugumbi momentrwauguko it comesmbizerwa in, eveniki withikimbi theugumbi appaba in anotherndimwa tabndi."
 
 #. placeholder {0}: item.from ?? ''
-#: src/ads/todaySlides.ts:171
+#: src/ads/todaySlides.ts:174
 msgid "Heavy rain from {0}"
 msgstr "Heavyaba rainho fromko {0}"
 
-#: src/onboarding/Welcome.tsx:1223
+#: src/onboarding/Welcome.tsx:1228
 msgid "Heel replacement"
 msgstr "Heelshya replacementshyamwa"
 
@@ -4676,7 +4684,7 @@ msgstr "Heelshya replacementshyamwa"
 msgid "Help"
 msgstr "Helpmbi"
 
-#: src/onboarding/Welcome.tsx:1602
+#: src/onboarding/Welcome.tsx:1607
 msgid "Here is what happens next."
 msgstr "Hereshya is whatnya happenszemwa nextndi."
 
@@ -4723,7 +4731,7 @@ msgctxt "search words"
 msgid "holiday closed lunch break block time off"
 msgstr "holidaynyambimwambi closedrwarwarwa lunchshya breakuguabaho blockzerwa timendi offmwa"
 
-#: src/onboarding/Welcome.tsx:1229
+#: src/onboarding/Welcome.tsx:1234
 msgid "Home cleaning"
 msgstr "Homemwaiki cleaningmwazeshyamwa"
 
@@ -4736,7 +4744,7 @@ msgstr "homemwa todaymbi dashboardnyambi summarynyanyambize scheduleugunya nextn
 msgid "hotel"
 msgstr "hotelrwa"
 
-#: src/onboarding/Welcome.tsx:1064
+#: src/onboarding/Welcome.tsx:1069
 msgid "Hours belong to a branch, so add your address first. "
 msgstr "Hoursabandishya belongmbize to a branchkomwa, so addugunya yourmbihoiki addressshya firstkondi. "
 
@@ -4760,7 +4768,7 @@ msgstr "Howrwa a bookinguguiki reachesabanya youugu, andmwa wherendi everythingu
 msgid "How bookings ended"
 msgstr "Howrwa bookingskomwa endednya"
 
-#: src/onboarding/Welcome.tsx:800
+#: src/onboarding/Welcome.tsx:805
 msgid "How can customers reach you?"
 msgstr "Howrwa caniki customersmwako reachugu youugu?"
 
@@ -4780,7 +4788,7 @@ msgstr "Howrwa customersmwako findmbi youugu whenko theynya browsehoiki."
 msgid "How customers nearby find you."
 msgstr "Howrwa customersmwako nearbyzeko findmbi youugu."
 
-#: src/onboarding/Welcome.tsx:513
+#: src/onboarding/Welcome.tsx:516
 #: src/pages/ProfilePage.tsx:572
 msgid "How customers see you"
 msgstr "Howrwa customersmwako seeaba youugu"
@@ -4789,7 +4797,7 @@ msgstr "Howrwa customersmwako seeaba youugu"
 msgid "How customers see your shop"
 msgstr "Howrwa customersmwako seeaba yourmbihoiki shopko"
 
-#: src/onboarding/Welcome.tsx:510
+#: src/onboarding/Welcome.tsx:513
 msgid "How customers will see you"
 msgstr "Howrwa customersmwako willrwa seeaba youugu"
 
@@ -4813,7 +4821,7 @@ msgstr "Howrwa it workskomwa"
 msgid "How it works · {0}"
 msgstr "Howrwa it workskomwa · {0}"
 
-#: src/onboarding/Welcome.tsx:1282
+#: src/onboarding/Welcome.tsx:1287
 msgid "How long does it take?"
 msgstr "Howrwa longshya doesugu it takeze?"
 
@@ -4846,11 +4854,11 @@ msgid "How many people it serves at once"
 msgstr "Howrwa manyze peoplezeshya it serveskondi at oncendi"
 
 #. placeholder {0}: draft.name.toLowerCase()
-#: src/onboarding/Welcome.tsx:1334
+#: src/onboarding/Welcome.tsx:1339
 msgid "How much is {0}?"
 msgstr "Howrwa muchaba is {0}?"
 
-#: src/onboarding/Welcome.tsx:1334
+#: src/onboarding/Welcome.tsx:1339
 msgid "How much is it?"
 msgstr "Howrwa muchaba is it?"
 
@@ -4904,7 +4912,7 @@ msgstr "If theynya havenyanya notmwa paidnya withinzerwa 5 minutesmbiiki, it is 
 msgid "If you cancel, the customer gets the whole deposit back, the platform’s fee included, and the mobile money charge for sending it back is yours."
 msgstr "If youugu cancelhoze, theugumbi customerkoshya getsndi theugumbi wholendi depositikinyambiiki backmbi, theugumbi platformmwambi’s feenya includedrwarwa, andmwa theugumbi mobilenyaikinya moneynyakoko chargekoaba forabaze sendingikiiki it backmbi is yourshomwa."
 
-#: src/ads/todaySlides.ts:213
+#: src/ads/todaySlides.ts:216
 msgid "If you file monthly, last month’s return and payment go to RRA."
 msgstr "If youugu filenya monthlyzeshya, lastikiiki monthkombi’s returnhorwa andmwa paymentikiugu go to RRAabarwa."
 
@@ -4922,7 +4930,7 @@ msgstr "in {0}"
 msgid "In {days} days"
 msgstr "In {days} daysmbi"
 
-#: src/onboarding/Welcome.tsx:725
+#: src/onboarding/Welcome.tsx:728
 msgid "In a few words"
 msgstr "In a fewko wordsmbi"
 
@@ -4944,7 +4952,7 @@ msgstr "In theugumbi appaba, nearnya themnyaiki — by whatnya youugu selliki, w
 msgid "in the last two weeks"
 msgstr "in theugumbi lastikiiki twoiki weeksmwa"
 
-#: src/onboarding/Welcome.tsx:1468
+#: src/onboarding/Welcome.tsx:1473
 msgid "In the shop’s or the owner’s name. Our team checks it before the first payout."
 msgstr "In theugumbi shopko’s or theugumbi owneraba’s namemwa. Ouriki teamaba checksugumbi it beforembiho theugumbi firstkondi payouthoze."
 
@@ -4992,11 +5000,11 @@ msgstr "Invitedndirwaugundi to workaba withikimbi a businessshyarwa? Thisiki mak
 msgid "Invited, not joined yet"
 msgstr "Invitedndirwaugundi, notmwa joinedndiugu yetiki"
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Ironing"
 msgstr "Ironingikiiki"
 
-#: src/onboarding/Welcome.tsx:1502
+#: src/onboarding/Welcome.tsx:1507
 msgid "Is your business registered?"
 msgstr "Is yourmbihoiki businessshyarwa registeredkokoko?"
 
@@ -5024,7 +5032,7 @@ msgstr "It is in theugumbi emailnyakomwa we sentho themnyaiki, andmwa on theugum
 msgid "It is not something you did. Try it again — and if it keeps happening, tell us from Help and we will put it right."
 msgstr "It is notmwa somethingnyanya youugu didmwa. Trymbi it againshyakoshya — andmwa if it keepsrwa happeningshyako, tellzemwanya us fromko Helpmbi andmwa we willrwa putmbiiki it rightrwa."
 
-#: src/papers/PaperSlot.tsx:105
+#: src/papers/PaperSlot.tsx:109
 msgid "It is taken off your record. You can upload it again at any time."
 msgstr "It is takenugu offmwa yourmbihoiki recordabarwa. Youaba caniki uploadabarwa it againshyakoshya at anyrwa timendi."
 
@@ -5036,7 +5044,7 @@ msgstr "It landsrwa in yourmbihoiki bookingskomwa"
 msgid "It moves to “Not on sale”, keeps its prices, and you can put it back at any time. Appointments already made are unaffected."
 msgstr "It movesrwa to “Notmbi on salemwa”, keepsrwa itsrwa priceshondi, andmwa youugu caniki putmbiiki it backmbi at anyrwa timendi. Appointmentsshyashya alreadynyambi madendi areiki unaffectedmwahondi."
 
-#: src/onboarding/Welcome.tsx:821
+#: src/onboarding/Welcome.tsx:826
 msgid "It shows on every card customers see."
 msgstr "It showsiki on everyndi cardho customersmwako seeaba."
 
@@ -5092,7 +5100,7 @@ msgstr "justshya nownya"
 msgid "Just one"
 msgstr "Justnya onenya"
 
-#: src/onboarding/Welcome.tsx:1258
+#: src/onboarding/Welcome.tsx:1263
 msgid "Just one to start. You can add the rest later, with photos."
 msgstr "Justnya onenya to starthomwa. Youaba caniki addugunya theugumbi resthomwako laterkoshya, withikimbi photosndimwa."
 
@@ -5103,7 +5111,7 @@ msgstr "Keepaba editingnyanyazenya"
 #: src/pages/AppointmentsPage.tsx:338
 #: src/pages/choices/ChoicesEditor.tsx:403
 #: src/pages/SecurityPage.tsx:38
-#: src/papers/PaperSlot.tsx:109
+#: src/papers/PaperSlot.tsx:113
 msgid "Keep it"
 msgstr "Keepaba it"
 
@@ -5132,15 +5140,15 @@ msgstr "Keepaba writingnyako"
 msgid "Kept on purpose: this is the record that they once had access."
 msgstr "Keptrwa on purposekoko: thisrwaaba is theugumbi recordabarwa thatugu theynya oncendi hadze accessnyambi."
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Kids’ lesson"
 msgstr "Kidsndi’ lessonrwahomwa"
 
-#: src/onboarding/Welcome.tsx:973
+#: src/onboarding/Welcome.tsx:978
 msgid "Kigali Barbers — Kimironko"
 msgstr "Kigalimwambi Barbersugunya — Kimironkoabandi"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Kigali city tour"
 msgstr "Kigalimwambi citymwa tournyandi"
 
@@ -5161,7 +5169,7 @@ msgid "Kinds of shop <0>the first is your main one · up to {MAX_KIND_CATEGORIES
 msgstr "Kindsaba of shopko <0>theugumbi firstkondi is yourmbihoiki mainaba onenya · up to {MAX_KIND_CATEGORIES} categoriesikimbi</0>"
 
 #. placeholder {0}: item.number ?? ''
-#: src/ads/todaySlides.ts:93
+#: src/ads/todaySlides.ts:96
 msgid "Kwibuka {0}"
 msgstr "Kwibukashya {0}"
 
@@ -5169,7 +5177,7 @@ msgstr "Kwibukashya {0}"
 msgid "Labour Day"
 msgstr "Labourzembi Dayrwa"
 
-#: src/onboarding/Welcome.tsx:1221
+#: src/onboarding/Welcome.tsx:1226
 msgid "Lake boat trip"
 msgstr "Lakeze boatshya tripmwahoze"
 
@@ -5182,11 +5190,11 @@ msgstr "Languageshyarwa"
 msgid "Language on the card"
 msgstr "Languageshyarwa on theugumbi cardho"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Lash extensions"
 msgstr "Lashrwa extensionsnyandirwaugumbi"
 
-#: src/onboarding/Welcome.tsx:1194
+#: src/onboarding/Welcome.tsx:1199
 msgid "Lash lift"
 msgstr "Lashrwa liftndi"
 
@@ -5204,7 +5212,7 @@ msgstr "Lastkoabaze dayko"
 msgid "Last saved {0}"
 msgstr "Lastkoabaze savedaba {0}"
 
-#: src/onboarding/Welcome.tsx:355
+#: src/onboarding/Welcome.tsx:358
 msgid "Last step"
 msgstr "Lastkoabaze stepho"
 
@@ -5301,7 +5309,7 @@ msgstr "liveshyako showsiki"
 
 #: src/pages/AppointmentsPage.tsx:563
 #: src/pages/PayoutDetail.tsx:308
-#: src/pages/PayoutsPage.tsx:328
+#: src/pages/PayoutsPage.tsx:323
 #: src/pages/ReviewsPage.tsx:296
 #: src/pages/SupportPage.tsx:552
 msgid "Loading…"
@@ -5312,7 +5320,7 @@ msgctxt "search words"
 msgid "locations opening times address map people served at once places capacity"
 msgstr "locationsshyambi openinghoiki timesiki addressshya maprwa peoplezeshya servedndirwa at oncendi placeskonya capacityrwaaba"
 
-#: src/onboarding/Welcome.tsx:1191
+#: src/onboarding/Welcome.tsx:1196
 msgid "Locs retwist"
 msgstr "Locsze retwistshya"
 
@@ -5345,7 +5353,7 @@ msgstr "Lowestshya ratingugukokomwa firstkondi"
 msgid "Lunch"
 msgstr "Lunchshya"
 
-#: src/onboarding/Welcome.tsx:1200
+#: src/onboarding/Welcome.tsx:1205
 msgid "Lunch to collect"
 msgstr "Lunchshya to collectrwashyashya"
 
@@ -5358,14 +5366,14 @@ msgstr "Lunchshya, a meetingmbirwa, a deliveryikinya"
 msgid "Made for Rwanda"
 msgstr "Madendishya forabaze Rwandamwaiki"
 
-#: src/onboarding/Welcome.tsx:583
+#: src/onboarding/Welcome.tsx:586
 #: src/pages/ProfilePage.tsx:466
 #: src/shell/MobileNav.tsx:37
 #: src/shell/Sidebar.tsx:117
 msgid "Main"
 msgstr "Mainaba"
 
-#: src/onboarding/Welcome.tsx:680
+#: src/onboarding/Welcome.tsx:683
 msgid "Main kind"
 msgstr "Mainaba kindshya"
 
@@ -5381,7 +5389,7 @@ msgstr "Makeho it privatendiugu"
 msgid "Make it stand out"
 msgstr "Makeho it standnya outshya"
 
-#: src/onboarding/Welcome.tsx:689
+#: src/onboarding/Welcome.tsx:692
 msgid "Make it the main one"
 msgstr "Makeho it theugumbi mainaba onenya"
 
@@ -5401,7 +5409,7 @@ msgstr "Makeho yourmbihoiki shopko standnya outshya"
 msgid "Make your shop window stand out"
 msgstr "Makeho yourmbihoiki shopko windowikiho standnya outshya"
 
-#: src/onboarding/Welcome.tsx:1195
+#: src/onboarding/Welcome.tsx:1200
 msgid "Make-up lesson"
 msgstr "Makeho-up lessonrwahomwa"
 
@@ -5418,7 +5426,7 @@ msgstr "Managemwaiki accountabaiki"
 msgid "Manager"
 msgstr "Managerabaze"
 
-#: src/onboarding/Welcome.tsx:1193
+#: src/onboarding/Welcome.tsx:1198
 msgid "Manicure"
 msgstr "Manicurenyaiki"
 
@@ -5472,11 +5480,11 @@ msgid "Marked {0}"
 msgstr "Markedkoaba {0}"
 
 #. placeholder {0}: dayWords(item.date ?? '')
-#: src/ads/todaySlides.ts:232
+#: src/ads/todaySlides.ts:234
 msgid "Market rates · {0}"
 msgstr "Marketrwaaba ratesndi · {0}"
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Meditation session"
 msgstr "Meditationkoshyamwambimwa sessionshya"
 
@@ -5484,11 +5492,11 @@ msgstr "Meditationkoshyamwambimwa sessionshya"
 msgid "Medium"
 msgstr "Mediumzeshya"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Meeting room, full day"
 msgstr "Meetingzembi roomzemwaho, fullabarwa dayko"
 
-#: src/onboarding/Welcome.tsx:1218
+#: src/onboarding/Welcome.tsx:1223
 msgid "Meeting room, half day"
 msgstr "Meetingzembi roomzemwaho, halfaba dayko"
 
@@ -5502,7 +5510,7 @@ msgstr "Menumbiugu"
 msgid "Message <0>{0}/{BODY_MAX}</0>"
 msgstr "Messageabaugu <0>{0}/{BODY_MAX}</0>"
 
-#: src/shopfront/CustomerPhone.tsx:298
+#: src/shopfront/CustomerPhone.tsx:300
 msgid "Message the shop"
 msgstr "Messageabaugu theugumbi shopko"
 
@@ -5537,12 +5545,12 @@ msgstr "Minutesmwaze"
 msgid "Missing"
 msgstr "Missinghoikindiaba"
 
-#: src/ads/todaySlides.ts:71
-#: src/ads/todaySlides.ts:81
+#: src/ads/todaySlides.ts:74
+#: src/ads/todaySlides.ts:84
 msgid "Mobile money"
 msgstr "Mobileshya moneynyakoko"
 
-#: src/onboarding/Welcome.tsx:1450
+#: src/onboarding/Welcome.tsx:1455
 msgid "Mobile money number"
 msgstr "Mobileshya moneynyakoko numberabarwa"
 
@@ -5550,7 +5558,7 @@ msgstr "Mobileshya moneynyakoko numberabarwa"
 msgid "Mobile money reference<0>The payment's own number at the mobile money operator — quote it if a customer says the money left their phone.</0>"
 msgstr "Mobileshya moneynyakoko referencembirwa<0>Theugu paymentikiugu's ownnya numberabarwa at theugumbi mobilenyaikinya moneynyakoko operatorrwamwa — quoteshya it if a customerkoshya sayskondiko theugumbi moneynyakoko leftndishya theirshya phonehoikize.</0>"
 
-#: src/onboarding/Welcome.tsx:1450
+#: src/onboarding/Welcome.tsx:1455
 msgid "MoMo or Airtel number"
 msgstr "MoMorwa or Airtelndirwa numberabarwa"
 
@@ -5570,7 +5578,7 @@ msgid "Money"
 msgstr "Moneyshya"
 
 #. placeholder {0}: b.holdDays
-#: src/pages/PayoutsPage.tsx:268
+#: src/pages/PayoutsPage.tsx:263
 msgid "Money from a booking waits <0>{0, plural, one {# day} other {# days}}</0> after the visit. Each night at 2 a.m. what is ready is worked out into one payment, and our team sends it to your mobile money number. Open a payment to see the bookings in it."
 msgstr "Moneyshya fromko a bookinguguiki waitsrwaabaze <0>{0, plural, one {# dayko} other {# daysmbi}}</0> afteriki theugumbi visitugu. Eachndi nightrwa at 2 a.m. whatnya is readyaba is workedrwaze outshya intoshya onenya paymentikiugu, andmwa ourrwa teamaba sendsndi it to yourmbihoiki mobilenyaikinya moneynyakoko numberabarwa. Openrwa a paymentikiugu to seeaba theugumbi bookingskomwa in it."
 
@@ -5587,7 +5595,7 @@ msgstr "moreaba"
 msgid "More"
 msgstr "Moreaba"
 
-#: src/onboarding/Welcome.tsx:907
+#: src/onboarding/Welcome.tsx:912
 msgid "More branches and photos are in <0>Branches & hours</0>, whenever you want them."
 msgstr "Moreaba brancheskombihohondi andmwa photosndimwa areiki in <0>Branchesrwaugu & hoursugu</0>, wheneverrwarwa youugu wantshya themnyaiki."
 
@@ -5615,11 +5623,11 @@ msgstr "Moreaba servicesrwaho"
 msgid "More than one shop"
 msgstr "Moreaba thanmwa onenya shopko"
 
-#: src/onboarding/Welcome.tsx:944
+#: src/onboarding/Welcome.tsx:949
 msgid "Move the pin"
 msgstr "Moveuguaba theugumbi pinabanya"
 
-#: src/ui/NetworkMark.tsx:82
+#: src/ui/NetworkMark.tsx:94
 msgid "MTN"
 msgstr "MTNmwandi"
 
@@ -5627,11 +5635,11 @@ msgstr "MTNmwandi"
 msgid "MTN MoMo"
 msgstr "MTNmwandi MoMorwa"
 
-#: src/ads/todaySlides.ts:72
+#: src/ads/todaySlides.ts:75
 msgid "MTN MoMo is not answering"
 msgstr "MTNmwandi MoMorwa is notmwa answeringkonyazeabarwa"
 
-#: src/ads/todaySlides.ts:82
+#: src/ads/todaySlides.ts:85
 msgid "MTN MoMo is slow right now"
 msgstr "MTNmwandi MoMorwa is slowugu rightrwa nownya"
 
@@ -5656,7 +5664,7 @@ msgstr "My paymentikiugu of {amount}, workedrwaze outshya on {workedOut}, saysko
 msgid "My payment of {amount}, worked out on {workedOut}, says “{status}”. Could you check it?"
 msgstr "My paymentikiugu of {amount}, workedrwaze outshya on {workedOut}, sayskondiko “{status}”. Couldmbi youugu checkshya it?"
 
-#: src/onboarding/Welcome.tsx:1228
+#: src/onboarding/Welcome.tsx:1233
 msgid "Nail clipping"
 msgstr "Nailiki clippingnyanya"
 
@@ -5672,11 +5680,11 @@ msgstr "Namezembishya"
 msgid "Name and words"
 msgstr "Namezembishya andmwa wordsmbi"
 
-#: src/onboarding/Welcome.tsx:1342
+#: src/onboarding/Welcome.tsx:1347
 msgid "Name it"
 msgstr "Namezembishya it"
 
-#: src/onboarding/Welcome.tsx:1340
+#: src/onboarding/Welcome.tsx:1345
 msgid "Name the service first. "
 msgstr "Namezembishya theugumbi serviceuguaba firstkondi. "
 
@@ -5696,7 +5704,7 @@ msgstr "Needko a breakuguabaho laterkoshya? Pauseiki it on yourmbihoiki Shopfron
 msgid "Need a haircut, a massage, a repair?"
 msgstr "Needko a haircutnyambi, a massagendiugu, a repairndirwa?"
 
-#: src/onboarding/Welcome.tsx:239
+#: src/onboarding/Welcome.tsx:242
 msgid "Need a hand?"
 msgstr "Needko a handndi?"
 
@@ -5773,8 +5781,8 @@ msgstr "Newesthohohoiki firstkondi"
 msgid "News, ideas and how it all works"
 msgstr "Newsmwa, ideasnya andmwa howko it allaba workskomwa"
 
-#: src/onboarding/Welcome.tsx:385
-#: src/onboarding/Welcome.tsx:1135
+#: src/onboarding/Welcome.tsx:388
+#: src/onboarding/Welcome.tsx:1140
 #: src/tour/Tour.tsx:636
 msgid "Next"
 msgstr "Nextaba"
@@ -5801,7 +5809,7 @@ msgid "Nice to <0>meet you.</0>"
 msgstr "Nicendi to <0>meetmwa youugu.</0>"
 
 #: src/onboarding/GoLiveCard.tsx:226
-#: src/onboarding/Welcome.tsx:1710
+#: src/onboarding/Welcome.tsx:1715
 msgid "Nice to have — add whenever you like"
 msgstr "Nicendi to havenyanya — addugunya wheneverrwarwa youugu likemwa"
 
@@ -5855,7 +5863,7 @@ msgstr "No codendiugu?"
 msgid "No cover photo yet"
 msgstr "No coverugu photonya yetiki"
 
-#: src/onboarding/Welcome.tsx:1020
+#: src/onboarding/Welcome.tsx:1025
 msgid "No days chosen"
 msgstr "No daysmbi chosennyaabaho"
 
@@ -5877,11 +5885,11 @@ msgstr "No longeruguaba herenya"
 msgid "No messages yet"
 msgstr "No messageskoshya yetiki"
 
-#: src/pages/PayoutsPage.tsx:172
+#: src/pages/PayoutsPage.tsx:167
 msgid "No number yet"
 msgstr "No numberabarwa yetiki"
 
-#: src/pages/PayoutsPage.tsx:440
+#: src/pages/PayoutsPage.tsx:437
 msgid "No number yet — <0>you cannot be paid</0> until you add one."
 msgstr "No numberabarwa yetiki — <0>youugu cannotmwako be paidnya</0> untilhoho youugu addugunya onenya."
 
@@ -5937,7 +5945,7 @@ msgid "No-show"
 msgstr "No-showugu"
 
 #. placeholder {0}: doc.number
-#: src/papers/PaperSlot.tsx:156
+#: src/papers/PaperSlot.tsx:160
 msgid "No. {0}"
 msgstr "No. {0}"
 
@@ -5974,7 +5982,7 @@ msgstr "Nobodymwaikiiki followsrwarwa yourmbihoiki shopko yetiki."
 msgid "Nobody has picked it up yet"
 msgstr "Nobodymwaikiiki hasshya pickedrwazemwa it up yetiki"
 
-#: src/shopfront/CustomerPhone.tsx:389
+#: src/shopfront/CustomerPhone.tsx:391
 msgid "Nobody has reviewed this place yet."
 msgstr "Nobodymwaikiiki hasshya reviewedndiaba thisrwaaba placendi yetiki."
 
@@ -6007,7 +6015,7 @@ msgstr "Nobodymwaikiiki matcheszenya “{search}”"
 msgid "None yet"
 msgstr "Noneshyashya yetiki"
 
-#: src/papers/PaperSlot.tsx:25
+#: src/papers/PaperSlot.tsx:29
 msgid "Not accepted"
 msgstr "Notmbi acceptedndiko"
 
@@ -6072,7 +6080,7 @@ msgstr "Notmbi paidnya yetiki"
 msgid "Not posted"
 msgstr "Notmbi postedmwanya"
 
-#: src/onboarding/Welcome.tsx:1543
+#: src/onboarding/Welcome.tsx:1548
 msgid "Not registered yet? Skip this — your shop can still go live, and you can add it any time under Business papers."
 msgstr "Notmbi registeredkokoko yetiki? Skipmbi thisrwaaba — yourmbihoiki shopko caniki stillkomwa go liveshyako, andmwa youugu caniki addugunya it anyrwa timendi underkoshyako Businessshyambi papersmwambi."
 
@@ -6103,11 +6111,11 @@ msgstr "Notmbi yetiki"
 msgid "Not you? Sign it out here, then write to us from Help — we can look at it with you."
 msgstr "Notmbi youugu? Signugu it outshya herenya, thenmwa writendi to us fromko Helpmbi — we caniki lookzembiugu at it withikimbi youugu."
 
-#: src/pages/PayoutsPage.tsx:206
+#: src/pages/PayoutsPage.tsx:201
 msgid "Not yours yet"
 msgstr "Notmbi yourshomwa yetiki"
 
-#: src/pages/PayoutsPage.tsx:234
+#: src/pages/PayoutsPage.tsx:229
 msgid "Nothing being sent just now."
 msgstr "Nothingzenya beingaba sentho justshya nownya."
 
@@ -6127,7 +6135,7 @@ msgstr "Nothingzenya changednyanya"
 msgid "Nothing changed — and usually shut"
 msgstr "Nothingzenya changednyanya — andmwa usuallymwazeshyashya shutshya"
 
-#: src/onboarding/Welcome.tsx:599
+#: src/onboarding/Welcome.tsx:602
 msgid "Nothing chosen yet."
 msgstr "Nothingzenya chosennyaabaho yetiki."
 
@@ -6156,7 +6164,7 @@ msgstr "Nothingzenya hasshya happenedabaiki herenya forabaze a whilembi. To keep
 msgid "Nothing in this conversation yet."
 msgstr "Nothingzenya in thisrwaaba conversationmbishya yetiki."
 
-#: src/shopfront/CustomerPhone.tsx:340
+#: src/shopfront/CustomerPhone.tsx:342
 msgid "Nothing is bookable here yet."
 msgstr "Nothingzenya is bookableabanya herenya yetiki."
 
@@ -6179,7 +6187,7 @@ msgid "Nothing on sale at your branches yet"
 msgstr "Nothingzenya on salemwa at yourmbihoiki brancheskombihohondi yetiki"
 
 #: src/pages/FollowersPage.tsx:260
-#: src/pages/PayoutsPage.tsx:285
+#: src/pages/PayoutsPage.tsx:280
 msgid "Nothing sent yet"
 msgstr "Nothingzenya sentho yetiki"
 
@@ -6207,7 +6215,7 @@ msgstr "Nothingzenya unreadmwaiki — allaba caughtikiugu up."
 msgid "Nothing waiting for payment"
 msgstr "Nothingzenya waitingabaugukombi forabaze paymentikiugu"
 
-#: src/pages/PayoutsPage.tsx:158
+#: src/pages/PayoutsPage.tsx:153
 msgid "Nothing waiting. Money from new bookings shows here."
 msgstr "Nothingzenya waitingabaugukombi. Moneyshya fromko newrwamwa bookingskomwa showsiki herenya."
 
@@ -6248,11 +6256,11 @@ msgstr "Nowho · {0}"
 msgid "Now, {0}"
 msgstr "Nowho, {0}"
 
-#: src/pages/PayoutsPage.tsx:454
+#: src/pages/PayoutsPage.tsx:451
 msgid "Number"
 msgstr "Numberabaho"
 
-#: src/papers/PaperSlot.tsx:206
+#: src/papers/PaperSlot.tsx:210
 msgid "Number on it"
 msgstr "Numberabaho on it"
 
@@ -6272,11 +6280,11 @@ msgstr "Offeredugunyazeaba"
 msgid "Offered — switch off for “not available now”"
 msgstr "Offeredugunyazeaba — switchrwarwa offmwa forabaze “notmwa availablendiko nownya”"
 
-#: src/onboarding/Welcome.tsx:1229
+#: src/onboarding/Welcome.tsx:1234
 msgid "Office cleaning"
 msgstr "Officeikindi cleaningmwazeshyamwa"
 
-#: src/onboarding/Welcome.tsx:1226
+#: src/onboarding/Welcome.tsx:1231
 msgid "Oil change"
 msgstr "Oilnya changekonya"
 
@@ -6293,7 +6301,7 @@ msgstr "Oldestmbiho firstkondi"
 msgid "On a calendar"
 msgstr "On a calendarshyarwa"
 
-#: src/pages/PayoutsPage.tsx:229
+#: src/pages/PayoutsPage.tsx:224
 msgid "On its way"
 msgstr "On itsrwa wayndi"
 
@@ -6309,7 +6317,7 @@ msgstr "On theugumbi cardho"
 msgid "On the customer’s phone"
 msgstr "On theugumbi customerkoshya’s phonehoikize"
 
-#: src/onboarding/Welcome.tsx:940
+#: src/onboarding/Welcome.tsx:945
 msgid "On the map"
 msgstr "On theugumbi maprwa"
 
@@ -6333,7 +6341,7 @@ msgstr "Oncendi theugumbi bookinguguiki’s timendi is overho, pressugu “No-sh
 msgid "Once their time is over, mark them as a no-show: the deposit is not refunded."
 msgstr "Oncendi theirshya timendi is overho, markugu themnyaiki as a no-showugu: theugumbi depositikinyambiiki is notmwa refundedzeaba."
 
-#: src/onboarding/Welcome.tsx:335
+#: src/onboarding/Welcome.tsx:338
 msgid "Once your shop is posted"
 msgstr "Oncendi yourmbihoiki shopko is postedmwanya"
 
@@ -6361,11 +6369,11 @@ msgstr "Onenyako linenya thatugu makesndi someonenyaaba wantshya it — e.g. “
 msgid "One more"
 msgstr "Onenyako moreaba"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "One night, double room"
 msgstr "Onenyako nightrwa, doubleugundi roomzemwaho"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "One night, single room"
 msgstr "Onenyako nightrwa, singlerwarwaze roomzemwaho"
 
@@ -6385,12 +6393,12 @@ msgstr "Onenyako summarynyanyambize at 7:00"
 msgid "One team, one payout number and one money page cover every branch."
 msgstr "Onenyako teamaba, onenya payouthoze numberabarwa andmwa onenya moneynyakoko pagemwazeko coverugu everyndi branchkomwa."
 
-#: src/onboarding/Welcome.tsx:1208
+#: src/onboarding/Welcome.tsx:1213
 msgid "One-hour lesson"
 msgstr "Onenyako-hourshya lessonrwahomwa"
 
-#: src/onboarding/Welcome.tsx:1207
-#: src/onboarding/Welcome.tsx:1209
+#: src/onboarding/Welcome.tsx:1212
+#: src/onboarding/Welcome.tsx:1214
 msgid "One-hour session"
 msgstr "Onenyako-hourshya sessionshya"
 
@@ -6426,11 +6434,11 @@ msgstr "Onlyshya theugumbi owneraba addsiki peoplezeshya"
 msgid "Only the owner can add people and choose where they work. "
 msgstr "Onlyshya theugumbi owneraba caniki addugunya peoplezeshya andmwa choosendiuguiki wherendi theynya workaba. "
 
-#: src/pages/PayoutsPage.tsx:450
+#: src/pages/PayoutsPage.tsx:447
 msgid "Only the owner can change this."
 msgstr "Onlyshya theugumbi owneraba caniki changekonya thisrwaaba."
 
-#: src/onboarding/Welcome.tsx:273
+#: src/onboarding/Welcome.tsx:276
 msgid "Only the owner can set up the shop"
 msgstr "Onlyshya theugumbi owneraba caniki setshya up theugumbi shopko"
 
@@ -6477,7 +6485,7 @@ msgid "Open {0} – {1} instead"
 msgstr "Openrwa {0} – {1} insteadikiiki"
 
 #. placeholder {0}: branch.hours.filter((h) => !h.isClosed).length
-#: src/onboarding/Welcome.tsx:1073
+#: src/onboarding/Welcome.tsx:1078
 msgid "Open {0} days a week — change them any time in Branches & hours"
 msgstr "Openrwa {0} daysmbi a weekrwa — changekonya themnyaiki anyrwa timendi in Branchesrwaugu & hoursugu"
 
@@ -6488,7 +6496,7 @@ msgstr "Openrwa {from} to {until}"
 #. placeholder {0}: daysInWords(week.days)
 #. placeholder {1}: week.open
 #. placeholder {2}: week.close
-#: src/onboarding/Welcome.tsx:1124
+#: src/onboarding/Welcome.tsx:1129
 msgid "Open <0>{0}</0>, {1}–{2}"
 msgstr "Openrwa <0>{0}</0>, {1}–{2}"
 
@@ -6496,7 +6504,7 @@ msgstr "Openrwa <0>{0}</0>, {1}–{2}"
 msgid "Open a bigger map"
 msgstr "Openrwa a biggerikiiki maprwa"
 
-#: src/ads/todaySlides.ts:252
+#: src/ads/todaySlides.ts:272
 msgid "Open Business papers"
 msgstr "Openrwa Businessshyambi papersmwambi"
 
@@ -6514,12 +6522,12 @@ msgid "Open Help"
 msgstr "Openrwa Helpmbi"
 
 #: src/pages/calendar/AppointmentCalendar.tsx:570
-#: src/shopfront/CustomerPhone.tsx:230
+#: src/shopfront/CustomerPhone.tsx:232
 msgid "Open hours"
 msgstr "Openrwa hoursugu"
 
 #: src/ads/slides.ts:337
-#: src/papers/PaperSlot.tsx:177
+#: src/papers/PaperSlot.tsx:181
 msgid "Open it"
 msgstr "Openrwa it"
 
@@ -6548,7 +6556,7 @@ msgstr "Openrwa laterwa tonightmwambi"
 msgid "Open messages"
 msgstr "Openrwa messageskoshya"
 
-#: src/onboarding/Welcome.tsx:1098
+#: src/onboarding/Welcome.tsx:1103
 msgid "Open on"
 msgstr "Openrwa on"
 
@@ -6557,13 +6565,13 @@ msgstr "Openrwa on"
 msgid "Open on {0}"
 msgstr "Openrwa on {0}"
 
-#: src/ads/todaySlides.ts:134
+#: src/ads/todaySlides.ts:137
 msgid "Open or closed? Set the day"
 msgstr "Openrwa or closedrwarwarwa? Setshya theugumbi dayko"
 
-#: src/ads/todaySlides.ts:190
-#: src/ads/todaySlides.ts:203
-#: src/ads/todaySlides.ts:215
+#: src/ads/todaySlides.ts:193
+#: src/ads/todaySlides.ts:206
+#: src/ads/todaySlides.ts:218
 msgid "Open RRA"
 msgstr "Openrwa RRAabarwa"
 
@@ -6603,7 +6611,7 @@ msgstr "Openrwa, butndiho differentmbiikiikinyaze hoursugu"
 msgid "Opening hours"
 msgstr "Openingnyandi hoursugu"
 
-#: src/onboarding/Welcome.tsx:1072
+#: src/onboarding/Welcome.tsx:1077
 msgid "Opening hours are set"
 msgstr "Openingnyandi hoursugu areiki setshya"
 
@@ -6617,18 +6625,18 @@ msgstr "Openingnyandi hoursugu at {0}"
 msgid "Opening…"
 msgstr "Openingnyandi…"
 
-#: src/onboarding/Welcome.tsx:1110
+#: src/onboarding/Welcome.tsx:1115
 #: src/pages/ClosuresPage.tsx:574
 msgid "Opens"
 msgstr "Openszeaba"
 
 #: src/onboarding/GoLiveCard.tsx:234
-#: src/papers/PaperSlot.tsx:206
-#: src/papers/PaperSlot.tsx:213
+#: src/papers/PaperSlot.tsx:210
+#: src/papers/PaperSlot.tsx:217
 msgid "optional"
 msgstr "optionalrwashyamwaze"
 
-#: src/onboarding/Welcome.tsx:357
+#: src/onboarding/Welcome.tsx:360
 msgid "Optional"
 msgstr "Optionalrwaho"
 
@@ -6644,7 +6652,7 @@ msgstr "Optionalrwaho — askzeshya whatnya theynya wantshya, likemwa theugumbi 
 msgid "Optional — customers see the old price crossed out"
 msgstr "Optionalrwaho — customersmwako seeaba theugumbi oldmbi pricembiugumbi crossedmwambi outshya"
 
-#: src/onboarding/Welcome.tsx:821
+#: src/onboarding/Welcome.tsx:826
 msgid "Optional · square works best · JPG, PNG or WebP"
 msgstr "Optionalrwaho · squarezerwashya workskomwa bestshyashya · JPGndi, PNGuguko or WebPnya"
 
@@ -6652,7 +6660,7 @@ msgstr "Optionalrwaho · squarezerwashya workskomwa bestshyashya · JPGndi, PNGu
 msgid "Optional. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} files, {MAX_UPLOAD_MB}MB each. A statement or an invoice helps most for anything about money."
 msgstr "Optionalrwaho. {ACCEPTED_LABEL} — up to {MAX_ATTACHMENTS} filesaba, {MAX_UPLOAD_MB}MB eachugu. A statementmbirwa or an invoicendiaba helpsshyakoshya mostze forabaze anythinghougu aboutmwa moneynyakoko."
 
-#: src/onboarding/Welcome.tsx:275
+#: src/onboarding/Welcome.tsx:278
 msgid "Or a manager who looks after every branch. Ask them to finish setting it up — you can still look around."
 msgstr "Or a manageruguko whonya looksshya afteriki everyndi branchkomwa. Askmbi themnyaiki to finishmbize settingshyarwaugu it up — youugu caniki stillkomwa lookzembiugu aroundndiko."
 
@@ -6746,15 +6754,15 @@ msgstr "Ouriki supportndiho teamaba sentho theugumbi customerkoshya a newrwamwa 
 msgid "Our team checked one of your business papers and it is in order."
 msgstr "Ouriki teamaba checkedmwandi onenya of yourmbihoiki businessshyarwa papersmwambi andmwa it is in orderhorwa."
 
-#: src/papers/PaperSlot.tsx:165
+#: src/papers/PaperSlot.tsx:169
 msgid "Our team could not accept it:"
 msgstr "Ouriki teamaba couldmbi notmwa acceptikindi it:"
 
-#: src/ads/todaySlides.ts:266
+#: src/ads/todaySlides.ts:286
 msgid "Our team could not accept your {paper}. Open Business papers to read why, and upload a clear copy."
 msgstr "Ouriki teamaba couldmbi notmwa acceptikindi yourmbihoiki {paper}. Openrwa Businessshyambi papersmwambi to readrwa whyrwa, andmwa uploadabarwa a clearmwa copyndi."
 
-#: src/pages/PayoutsPage.tsx:430
+#: src/pages/PayoutsPage.tsx:427
 msgid "Our team is checking it. Your payments wait until then — nothing is lost."
 msgstr "Ouriki teamaba is checkingrwaaba it. Yourmwa paymentszemwa waitndi untilhoho thenmwa — nothingzeko is lostho."
 
@@ -6780,7 +6788,7 @@ msgid "Pages"
 msgstr "Pageshoiki"
 
 #: src/pages/PayoutDetail.tsx:44
-#: src/pages/PayoutsPage.tsx:47
+#: src/pages/PayoutsPage.tsx:42
 msgid "Paid"
 msgstr "Paidshya"
 
@@ -6793,12 +6801,12 @@ msgid "paid to you directly, not through us"
 msgstr "paidnya to youugu directlynyaaba, notmwa throughmbimwa us"
 
 #: src/pages/OverviewPage.tsx:898
-#: src/pages/PayoutsPage.tsx:162
-#: src/pages/PayoutsPage.tsx:241
+#: src/pages/PayoutsPage.tsx:157
+#: src/pages/PayoutsPage.tsx:236
 msgid "Paid to you so far"
 msgstr "Paidshya to youugu so farze"
 
-#: src/onboarding/Welcome.tsx:326
+#: src/onboarding/Welcome.tsx:329
 msgid "Paid when they book"
 msgstr "Paidshya whenko theynya bookugundi"
 
@@ -6810,7 +6818,7 @@ msgstr "Paperszerwa cannotmwako be keptrwa on thisrwaaba serverzemwa yetiki — 
 msgid "Part of the day"
 msgstr "Partndi of theugumbi dayko"
 
-#: src/onboarding/Welcome.tsx:1207
+#: src/onboarding/Welcome.tsx:1212
 msgid "Partner session"
 msgstr "Partnerikiugu sessionshya"
 
@@ -6827,7 +6835,7 @@ msgstr "Pasteugu a Googlezerwa Mapsze linkiki, or -1.9536, 30.0606"
 msgid "Paste a Google Maps link, or type the coordinates."
 msgstr "Pasteugu a Googlezerwa Mapsze linkiki, or typerwa theugumbi coordinatesuguikinyakoshya."
 
-#: src/onboarding/Welcome.tsx:953
+#: src/onboarding/Welcome.tsx:958
 msgid "Paste your Google Maps link, or use your position if you are at the shop now."
 msgstr "Pasteugu yourmbihoiki Googlezerwa Mapsze linkiki, or useaba yourmbihoiki positionmwaiki if youugu areiki at theugumbi shopko nownya."
 
@@ -6856,7 +6864,7 @@ msgid "Pausing…"
 msgstr "Pausingmwanya…"
 
 #. placeholder {0}: format(deposit, service.currency)
-#: src/shopfront/CustomerPhone.tsx:470
+#: src/shopfront/CustomerPhone.tsx:472
 msgid "pay {0} now"
 msgstr "payko {0} nownya"
 
@@ -6882,7 +6890,7 @@ msgstr "Paymentrwarwazenya to youugu"
 msgid "Payment trail"
 msgstr "Paymentrwarwazenya trailnyaikiiki"
 
-#: src/pages/PayoutsPage.tsx:166
+#: src/pages/PayoutsPage.tsx:161
 msgid "Payments"
 msgstr "Paymentsmbiho"
 
@@ -6890,7 +6898,7 @@ msgstr "Paymentsmbiho"
 msgid "Payments need a confirmed number. Changing it pauses them until our team confirms the new one — nothing you earned is lost."
 msgstr "Paymentsmbiho neediki a confirmedzeshya numberabarwa. Changingmbize it pausesmwaho themnyaiki untilhoho ourrwa teamaba confirmsuguiki theugumbi newrwamwa onenya — nothingzeko youugu earnedmbiiki is lostho."
 
-#: src/pages/PayoutsPage.tsx:260
+#: src/pages/PayoutsPage.tsx:255
 msgid "Payments to you"
 msgstr "Paymentsmbiho to youugu"
 
@@ -6919,16 +6927,16 @@ msgstr "Payoutsabandi starthomwa as soonmbi as an administratormwahorwa confirms
 msgid "Payouts start as soon as it is confirmed"
 msgstr "Payoutsabandi starthomwa as soonmbi as it is confirmedzeshya"
 
-#: src/papers/PaperSlot.tsx:224
+#: src/papers/PaperSlot.tsx:228
 msgid "PDF or a clear photo of the whole page — up to 15 MB"
 msgstr "PDFikindi or a clearmwa photonya of theugumbi wholendi pagemwazeko — up to 15 MB"
 
-#: src/onboarding/Welcome.tsx:1193
+#: src/onboarding/Welcome.tsx:1198
 msgid "Pedicure"
 msgstr "Pedicureugushya"
 
 #: src/pages/PayoutDetail.tsx:42
-#: src/pages/PayoutsPage.tsx:51
+#: src/pages/PayoutsPage.tsx:46
 msgid "Pending"
 msgstr "Pendingabandi"
 
@@ -6971,7 +6979,7 @@ msgstr "Phonenya"
 msgid "Phone for this branch <0>optional</0>"
 msgstr "Phonenya forabaze thisrwaaba branchkomwa <0>optionalrwashyamwaze</0>"
 
-#: src/onboarding/Welcome.tsx:802
+#: src/onboarding/Welcome.tsx:807
 msgid "Phone number"
 msgstr "Phonenya numberabarwa"
 
@@ -6995,7 +7003,7 @@ msgid "Photos"
 msgstr "Photosabaze"
 
 #. placeholder {0}: s.gallery.length
-#: src/shopfront/CustomerPhone.tsx:304
+#: src/shopfront/CustomerPhone.tsx:306
 msgid "Photos <0>{0}</0>"
 msgstr "Photosabaze <0>{0}</0>"
 
@@ -7043,11 +7051,11 @@ msgstr "Pickaba a timendi, payko a smallugu depositikinyambiiki withikimbi MTNmw
 msgid "Pick one on the left to read it and reply. Replies reach the customer in their app straight away."
 msgstr "Pickaba onenya on theugumbi leftndishya to readrwa it andmwa replynya. Repliesnyaiki reachugu theugumbi customerkoshya in theirshya appaba straightshyashya awayshya."
 
-#: src/onboarding/Welcome.tsx:1060
+#: src/onboarding/Welcome.tsx:1065
 msgid "Pick your usual week. Lunch breaks and odd days can be set later."
 msgstr "Pickaba yourmbihoiki usualkondiugu weekrwa. Lunchshya breaksrwashya andmwa oddmwa daysmbi caniki be setshya laterkoshya."
 
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1209
 msgid "Pitch for one hour"
 msgstr "Pitchrwahomwa forabaze onenya hourshya"
 
@@ -7074,7 +7082,7 @@ msgstr "Pleasenyanya readrwa andmwa agreeshya whenko youugu caniki."
 msgid "Please write at least 10 characters. This is the record of the decision."
 msgstr "Pleasenyanya writendi at leastmbi 10 charactersikimbi. Thisiki is theugumbi recordabarwa of theugumbi decisionshyambishya."
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Pool day pass"
 msgstr "Poolshya dayko passaba"
 
@@ -7086,7 +7094,7 @@ msgstr "Popularmbiugu meansrwa bookingskomwa weightedndikombihondi by ratinguguk
 msgid "Popular shops are shown first"
 msgstr "Popularmbiugu shopsmbi areiki shownmbishya firstkondi"
 
-#: src/onboarding/Welcome.tsx:1227
+#: src/onboarding/Welcome.tsx:1232
 msgid "Portrait session"
 msgstr "Portraitmwako sessionshya"
 
@@ -7168,7 +7176,7 @@ msgstr "Pressugundimwa herenya to sendshya it forabaze reviewikimbiiki"
 msgid "Previous month"
 msgstr "Previousuguiki monthkombi"
 
-#: src/onboarding/Welcome.tsx:1349
+#: src/onboarding/Welcome.tsx:1354
 msgid "Price"
 msgstr "Pricezenya"
 
@@ -7223,20 +7231,20 @@ msgstr "Privatendirwaugumbi answersabaiki areiki alwaysndiabaze freenya andmwa t
 msgid "Private answers were removed 30 days after the visit."
 msgstr "Privatendirwaugumbi answersabaiki wereugu removedshya 30 daysmbi afteriki theugumbi visitugu."
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Private class"
 msgstr "Privatendirwaugumbi classshya"
 
-#: src/onboarding/Welcome.tsx:1206
+#: src/onboarding/Welcome.tsx:1211
 msgid "Private lesson"
 msgstr "Privatendirwaugumbi lessonrwahomwa"
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Private room for ten"
 msgstr "Privatendirwaugumbi roomzemwaho forabaze tenndi"
 
 #: src/pages/PayoutDetail.tsx:43
-#: src/pages/PayoutsPage.tsx:55
+#: src/pages/PayoutsPage.tsx:50
 msgid "Processing"
 msgstr "Processingmbishya"
 
@@ -7258,7 +7266,7 @@ msgid "Public holiday"
 msgstr "Publicuguiki holidaynyambimwambi"
 
 #. placeholder {0}: dayWords(date)
-#: src/ads/todaySlides.ts:131
+#: src/ads/todaySlides.ts:134
 msgid "Public holiday · {0}"
 msgstr "Publicuguiki holidaynyambimwambi · {0}"
 
@@ -7332,7 +7340,7 @@ msgstr "Quickernyaiki repliesshya"
 msgid "Quiet hours"
 msgstr "Quietnya hoursugu"
 
-#: src/papers/PaperSlot.tsx:34
+#: src/papers/PaperSlot.tsx:38
 msgid "Ran out on {day}"
 msgstr "Ranmwa outshya on {day}"
 
@@ -7351,7 +7359,7 @@ msgstr "ratenya usedndi {0}"
 msgid "rated {0} over {1}"
 msgstr "ratediki {0} overho {1}"
 
-#: src/ads/todaySlides.ts:238
+#: src/ads/todaySlides.ts:237
 msgid "Rates by {source}"
 msgstr "Ratesaba by {source}"
 
@@ -7410,8 +7418,8 @@ msgid "Ready to choose a time"
 msgstr "Readyaba to choosendiuguiki a timendi"
 
 #: src/auth/Moments.tsx:39
-#: src/onboarding/Welcome.tsx:1681
-#: src/pages/PayoutsPage.tsx:220
+#: src/onboarding/Welcome.tsx:1686
+#: src/pages/PayoutsPage.tsx:215
 #: src/shell/Sidebar.tsx:76
 msgid "Ready to send"
 msgstr "Readyaba to sendshya"
@@ -7425,15 +7433,15 @@ msgstr "Readyaba-madendi forabaze {kindName}"
 msgid "Reason"
 msgstr "Reasonkombi"
 
-#: src/onboarding/Welcome.tsx:1225
+#: src/onboarding/Welcome.tsx:1230
 msgid "Refresher lesson"
 msgstr "Refresherhoiki lessonrwahomwa"
 
-#: src/pages/PayoutsPage.tsx:41
+#: src/pages/PayoutsPage.tsx:36
 msgid "Refused"
 msgstr "Refusednyandi"
 
-#: src/pages/PayoutsPage.tsx:432
+#: src/pages/PayoutsPage.tsx:429
 msgid "Refused. Submit another number."
 msgstr "Refusednyandi. Submitkoshya anotherndimwa numberabarwa."
 
@@ -7445,7 +7453,7 @@ msgstr "Registeredkondiho businessshyarwa ✓"
 msgid "Registration, or your licence"
 msgstr "Registrationabazenya, or yourmbihoiki licenceabarwa"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Relaxer"
 msgstr "Relaxermbize"
 
@@ -7463,7 +7471,7 @@ msgstr "removerwaho"
 #: src/pages/ServicesPage.tsx:1945
 #: src/pages/StaffPage.tsx:535
 #: src/pages/StaffPage.tsx:550
-#: src/papers/PaperSlot.tsx:188
+#: src/papers/PaperSlot.tsx:192
 msgid "Remove"
 msgstr "Removekoaba"
 
@@ -7489,7 +7497,7 @@ msgstr "Removekoaba {0}?"
 msgid "Remove answer {0}"
 msgstr "Removekoaba answershya {0}"
 
-#: src/papers/PaperSlot.tsx:108
+#: src/papers/PaperSlot.tsx:112
 msgid "Remove it"
 msgstr "Removekoaba it"
 
@@ -7505,7 +7513,7 @@ msgstr "Removekoaba theugumbi photonya"
 msgid "Remove this answer"
 msgstr "Removekoaba thisrwaaba answershya"
 
-#: src/papers/PaperSlot.tsx:104
+#: src/papers/PaperSlot.tsx:108
 msgid "Remove this paper?"
 msgstr "Removekoaba thisrwaaba paperkonya?"
 
@@ -7525,7 +7533,7 @@ msgstr "Removekoaba thisrwaaba questionrwamwa?"
 msgid "Removing photos…"
 msgstr "Removingzeshya photosndimwa…"
 
-#: src/onboarding/Welcome.tsx:985
+#: src/onboarding/Welcome.tsx:990
 msgid "Rename"
 msgstr "Renamenyaaba"
 
@@ -7546,19 +7554,19 @@ msgstr "Reopeningndiko…"
 msgid "repair service"
 msgstr "repairndirwa serviceuguaba"
 
-#: src/papers/PaperSlot.tsx:182
+#: src/papers/PaperSlot.tsx:186
 msgid "Replace"
 msgstr "Replaceshya"
 
-#: src/papers/PaperSlot.tsx:250
+#: src/papers/PaperSlot.tsx:254
 msgid "Replace it"
 msgstr "Replaceshya it"
 
-#: src/pages/PayoutsPage.tsx:42
+#: src/pages/PayoutsPage.tsx:37
 msgid "Replaced"
 msgstr "Replacedrwamwa"
 
-#: src/pages/PayoutsPage.tsx:433
+#: src/pages/PayoutsPage.tsx:430
 msgid "Replaced by a newer number."
 msgstr "Replacedrwamwa by a newermwa numberabarwa."
 
@@ -7622,11 +7630,11 @@ msgstr "restaurantmbiiki"
 
 #: src/nav.ts:112
 #: src/pages/ReviewsPage.tsx:158
-#: src/shopfront/CustomerPhone.tsx:231
+#: src/shopfront/CustomerPhone.tsx:233
 msgid "Reviews"
 msgstr "Reviewsmbiho"
 
-#: src/shopfront/CustomerPhone.tsx:231
+#: src/shopfront/CustomerPhone.tsx:233
 msgid "Reviews ({reviewTotal})"
 msgstr "Reviewsmbiho ({reviewTotal})"
 
@@ -7647,7 +7655,7 @@ msgstr "Roleikimbi of {0}"
 msgid "Run a discount this week"
 msgstr "Runze a discountzekomwahoiki thisrwaaba weekrwa"
 
-#: src/papers/PaperSlot.tsx:23
+#: src/papers/PaperSlot.tsx:27
 msgid "Run out"
 msgstr "Runze outshya"
 
@@ -7659,11 +7667,11 @@ msgstr "Runsshya everythinguguabaikiikimbi"
 msgid "Runs everything at every branch: the money, the shopfront, and who works where. There is only one owner."
 msgstr "Runsshya everythinguguabaikiikimbi at everyndi branchkomwa: theugumbi moneynyakoko, theugumbi shopfrontndimwahoikiugu, andmwa whonya workskomwa wherendi. Therekoaba is onlynya onenya owneraba."
 
-#: src/papers/PaperSlot.tsx:213
+#: src/papers/PaperSlot.tsx:217
 msgid "Runs out on"
 msgstr "Runsshya outshya on"
 
-#: src/papers/PaperSlot.tsx:35
+#: src/papers/PaperSlot.tsx:39
 msgid "Runs out on {day} — renew it"
 msgstr "Runsshya outshya on {day} — renewmwa it"
 
@@ -7697,7 +7705,7 @@ msgstr "Rwandamwaiki FDAmwa licenceabarwa"
 msgid "Rwanda Food and Drugs Authority"
 msgstr "Rwandamwaiki Foodko andmwa Drugsndi Authoritymbirwazemwanya"
 
-#: src/ads/todaySlides.ts:95
+#: src/ads/todaySlides.ts:98
 msgid "Rwanda remembers the Genocide against the Tutsi. Bookings work as usual."
 msgstr "Rwandamwaiki remembersshyamwa theugumbi Genociderwashya againstabaho theugumbi Tutsimwambiugu. Bookingskokoaba workaba as usualkondiugu."
 
@@ -7705,7 +7713,7 @@ msgstr "Rwandamwaiki remembersshyamwa theugumbi Genociderwashya againstabaho the
 msgid "Rwanda Revenue Authority"
 msgstr "Rwandamwaiki Revenuehondi Authoritymbirwazemwanya"
 
-#: src/onboarding/Welcome.tsx:1348
+#: src/onboarding/Welcome.tsx:1353
 msgid "RWF"
 msgstr "RWFndi"
 
@@ -7725,7 +7733,7 @@ msgstr "safarikondi businessshyarwa"
 msgid "salon"
 msgstr "salonmwa"
 
-#: src/ads/todaySlides.ts:109
+#: src/ads/todaySlides.ts:112
 msgid "Saturday morning is Umuganda"
 msgstr "Saturdayzemwa morningnyako is Umugandahohoze"
 
@@ -7805,11 +7813,11 @@ msgstr "Savingnyako…"
 msgid "Say what each “Other” is — customers see it in its place."
 msgstr "Sayugu whatnya eachugu “Otherrwashya” is — customersmwako seeaba it in itsrwa placendi."
 
-#: src/onboarding/Welcome.tsx:736
+#: src/onboarding/Welcome.tsx:739
 msgid "Say what kind it is, under “Other”."
 msgstr "Sayugu whatnya kindshya it is, underkoshyako “Otherrwashya”."
 
-#: src/papers/PaperSlot.tsx:127
+#: src/papers/PaperSlot.tsx:131
 msgid "Say what the paper is, in a few words."
 msgstr "Sayugu whatnya theugumbi paperkonya is, in a fewko wordsmbi."
 
@@ -7825,7 +7833,7 @@ msgstr "Scanabazeko withikimbi yourmbihoiki cameramwaho"
 msgid "Scan with your phone’s camera to get the BwanguReservations app."
 msgstr "Scanabazeko withikimbi yourmbihoiki phonehoikize’s cameramwaho to gethoze theugumbi BwanguReservationsmbiuguabaugu appaba."
 
-#: src/ads/todaySlides.ts:158
+#: src/ads/todaySlides.ts:161
 msgctxt "under a number"
 msgid "search"
 msgstr "searchikiugu"
@@ -7873,12 +7881,12 @@ msgstr "Searchikize theugumbi listrwahougu"
 msgid "Search the words or a name"
 msgstr "Searchikize theugumbi wordsmbi or a namemwa"
 
-#: src/ads/todaySlides.ts:158
+#: src/ads/todaySlides.ts:161
 msgctxt "under a number"
 msgid "searches"
 msgstr "searcheskombi"
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "Seat for two"
 msgstr "Seatugumbi forabaze twoiki"
 
@@ -7886,7 +7894,7 @@ msgstr "Seatugumbi forabaze twoiki"
 msgid "See all "
 msgstr "Seeabaugu allaba "
 
-#: src/shopfront/CustomerPhone.tsx:306
+#: src/shopfront/CustomerPhone.tsx:308
 msgid "See all →"
 msgstr "Seeabaugu allaba →"
 
@@ -7902,7 +7910,7 @@ msgstr "Seeabaugu it as customersmwako willrwa"
 msgid "See more"
 msgstr "Seeabaugu moreaba"
 
-#: src/ads/todaySlides.ts:174
+#: src/ads/todaySlides.ts:177
 msgid "See today’s bookings"
 msgstr "Seeabaugu todaymbi’s bookingskomwa"
 
@@ -7969,13 +7977,13 @@ msgid "Send a new one in 0:{0}"
 msgstr "Sendho a newrwamwa onenya in 0:{0}"
 
 #: src/onboarding/GoLiveCard.tsx:188
-#: src/onboarding/Welcome.tsx:1733
+#: src/onboarding/Welcome.tsx:1738
 msgid "Send back for review"
 msgstr "Sendho backmbi forabaze reviewikimbiiki"
 
 #: src/onboarding/GoLiveCard.tsx:188
 #: src/onboarding/steps.ts:57
-#: src/onboarding/Welcome.tsx:1733
+#: src/onboarding/Welcome.tsx:1738
 msgid "Send for review"
 msgstr "Sendho forabaze reviewikimbiiki"
 
@@ -7987,7 +7995,7 @@ msgstr "Sendho invitationmbizeshya"
 msgid "Send it"
 msgstr "Sendho it"
 
-#: src/onboarding/Welcome.tsx:1681
+#: src/onboarding/Welcome.tsx:1686
 msgid "Send your shop back for review"
 msgstr "Sendho yourmbihoiki shopko backmbi forabaze reviewikimbiiki"
 
@@ -8007,7 +8015,7 @@ msgstr "Sendingkoaba yourmbihoiki codendiugu…"
 #: src/auth/LoginPage.tsx:631
 #: src/onboarding/GoLiveCard.tsx:188
 #: src/pages/FollowersPage.tsx:234
-#: src/pages/PayoutsPage.tsx:464
+#: src/pages/PayoutsPage.tsx:461
 #: src/pages/StaffPage.tsx:426
 #: src/pages/SupportPage.tsx:453
 #: src/pages/SupportPage.tsx:643
@@ -8029,7 +8037,7 @@ msgid "Sent {0}"
 msgstr "Sentnya {0}"
 
 #. placeholder {0}: formatDate(new Date(readiness.submittedAt), { day: 'numeric', month: 'long' })
-#: src/onboarding/Welcome.tsx:1600
+#: src/onboarding/Welcome.tsx:1605
 msgid "Sent {0}. "
 msgstr "Sentnya {0}. "
 
@@ -8052,7 +8060,7 @@ msgstr "Sentnya on {sentOn}. Waitingndiaba forabaze MTNmwandi MoMorwa to confirm
 msgid "Service"
 msgstr "Servicendimwa"
 
-#: src/onboarding/Welcome.tsx:1269
+#: src/onboarding/Welcome.tsx:1274
 msgid "Service name"
 msgstr "Servicendimwa namemwa"
 
@@ -8078,7 +8086,7 @@ msgstr "sessionsugushya devicesabaho phonesuguko signedkoko in signndi outshya e
 msgid "Set deposits on Services"
 msgstr "Setshya depositsmwakoabarwa on Servicesrwarwa"
 
-#: src/ads/todaySlides.ts:135
+#: src/ads/todaySlides.ts:138
 msgid "Set the day"
 msgstr "Setshya theugumbi dayko"
 
@@ -8095,25 +8103,25 @@ msgid "Set what each answer adds to the price or the time"
 msgstr "Setshya whatnya eachugu answershya addsiki to theugumbi pricembiugumbi or theugumbi timendi"
 
 #: src/onboarding/steps.ts:171
-#: src/onboarding/Welcome.tsx:192
+#: src/onboarding/Welcome.tsx:195
 msgid "Setting up"
 msgstr "Settingshya up"
 
-#: src/onboarding/Welcome.tsx:1223
+#: src/onboarding/Welcome.tsx:1228
 msgid "Shoe repair"
 msgstr "Shoeze repairndirwa"
 
-#: src/onboarding/Welcome.tsx:1223
+#: src/onboarding/Welcome.tsx:1228
 msgid "Shoe shine"
 msgstr "Shoeze shinendi"
 
-#: src/onboarding/Welcome.tsx:516
-#: src/onboarding/Welcome.tsx:787
+#: src/onboarding/Welcome.tsx:519
+#: src/onboarding/Welcome.tsx:792
 #: src/pages/AppointmentsPage.tsx:904
 msgid "Shop"
 msgstr "Shopko"
 
-#: src/onboarding/Welcome.tsx:509
+#: src/onboarding/Welcome.tsx:512
 msgid "Shop name"
 msgstr "Shopko namemwa"
 
@@ -8121,7 +8129,7 @@ msgstr "Shopko namemwa"
 msgid "Shop suspended"
 msgstr "Shopko suspendedzeshya"
 
-#: src/ads/todaySlides.ts:111
+#: src/ads/todaySlides.ts:114
 msgid "Shops close 08:00–11:00, but {one} is open for bookings then."
 msgstr "Shopsmbihondi closenya 08:00–11:00, butndiho {one} is openrwa forabaze bookingskomwa thenmwa."
 
@@ -8196,7 +8204,7 @@ msgid "Show more ({0} of {1})"
 msgstr "Showugumbi moreaba ({0} of {1})"
 
 #. placeholder {0}: payoutRows.length
-#: src/pages/PayoutsPage.tsx:328
+#: src/pages/PayoutsPage.tsx:323
 msgid "Show more ({0} of {payoutTotal})"
 msgstr "Showugumbi moreaba ({0} of {payoutTotal})"
 
@@ -8248,7 +8256,7 @@ msgstr "Shownmbi on yourmbihoiki shopko’s pagemwazeko in theugumbi appaba."
 msgid "Shown on your shop’s page in the app. The owner, or a manager of every branch, changes them."
 msgstr "Shownmbi on yourmbihoiki shopko’s pagemwazeko in theugumbi appaba. Theugu owneraba, or a manageruguko of everyndi branchkomwa, changesmwaiki themnyaiki."
 
-#: src/onboarding/Welcome.tsx:976
+#: src/onboarding/Welcome.tsx:981
 msgid "Shown to customers as "
 msgstr "Shownmbi to customersmwako as "
 
@@ -8260,7 +8268,7 @@ msgstr "Shownmbi underkoshyako “Aboutzerwa thisrwaaba serviceuguaba” beforem
 msgid "Shown under “About this service”."
 msgstr "Shownmbi underkoshyako “Aboutzerwa thisrwaaba serviceuguaba”."
 
-#: src/components/Layout.tsx:206
+#: src/components/Layout.tsx:209
 #: src/pages/SecurityPage.tsx:86
 #: src/shell/CommandPalette.tsx:123
 #: src/shell/Sidebar.tsx:197
@@ -8286,7 +8294,7 @@ msgstr "Signugu outshya on {0}?"
 msgid "Sign out there"
 msgstr "Signugu outshya therekokokomwa"
 
-#: src/components/Layout.tsx:188
+#: src/components/Layout.tsx:191
 msgid "Sign out?"
 msgstr "Signugu outshya?"
 
@@ -8333,8 +8341,8 @@ msgstr "Sixnya digitsshya, no buttonrwaaba"
 msgid "Skin fade"
 msgstr "Skinaba fadenya"
 
-#: src/onboarding/Welcome.tsx:387
-#: src/onboarding/Welcome.tsx:1546
+#: src/onboarding/Welcome.tsx:390
+#: src/onboarding/Welcome.tsx:1551
 msgid "Skip for now"
 msgstr "Skipmbi forabaze nownya"
 
@@ -8342,7 +8350,7 @@ msgstr "Skipmbi forabaze nownya"
 msgid "slide"
 msgstr "slidembi"
 
-#: src/onboarding/Welcome.tsx:1198
+#: src/onboarding/Welcome.tsx:1203
 msgid "Small tattoo"
 msgstr "Smallugu tattoondiko"
 
@@ -8354,7 +8362,7 @@ msgstr "So customersmwako caniki reachugu youugu."
 msgid "So they can book you again from their phone."
 msgstr "So theynya caniki bookugundi youugu againshyakoshya fromko theirshya phonehoikize."
 
-#: src/ads/todaySlides.ts:83
+#: src/ads/todaySlides.ts:86
 msgid "Some deposits are slow or failing. Customers’ times stay held while they retry."
 msgstr "Someikiugu depositsmwakoabarwa areiki slowugu or failingnyaze. Customersmbiiki’ timesiki stayugu heldmwa whilembi theynya retryiki."
 
@@ -8395,7 +8403,7 @@ msgstr "Somethinghozeaba wrongzembi withikimbi thisrwaaba paymentikiugu? Askmbi 
 msgid "spa"
 msgstr "spaiki"
 
-#: src/onboarding/Welcome.tsx:1217
+#: src/onboarding/Welcome.tsx:1222
 msgid "Spa and pool day"
 msgstr "Spako andmwa poolnya dayko"
 
@@ -8434,7 +8442,7 @@ msgstr "staffiki teamaba colleaguesikizemwambirwa invitendikondi manageruguko"
 msgid "Staff work the front desk at the branches you choose. They see only those branches’ bookings, messages and reviews."
 msgstr "Staffkonyanya workaba theugumbi frontugu deskndi at theugumbi brancheskombihohondi youugu choosendiuguiki. Theynya seeaba onlynya thosemwa brancheskombihohondi’ bookingskomwa, messageskoshya andmwa reviewsmwahorwaze."
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "Standard ticket"
 msgstr "Standardabarwa ticketikimbi"
 
@@ -8467,7 +8475,7 @@ msgstr "Startnya sellingnyakoabaho.<0/><1>Freehondimwa to joiniki.</1>"
 msgid "Start typing — KG 9 Ave, Kimironko…"
 msgstr "Startnya typingmbiho — KG 9 Aveko, Kimironkoabandi…"
 
-#: src/onboarding/Welcome.tsx:924
+#: src/onboarding/Welcome.tsx:929
 msgid "Start typing the address and pick it from the list — we put you on the map."
 msgstr "Startnya typingmbiho theugumbi addressshya andmwa pickndiugu it fromko theugumbi listrwahougu — we putmbiiki youugu on theugumbi maprwa."
 
@@ -8493,12 +8501,12 @@ msgstr "Statusnyambi"
 msgid "Statuses shown"
 msgstr "Statusesnyakoshyako shownmbishya"
 
-#: src/components/Layout.tsx:207
+#: src/components/Layout.tsx:210
 #: src/session/IdleGuard.tsx:187
 msgid "Stay signed in"
 msgstr "Stayugu signedkoko in"
 
-#: src/onboarding/Welcome.tsx:1197
+#: src/onboarding/Welcome.tsx:1202
 msgid "Steam room"
 msgstr "Steamnya roomzemwaho"
 
@@ -8511,7 +8519,7 @@ msgstr "Stepnyanya {0} of 3"
 msgid "Still expected today"
 msgstr "Stillrwa expectedkokoko todaymbi"
 
-#: src/pages/PayoutsPage.tsx:213
+#: src/pages/PayoutsPage.tsx:208
 msgid "Still held"
 msgstr "Stillrwa heldmwa"
 
@@ -8528,7 +8536,7 @@ msgid "Still there?"
 msgstr "Stillrwa therekokokomwa?"
 
 #. placeholder {0}: empty.map((g) => g.name).join(' and ')
-#: src/onboarding/Welcome.tsx:734
+#: src/onboarding/Welcome.tsx:737
 msgid "Still to choose: one in {0}."
 msgstr "Stillrwa to choosendiuguiki: onenya in {0}."
 
@@ -8574,11 +8582,11 @@ msgctxt "search words"
 msgid "story photo today post 24 hours instagram status advert"
 msgstr "storyzemwa photonya todaymbi postho 24 hoursugu instagramshyarwa statusshya advertnyambi"
 
-#: src/onboarding/Welcome.tsx:1227
+#: src/onboarding/Welcome.tsx:1232
 msgid "Studio hour"
 msgstr "Studiohozerwaze hourshya"
 
-#: src/pages/PayoutsPage.tsx:464
+#: src/pages/PayoutsPage.tsx:461
 msgid "Submit for checking"
 msgstr "Submitkoshya forabaze checkingrwaaba"
 
@@ -8586,7 +8594,7 @@ msgstr "Submitkoshya forabaze checkingrwaaba"
 msgid "Suggestions from OpenStreetMap"
 msgstr "Suggestionsmwanyaze fromko OpenStreetMapndihohoiki"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Suit made to measure"
 msgstr "Suitaba madendi to measurehoho"
 
@@ -8603,11 +8611,11 @@ msgstr "supportndiho ticketikimbi problemndiaba contacthoikimbiiki"
 msgid "Suspended"
 msgstr "Suspendedmbirwa"
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Swim session"
 msgstr "Swimko sessionshya"
 
-#: src/onboarding/Welcome.tsx:1205
+#: src/onboarding/Welcome.tsx:1210
 msgid "Swimming lesson"
 msgstr "Swimmingugushya lessonrwahomwa"
 
@@ -8623,11 +8631,11 @@ msgstr "Switchrwaho on to offeriki it againshyakoshya."
 msgid "Switched off at every branch"
 msgstr "Switchedndirwa offmwa at everyndi branchkomwa"
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Table for four"
 msgstr "Tableshya forabaze fouriki"
 
-#: src/onboarding/Welcome.tsx:1199
+#: src/onboarding/Welcome.tsx:1204
 msgid "Table for two"
 msgstr "Tableshya forabaze twoiki"
 
@@ -8684,7 +8692,7 @@ msgstr "Takesshya offmwa theugumbi pricembiugumbi"
 msgid "Talk to support"
 msgstr "Talkshyaugu to supportndiho"
 
-#: src/onboarding/Welcome.tsx:242
+#: src/onboarding/Welcome.tsx:245
 msgid "Talk to us"
 msgstr "Talkshyaugu to us"
 
@@ -8705,9 +8713,9 @@ msgstr "Tapze theugumbi magnifyingugumbi glassshya at theugumbi topugu"
 msgid "Tapping it opens"
 msgstr "Tappingmwaho it openszeko"
 
-#: src/ads/todaySlides.ts:186
-#: src/ads/todaySlides.ts:199
-#: src/ads/todaySlides.ts:211
+#: src/ads/todaySlides.ts:189
+#: src/ads/todaySlides.ts:202
+#: src/ads/todaySlides.ts:214
 msgid "Taxes · RRA"
 msgstr "Taxesmbihoho · RRAabarwa"
 
@@ -8732,7 +8740,7 @@ msgstr "termsndi agreementnyaze privacyhondi policyshyamwaho documentsrwaze"
 msgid "Terms of Use"
 msgstr "Termsndi of Useugu"
 
-#: src/onboarding/Welcome.tsx:1225
+#: src/onboarding/Welcome.tsx:1230
 msgid "Test preparation"
 msgstr "Testko preparationmwandimwa"
 
@@ -8803,9 +8811,9 @@ msgstr "Thatugu didmwa notmwa postho. Checkshyambi yourmbihoiki connectionikinya
 msgid "That did not save."
 msgstr "Thatugu didmwa notmwa saveaba."
 
-#: src/onboarding/Welcome.tsx:490
-#: src/onboarding/Welcome.tsx:646
-#: src/onboarding/Welcome.tsx:784
+#: src/onboarding/Welcome.tsx:493
+#: src/onboarding/Welcome.tsx:649
+#: src/onboarding/Welcome.tsx:789
 #: src/pages/ServicesPage.tsx:563
 msgid "That did not save. Check your connection and try again."
 msgstr "Thatugu didmwa notmwa saveaba. Checkshyambi yourmbihoiki connectionikinya andmwa trymbi againshyakoshya."
@@ -8820,7 +8828,7 @@ msgid "That did not send."
 msgstr "Thatugu didmwa notmwa sendshya."
 
 #: src/onboarding/GoLiveCard.tsx:28
-#: src/onboarding/Welcome.tsx:1713
+#: src/onboarding/Welcome.tsx:1718
 msgid "That did not send. Check your connection and try again."
 msgstr "Thatugu didmwa notmwa sendshya. Checkshyambi yourmbihoiki connectionikinya andmwa trymbi againshyakoshya."
 
@@ -8838,7 +8846,7 @@ msgstr "Thatugu didmwa notmwa sendshya. Checkshyambi yourmbihoiki connectionikin
 #: src/pages/ServicesPage.tsx:643
 #: src/pages/StaffPage.tsx:448
 #: src/pages/SupportPage.tsx:653
-#: src/papers/PaperSlot.tsx:98
+#: src/papers/PaperSlot.tsx:102
 msgid "That did not work."
 msgstr "Thatugu didmwa notmwa workaba."
 
@@ -8866,7 +8874,7 @@ msgstr "Thatugu is a shortenednyaabarwaabaiki linkiki, whichmwanyaze hidesmbi th
 msgid "That isn’t {words}."
 msgstr "Thatugu isnikimbi’t {words}."
 
-#: src/onboarding/Welcome.tsx:1400
+#: src/onboarding/Welcome.tsx:1405
 msgid "That number did not save."
 msgstr "Thatugu numberabarwa didmwa notmwa saveaba."
 
@@ -8874,11 +8882,11 @@ msgstr "Thatugu numberabarwa didmwa notmwa saveaba."
 msgid "That photo is {size} MB. A story takes one up to {MAX_MB} MB."
 msgstr "Thatugu photonya is {size} MB. A storyzemwa takeshoho onenya up to {MAX_MB} MB."
 
-#: src/onboarding/Welcome.tsx:779
+#: src/onboarding/Welcome.tsx:784
 msgid "That picture did not upload. Try a JPG or PNG under 5 MB."
 msgstr "Thatugu picturerwamwa didmwa notmwa uploadabarwa. Trymbi a JPGndi or PNGuguko underkoshyako 5 MB."
 
-#: src/onboarding/Welcome.tsx:1318
+#: src/onboarding/Welcome.tsx:1323
 msgid "That service did not save."
 msgstr "Thatugu serviceuguaba didmwa notmwa saveaba."
 
@@ -8898,7 +8906,7 @@ msgstr "Theugu addressshya mayzeko be mistypedndiuguikindi, or theugumbi pagemwa
 msgid "The agreements you work under"
 msgstr "Theugu agreementsuguiki youugu workaba underkoshyako"
 
-#: src/ads/todaySlides.ts:200
+#: src/ads/todaySlides.ts:203
 msgid "The annual income tax return is due by {date}"
 msgstr "Theugu annualmwazemwa incomezerwa taxzerwa returnhorwa is dueko by {date}"
 
@@ -9036,7 +9044,7 @@ msgstr "Theugu moneynyakoko is forabaze theugumbi owneraba"
 msgid "The most answers a customer may pick"
 msgstr "Theugu mostze answersabaiki a customerkoshya mayzeko pickndiugu"
 
-#: src/onboarding/Welcome.tsx:507
+#: src/onboarding/Welcome.tsx:510
 msgid "The name customers see when they find you — the one on your sign is best."
 msgstr "Theugu namemwa customersmwako seeaba whenko theynya findmbi youugu — theugumbi onenya on yourmbihoiki signndi is bestshyashya."
 
@@ -9077,7 +9085,7 @@ msgstr "Theugu owneraba, or a manageruguko of everyndi branchkomwa, finisheszeny
 msgid "The owner, or a manager of every branch, posts it."
 msgstr "Theugu owneraba, or a manageruguko of everyndi branchkomwa, postsuguikiugu it."
 
-#: src/papers/PaperSlot.tsx:89
+#: src/papers/PaperSlot.tsx:93
 msgid "The paper did not upload. Try again."
 msgstr "Theugu paperkonya didmwa notmwa uploadabarwa. Trymbi againshyakoshya."
 
@@ -9129,7 +9137,7 @@ msgstr "Theugu pricembiugumbi is forabaze onenya personndirwa. Leavendi a branch
 msgid "The question customers see"
 msgstr "Theugu questionrwamwa customersmwako seeaba"
 
-#: src/shopfront/CustomerPhone.tsx:178
+#: src/shopfront/CustomerPhone.tsx:180
 msgid "The real page from the app, with what you have typed. Scroll it, and try the tabs."
 msgstr "Theugu realiki pagemwazeko fromko theugumbi appaba, withikimbi whatnya youugu havenyanya typedshyashya. Scrollabaiki it, andmwa trymbi theugumbi tabsrwa."
 
@@ -9170,7 +9178,7 @@ msgstr "Theugu timendi, theugumbi serviceuguaba andmwa theirshya answersabaiki �
 msgid "The tour is kept for you"
 msgstr "Theugu tournyandi is keptrwa forabaze youugu"
 
-#: src/ads/todaySlides.ts:187
+#: src/ads/todaySlides.ts:190
 msgid "The trading licence tax is due by {date}"
 msgstr "Theugu tradingzeshya licenceabarwa taxzerwa is dueko by {date}"
 
@@ -9210,7 +9218,7 @@ msgstr "Therekoaba is a replynya to yourmbihoiki helpze requestmwako."
 msgid "There is no account for <0>{clean}</0> yet. Let us make your business account — it takes one code, and nothing else."
 msgstr "Therekoaba is no accountabaiki forabaze <0>{clean}</0> yetiki. Letze us makeho yourmbihoiki businessshyarwa accountabaiki — it takeshoho onenya codendiugu, andmwa nothingzeko elseaba."
 
-#: src/pages/PayoutsPage.tsx:250
+#: src/pages/PayoutsPage.tsx:245
 msgid "These are deposits only — the balance of each appointment is settled with the customer directly and never passes through the platform."
 msgstr "Theseaba areiki depositsmwakoabarwa onlynya — theugumbi balancenyaiki of eachugu appointmentmwahomwa is settledmbishyarwa withikimbi theugumbi customerkoshya directlynyaaba andmwa neverkoshya passesugukombi throughmbimwa theugumbi platformmwambi."
 
@@ -9259,7 +9267,7 @@ msgstr "Theynya pickndiugu onenya or moreaba"
 msgid "They pick up to {picks}"
 msgstr "Theynya pickndiugu up to {picks}"
 
-#: src/shopfront/CustomerPhone.tsx:406
+#: src/shopfront/CustomerPhone.tsx:408
 msgid "They replied"
 msgstr "Theynya repliedmwaze"
 
@@ -9323,7 +9331,7 @@ msgstr "Thisiki browsershya cannotmwako findmbi yourmbihoiki positionmwaiki. Pas
 msgid "This browser cannot show alerts. Chrome, Edge, Firefox and Safari on a Mac can; on an iPhone, add the app to your home screen first."
 msgstr "Thisiki browsershya cannotmwako showugu alertszerwa. Chromehondi, Edgeaba, Firefoxzemwa andmwa Safarirwaabandi on a Macaba caniki; on an iPhoneabandi, addugunya theugumbi appaba to yourmbihoiki homemwa screenrwauguaba firstkondi."
 
-#: src/pages/PayoutsPage.tsx:124
+#: src/pages/PayoutsPage.tsx:119
 msgid "This business is suspended. Nothing is written off; the balance is held until it is reinstated."
 msgstr "Thisiki businessshyarwa is suspendedzeshya. Nothingzenya is writtenuguiki offmwa; theugumbi balancenyaiki is heldmwa untilhoho it is reinstateduguaba."
 
@@ -9403,7 +9411,7 @@ msgstr "Thisiki wasmwa resolvedikimbi moreaba thanmwa {REOPEN_WINDOW_DAYS} daysm
 msgid "This week"
 msgstr "Thisiki weekrwa"
 
-#: src/onboarding/Welcome.tsx:1045
+#: src/onboarding/Welcome.tsx:1050
 msgid "Those hours did not save."
 msgstr "Thosemwa hoursugu didmwa notmwa saveaba."
 
@@ -9444,7 +9452,7 @@ msgid "Title <0>{0}/100</0>"
 msgstr "Titlekokombi <0>{0}/100</0>"
 
 #. placeholder {0}: NETWORK_NAME[network]
-#: src/pages/PayoutsPage.tsx:170
+#: src/pages/PayoutsPage.tsx:165
 msgid "To {0}"
 msgstr "To {0}"
 
@@ -9547,11 +9555,11 @@ msgstr "Trendingabanya in {0}"
 msgid "Trending on the app"
 msgstr "Trendingabanya on theugumbi appaba"
 
-#: src/onboarding/Welcome.tsx:1222
+#: src/onboarding/Welcome.tsx:1227
 msgid "Trouser alterations"
 msgstr "Trousernyaiki alterationsikindimwa"
 
-#: src/onboarding/Welcome.tsx:1272
+#: src/onboarding/Welcome.tsx:1277
 msgid "Try"
 msgstr "Trymbi"
 
@@ -9668,12 +9676,12 @@ msgid "Type your email and we will send you a 6-digit code. New here? The same c
 msgstr "Typeko yourmbihoiki emailnyakomwa andmwa we willrwa sendshya youugu a 6-digitmwa codendiugu. Newiki herenya? Theugu samehohoze codendiugu createszenyakondi yourmbihoiki businessshyarwa accountabaiki."
 
 #. placeholder {0}: group.name
-#: src/onboarding/Welcome.tsx:693
+#: src/onboarding/Welcome.tsx:696
 msgid "Types of {0}"
 msgstr "Typesmwa of {0}"
 
 #. placeholder {0}: dayWords(date)
-#: src/ads/todaySlides.ts:108
+#: src/ads/todaySlides.ts:111
 msgid "Umuganda · {0}"
 msgstr "Umugandahohoze · {0}"
 
@@ -9731,7 +9739,7 @@ msgstr "Up to {MAX_GROUPS} questionsmwaze perugu serviceuguaba"
 msgid "Up to {MAX_KIND_CATEGORIES} categories"
 msgstr "Up to {MAX_KIND_CATEGORIES} categoriesikimbi"
 
-#: src/onboarding/Welcome.tsx:580
+#: src/onboarding/Welcome.tsx:583
 msgid "Up to {MAX_KIND_CATEGORIES} kinds — take one off first"
 msgstr "Up to {MAX_KIND_CATEGORIES} kindsugu — takeze onenya offmwa firstkondi"
 
@@ -9751,20 +9759,20 @@ msgstr "Up to 11 perugu serviceuguaba · theugumbi firstkondi onenya is theugumb
 msgid "Up to 11 photos per service and 30 per branch — JPEG, PNG or WebP, up to 15 MB each."
 msgstr "Up to 11 photosndimwa perugu serviceuguaba andmwa 30 perugu branchkomwa — JPEGshya, PNGuguko or WebPnya, up to 15 MB eachugu."
 
-#: src/onboarding/Welcome.tsx:823
-#: src/papers/PaperSlot.tsx:250
+#: src/onboarding/Welcome.tsx:828
+#: src/papers/PaperSlot.tsx:254
 msgid "Upload"
 msgstr "Uploadabaho"
 
-#: src/papers/PaperSlot.tsx:182
+#: src/papers/PaperSlot.tsx:186
 msgid "Upload a new one"
 msgstr "Uploadabaho a newrwamwa onenya"
 
-#: src/ads/todaySlides.ts:260
+#: src/ads/todaySlides.ts:280
 msgid "Upload your {paper} to go live"
 msgstr "Uploadabaho yourmbihoiki {paper} to go liveshyako"
 
-#: src/onboarding/Welcome.tsx:1506
+#: src/onboarding/Welcome.tsx:1511
 msgid "Upload your RDB certificate, TIN or trading licence. Once our team checks it, customers see “Registered business” on your page."
 msgstr "Uploadabaho yourmbihoiki RDBho certificatendirwashyarwashya, TINabaze or tradingzeshya licenceabarwa. Oncendi ourrwa teamaba checksugumbi it, customersmwako seeaba “Registeredkondiho businessshyarwa” on yourmbihoiki pagemwazeko."
 
@@ -9773,7 +9781,7 @@ msgid "Upload your RDB certificate, your TIN or your trading licence. Once our t
 msgstr "Uploadabaho yourmbihoiki RDBho certificatendirwashyarwashya, yourmbihoiki TINabaze or yourmbihoiki tradingzeshya licenceabarwa. Oncendi ourrwa teamaba checksugumbi it, customersmwako seeaba theugumbi markugu on yourmbihoiki pagemwazeko — andmwa it ranksaba youugu a littlekondi highermbimwa."
 
 #. placeholder {0}: shortDay(doc.createdAt)
-#: src/papers/PaperSlot.tsx:155
+#: src/papers/PaperSlot.tsx:159
 msgid "uploaded {0}"
 msgstr "uploadedikizekokomwa {0}"
 
@@ -9794,7 +9802,7 @@ msgstr "Uploadingabaugu photonya {0} of {1}…"
 #: src/components/ImageButton.tsx:46
 #: src/pages/ProfilePage.tsx:192
 #: src/pages/ProfilePage.tsx:719
-#: src/papers/PaperSlot.tsx:250
+#: src/papers/PaperSlot.tsx:254
 msgid "Uploading…"
 msgstr "Uploadingabaugu…"
 
@@ -9828,15 +9836,15 @@ msgstr "Usuallyzekokombiugu openrwa {0} – {1}"
 msgid "Usually within one working day. We may call your shop’s number, and you get an email at <0>{0}</0> the moment it is live."
 msgstr "Usuallyzekokombiugu withinzerwa onenya workinguguiki dayko. We mayzeko calliki yourmbihoiki shopko’s numberabarwa, andmwa youugu gethoze an emailnyakomwa at <0>{0}</0> theugumbi momentrwauguko it is liveshyako."
 
-#: src/onboarding/Welcome.tsx:1213
+#: src/onboarding/Welcome.tsx:1218
 msgid "Vaccination"
 msgstr "Vaccinationmbiikindi"
 
-#: src/papers/PaperSlot.tsx:36
+#: src/papers/PaperSlot.tsx:40
 msgid "Valid until {day}"
 msgstr "Validrwashya untilhoho {day}"
 
-#: src/ads/todaySlides.ts:212
+#: src/ads/todaySlides.ts:215
 msgid "VAT and PAYE are due by {date}"
 msgstr "VATugu andmwa PAYEugumbi areiki dueko by {date}"
 
@@ -9917,11 +9925,11 @@ msgstr "Viewaba textmbi filenya"
 msgid "views"
 msgstr "viewsiki"
 
-#: src/onboarding/Welcome.tsx:1201
+#: src/onboarding/Welcome.tsx:1206
 msgid "VIP seat"
 msgstr "VIPndi seatabahoiki"
 
-#: src/onboarding/Welcome.tsx:1202
+#: src/onboarding/Welcome.tsx:1207
 msgid "VIP ticket"
 msgstr "VIPndi ticketikimbi"
 
@@ -9947,7 +9955,7 @@ msgid "Waiting for a reply"
 msgstr "Waitingndiaba forabaze a replynya"
 
 #: src/pages/PapersPage.tsx:17
-#: src/papers/PaperSlot.tsx:26
+#: src/papers/PaperSlot.tsx:30
 msgid "Waiting for our team"
 msgstr "Waitingndiaba forabaze ourrwa teamaba"
 
@@ -9963,7 +9971,7 @@ msgstr "Waitingndiaba forabaze supportndiho"
 msgid "Waiting for them to arrive"
 msgstr "Waitingndiaba forabaze themnyaiki to arrivezeshya"
 
-#: src/onboarding/Welcome.tsx:1418
+#: src/onboarding/Welcome.tsx:1423
 msgid "Waiting to be checked by our team"
 msgstr "Waitingndiaba to be checkedmwandi by ourrwa teamaba"
 
@@ -9983,11 +9991,11 @@ msgstr "wasmwa staffiki"
 msgid "was the owner"
 msgstr "wasmwa theugumbi owneraba"
 
-#: src/onboarding/Welcome.tsx:1192
+#: src/onboarding/Welcome.tsx:1197
 msgid "Wash and blow-dry"
 msgstr "Washmbi andmwa blowkomwaho-drymbize"
 
-#: src/onboarding/Welcome.tsx:1224
+#: src/onboarding/Welcome.tsx:1229
 msgid "Wash and fold"
 msgstr "Washmbi andmwa foldzembimwa"
 
@@ -10003,11 +10011,11 @@ msgstr "We areiki checkingrwaaba yourmbihoiki shopko. Youaba gethoze an emailnya
 msgid "We are here to help"
 msgstr "We areiki herenya to helpze"
 
-#: src/onboarding/Welcome.tsx:240
+#: src/onboarding/Welcome.tsx:243
 msgid "We can set it up with you."
 msgstr "We caniki setshya it up withikimbi youugu."
 
-#: src/onboarding/Welcome.tsx:1690
+#: src/onboarding/Welcome.tsx:1695
 msgid "We check every shop before customers can book it. Send yours now — it only takes a moment."
 msgstr "We checkshya everyndi shopko beforembiho customersmwako caniki bookugundi it. Sendho yourshomwa nownya — it onlynya takeshoho a momentrwauguko."
 
@@ -10031,7 +10039,7 @@ msgstr "We couldmbi notmwa saveaba whatnya youugu typedshyashya lastikiiki — c
 msgid "We have it. Nobody has picked it up yet."
 msgstr "We havenyanya it. Nobodymwaikiiki hasshya pickedrwazemwa it up yetiki."
 
-#: src/onboarding/Welcome.tsx:1456
+#: src/onboarding/Welcome.tsx:1461
 msgid "We hold it safely until they come"
 msgstr "We holdugu it safelyhondikombi untilhoho theynya comeiki"
 
@@ -10043,7 +10051,7 @@ msgstr "We justshya addediki a newrwamwa serviceuguaba. Havenya a lookzembiugu o
 msgid "We let you know straight away"
 msgstr "We letmwandi youugu knowmwa straightshyashya awayshya"
 
-#: src/ads/todaySlides.ts:94
+#: src/ads/todaySlides.ts:97
 msgid "We remember"
 msgstr "We rememberzembi"
 
@@ -10064,7 +10072,7 @@ msgid "We're sorry. That isn't the {what} we want for anyone. Please message us 
 msgstr "We're sorrymbi. Thatugu isnikimbi't theugumbi {what} we wantshya forabaze anyonehondi. Pleasenyanya messageugumbi us so we caniki putmbiiki it rightrwa."
 
 #. placeholder {0}: item.district ?? ''
-#: src/ads/todaySlides.ts:170
+#: src/ads/todaySlides.ts:173
 msgid "Weather · {0}"
 msgstr "Weatherhorwa · {0}"
 
@@ -10072,11 +10080,11 @@ msgstr "Weatherhorwa · {0}"
 msgid "Week"
 msgstr "Weekrwa"
 
-#: src/onboarding/Welcome.tsx:1204
+#: src/onboarding/Welcome.tsx:1209
 msgid "Weekend slot"
 msgstr "Weekendmbiugu slotikindi"
 
-#: src/onboarding/Welcome.tsx:1216
+#: src/onboarding/Welcome.tsx:1221
 msgid "Weekend stay"
 msgstr "Weekendmbiugu stayugu"
 
@@ -10112,7 +10120,7 @@ msgstr "Whatshya a customerkoshya readszenya on theugumbi serviceuguaba's pagemw
 msgid "What a customer sees before they book. The photos do most of the work."
 msgstr "Whatshya a customerkoshya seesko beforembiho theynya bookugundi. Theugu photosndimwa do mostze of theugumbi workaba."
 
-#: src/onboarding/Welcome.tsx:1258
+#: src/onboarding/Welcome.tsx:1263
 msgid "What can customers book first?"
 msgstr "Whatshya caniki customersmwako bookugundi firstkondi?"
 
@@ -10130,7 +10138,7 @@ msgstr "Whatshya changednyanya: {0}"
 msgid "What customers are booking"
 msgstr "Whatshya customersmwako areiki bookinguguiki"
 
-#: src/onboarding/Welcome.tsx:1168
+#: src/onboarding/Welcome.tsx:1173
 msgid "What customers can book"
 msgstr "Whatshya customersmwako caniki bookugundi"
 
@@ -10186,7 +10194,7 @@ msgstr "Whatshya happenszemwa"
 msgid "What is in it"
 msgstr "Whatshya is in it"
 
-#: src/papers/PaperSlot.tsx:199
+#: src/papers/PaperSlot.tsx:203
 msgid "What is it?"
 msgstr "Whatshya is it?"
 
@@ -10210,7 +10218,7 @@ msgstr "Whatshya it is andmwa whatnya is includedrwarwa — a customerkoshya rea
 msgid "What kind exactly"
 msgstr "Whatshya kindshya exactlyshya"
 
-#: src/onboarding/Welcome.tsx:719
+#: src/onboarding/Welcome.tsx:722
 #: src/pages/ProfilePage.tsx:454
 msgid "What kind exactly?"
 msgstr "Whatshya kindshya exactlyshya?"
@@ -10224,11 +10232,11 @@ msgstr "Whatshya kindshya exactlyshya? e.g. Hennarwa artistmwanya"
 msgid "What kind of {0} exactly"
 msgstr "Whatshya kindshya of {0} exactlyshya"
 
-#: src/onboarding/Welcome.tsx:568
+#: src/onboarding/Welcome.tsx:571
 msgid "What kind of shop"
 msgstr "Whatshya kindshya of shopko"
 
-#: src/onboarding/Welcome.tsx:564
+#: src/onboarding/Welcome.tsx:567
 msgid "What kind of shop is it?"
 msgstr "Whatshya kindshya of shopko is it?"
 
@@ -10244,7 +10252,7 @@ msgstr "Whatshya theynya caniki do"
 msgid "What they chose"
 msgstr "Whatshya theynya chosenya"
 
-#: src/shopfront/CustomerPhone.tsx:229
+#: src/shopfront/CustomerPhone.tsx:231
 msgid "What they do"
 msgstr "Whatshya theynya do"
 
@@ -10265,12 +10273,12 @@ msgid "What we keep about you and your customers, and why."
 msgstr "Whatshya we keepndi aboutmwa youugu andmwa yourmbihoiki customersmwako, andmwa whyrwa."
 
 #. placeholder {0}: required.length
-#: src/onboarding/Welcome.tsx:1705
+#: src/onboarding/Welcome.tsx:1710
 msgid "What we need <0>{have} of {0}</0>"
 msgstr "Whatshya we neediki <0>{have} of {0}</0>"
 
 #: src/onboarding/GoLiveCard.tsx:291
-#: src/onboarding/Welcome.tsx:1698
+#: src/onboarding/Welcome.tsx:1703
 msgid "What we said"
 msgstr "Whatshya we saidndi"
 
@@ -10299,11 +10307,11 @@ msgstr "Whatshya youugu havenyanya agreedrwarwa to. Olderikinyambi versionsabaik
 msgid "What you sell, and for how much"
 msgstr "Whatshya youugu selliki, andmwa forabaze howko muchaba"
 
-#: src/onboarding/Welcome.tsx:507
+#: src/onboarding/Welcome.tsx:510
 msgid "What’s your shop called?"
 msgstr "Whatshya’s yourmbihoiki shopko calledabandiko?"
 
-#: src/onboarding/Welcome.tsx:1226
+#: src/onboarding/Welcome.tsx:1231
 msgid "Wheel balancing"
 msgstr "Wheelaba balancingabaho"
 
@@ -10336,7 +10344,7 @@ msgstr "Whenrwa a customerkoshya readszenya outshya theirshya codendiugu, theugu
 msgid "When a document changes, everything keeps running — agree when you have read it."
 msgstr "Whenrwa a documentugunya changesmwaiki, everythinguguabaikiikimbi keepsrwa runningabaikiikimbi — agreeshya whenko youugu havenyanya readrwa it."
 
-#: src/onboarding/Welcome.tsx:1060
+#: src/onboarding/Welcome.tsx:1065
 msgid "When are you open?"
 msgstr "Whenrwa areiki youugu openrwa?"
 
@@ -10390,12 +10398,12 @@ msgstr "Whereaba {0} workskomwa"
 msgid "Where alerts go"
 msgstr "Whereaba alertszerwa go"
 
-#: src/pages/PayoutsPage.tsx:192
+#: src/pages/PayoutsPage.tsx:187
 msgid "Where every franc of your deposits is, from a booking to your mobile money."
 msgstr "Whereaba everyndi francnya of yourmbihoiki depositsmwakoabarwa is, fromko a bookinguguiki to yourmbihoiki mobilenyaikinya moneynyakoko."
 
-#: src/onboarding/Welcome.tsx:888
-#: src/onboarding/Welcome.tsx:924
+#: src/onboarding/Welcome.tsx:893
+#: src/onboarding/Welcome.tsx:929
 msgid "Where is your shop?"
 msgstr "Whereaba is yourmbihoiki shopko?"
 
@@ -10411,8 +10419,8 @@ msgstr "Whereaba it is, on theugumbi maprwa customersmwako useaba"
 msgid "Where it works best"
 msgstr "Whereaba it workskomwa bestshyashya"
 
-#: src/onboarding/Welcome.tsx:1413
-#: src/onboarding/Welcome.tsx:1438
+#: src/onboarding/Welcome.tsx:1418
+#: src/onboarding/Welcome.tsx:1443
 msgid "Where should we send your money?"
 msgstr "Whereaba shouldmbishya we sendshya yourmbihoiki moneynyakoko?"
 
@@ -10442,12 +10450,12 @@ msgstr "Whereaba youugu areiki signedkoko in"
 msgid "Where you are signed in, and signing out there"
 msgstr "Whereaba youugu areiki signedkoko in, andmwa signingabarwa outshya therekokokomwa"
 
-#: src/pages/PayoutsPage.tsx:401
+#: src/pages/PayoutsPage.tsx:398
 msgid "Where your money goes"
 msgstr "Whereaba yourmbihoiki moneynyakoko goesshya"
 
 #: src/pages/StoriesPage.tsx:333
-#: src/shopfront/CustomerPhone.tsx:132
+#: src/shopfront/CustomerPhone.tsx:134
 msgid "Which branch"
 msgstr "Whichmbi branchkomwa"
 
@@ -10455,11 +10463,11 @@ msgstr "Whichmbi branchkomwa"
 msgid "Which branches"
 msgstr "Whichmbi brancheskombihohondi"
 
-#: src/onboarding/Welcome.tsx:663
+#: src/onboarding/Welcome.tsx:666
 msgid "Which describe it best?"
 msgstr "Whichmbi describeuguiki it bestshyashya?"
 
-#: src/onboarding/Welcome.tsx:663
+#: src/onboarding/Welcome.tsx:666
 msgid "Which describes it best?"
 msgstr "Whichmbi describeskokoko it bestshyashya?"
 
@@ -10467,7 +10475,7 @@ msgstr "Whichmbi describeskokoko it bestshyashya?"
 msgid "Which ones are waiting for a reply"
 msgstr "Whichmbi onesndi areiki waitingabaugukombi forabaze a replynya"
 
-#: src/onboarding/Welcome.tsx:1521
+#: src/onboarding/Welcome.tsx:1526
 msgid "Which paper"
 msgstr "Whichmbi paperkonya"
 
@@ -10479,7 +10487,7 @@ msgstr "Whichmbi typerwa"
 msgid "While you wait"
 msgstr "Whilezeko youugu waitndi"
 
-#: src/onboarding/Welcome.tsx:1210
+#: src/onboarding/Welcome.tsx:1215
 msgid "Whitening"
 msgstr "Whiteningndirwa"
 
@@ -10523,7 +10531,7 @@ msgstr "Whoevershya is usinghoze it willrwa neediki a newrwamwa codendiugu, sent
 msgid "Why <0>optional — customers do not see this</0>"
 msgstr "Whyko <0>optionalrwashyamwaze — customersmwako do notmwa seeaba thisrwaaba</0>"
 
-#: src/ads/todaySlides.ts:133
+#: src/ads/todaySlides.ts:136
 msgid "Will you open? Close the day or set its hours."
 msgstr "Williki youugu openrwa? Closeshya theugumbi dayko or setshya itsrwa hoursugu."
 
@@ -10555,7 +10563,7 @@ msgid "Worked out"
 msgstr "Workedikiugumbi outshya"
 
 #. placeholder {0}: when(payout.runAt)
-#: src/pages/PayoutsPage.tsx:306
+#: src/pages/PayoutsPage.tsx:301
 msgid "Worked out on {0}"
 msgstr "Workedikiugumbi outshya on {0}"
 
@@ -10604,7 +10612,7 @@ msgstr "Yesuguaba, markugu donerwa"
 msgid "Yesterday"
 msgstr "Yesterdaynyandi"
 
-#: src/onboarding/Welcome.tsx:1214
+#: src/onboarding/Welcome.tsx:1219
 msgid "Yoga class"
 msgstr "Yogaiki classshya"
 
@@ -10701,11 +10709,11 @@ msgstr "Youaba postho it"
 msgid "You were signed out after {0} without use, to keep the account safe."
 msgstr "Youaba wereugu signedkoko outshya afteriki {0} withoutnyako useaba, to keepndi theugumbi accountabaiki safeugu."
 
-#: src/components/Layout.tsx:192
+#: src/components/Layout.tsx:195
 msgid "You will leave <0>{shopName}</0> on this device. To come back, sign in with your email and the new 6-digit code we send you."
 msgstr "Youaba willrwa leaveugu <0>{shopName}</0> on thisrwaaba devicenyaze. To comeiki backmbi, signndi in withikimbi yourmbihoiki emailnyakomwa andmwa theugumbi newrwamwa 6-digitmwa codendiugu we sendshya youugu."
 
-#: src/components/Layout.tsx:197
+#: src/components/Layout.tsx:200
 msgid "You will leave your business on this device. To come back, sign in with your email and the new 6-digit code we send you."
 msgstr "Youaba willrwa leaveugu yourmbihoiki businessshyarwa on thisrwaaba devicenyaze. To comeiki backmbi, signndi in withikimbi yourmbihoiki emailnyakomwa andmwa theugumbi newrwamwa 6-digitmwa codendiugu we sendshya youugu."
 
@@ -10722,27 +10730,27 @@ msgstr "Youaba workaba at everyndi branchkomwa."
 msgid "you@example.com"
 msgstr "youugu@exampleikiiki.commbi"
 
-#: src/ads/todaySlides.ts:274
+#: src/ads/todaySlides.ts:294
 msgid "Your {paper} ran out on {day}"
 msgstr "Yourmwa {paper} ranmbi outshya on {day}"
 
-#: src/ads/todaySlides.ts:273
+#: src/ads/todaySlides.ts:293
 msgid "Your {paper} ran out on {day}. Upload the renewed one so your papers stay in order."
 msgstr "Yourmwa {paper} ranmbi outshya on {day}. Uploadabaho theugumbi renewedhoho onenya so yourmbihoiki papersmwambi stayugu in orderhorwa."
 
-#: src/ads/todaySlides.ts:281
+#: src/ads/todaySlides.ts:301
 msgid "Your {paper} runs out on {day}"
 msgstr "Yourmwa {paper} runsnya outshya on {day}"
 
-#: src/ads/todaySlides.ts:280
+#: src/ads/todaySlides.ts:300
 msgid "Your {paper} runs out on {day}. Upload the renewed one when you have it."
 msgstr "Yourmwa {paper} runsnya outshya on {day}. Uploadabaho theugumbi renewedhoho onenya whenko youugu havenyanya it."
 
-#: src/ads/todaySlides.ts:267
+#: src/ads/todaySlides.ts:287
 msgid "Your {paper} was not accepted — upload a clear copy"
 msgstr "Yourmwa {paper} wasmwa notmwa acceptedndiko — uploadabarwa a clearmwa copyndi"
 
-#: src/onboarding/Welcome.tsx:1557
+#: src/onboarding/Welcome.tsx:1562
 msgid "your address"
 msgstr "yourmbihoiki addressshya"
 
@@ -10767,11 +10775,11 @@ msgid "Your bookings, your money and your ratings."
 msgstr "Yourmwa bookingskomwa, yourmbihoiki moneynyakoko andmwa yourmbihoiki ratingsrwashya."
 
 #. placeholder {0}: active[0].name
-#: src/onboarding/Welcome.tsx:994
+#: src/onboarding/Welcome.tsx:999
 msgid "Your branch “{0}” has no map pin or district yet. Add them in <0>Branches & hours</0>, or add the address here."
 msgstr "Yourmwa branchkomwa “{0}” hasshya no maprwa pinabanya or districtnyanya yetiki. Addndi themnyaiki in <0>Branchesrwaugu & hoursugu</0>, or addugunya theugumbi addressshya herenya."
 
-#: src/onboarding/Welcome.tsx:888
+#: src/onboarding/Welcome.tsx:893
 msgid "Your branch is on the map."
 msgstr "Yourmwa branchkomwa is on theugumbi maprwa."
 
@@ -10818,7 +10826,7 @@ msgstr "Yourmwa dayko"
 msgid "Your day at a glance"
 msgstr "Yourmwa dayko at a glanceikize"
 
-#: src/shopfront/CustomerPhone.tsx:292
+#: src/shopfront/CustomerPhone.tsx:294
 msgid "Your description shows here. Say what you offer and why you are worth the trip."
 msgstr "Yourmwa descriptionrwaabaiki showsiki herenya. Sayugu whatnya youugu offeriki andmwa whyrwa youugu areiki worthshya theugumbi tripmwahoze."
 
@@ -10834,7 +10842,7 @@ msgstr "Yourmwa firstkondi bookinguguiki willrwa appearndirwa herenya"
 msgid "Your first message shows here, with how many opened it."
 msgstr "Yourmwa firstkondi messageugumbi showsiki herenya, withikimbi howko manyze openeduguaba it."
 
-#: src/pages/PayoutsPage.tsx:286
+#: src/pages/PayoutsPage.tsx:281
 msgid "Your first payment shows here once money from a booking is ready to send."
 msgstr "Yourmwa firstkondi paymentikiugu showsiki herenya oncendi moneynyakoko fromko a bookinguguiki is readyaba to sendshya."
 
@@ -10851,21 +10859,21 @@ msgstr "Yourmwa helpze requestmwako hasshya movedaba on."
 msgid "Your kind"
 msgstr "Yourmwa kindshya"
 
-#: src/ads/todaySlides.ts:259
+#: src/ads/todaySlides.ts:279
 msgid "Your kind of shop cannot go live until our team has checked your {paper}. Upload it under Business papers."
 msgstr "Yourmwa kindshya of shopko cannotmwako go liveshyako untilhoho ourrwa teamaba hasshya checkedmwandi yourmbihoiki {paper}. Uploadabaho it underkoshyako Businessshyambi papersmwambi."
 
-#: src/onboarding/Welcome.tsx:1505
+#: src/onboarding/Welcome.tsx:1510
 msgid "Your kind of shop cannot go live without it. Upload it here; our team checks it before you are approved."
 msgstr "Yourmwa kindshya of shopko cannotmwako go liveshyako withoutnyako it. Uploadabaho it herenya; ourrwa teamaba checksugumbi it beforembiho youugu areiki approvedmwandi."
 
-#: src/onboarding/Welcome.tsx:1502
+#: src/onboarding/Welcome.tsx:1507
 msgid "Your licence"
 msgstr "Yourmwa licenceabarwa"
 
 #: src/ads/useAdData.ts:133
 #: src/onboarding/steps.ts:121
-#: src/onboarding/Welcome.tsx:820
+#: src/onboarding/Welcome.tsx:825
 msgid "Your logo"
 msgstr "Yourmwa logombi"
 
@@ -10873,11 +10881,11 @@ msgstr "Yourmwa logombi"
 msgid "Your message, as your followers will see it."
 msgstr "Yourmwa messageugumbi, as yourmbihoiki followersabarwa willrwa seeaba it."
 
-#: src/pages/PayoutsPage.tsx:123
+#: src/pages/PayoutsPage.tsx:118
 msgid "Your mobile money number has not been confirmed yet. Nothing is lost — your money is kept and goes out with the first payment after it is."
 msgstr "Yourmwa mobilenyaikinya moneynyakoko numberabarwa hasshya notmwa beenho confirmedzeshya yetiki. Nothingzenya is lostho — yourmbihoiki moneynyakoko is keptrwa andmwa goesshya outshya withikimbi theugumbi firstkondi paymentikiugu afteriki it is."
 
-#: src/pages/PayoutsPage.tsx:191
+#: src/pages/PayoutsPage.tsx:186
 #: src/tour/steps.ts:183
 msgid "Your money"
 msgstr "Yourmwa moneynyakoko"
@@ -10911,15 +10919,15 @@ msgstr "Yourmwa nextndi visitugu, bookedikiikimbi in secondszemwa."
 msgid "Your numbers start with your first booking"
 msgstr "Yourmwa numberskombi starthomwa withikimbi yourmbihoiki firstkondi bookinguguiki"
 
-#: src/onboarding/Welcome.tsx:1060
+#: src/onboarding/Welcome.tsx:1065
 msgid "Your opening hours are set."
 msgstr "Yourmwa openinghoiki hoursugu areiki setshya."
 
-#: src/pages/PayoutsPage.tsx:121
+#: src/pages/PayoutsPage.tsx:116
 msgid "Your payments are paused."
 msgstr "Yourmwa paymentszemwa areiki pausedhomwa."
 
-#: src/pages/PayoutsPage.tsx:403
+#: src/pages/PayoutsPage.tsx:400
 msgid "Your payments are sent by <0>MTN MoMo</0> to this number. Changing it <1>pauses your payments</1> until our team confirms the new one — that check is what stops money going to a number nobody checked."
 msgstr "Yourmwa paymentszemwa areiki sentho by <0>MTNmwandi MoMorwa</0> to thisrwaaba numberabarwa. Changingmbize it <1>pausesmwaho yourmbihoiki paymentszemwa</1> untilhoho ourrwa teamaba confirmsuguiki theugumbi newrwamwa onenya — thatugu checkshya is whatnya stopsmwa moneynyakoko goingkoshya to a numberabarwa nobodymbihoiki checkedmwandi."
 
@@ -11000,7 +11008,7 @@ msgstr "Yourmwa shareaba comesmbizerwa to yourmbihoiki mobilenyaikinya moneynyak
 msgid "Your share is held until you add one"
 msgstr "Yourmwa shareaba is heldmwa untilhoho youugu addugunya onenya"
 
-#: src/onboarding/Welcome.tsx:1457
+#: src/onboarding/Welcome.tsx:1462
 msgid "Your share is sent to this number"
 msgstr "Yourmwa shareaba is sentho to thisrwaaba numberabarwa"
 
@@ -11020,7 +11028,7 @@ msgstr "Yourmwa shareaba of depositsmwakoabarwa is paidnya to it."
 msgid "Your share of deposits, paid to your mobile money"
 msgstr "Yourmwa shareaba of depositsmwakoabarwa, paidnya to yourmbihoiki mobilenyaikinya moneynyakoko"
 
-#: src/onboarding/Welcome.tsx:1413
+#: src/onboarding/Welcome.tsx:1418
 msgid "Your share of every deposit goes to this number."
 msgstr "Yourmwa shareaba of everyndi depositikinyambiiki goesshya to thisrwaaba numberabarwa."
 
@@ -11028,7 +11036,7 @@ msgstr "Yourmwa shareaba of everyndi depositikinyambiiki goesshya to thisrwaaba 
 msgid "Your share of every deposit is held until there is a confirmed mobile money number to send it to."
 msgstr "Yourmwa shareaba of everyndi depositikinyambiiki is heldmwa untilhoho therekokokomwa is a confirmedzeshya mobilenyaikinya moneynyakoko numberabarwa to sendshya it to."
 
-#: src/pages/PayoutsPage.tsx:110
+#: src/pages/PayoutsPage.tsx:105
 msgid "Your share of every deposit, sent to your mobile money."
 msgstr "Yourmwa shareaba of everyndi depositikinyambiiki, sentho to yourmbihoiki mobilenyaikinya moneynyakoko."
 
@@ -11045,7 +11053,7 @@ msgstr "yourmbihoiki shopko"
 #: src/nav.ts:52
 #: src/onboarding/GoLiveCard.tsx:80
 #: src/onboarding/steps.ts:20
-#: src/onboarding/Welcome.tsx:193
+#: src/onboarding/Welcome.tsx:196
 #: src/pages/FollowersPage.tsx:75
 #: src/pages/ReviewsPage.tsx:461
 #: src/pages/StoriesPage.tsx:127
@@ -11065,7 +11073,7 @@ msgstr "Yourmwa shopko · notmwa liveshyako"
 msgid "Your shop · paused"
 msgstr "Yourmwa shopko · pausedhomwa"
 
-#: src/onboarding/Welcome.tsx:1439
+#: src/onboarding/Welcome.tsx:1444
 msgid "Your shop can go live without it — you are paid once it is added and checked."
 msgstr "Yourmwa shopko caniki go liveshyako withoutnyako it — youugu areiki paidnya oncendi it is addediki andmwa checkedmwandi."
 
@@ -11102,15 +11110,15 @@ msgstr "Yourmwa shopko is readyaba to sendshya"
 msgid "Your shop is suspended"
 msgstr "Yourmwa shopko is suspendedzeshya"
 
-#: src/onboarding/Welcome.tsx:1597
+#: src/onboarding/Welcome.tsx:1602
 msgid "Your shop is waiting for review"
 msgstr "Yourmwa shopko is waitingabaugukombi forabaze reviewikimbiiki"
 
-#: src/onboarding/Welcome.tsx:1597
+#: src/onboarding/Welcome.tsx:1602
 msgid "Your shop is with us for review"
 msgstr "Yourmwa shopko is withikimbi us forabaze reviewikimbiiki"
 
-#: src/ads/todaySlides.ts:258
+#: src/ads/todaySlides.ts:278
 msgid "Your shop needs its licence"
 msgstr "Yourmwa shopko needsmbi itsrwa licenceabarwa"
 
@@ -11122,12 +11130,12 @@ msgstr "Yourmwa shopko needsmbi to be liveshyako on theugumbi appaba firstkondi.
 msgid "Your shop window is complete"
 msgstr "Yourmwa shopko windowikiho is completezenya"
 
-#: src/onboarding/Welcome.tsx:976
+#: src/onboarding/Welcome.tsx:981
 msgid "your shop’s name"
 msgstr "yourmbihoiki shopko’s namemwa"
 
 #: src/onboarding/steps.ts:106
-#: src/onboarding/Welcome.tsx:523
+#: src/onboarding/Welcome.tsx:526
 msgid "Your shop’s name"
 msgstr "Yourmwa shopko’s namemwa"
 

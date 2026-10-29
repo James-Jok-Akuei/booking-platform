@@ -10,6 +10,7 @@ import { StorageService } from '../src/storage/storage.service';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { commonStubs, createTestModule, resetDatabase } from './setup/test-module';
 import { TestBusiness, createAdmin, createBusiness } from './setup/factories';
+import { DocumentsService } from '../src/business/documents.service';
 
 /**
  * §268. Approval says a shop MAY be listed; the shop posts itself when it is
@@ -30,6 +31,7 @@ describe('A shop posts itself for customers (§268)', () => {
     moduleRef = await createTestModule([
       BusinessProfileService,
       BusinessModerationService,
+      DocumentsService,
       AdminOverviewService,
       DiscoveryService,
       FavouritesService,

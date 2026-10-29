@@ -3,6 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { AddressSearchService, describePlace } from '../src/routing/address-search.service';
+
+const RWANDA_ROW = { code: 'RW', name: 'Rwanda' };
 import { AddressSearchQueryDto } from '../src/routing/dto/address.dto';
 
 /**
@@ -48,24 +50,24 @@ describe('Address suggestions while typing (§172, §174)', () => {
   beforeEach(() => fetchMock.mockReset());
 
   it('says a place the way a person would', () => {
-    expect(describePlace(market.properties)).toEqual({
+    expect(describePlace(market.properties, 'Rwanda')).toEqual({
       label: 'Kimironko Market, KG 153 Street, Kimironko',
       detail: 'Kigali',
     });
     expect(
-      describePlace({ housenumber: '11', street: 'KG 28 Avenue', district: 'Kimihurura', city: 'Kigali' }),
+      describePlace({ housenumber: '11', street: 'KG 28 Avenue', district: 'Kimihurura', city: 'Kigali' }, 'Rwanda'),
     ).toEqual({ label: '11 KG 28 Avenue, Kimihurura', detail: 'Kigali' });
     // A district is WHERE a place is, not what it is called.
     expect(
-      describePlace({ name: 'Kigali Heights', street: 'KG 7 Avenue', district: 'Gasabo District', city: 'Kigali' }),
+      describePlace({ name: 'Kigali Heights', street: 'KG 7 Avenue', district: 'Gasabo District', city: 'Kigali' }, 'Rwanda'),
     ).toEqual({ label: 'Kigali Heights, KG 7 Avenue', detail: 'Gasabo District, Kigali' });
     // The same name in four provinces is told apart by where it is.
     expect(
-      describePlace({ name: 'Remera', city: 'Musanze', state: 'Northern Province, Rwanda' }),
+      describePlace({ name: 'Remera', city: 'Musanze', state: 'Northern Province, Rwanda' }, 'Rwanda'),
     ).toEqual({ label: 'Remera', detail: 'Musanze, Northern Province' });
     // Smallest first outside Kigali: the sector, then its district.
     expect(
-      describePlace({ name: 'Remera', city: 'Ruheru', county: 'Nyaruguru District', state: 'Southern Province' }),
+      describePlace({ name: 'Remera', city: 'Ruheru', county: 'Nyaruguru District', state: 'Southern Province' }, 'Rwanda'),
     ).toEqual({ label: 'Remera', detail: 'Ruheru, Nyaruguru District' });
   });
 
@@ -81,7 +83,7 @@ describe('Address suggestions while typing (§172, §174)', () => {
       ]),
     );
 
-    const found = await service().search('kimir');
+    const found = await service().search('kimir', RWANDA_ROW);
 
     expect(found).toEqual({
       available: true,
@@ -105,15 +107,15 @@ describe('Address suggestions while typing (§172, §174)', () => {
     fetchMock.mockResolvedValueOnce(
       answer(Array.from({ length: 12 }, (_, i) => place(30 + i / 100, -1.9, { name: `Place ${i}` }))),
     );
-    expect((await service().search('place')).results).toHaveLength(6);
+    expect((await service().search('place', RWANDA_ROW)).results).toHaveLength(6);
   });
 
   it('does not ask twice for the same letters', async () => {
     const addresses = service();
     fetchMock.mockResolvedValueOnce(answer([market]));
 
-    await addresses.search('Kimir');
-    const again = await addresses.search('kimir');
+    await addresses.search('Kimir', RWANDA_ROW);
+    const again = await addresses.search('kimir', RWANDA_ROW);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(again.results).toHaveLength(1);
@@ -122,24 +124,24 @@ describe('Address suggestions while typing (§172, §174)', () => {
   it('says it could not search — not that nothing matched — when the service fails', async () => {
     const addresses = service();
     fetchMock.mockRejectedValueOnce(new Error('timeout'));
-    expect(await addresses.search('KG 11')).toEqual({ results: [], available: false });
+    expect(await addresses.search('KG 11', RWANDA_ROW)).toEqual({ results: [], available: false });
 
     fetchMock.mockResolvedValueOnce(new Response('busy', { status: 429 }));
-    expect(await addresses.search('KG 11')).toEqual({ results: [], available: false });
+    expect(await addresses.search('KG 11', RWANDA_ROW)).toEqual({ results: [], available: false });
 
     // A failure is not remembered: the next try asks again.
     fetchMock.mockResolvedValueOnce(answer([market]));
-    expect((await addresses.search('KG 11')).available).toBe(true);
+    expect((await addresses.search('KG 11', RWANDA_ROW)).available).toBe(true);
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it('finding nothing is an answer, and says so', async () => {
     fetchMock.mockResolvedValueOnce(answer([]));
-    expect(await service().search('zzzz')).toEqual({ results: [], available: true });
+    expect(await service().search('zzzz', RWANDA_ROW)).toEqual({ results: [], available: true });
   });
 
   it('asks nobody when search is turned off', async () => {
-    expect(await service({ GEOCODING_BASE_URL: '' }).search('KG 11')).toEqual({
+    expect(await service({ GEOCODING_BASE_URL: '' }).search('KG 11', RWANDA_ROW)).toEqual({
       results: [],
       available: false,
     });
@@ -154,7 +156,7 @@ describe('Address suggestions while typing (§172, §174)', () => {
       return answer([market]);
     });
 
-    await Promise.all([addresses.search('kim'), addresses.search('kimi'), addresses.search('kimir')]);
+    await Promise.all([addresses.search('kim', RWANDA_ROW), addresses.search('kimi', RWANDA_ROW), addresses.search('kimir', RWANDA_ROW)]);
 
     expect(askedAt).toHaveLength(3);
     expect(askedAt[1] - askedAt[0]).toBeGreaterThanOrEqual(240);

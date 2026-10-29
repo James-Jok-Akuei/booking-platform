@@ -97,7 +97,7 @@ describe('Payment reply shapes (§109)', () => {
     const reply = await appointments.initiateDepositPayment(
       customer.userId,
       appointment.id,
-      '256770000000',
+      '250788123456',
     );
 
     expect(Object.keys(reply).sort()).toEqual([
@@ -137,7 +137,7 @@ describe('Payment reply shapes (§109)', () => {
     await appointments.initiateDepositPayment(
       customer.userId,
       appointment.id,
-      '256770000000',
+      '250788123456',
     );
 
     const reply = await status(appointment.id);
@@ -155,7 +155,7 @@ describe('Payment reply shapes (§109)', () => {
     await appointments.initiateDepositPayment(
       customer.userId,
       appointment.id,
-      '256770000000',
+      '250788123456',
     );
     provider.checkPaymentStatus.mockResolvedValue({ status: 'SUCCESSFUL' });
 
@@ -177,7 +177,7 @@ describe('Payment reply shapes (§109)', () => {
     await appointments.initiateDepositPayment(
       customer.userId,
       appointment.id,
-      '256770000000',
+      '250788123456',
     );
     // What MTN's sandbox actually returns for payer 46733123451, confirmed
     // against it rather than invented (§109.3).
@@ -199,7 +199,7 @@ describe('Payment reply shapes (§109)', () => {
     const retried = await appointments.initiateDepositPayment(
       customer.userId,
       appointment.id,
-      '256770000000',
+      '250788123456',
     );
     expect(retried.paymentStatus).toBe('PENDING');
   });

@@ -1,13 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { CountriesService } from '../countries/countries.service';
+import { isLocalTime } from '../countries/local-time';
 import { OffersService } from './offers.service';
 
 /**
  * The weekly "near you" email (§140).
  *
- * Friday at nine in the morning, Kigali time: the day people plan a weekend,
- * and an hour they are awake for. The zone is named here rather than left to
- * the server's clock, which is UTC wherever this is hosted.
+ * Friday at nine in the morning on each country's own clock (§315): the day
+ * people plan a weekend, and an hour they are awake for. So the job wakes on
+ * the hour and writes to the countries where it is now nine on a Friday —
+ * Kigali at 07:00 UTC, Nairobi an hour earlier — rather than naming one zone.
  *
  * Running it more often would not send more — `OffersService.sendDue` skips
  * anyone written to in the last six days.
@@ -16,14 +19,20 @@ import { OffersService } from './offers.service';
 export class OffersScheduler {
   private readonly logger = new Logger(OffersScheduler.name);
 
-  constructor(private readonly offers: OffersService) {}
+  constructor(
+    private readonly offers: OffersService,
+    private readonly countries: CountriesService,
+  ) {}
 
-  @Cron('0 0 9 * * 5', { name: 'offers-near-you', timeZone: 'Africa/Kigali' })
-  async run(): Promise<void> {
-    try {
-      await this.offers.sendDue();
-    } catch (error) {
-      this.logger.error('The weekly offers run failed.', error as Error);
+  @Cron('0 0 * * * *', { name: 'offers-near-you' })
+  async run(now = new Date()): Promise<void> {
+    for (const country of await this.countries.live()) {
+      if (!isLocalTime(now, country.timeZone, { weekday: 5, hour: 9 })) continue;
+      try {
+        await this.offers.sendDue(now, country.code);
+      } catch (error) {
+        this.logger.error(`The weekly offers run failed for ${country.name}.`, error as Error);
+      }
     }
   }
 }
